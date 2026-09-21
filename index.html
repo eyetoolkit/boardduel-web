@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-site="board">
+<html lang="en" data-site="board" data-build="%VITE_SHOW_BETA%">
 <head>
   <meta charset="UTF-8">
   <meta name="theme-color" content="#4f46e5">
@@ -43,7 +43,7 @@
   <meta property="og:url" content="https://boardduel.com/" />
 <meta data-i18n="meta.auto.hc_BoardDuel棋盘对决_74499" property="og:site_name" content="Board Duel - Board Games" />
 <meta property="og:locale" content="en_US" />
-  <meta property="og:image" content="https://boardduel.com/games/gomoku/og.jpg" />
+  <meta property="og:image" content="https://boardduel.com/games/tictactoe/og.jpg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="632" />
   <meta property="og:image:alt" content="Board Duel 棋盘对决" />
@@ -52,7 +52,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta data-i18n="meta.auto.hc_BoardDuel棋盘对决在线棋类_59484" name="twitter:title" content="Board Duel · 10 Classic Board Games Online" />
   <meta data-i18n="meta.auto.hc_6款经典棋类游戏合集AI人机联机_83226" name="twitter:description" content="Classic Board Games · Play vs AI or invite a friend · Free to play, privacy-first." />
-  <meta name="twitter:image" content="https://boardduel.com/games/gomoku/og.jpg" />
+  <meta name="twitter:image" content="https://boardduel.com/games/tictactoe/og.jpg" />
 
   <!-- JSON-LD -->
   <script type="application/ld+json">
@@ -194,7 +194,7 @@
 <div id="site-header" style="min-height:65px"
      data-brand-a="Board" data-brand-b="Duel" data-mark="duel-chess"
      data-nav='[]'
-     data-cta-label="开始对战" data-cta-href="/games/gomoku/" data-cta-i18n="home.btn_play"></div>
+     data-cta-label="开始对战" data-cta-href="/games/tictactoe/" data-cta-i18n="home.btn_play"></div>
 
 <!-- 旧 nav 保留 DOM 结构给 i18n.js 引用，由 sidebar.js 隐藏 -->
 <div class="layout">
@@ -203,11 +203,11 @@
   <aside class="sidebar" style="display:none" role="navigation">
     <a href="/" class="sidebar-brand">♟️ <span data-i18n="site.title">Board Duel</span></a>
     <div class="sidebar-group-label" data-i18n="sidebar.group_games">Games</div>
-    <a href="/games/gomoku/" class="sidebar-link"><span class="ico">⚫</span><span data-i18n="nav.gomoku">⚫ Gomoku</span></a>
-    <a href="/games/chess/" class="sidebar-link"><span class="ico">♞</span><span data-i18n="nav.chess">♞ Chess</span></a>
-    <a href="/games/connect4/" class="sidebar-link"><span class="ico">🔴</span><span data-i18n="nav.connect4">🔴 Connect 4</span></a>
-    <a href="/games/reversi/" class="sidebar-link"><span class="ico">⚫</span><span data-i18n="nav.reversi">◍ Reversi</span></a>
-    <a href="/games/tictactoe/" class="sidebar-link"><span class="ico">⭕</span><span data-i18n="nav.ttt">✕◯ Tic-Tac-Toe</span></a>
+    <a href="/games/gomoku/" data-stage="beta" class="sidebar-link"><span class="ico">⚫</span><span data-i18n="nav.gomoku">⚫ Gomoku</span></a>
+    <a href="/games/chess/" data-stage="beta" class="sidebar-link"><span class="ico">♞</span><span data-i18n="nav.chess">♞ Chess</span></a>
+    <a href="/games/connect4/" data-stage="beta" class="sidebar-link"><span class="ico">🔴</span><span data-i18n="nav.connect4">🔴 Connect 4</span></a>
+    <a href="/games/reversi/" data-stage="beta" class="sidebar-link"><span class="ico">⚫</span><span data-i18n="nav.reversi">◍ Reversi</span></a>
+    <a href="/games/tictactoe/" data-stage="live" class="sidebar-link"><span class="ico">⭕</span><span data-i18n="nav.ttt">✕◯ Tic-Tac-Toe</span></a>
     <div class="sidebar-group-label" data-i18n="sidebar.group_site">Site</div>
     <a href="/about/" class="sidebar-link"><span class="ico">ℹ️</span><span data-i18n="nav.about">About</span></a>
     <div class="sidebar-spacer"></div>
@@ -229,14 +229,14 @@
           <p class="sec-sub-xl" data-i18n="home.all_subtitle">Pick one and challenge friends anytime</p>
         </div>
         <div class="games-grid">
-          <a href="/games/gomoku/" class="game-card-cover">
+          <a href="/games/gomoku/" data-stage="beta" class="game-card-cover">
             <img src="/games/gomoku/cover.svg?v=20260917b" alt="五子棋" class="gc-cover" loading="lazy">
             <div class="gc-body">
               <span class="gc-title" data-i18n="game_gomoku.name">Gomoku</span>
             </div>
             <span class="gc-online"><span class="dot"></span><span data-i18n="home.badge_online">Online</span></span>
           </a>
-          <a href="/games/chess/" class="game-card-cover">
+          <a href="/games/chess/" data-stage="beta" class="game-card-cover">
             <img src="/games/chess/cover.svg?v=20260917b" alt="国际象棋" class="gc-cover" loading="lazy">
             <div class="gc-body">
               <span class="gc-title" data-i18n="game_chess.name">Chess</span>
@@ -244,21 +244,21 @@
             <span class="gc-new">NEW</span>
             <span class="gc-online"><span class="dot"></span><span data-i18n="home.badge_online">Online</span></span>
           </a>
-          <a href="/games/connect4/" class="game-card-cover">
+          <a href="/games/connect4/" data-stage="beta" class="game-card-cover">
             <img src="/games/connect4/cover.svg?v=20260917b" alt="四子棋" class="gc-cover" loading="lazy">
             <div class="gc-body">
               <span class="gc-title" data-i18n="game_connect4.name">Connect 4</span>
             </div>
             <span class="gc-new">NEW</span>
           </a>
-          <a href="/games/reversi/" class="game-card-cover">
+          <a href="/games/reversi/" data-stage="beta" class="game-card-cover">
             <img src="/games/reversi/cover.svg?v=20260920" alt="黑白棋" class="gc-cover" loading="lazy">
             <div class="gc-body">
               <span class="gc-title" data-i18n="game_reversi.name">Reversi</span>
             </div>
             <span class="gc-online"><span class="dot"></span><span data-i18n="home.badge_online">Online</span></span>
           </a>
-          <a href="/games/tictactoe/" class="game-card-cover">
+          <a href="/games/tictactoe/" data-stage="live" class="game-card-cover">
             <img src="/games/tictactoe/cover.svg?v=20260917b" alt="井字棋" class="gc-cover" loading="lazy">
             <div class="gc-body">
               <span class="gc-title" data-i18n="game_tictactoe.name">Tic-Tac-Toe</span>
@@ -282,14 +282,14 @@
           <span class="chip"><span class="dot"></span><span data-i18n="home.tag_mobile">Mobile friendly</span></span>
         </div>
         <div class="hero-ctas">
-          <a href="/games/gomoku/" class="btn-glow lg"><svg class="duel-icon" aria-hidden="true"><use href="/shared/icons.svg#duel-play"></use></svg> <span data-i18n="home.btn_play">Start Playing</span></a>
+          <a href="/games/tictactoe/" class="btn-glow lg"><svg class="duel-icon" aria-hidden="true"><use href="/shared/icons.svg#duel-play"></use></svg> <span data-i18n="home.btn_play">Start Playing</span></a>
           <button data-open-auth="register" class="btn-glass"><svg class="duel-icon" aria-hidden="true"><use href="/shared/icons.svg#duel-lock"></use></svg> <span data-i18n="home.btn_login">Login / Register (earn points)</span></button>
         <div class="ai-quick-select">
           <span class="ai-label" data-i18n="home.ai_label">Or challenge the AI:</span>
           <div class="ai-chips">
-            <a href="/games/chess/?ai=beginner" class="ai-chip ai-easy"><span class="ai-icon">&#x1F331;</span><span data-i18n="home.ai_easy">Beginner AI</span></a>
-            <a href="/games/chess/?ai=intermediate" class="ai-chip ai-mid"><span class="ai-icon">&#x2694;</span><span data-i18n="home.ai_mid">Intermediate AI</span></a>
-            <a href="/games/chess/?ai=advanced" class="ai-chip ai-hard"><span class="ai-icon">&#x1F3C6;</span><span data-i18n="home.ai_hard">Master AI</span></a>
+            <a href="/games/tictactoe/?ai=easy" class="ai-chip ai-easy"><span class="ai-icon">&#x1F331;</span><span data-i18n="home.ai_easy">Beginner AI</span></a>
+            <a href="/games/tictactoe/?ai=normal" class="ai-chip ai-mid"><span class="ai-icon">&#x2694;</span><span data-i18n="home.ai_mid">Intermediate AI</span></a>
+            <a href="/games/tictactoe/?ai=hard" class="ai-chip ai-hard"><span class="ai-icon">&#x1F3C6;</span><span data-i18n="home.ai_hard">Master AI</span></a>
           </div>
         </div>
         </div>
@@ -542,5 +542,8 @@ document.addEventListener('DOMContentLoaded', function() {
   setInterval(loadOnline, 30000);
 })();
 </script>
-<script src="/shared/onboard.js?v=20260917"></script><script src="/shared/achievements.js"></script></body>
+<script src="/shared/onboard.js?v=20260917"></script><script src="/shared/achievements.js"></script>
+<!-- 发布阶段兜底：构建时已按 stage 过滤，此处仅防御缓存中的旧 HTML -->
+<script type="module" src="/src/pages/home.ts"></script>
+</body>
 </html>

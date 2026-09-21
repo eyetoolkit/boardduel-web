@@ -1,0 +1,17 @@
+{
+  "name": "boardduel-web",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "BoardDuel — 棋类对战站（Vite MPA + 发布阶段开关）",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build && node scripts/copy-legacy.mjs",
+    "build:beta": "VITE_SHOW_BETA=1 tsc --noEmit && VITE_SHOW_BETA=1 vite build && VITE_SHOW_BETA=1 node scripts/copy-legacy.mjs",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
+  }
+}

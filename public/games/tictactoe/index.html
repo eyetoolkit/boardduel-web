@@ -516,7 +516,7 @@
       if(mode==='ai'){ startAI({aiFillName: window.BoardDuelMatch?window.BoardDuelMatch.getAiFillName():null}); }
     }
     document.querySelectorAll('#diffToggle button').forEach(function(b){ b.onclick = function(){ setDiff(b.dataset.d); }; });
-
+    // 支持从首页 AI 入口直接进入对应难度：/games/tictactoe/?ai=easy|normal|hard
     window.BoardDuelMatch.init({
       game: GAME,
       onStartAI: startAI,
@@ -529,6 +529,9 @@
       if(c){ $('bd-code-input').value=c; window.BoardDuelMatch.setMode('online'); window.BoardDuelMatch.joinRoom(); return; }
       window.BoardDuelMatch.setMode('ai');
     })();
+    // 支持从首页 AI 入口直接进入对应难度：/games/tictactoe/?ai=easy|normal|hard
+    (function(){ var q=new URLSearchParams(location.search).get('ai');
+      if(q==='easy'||q==='normal'||q==='hard'){ setDiff(q); } })();
 
     const hb=$('hamburger'); if(hb){ hb.onclick=()=>{ const m=$('navMenu'); const open=m.classList.toggle('open'); hb.setAttribute('aria-expanded',open?'true':'false'); }; }
     document.addEventListener('click',function(e){ const m=$('navMenu'); if(m && hb && m.classList.contains('open')&&!e.target.closest('.g-nav')){ m.classList.remove('open'); hb.setAttribute('aria-expanded','false'); } });
