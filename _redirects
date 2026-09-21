@@ -1,0 +1,33 @@
+# Cloudflare Pages _redirects — HTTP 重定向规则（优先级高于静态资源）
+# 背景：本站 6 个语言落地页(/en/ /zh/ /ja/ /es/ /fr/ /de/)原先是
+# ~700 字节的 <meta http-equiv=refresh> 跳板壳，无 viewport/og/hreflang，
+# 而首页 hreflang 集群恰恰指向这些空壳页，SEO 权重被稀释。
+# 改为服务端 HTTP 302 重定向到带 ?lang= 参数的首页（i18n 按参数切换），
+# 搜索引擎与用户直链均少一跳且不再索引空壳页。
+# 维护提示：如未来要做真正的多语言静态内容页，请删除对应规则并充实目录。
+/en/ /?lang=en 302
+/zh/ /?lang=zh 302
+/ja/ /?lang=ja 302
+/es/ /?lang=es 302
+/fr/ /?lang=fr 302
+/de/ /?lang=de 302
+
+# 猜数字 1A2B 已迁至数学站（mathduel.games/games/bulls/）。
+# 本站该游戏原先的多人对战从未实现（后端无对应逻辑，会静默回退成黑白棋），
+# 迁移后由数学站的 Durable Object 提供完整的服务端权威对战。保留 302 以保住旧外链。
+/games/bulls/ https://mathduel.games/games/bulls/ 302
+/games/bulls https://mathduel.games/games/bulls/ 302
+
+# 2048 已下线（2026-09-19，与站点定位不符）。无替代品，302 回站点首页。
+/games/two048/ / 302
+/games/two048 / 302
+
+# ─── 2026-09-20 下线游戏（othello/checkers/mathlink15）的旧 URL 重定向 ───
+# 注：bulls 与 two048 已于更早时间下线/迁移，规则见上方（本段不再重复，避免 first-match 冲突）
+/games/othello/* /games/reversi/ 301
+/games/othello /games/reversi/ 301
+/games/checkers/* / 301
+/games/checkers / 301
+/games/mathlink15/* / 301
+/games/mathlink15 / 301
+/how-to-play/othello/* /games/reversi/ 301

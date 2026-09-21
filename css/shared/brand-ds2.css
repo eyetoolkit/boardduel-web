@@ -1,0 +1,910 @@
+/* ============================================================
+   DUEL-DS v2 · Gradient Tech Layer  (叠加于 tokens.css)
+   ---------------------------------------------------------------
+   设计取向: 渐变科技感 (Stripe / Vercel 渐变网格 + 玻璃拟态
+   + 发光描边 + 几何装饰)。品牌色通过 tokens.css 的
+   html[data-site] 变量自动注入, 本层只用 var(--brand*) / var(--surface)
+   等, 不写死任何站点色, 三站天然复用。
+   所有颜色用 color-mix(in srgb, ...) 与品牌色做透明度混合,
+   保证浅色/暗色下都协调。加载顺序: tokens.css 之后。
+   ============================================================ */
+
+/* ========== 1. 渐变网格 Hero 背景 ========== */
+.gradient-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  contain: paint;  /* 让 filter blur 光晕也被裁切边界 */
+  background:
+    radial-gradient(58% 80% at 12% 8%,  color-mix(in srgb, var(--brand) 22%, transparent), transparent 62%),
+    radial-gradient(50% 70% at 88% 18%, color-mix(in srgb, var(--brand-400) 18%, transparent), transparent 60%),
+    radial-gradient(75% 95% at 50% 102%, color-mix(in srgb, var(--brand-600) 14%, transparent), transparent 62%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg-subtle) 100%);
+}
+/* 细网格叠层 (tech 感) */
+.gradient-hero::before {
+  content: "";
+  position: absolute; inset: 0; z-index: -1;
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--text) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--text) 5%, transparent) 1px, transparent 1px);
+  background-size: 48px 48px;
+  -webkit-mask-image: radial-gradient(120% 90% at 50% 0%, #000 35%, transparent 78%);
+          mask-image: radial-gradient(120% 90% at 50% 0%, #000 35%, transparent 78%);
+  opacity: .5;
+}
+/* 流动光晕 orbs (几何装饰) */
+.hero-orb {
+  position: absolute; z-index: -1; border-radius: 50%;
+  filter: blur(46px); opacity: .55; pointer-events: none;
+  background: radial-gradient(circle at 30% 30%, var(--brand-400), color-mix(in srgb, var(--brand) 0%, transparent) 70%);
+}
+.hero-orb.o1 { width: 340px; height: 340px; top: -90px; left: -60px; }
+.hero-orb.o2 { width: 280px; height: 280px; top: 40px;  right: -40px;
+  background: radial-gradient(circle at 50% 50%, var(--brand-600), transparent 70%); opacity: .4; }
+.hero-orb.o3 { width: 220px; height: 220px; bottom: -80px; left: 40%;
+  background: radial-gradient(circle at 50% 50%, var(--brand-500), transparent 70%); opacity: .35; }
+
+/* ========== 2. 玻璃拟态 ========== */
+.glass {
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+          backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+  box-shadow: var(--e-2);
+}
+.glass-strong {
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+          backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid color-mix(in srgb, var(--border-strong) 45%, transparent);
+  box-shadow: var(--e-3);
+}
+
+/* ========== 3. 发光 / 渐变描边 ========== */
+.glow-brand { box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand) 30%, transparent),
+                         0 10px 34px color-mix(in srgb, var(--brand) 26%, transparent); }
+.glow-soft  { box-shadow: 0 0 40px color-mix(in srgb, var(--brand) 22%, transparent); }
+
+/* 渐变描边卡 (border-box 双背景技法) */
+.ring-grad {
+  position: relative; border-radius: var(--r-lg);
+  background: var(--surface);
+  background-clip: padding-box;
+  border: 1.5px solid transparent;
+}
+.ring-grad::after {
+  content: ""; position: absolute; inset: -1.5px; border-radius: inherit; z-index: -1;
+  background: linear-gradient(140deg, color-mix(in srgb, var(--brand-400) 75%, transparent), color-mix(in srgb, var(--brand-700) 65%, transparent));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude; padding: 1.5px;
+}
+
+/* ========== 4. 统一区块节奏 ========== */
+.duel-section { position: relative; padding: var(--s-20) 0; }
+.duel-section.tint {
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--brand-50) 60%, transparent), transparent);
+}
+.duel-wrap { width: min(100% - 40px, var(--container)); margin-inline: auto; }
+.sec-head { text-align: center; max-width: 680px; margin: 0 auto var(--s-12); }
+.sec-eyebrow {
+  display: inline-block; font: 600 13px/1 var(--font-mono);
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--brand-700); background: var(--brand-subtle);
+  padding: 6px 12px; border-radius: var(--r-full); margin-bottom: var(--s-4);
+}
+.sec-title-xl { font: 700 clamp(28px, 4vw, 42px)/1.12 var(--font-display); color: var(--text-strong); letter-spacing: -.02em; }
+.sec-sub-xl { margin-top: var(--s-4); color: var(--text-muted); font-size: 17px; }
+
+/* ========== 5. 渐变文字 ========== */
+.grad-text {
+  background: linear-gradient(120deg, var(--brand-600), var(--brand-400) 60%, var(--brand-700));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* ========== 6. 玻璃卡片 + 悬停抬升 ========== */
+.duel-card {
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  border-radius: var(--r-lg); padding: var(--s-6);
+  box-shadow: var(--e-1);
+  transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base);
+}
+.duel-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--e-3), 0 14px 40px color-mix(in srgb, var(--brand) 16%, transparent);
+  border-color: color-mix(in srgb, var(--brand) 35%, transparent);
+}
+.duel-card .ic {
+  width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center;
+  background: linear-gradient(140deg, var(--brand-subtle), color-mix(in srgb, var(--brand-100) 40%, transparent));
+  color: var(--brand-700); margin-bottom: var(--s-4);
+}
+.duel-card h3 { font: 700 19px/1.3 var(--font-sans); color: var(--text-strong); margin-bottom: 6px; }
+.duel-card p  { color: var(--text-muted); font-size: 15px; }
+
+/* ========== 7. 发光按钮 ========== */
+.btn-glow {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font: 600 16px/1 var(--font-sans); color: #fff; cursor: pointer;
+  padding: 13px 22px; border: none; border-radius: var(--r-full);
+  background: linear-gradient(135deg, var(--brand-500), var(--brand-700));
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--brand) 42%, transparent),
+              inset 0 1px 0 rgba(255,255,255,.28);
+  transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), filter var(--dur-base);
+}
+.btn-glow:hover { transform: translateY(-2px); filter: brightness(1.04);
+  box-shadow: 0 12px 32px color-mix(in srgb, var(--brand) 55%, transparent), inset 0 1px 0 rgba(255,255,255,.3); }
+.btn-glow:active { transform: translateY(0); }
+.btn-glow.lg { padding: 16px 30px; font-size: 17px; }
+
+.btn-glass {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font: 600 16px/1 var(--font-sans); cursor: pointer;
+  padding: 13px 22px; border-radius: var(--r-full);
+  color: var(--text-strong);
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  border: 1px solid color-mix(in srgb, var(--border-strong) 50%, transparent);
+  transition: transform var(--dur-base), border-color var(--dur-base), box-shadow var(--dur-base);
+}
+.btn-glass:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--brand) 45%, transparent);
+  box-shadow: 0 10px 26px color-mix(in srgb, var(--brand) 16%, transparent); }
+
+/* ========== 8. 统计高亮 ========== */
+.stat-pill {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: var(--s-6) var(--s-4); border-radius: var(--r-lg);
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+  box-shadow: var(--e-1);
+}
+.stat-pill .v { font: 800 clamp(26px,3vw,38px)/1 var(--font-display);
+  background: linear-gradient(120deg, var(--brand-600), var(--brand-400));
+  -webkit-background-clip: text; background-clip: text; color: transparent; }
+.stat-pill .l { color: var(--text-muted); font-size: 14px; }
+
+/* ========== 9. 徽章 chip ========== */
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 13px; border-radius: var(--r-full); font-size: 14px; font-weight: 500;
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  color: var(--text); box-shadow: var(--e-1);
+}
+.chip .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--brand-500);
+  box-shadow: 0 0 8px var(--brand-500); }
+
+/* ========== 10. SVG 图标 (精灵 <use>) ========== */
+.duel-icon { width: 1.25em; height: 1.25em; flex: none; display: inline-block;
+  vertical-align: -0.18em; fill: none; stroke: currentColor; stroke-width: 2;
+  stroke-linecap: round; stroke-linejoin: round; }
+.duel-icon.lg { width: 26px; height: 26px; }
+
+/* ========== 11. 吸顶全局头部 ========== */
+#site-header {
+  position: sticky; top: 0; z-index: var(--z-sticky);
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(150%); backdrop-filter: blur(14px) saturate(150%);
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-base), box-shadow var(--dur-base), background var(--dur-base);
+}
+#site-header.scrolled {
+  border-bottom-color: color-mix(in srgb, var(--border) 70%, transparent);
+  box-shadow: var(--e-1);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+}
+#site-header .sh-in {
+  width: min(100% - 32px, var(--container)); margin-inline: auto;
+  height: 64px; display: flex; align-items: center; gap: var(--s-5);
+}
+#site-header .sh-brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 19px; letter-spacing: -.01em; color: var(--text-strong); }
+#site-header .sh-brand .mark { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 9px;
+  background: linear-gradient(140deg, var(--brand-500), var(--brand-700)); color: #fff; box-shadow: 0 4px 12px color-mix(in srgb, var(--brand) 40%, transparent); }
+#site-header .sh-brand .mark svg { width: 18px; height: 18px; }
+#site-header .sh-brand b { color: var(--brand-700); font-weight: 800; }
+#site-header .sh-nav { display: flex; align-items: center; gap: 4px; margin-left: var(--s-4); }
+#site-header .sh-nav a { padding: 8px 14px; border-radius: var(--r-full); color: var(--text-muted); font-weight: 500; font-size: 15px; transition: background var(--dur-fast), color var(--dur-fast); }
+#site-header .sh-nav a:hover { background: var(--brand-subtle); color: var(--brand-700); }
+#site-header .sh-spacer { flex: 1; }
+#site-header .sh-actions { display: flex; align-items: center; gap: 8px; }
+#site-header .sh-ico {
+  width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  background: color-mix(in srgb, var(--surface) 70%, transparent); color: var(--text-strong);
+  cursor: pointer; transition: transform var(--dur-fast), border-color var(--dur-fast), background var(--dur-fast);
+}
+#site-header .sh-ico:hover { transform: translateY(-1px); border-color: color-mix(in srgb, var(--brand) 45%, transparent); color: var(--brand-700); }
+#site-header .sh-cta { margin-left: 4px; }
+@media (max-width: 820px) {
+  #site-header .sh-nav { display: none; }
+  #site-header .sh-brand { font-size: 17px; }
+}
+
+/* ========== 12. 滚动入场 (配合 .reveal) ========== */
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s var(--ease-out), transform .6s var(--ease-out); }
+.reveal.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+
+/* ========== 13. Hero 文案排版 (三站通用) ========== */
+.home-hero-inner { position: relative; z-index: 1; text-align: center;
+  max-width: 860px; margin: 0 auto; padding: clamp(60px, 9vw, 116px) 0 clamp(44px, 7vw, 84px); }
+.hero-h1 { font: 800 clamp(34px, 6vw, 62px)/1.06 var(--font-display);
+  color: var(--text-strong); letter-spacing: -.03em; margin: var(--s-4) 0; }
+.hero-h1 em { font-style: normal; }
+.hero-sub { font-size: clamp(16px, 2vw, 19px); color: var(--text-muted);
+  max-width: 620px; margin: 0 auto var(--s-6); }
+.hero-tags { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: var(--s-8); }
+.hero-ctas { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+/* ========== 15. 与页面既有壳共存 (ds2-header 由 site-header.js 挂到 body) ========== */
+/* 左侧应用壳(sidebar): 让位到头部之下, 隐藏其自带品牌(避免与头部重复) */
+body.ds2-header .sidebar { top: 64px; height: calc(100vh - 64px); }
+body.ds2-header .sidebar-brand { display: none; }
+/* 旧站点级顶部导航(body 直接子级 nav)由全局头部接管, 避免双栏 */
+body.ds2-header > nav { display: none !important; }
+/* 头部内嵌语言切换: 约束尺寸防撑破 */
+#site-header #lang-switcher { display: inline-flex; align-items: center; max-width: 160px; }
+#site-header #lang-switcher img, #site-header #lang-switcher svg { max-height: 18px; width: auto; }
+/* 自足页(未加载 sidebar.css)上, sidebar.js 注入的裸侧栏无法正确渲染 — 隐藏 (修复旧视觉 bug) */
+html:not(:has(link[href*="sidebar.css"])) #triSidebar,
+html:not(:has(link[href*="sidebar.css"])) #sbMask,
+html:not(:has(link[href*="sidebar.css"])) #sbEdgeHandle,
+html:not(:has(link[href*="sidebar.css"])) #sbToggle { display: none !important; }
+
+/* ========== 17. 旗舰游戏页主面板轻质感 (仅作用于带 .game-page/.board-wrap 且已接全局头部的页) ========== */
+.ds2-header .game-page { border-radius: var(--r-xl);
+  box-shadow: var(--e-2), 0 24px 60px color-mix(in srgb, var(--brand) 10%, transparent); }
+.ds2-header .board-wrap { filter: drop-shadow(0 18px 44px color-mix(in srgb, var(--brand) 16%, transparent)); }
+
+/* ========== 18. 暗色增强 ========== */
+html[data-theme="dark"] .gradient-hero { background:
+    radial-gradient(58% 80% at 12% 8%,  color-mix(in srgb, var(--brand) 30%, transparent), transparent 62%),
+    radial-gradient(50% 70% at 88% 18%, color-mix(in srgb, var(--brand-400) 24%, transparent), transparent 60%),
+    radial-gradient(75% 95% at 50% 102%, color-mix(in srgb, var(--brand-600) 20%, transparent), transparent 62%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg-subtle) 100%); }
+html[data-theme="dark"] .hero-orb { opacity: .5; }
+html[data-theme="dark"] .glass,
+html[data-theme="dark"] .glass-strong,
+html[data-theme="dark"] .duel-card,
+html[data-theme="dark"] .stat-pill,
+html[data-theme="dark"] .chip,
+html[data-theme="dark"] #site-header { border-color: color-mix(in srgb, var(--border) 70%, transparent); }
+
+
+/* ========== 19. 首页布局统一层 (三站对齐 DS2 范式) ==========
+   背景: boardduel / mathduel 首页沿用 components.css 的站点级私有类
+   (.home-hero / .home-section / .featured-card / .value-card / .stat-item);
+   memoryduel 首页已用 DS2 原生类 (.gradient-hero / .duel-section /
+   .duel-card / .stat-pill)。两套类名产出两套视觉 = 三站首页不统一。
+   本层让私有类产出与 DS2 原生类完全一致的视觉, 使三站首页统一,
+   且不破坏 games/* 等仍依赖这些私有类的页面。
+   位置: brand-ds2.css 末尾, 加载顺序在 components.css 之后 → 可安全覆盖。
+   ==================================================================== */
+
+/* ---- 19.1 Hero: .home-hero → 与 .gradient-hero 同款渐变科技背景 + 深色字 ---- */
+.home-hero {
+  isolation: isolate;
+  color: var(--text-strong);
+  padding: clamp(60px, 9vw, 116px) 20px clamp(44px, 7vw, 84px);
+  background:
+    radial-gradient(58% 80% at 12% 8%,  color-mix(in srgb, var(--brand) 22%, transparent), transparent 62%),
+    radial-gradient(50% 70% at 88% 18%, color-mix(in srgb, var(--brand-400) 18%, transparent), transparent 60%),
+    radial-gradient(75% 95% at 50% 102%, color-mix(in srgb, var(--brand-600) 14%, transparent), transparent 62%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg-subtle) 100%);
+}
+/* 细网格叠层 (与 .gradient-hero::before 一致) */
+.home-hero::before {
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--text) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--text) 5%, transparent) 1px, transparent 1px);
+  background-size: 48px 48px;
+  -webkit-mask-image: radial-gradient(120% 90% at 50% 0%, #000 35%, transparent 78%);
+          mask-image: radial-gradient(120% 90% at 50% 0%, #000 35%, transparent 78%);
+  opacity: .5;
+  z-index: -1;
+}
+/* 大 emoji 由 .sec-eyebrow 的 SVG 图标承担, 避免三站 Hero 视觉分叉 */
+.home-hero .hero-emoji { display: none; }
+/* badge → eyebrow/chip 观感 */
+.home-hero .hero-badge {
+  font: 600 13px/1 var(--font-mono);
+  letter-spacing: .1em;
+  color: var(--brand-700);
+  background: var(--brand-subtle);
+  border: 1px solid color-mix(in srgb, var(--brand) 22%, transparent);
+  box-shadow: none;
+  margin-bottom: var(--s-4);
+}
+.home-hero h1 {
+  font: 800 clamp(34px, 6vw, 62px)/1.06 var(--font-display);
+  color: var(--text-strong);
+  letter-spacing: -.03em;
+  text-shadow: none;
+  max-width: 860px;
+  margin: var(--s-4) auto;
+}
+.home-hero h1 em {
+  background: linear-gradient(120deg, var(--brand-600), var(--brand-400) 60%, var(--brand-700));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.home-hero .hero-sub { color: var(--text-muted); max-width: 620px; }
+/* hero-tag → chip 观感 */
+.home-hero .hero-tag {
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  color: var(--text);
+  border-radius: var(--r-full);
+  padding: 7px 13px;
+  box-shadow: var(--e-1);
+}
+.home-hero .hero-tag:hover {
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  transform: none;
+}
+/* CTA: btn-primary → btn-glow, btn-ghost → btn-glass */
+.home-hero .btn { border-radius: var(--r-full); }
+.home-hero .btn-primary {
+  background: linear-gradient(135deg, var(--brand-500), var(--brand-700));
+  color: #fff;
+  border: none;
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--brand) 42%, transparent),
+              inset 0 1px 0 rgba(255,255,255,.28);
+}
+.home-hero .btn-primary:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.04);
+  box-shadow: 0 12px 32px color-mix(in srgb, var(--brand) 55%, transparent);
+}
+.home-hero .btn-ghost {
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  color: var(--text-strong);
+  border: 1px solid color-mix(in srgb, var(--border-strong) 50%, transparent);
+  -webkit-backdrop-filter: blur(10px);
+          backdrop-filter: blur(10px);
+}
+.home-hero .btn-ghost:hover {
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  border-color: color-mix(in srgb, var(--brand) 45%, transparent);
+}
+html[data-theme="dark"] .home-hero { background:
+    radial-gradient(58% 80% at 12% 8%,  color-mix(in srgb, var(--brand) 30%, transparent), transparent 62%),
+    radial-gradient(50% 70% at 88% 18%, color-mix(in srgb, var(--brand-400) 24%, transparent), transparent 60%),
+    radial-gradient(75% 95% at 50% 102%, color-mix(in srgb, var(--brand-600) 20%, transparent), transparent 62%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg-subtle) 100%); }
+
+/* ---- 19.2 统计条: .home-stats/.stat-item → .duel-section + .stat-pill ---- */
+.home-stats {
+  background: transparent;
+  border-bottom: 0;
+  margin-top: 0;
+  padding: var(--s-12) 0;
+}
+.home-stats .stats-grid { max-width: var(--container); gap: var(--s-4); }
+.home-stats .stat-item {
+  padding: var(--s-6) var(--s-4);
+  border-radius: var(--r-lg);
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+  box-shadow: var(--e-1);
+}
+.home-stats .stat-val {
+  font: 800 clamp(26px,3vw,38px)/1 var(--font-display);
+  background: linear-gradient(120deg, var(--brand-600), var(--brand-400));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.home-stats .stat-lbl { color: var(--text-muted); font-size: 14px; font-weight: 500; }
+
+/* ---- 19.3 区块容器: .home-section 等 → .duel-section (+tint 交替) ---- */
+.home-section, .value-section, .leaderboard-section {
+  position: relative;
+  padding: var(--s-20) 0;
+}
+.home-section.bg-alt, .home-section.bg-soft {
+  background: linear-gradient(180deg, transparent,
+              color-mix(in srgb, var(--brand-50) 60%, transparent), transparent);
+}
+
+/* ---- 19.4 区块标题: .sec-header/.section-header → .sec-head ---- */
+.sec-header, .section-header {
+  text-align: center;
+  max-width: 680px;
+  margin: 0 auto var(--s-12);
+}
+.sec-title, .section-title {
+  font: 700 clamp(28px, 4vw, 42px)/1.12 var(--font-display);
+  color: var(--text-strong);
+  letter-spacing: -.02em;
+}
+.sec-title .accent, .section-title .accent {
+  background: linear-gradient(120deg, var(--brand-600), var(--brand-400));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.sec-sub, .section-subtitle {
+  color: var(--text-muted);
+  font-size: 17px;
+  margin-top: var(--s-3);
+}
+
+/* ---- 19.5 价值/精选卡: .featured-card/.value-card → .duel-card ---- */
+.featured-card, .value-card {
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  border-radius: var(--r-lg);
+  box-shadow: var(--e-1);
+  transition: transform var(--dur-base) var(--ease-out),
+              box-shadow var(--dur-base) var(--ease-out),
+              border-color var(--dur-base);
+}
+.featured-card:hover, .value-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--e-3), 0 14px 40px color-mix(in srgb, var(--brand) 16%, transparent);
+  border-color: color-mix(in srgb, var(--brand) 35%, transparent);
+}
+.featured-card .fc-icon,
+.value-card .vc-ico,
+.value-card .value-icon {
+  width: 52px; height: 52px; border-radius: 14px;
+  display: grid; place-items: center;
+  background: linear-gradient(140deg, var(--brand-subtle),
+              color-mix(in srgb, var(--brand-100) 40%, transparent));
+  color: var(--brand-700);
+  margin-bottom: var(--s-4);
+  font-size: 24px;
+}
+.featured-card .fc-title, .value-card h4 {
+  font: 700 19px/1.3 var(--font-sans);
+  color: var(--text-strong);
+  margin-bottom: 6px;
+}
+.featured-card .fc-desc, .value-card p {
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* ---- 19.6 游戏封面卡: 玻璃质感 + 抬升, 与 .duel-card 同节奏 ---- */
+.game-card-cover, .game-card.dark {
+  border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: var(--e-1);
+  transition: transform var(--dur-base) var(--ease-out),
+              box-shadow var(--dur-base) var(--ease-out),
+              border-color var(--dur-base);
+}
+.game-card-cover:hover, .game-card.dark:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--e-3), 0 14px 40px color-mix(in srgb, var(--brand) 16%, transparent);
+  border-color: color-mix(in srgb, var(--brand) 35%, transparent);
+}
+
+/* ---- 19.1b gradient-hero 内遗留私有类兜底 (boardduel/mathduel hero) ---- */
+.gradient-hero .hero-emoji { display: none; }
+.gradient-hero .hero-tag {
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  color: var(--text);
+  border-radius: var(--r-full);
+  padding: 7px 13px;
+  box-shadow: var(--e-1);
+}
+.gradient-hero .hero-tag:hover {
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  transform: none;
+}
+.gradient-hero .btn { border-radius: var(--r-full); }
+.gradient-hero .btn-primary {
+  background: linear-gradient(135deg, var(--brand-500), var(--brand-700));
+  color: #fff;
+  border: none;
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--brand) 42%, transparent),
+              inset 0 1px 0 rgba(255,255,255,.28);
+}
+.gradient-hero .btn-primary:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.04);
+  box-shadow: 0 12px 32px color-mix(in srgb, var(--brand) 55%, transparent);
+}
+.gradient-hero .btn-ghost {
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  color: var(--text-strong);
+  border: 1px solid color-mix(in srgb, var(--border-strong) 50%, transparent);
+  -webkit-backdrop-filter: blur(10px);
+          backdrop-filter: blur(10px);
+}
+.gradient-hero .btn-ghost:hover {
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  border-color: color-mix(in srgb, var(--brand) 45%, transparent);
+}
+
+/* ============================================================
+   ========== 20. 全站统一层 (内页/游戏页/内容页对齐 DS2 范式) ==========
+   ---------------------------------------------------------------
+   背景: 第 19 节只统一了三站首页; 其余 81 页仍为旧私有类 (.wrap/.container/.card/自带 nav+footer)。
+   策略: 「覆盖式补丁」—— brand-ds2.css 在所有站内 CSS 之后加载, 因此可用同特异性覆盖私有类,
+          无需逐页改 HTML 结构, 风险可控。
+   变量: 全部使用 var(--x, fallback) 形式, 即便页面未引 tokens.css 也能保持可读。
+   ============================================================ */
+
+/* ---- 20.0 底色 / 字体归一 (消除 #faf9ff 与 #f7f8fa 两套底色) ---- */
+body {
+  background: var(--bg, #F7F8FA);
+  color: var(--text, #0F172A);
+  font-family: var(--font-sans, 'Inter', system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif);
+}
+
+/* ---- 20.1 容器归一: .container/.wrap → 与 .duel-wrap 同宽度体系 ---- */
+.duel-wrap { width: min(100% - 40px, var(--container, 1200px)); margin-inline: auto; }
+.container {
+  width: min(100% - 40px, var(--container, 1200px));
+  max-width: var(--container, 1200px);
+  margin-inline: auto;
+  padding-inline: 20px;
+  box-sizing: border-box;
+}
+.wrap {
+  margin-inline: auto;
+  padding-inline: 20px;
+  box-sizing: border-box;
+}
+/* 内容型页面正文限宽 (由注入脚本加 .prose 标记, 不影响栅格型页面) */
+.prose { max-width: 780px; margin-inline: auto; }
+.prose h2 { margin-top: 1.6em; }
+
+/* ---- 20.2 标题阶梯: hero 62 / 页面标题 32 / 游戏页 26 / 卡片标题 19 ---- */
+.container h1, .wrap h1, .duel-wrap h1, .sb-main h1, .layout-main h1, main h1 {
+  font-size: clamp(26px, 3.4vw, 34px);
+  font-weight: 800;
+  line-height: 1.16;
+  letter-spacing: -.02em;
+  color: var(--text-strong, #020617);
+  margin: 0 0 .6em;
+}
+/* 游戏页标题: 空间紧凑, 单独一档 */
+.game-shell h1, .game-page h1, .game-page .g-title {
+  font-size: clamp(22px, 2.6vw, 28px);
+  line-height: 1.2;
+  margin-bottom: .4em;
+}
+/* Hero 保持旗舰字号, 不被上面的规则压小 */
+.gradient-hero h1, .home-hero h1, .hero-h1, .gradient-hero .hero-h1 {
+  font-size: clamp(34px, 5.4vw, 62px) !important;
+  line-height: 1.06 !important;
+  margin-bottom: .5em !important;
+}
+.container h2, .wrap h2, .duel-wrap h2, .sb-main h2, main h2 {
+  font-size: clamp(19px, 2.3vw, 24px);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -.01em;
+  color: var(--text-strong, #020617);
+  margin: 1.4em 0 .5em;
+}
+.container h3, .wrap h3, .duel-wrap h3, main h3 {
+  font-size: clamp(16px, 1.8vw, 19px);
+  font-weight: 700;
+  color: var(--text-strong, #020617);
+}
+.container p, .wrap p, .duel-wrap p, main p, .prose p {
+  color: var(--text, #0F172A);
+  line-height: 1.75;
+}
+.container li, .wrap li, .prose li { line-height: 1.75; color: var(--text, #0F172A); }
+.container a, .wrap a, .prose a { color: var(--brand-600, #4F46E5); }
+
+/* ---- 20.3 卡片归一: 私有卡片类 → .duel-card 同款语言 ---- */
+.card, .step-card, .strategy-card, .faq-item {
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, rgba(15,23,42,.10));
+  border-radius: var(--r-lg, 18px);
+  box-shadow: var(--e-1, 0 1px 2px rgba(15,23,42,.06));
+  transition: transform var(--dur-base, .22s) var(--ease-out, cubic-bezier(.22,1,.36,1)),
+              box-shadow var(--dur-base, .22s),
+              border-color var(--dur-base, .22s);
+}
+.card:hover, .step-card:hover, .strategy-card:hover, .faq-item:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--e-3, 0 12px 28px rgba(15,23,42,.12));
+  border-color: color-mix(in srgb, var(--brand, #4F46E5) 32%, transparent);
+}
+/* game-footer 相关块: 只统一圆角/描边, 不做抬升 (避免影响点击热区) */
+.gf-block, .gf-related, .gf-faq {
+  border-radius: var(--r-lg, 18px);
+  border: 1px solid var(--border, rgba(15,23,42,.10));
+  background: var(--surface, #fff);
+}
+
+/* ---- 20.4 按钮归一: .btn-primary/.btn-ghost → btn-glow / btn-glass ---- */
+.btn-primary {
+  background: linear-gradient(135deg, var(--brand-500, #6366F1), var(--brand-700, #4338CA));
+  color: #fff;
+  border: none;
+  border-radius: var(--r-full, 999px);
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--brand, #4F46E5) 38%, transparent),
+              inset 0 1px 0 rgba(255,255,255,.26);
+  transition: transform .18s var(--ease-out, cubic-bezier(.22,1,.36,1)), box-shadow .18s;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--brand, #4F46E5) 50%, transparent);
+}
+.btn-ghost, .btn-secondary {
+  background: color-mix(in srgb, var(--surface, #fff) 72%, transparent);
+  color: var(--text-strong, #020617);
+  border: 1px solid var(--border-strong, rgba(15,23,42,.18));
+  border-radius: var(--r-full, 999px);
+  transition: transform .18s, border-color .18s, background .18s;
+}
+.btn-ghost:hover, .btn-secondary:hover {
+  border-color: color-mix(in srgb, var(--brand, #4F46E5) 45%, transparent);
+  background: color-mix(in srgb, var(--surface, #fff) 92%, transparent);
+}
+
+/* ---- 20.5 页脚品牌矩阵 (迁入共享层, 使内页无需引 components.css 即可渲染) ---- */
+.sites-footer {
+  margin-top: 48px;
+  border-top: 1px solid var(--line, var(--border, rgba(15,23,42,.10)));
+  background: var(--bg-alt, var(--surface, #fff));
+  padding: 40px 0 32px;
+}
+.sites-footer .sf-title {
+  font-size: 13px; font-weight: 700;
+  color: var(--m, var(--text-muted, #5B6B7F));
+  margin-bottom: 16px;
+  text-align: center;
+  text-transform: uppercase; letter-spacing: .08em;
+}
+.sites-footer .sf-matrix {
+  /* 全端竖排堆叠: 三张品牌卡片各占一行, 桌面限宽居中, 手机占满 */
+  display: flex; flex-direction: column; flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 10px; margin-bottom: 20px;
+  width: 100%; max-width: 460px; margin-left: auto; margin-right: auto;
+}
+.sites-footer .sf-item {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 12px 18px;
+  border-radius: var(--r-sm, 10px);
+  background: var(--card, var(--surface, #fff));
+  border: 1px solid var(--line, var(--border, rgba(15,23,42,.10)));
+  font-weight: 700; font-size: 14px;
+  text-decoration: none;
+  color: var(--t, var(--text, #0F172A));
+  transition: border-color .2s, color .2s, transform .2s, box-shadow .2s;
+  white-space: normal; max-width: 100%;
+  width: 100%; box-sizing: border-box;
+  text-align: center;
+}
+.sites-footer .sf-item:hover {
+  border-color: var(--brand, #4F46E5);
+  color: var(--brand-text, var(--brand-600, #4F46E5));
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm, var(--e-1, 0 1px 2px rgba(15,23,42,.06)));
+  text-decoration: none;
+}
+.sites-footer .sf-emoji { font-size: 18px; }
+.sites-footer .sf-links { text-align: center; margin: 16px 0 10px; }
+.sites-footer .sf-links a {
+  color: var(--m, var(--text-muted, #5B6B7F));
+  font-size: 13px; margin: 0 10px; text-decoration: none; transition: color .15s;
+}
+.sites-footer .sf-links a:hover { color: var(--brand, #4F46E5); }
+.sites-footer .sf-copy {
+  text-align: center; color: var(--text-muted, #5B6B7F); font-size: 12px; margin-top: 12px;
+}
+.sites-footer .sf-note {
+  text-align: center; color: var(--text-muted, #5B6B7F); font-size: 12px; margin-top: 6px; opacity: .85;
+}
+@media (max-width: 640px) {
+  .sites-footer { padding: 28px 0 24px; }
+  .sites-footer .sf-title { font-size: 12px; }
+  /* 手机端品牌矩阵: 竖排堆叠 (基础规则已竖排, 这里只做尺寸收紧) */
+  .sites-footer .sf-matrix {
+    gap: 8px; margin-bottom: 16px; max-width: 100%;
+  }
+  .sites-footer .sf-item {
+    padding: 12px 16px; font-size: 13px; gap: 8px;
+  }
+  .sites-footer .sf-emoji { font-size: 16px; }
+  .sites-footer .sf-links { margin: 12px 0 8px; }
+  .sites-footer .sf-links a { font-size: 12px; margin: 0 6px; }
+  .sites-footer .sf-copy { font-size: 11px; }
+}
+
+/* ---- 20.6 内页自带导航条适配 (老页 <nav> 与全局 #site-header 共存) ---- */
+body nav > .nav-in, body nav .nav-inner {
+  max-width: var(--container, 1200px);
+  margin-inline: auto;
+}
+/* 全局头部已由 site-header.js 注入; 老页自带 nav 若重复, 保留但弱化高度, 避免双条过厚 */
+#site-header ~ nav, .ds2-header ~ nav { border-bottom-color: transparent; }
+
+/* ---- 20.7 暗色兜底 (老页内联硬编码浅色, 需在暗色主题下反转) ---- */
+html[data-theme="dark"] body {
+  background: var(--bg, #0B1220);
+  color: var(--text, #E2E8F0);
+}
+html[data-theme="dark"] nav {
+  background: var(--surface, #111827) !important;
+  border-bottom-color: var(--border, rgba(255,255,255,.12)) !important;
+}
+html[data-theme="dark"] nav .brand,
+html[data-theme="dark"] nav a { color: var(--text, #E2E8F0); }
+html[data-theme="dark"] .container,
+html[data-theme="dark"] .wrap,
+html[data-theme="dark"] .duel-wrap { color: var(--text, #E2E8F0); }
+html[data-theme="dark"] .container h1,
+html[data-theme="dark"] .container h2,
+html[data-theme="dark"] .container h3,
+html[data-theme="dark"] .wrap h1,
+html[data-theme="dark"] .wrap h2,
+html[data-theme="dark"] main h1,
+html[data-theme="dark"] main h2 { color: var(--text-strong, #F8FAFC); }
+html[data-theme="dark"] .container p,
+html[data-theme="dark"] .container li,
+html[data-theme="dark"] .wrap p,
+html[data-theme="dark"] .wrap li { color: var(--text, #E2E8F0); }
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .step-card,
+html[data-theme="dark"] .strategy-card,
+html[data-theme="dark"] .faq-item,
+html[data-theme="dark"] .gf-block,
+html[data-theme="dark"] .gf-related,
+html[data-theme="dark"] .gf-faq {
+  background: var(--surface, #111827);
+  border-color: var(--border, rgba(255,255,255,.12));
+  color: var(--text, #E2E8F0);
+}
+html[data-theme="dark"] .sites-footer {
+  background: var(--bg-subtle, #0F172A);
+  border-top-color: var(--border, rgba(255,255,255,.12));
+}
+html[data-theme="dark"] .sites-footer .sf-item {
+  background: var(--surface, #111827);
+  border-color: var(--border, rgba(255,255,255,.12));
+  color: var(--text, #E2E8F0);
+}
+html[data-theme="dark"] .btn-ghost,
+html[data-theme="dark"] .btn-secondary {
+  background: var(--surface, #111827);
+  color: var(--text, #E2E8F0);
+  border-color: var(--border-strong, rgba(255,255,255,.24));
+}
+
+/* ---- 20.8 页脚图标尺寸 + 移动端底部导航避让 ---- */
+.sites-footer .sf-item .duel-icon { width: 18px; height: 18px; color: var(--brand, #4F46E5); flex-shrink: 0; }
+body:has(.bottom-nav) .sites-footer { margin-bottom: 72px; }
+@media (max-width: 640px) { body:has(.bottom-nav) .sites-footer { margin-bottom: 64px; } }
+
+/* ---- 20.9 标题阶梯收尾: 游戏页 / 404 页特异性兜底 ---- */
+.game-page .gm-title, .game-shell .gm-title, .game-page .g-title,
+.game-shell .g-title, .game-page h1, .game-shell h1 {
+  font-size: clamp(22px, 2.6vw, 28px);
+  line-height: 1.2;
+}
+.nf-title, .error-title, .notfound h1 {
+  font-size: clamp(26px, 3.4vw, 34px);
+  font-weight: 800;
+  letter-spacing: -.02em;
+}
+
+/* ---- 20.10 暗色正文对比度兜底 (覆盖老页硬编码灰色, 满足 WCAG >=4.5) ---- */
+html[data-theme="dark"] .game-shell p,
+html[data-theme="dark"] .game-page p,
+html[data-theme="dark"] .game-shell li,
+html[data-theme="dark"] .game-page li,
+html[data-theme="dark"] .container p,
+html[data-theme="dark"] .container li,
+html[data-theme="dark"] .wrap p,
+html[data-theme="dark"] .wrap li,
+html[data-theme="dark"] .sb-main p,
+html[data-theme="dark"] .sb-main li,
+html[data-theme="dark"] .contact p,
+html[data-theme="dark"] .contact-page p {
+  color: var(--text-muted, #9CA3AF) !important;
+}
+html[data-theme="dark"] .container h1,
+html[data-theme="dark"] .container h2,
+html[data-theme="dark"] .wrap h1,
+html[data-theme="dark"] .wrap h2,
+html[data-theme="dark"] .game-shell h1,
+html[data-theme="dark"] .game-shell h2,
+html[data-theme="dark"] .game-page h1,
+html[data-theme="dark"] .game-page h2 {
+  color: var(--text-strong, #F8FAFC) !important;
+}
+/* ---- 20.11 移动端横向溢出兜底 (媒体/表单/表格/代码) ---- */
+img, svg, iframe, video, canvas { max-width: 100%; height: auto; }
+input, textarea, select, table, pre, code { max-width: 100%; box-sizing: border-box; }
+
+/* ---- 20.12 长令牌换行兜底（消除移动端横向溢出，如联系页长邮箱/URL） ---- */
+.container, .wrap, .prose, .card, .sb-main, .game-shell, .game-page,
+.duel-section, .duel-card, .duel-wrap, .step-card, .strategy-card,
+.faq-item, .gf-block, main, .contact, .contact-page {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* ---- 20.13 移动端触摸目标 ≥34px (B-5) ---- */
+@media (max-width: 768px) {
+  .sh-nav a, .sh-nav button, .chip, .btn, [role="button"],
+  .lang-item, .lang-current, .sb-toggle, .nav-link,
+  .footer-link, .sf-link, .theme-toggle, a.icon-btn {
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+  }
+}
+
+/* ---- 20.14 列表/归档页卡片观感 + 空态 (R-5, 覆盖式, 不动结构) ---- */
+.card, .stat-card {
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: var(--r-lg, 18px);
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(2, 6, 23, 0.08));
+}
+.empty-state, .no-data, .is-empty, [data-empty="true"] {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: var(--text-muted, #5B6B7F);
+  border: 1px dashed var(--border, #e5e7eb);
+  border-radius: var(--r-lg, 18px);
+}
+
+/* ---- 20.13b 头部品牌字标 ≥34px 可点区 (R-3 补全) ---- */
+@media (max-width: 768px) {
+  .sh-brand { min-height: 34px; display: inline-flex; align-items: center; }
+}
+
+
+/* ========== 14. 方案 A: 顶栏下拉 (游戏 / 语言 / 站点切换) ========== */
+#site-header .sh-menu-wrap { position: relative; }
+#site-header .sh-navbtn {
+  display: inline-flex; align-items: center; gap: 5px; padding: 8px 14px;
+  border-radius: var(--r-full); border: 0; background: none; cursor: pointer;
+  color: var(--text-muted); font: inherit; font-weight: 500; font-size: 15px;
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+#site-header .sh-navbtn:hover { background: var(--brand-subtle); color: var(--brand-700); }
+#site-header .sh-caret { font-size: 10px; opacity: .65; line-height: 1; }
+#site-header .sh-lang-btn { display: inline-flex; align-items: center; width: auto; height: 40px; padding: 0 12px; gap: 6px; }
+#site-header .sh-lang-btn .sh-globe { width: 16px; height: 16px; flex: 0 0 auto; }
+#site-header .sh-lang-label { font-size: 14px; font-weight: 500; }
+#site-header .sh-sites-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; margin-left: -4px; border: 0; border-radius: 6px;
+  background: none; color: var(--text-muted); cursor: pointer;
+}
+#site-header .sh-sites-btn:hover { background: var(--brand-subtle); color: var(--brand-700); }
+#site-header .sh-menu {
+  position: absolute; top: calc(100% + 8px); left: 0; min-width: 176px;
+  padding: 6px; border: 1px solid var(--border); border-radius: 12px;
+  background: var(--surface); box-shadow: 0 10px 28px rgba(0,0,0,.14);
+  display: none; z-index: 60;
+}
+#site-header .sh-lang .sh-menu, #site-header .sh-sites .sh-menu { left: auto; right: 0; }
+#site-header .sh-menu-wrap.open .sh-menu { display: block; }
+#site-header .sh-menu-item {
+  display: block; width: 100%; text-align: left; padding: 8px 12px;
+  border: 0; border-radius: 8px; background: none; cursor: pointer;
+  color: var(--text); text-decoration: none; font: inherit; font-weight: 500; font-size: 14px;
+}
+#site-header .sh-menu-item:hover, #site-header .sh-menu-item.active { background: var(--brand-subtle); color: var(--brand-700); }
+@media (max-width: 820px) {
+  #site-header .sh-lang-label, #site-header .sh-lang .sh-caret { display: none; }
+  #site-header .sh-lang-btn { width: 40px; padding: 0; }
+}
+
+/* ========== 15. 首页统计卡: 三站统一 4 列 (样本 memoryduel) ========== */
+.duel-section > .duel-wrap > .stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--s-4);
+}
+@media (max-width: 720px) {
+  .duel-section > .duel-wrap > .stats-grid { grid-template-columns: repeat(2, 1fr); gap: var(--s-3, 12px); }
+}

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="tt dd">
+  <title id="tt">Connect 4 — BoardDuel</title>
+  <desc id="dd">Square indigo icon with a four by four slot grid; the two upper rows are empty and the bottom row is highlighted with four connected discs, showing a gravity drop win.</desc>
+  <rect width="512" height="512" fill="#4F46E5"/>
+  <rect x="56.5" y="56.5" width="87" height="87" rx="20" fill="#FFFFFF" fill-opacity="0.16"/>
+  <rect x="160.5" y="56.5" width="87" height="87" rx="20" fill="#FFFFFF" fill-opacity="0.16"/>
+  <rect x="264.5" y="56.5" width="87" height="87" rx="20" fill="#FFFFFF" fill-opacity="0.16"/>
+  <rect x="368.5" y="56.5" width="87" height="87" rx="20" fill="#FFFFFF" fill-opacity="0.16"/>
+  <rect x="56.5" y="160.5" width="87" height="87" rx="20" fill="#FFFFFF" fill-opacity="0.16"/>
+  <rect x="160.5" y="160.5" width="87" height="87" rx="20" fill="#FFFFFF" fill-opacity="0.16"/>
+  <rect x="264.5" y="160.5" width="87" height="87" rx="20" fill="#FFFFFF" fill-opacity="0.16"/>
+  <rect x="368.5" y="160.5" width="87" height="87" rx="20" fill="#FFFFFF" fill-opacity="0.16"/>
+  <rect x="56.5" y="264.5" width="87" height="87" rx="20" fill="#FFFFFF"/>
+  <rect x="160.5" y="264.5" width="87" height="87" rx="20" fill="#FFFFFF"/>
+  <rect x="264.5" y="264.5" width="87" height="87" rx="20" fill="#FFFFFF"/>
+  <rect x="368.5" y="264.5" width="87" height="87" rx="20" fill="#FFFFFF"/>
+  <rect x="56.5" y="368.5" width="87" height="87" rx="20" fill="#22C55E"/>
+  <rect x="160.5" y="368.5" width="87" height="87" rx="20" fill="#22C55E"/>
+  <rect x="264.5" y="368.5" width="87" height="87" rx="20" fill="#22C55E"/>
+  <rect x="368.5" y="368.5" width="87" height="87" rx="20" fill="#22C55E"/>
+  <circle cx="100.0" cy="308.0" r="26.1" fill="#4F46E5" stroke="#1E1B39" stroke-width="4"/>
+  <circle cx="204.0" cy="308.0" r="26.1" fill="#4F46E5" stroke="#1E1B39" stroke-width="4"/>
+  <circle cx="308.0" cy="308.0" r="26.1" fill="#4F46E5" stroke="#1E1B39" stroke-width="4"/>
+  <circle cx="412.0" cy="308.0" r="26.1" fill="#4F46E5" stroke="#1E1B39" stroke-width="4"/>
+  <circle cx="100.0" cy="412.0" r="27.8" fill="#FFFFFF"/>
+  <circle cx="204.0" cy="412.0" r="27.8" fill="#FFFFFF"/>
+  <circle cx="308.0" cy="412.0" r="27.8" fill="#FFFFFF"/>
+  <circle cx="412.0" cy="412.0" r="27.8" fill="#FFFFFF"/>
+</svg>

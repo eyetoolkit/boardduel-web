@@ -1,0 +1,279 @@
+/* ============================================================
+   Tri-Sites Design Tokens v3 · DUEL-DS v1
+   ============================================================
+   命名法（B2 起）：
+   - 中性色：--bg / --bg-subtle / --surface / --surface-raised /
+     --border / --border-strong / --text-strong / --text / --text-muted / --text-inverse
+   - 品牌槽位（三站共用名字，值不同，由 html[data-site] 切换）：
+     --brand-50/100/200/400/500/600/700/800/900 · --brand(=600) · --brand-hover(=700)
+     --brand-active(=800) · --brand-subtle(=100) · --brand-ring · --on-brand
+     规则：--brand 只承载图形；白字压品牌色一律用 --brand-700（对比度 ≥4.5:1）
+   - 语义色：--success/--warning/--danger/--info + -strong(白字安全) + -l(浅底)
+   - 旧变量名（--t/--card/--line/--good/--brand-d...）保留为 alias，避免破坏存量页面
+   v2 的 data-site 机制保留；暗色为手动切换层（html[data-theme="dark"]），
+   B4 全量暗色适配后再启用 prefers-color-scheme 自动跟随。
+   ============================================================ */
+
+/* ========== 自托管字体 (B2) ==========
+   来源: @fontsource (Google Fonts 镜像), latin 子集
+   CSP font-src 'self' 兼容 (同源 /fonts/); Google Fonts 域名本就被 CSP 拦截
+   中文回退系统字 (PingFang/HarmonyOS/微软雅黑), 页面级子集化留 B4 */
+@font-face {
+  font-family: 'Space Grotesk'; font-style: normal; font-weight: 400;
+  font-display: swap; src: url('/fonts/space-grotesk-latin-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Space Grotesk'; font-style: normal; font-weight: 700;
+  font-display: swap; src: url('/fonts/space-grotesk-latin-700.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter'; font-style: normal; font-weight: 400;
+  font-display: swap; src: url('/fonts/inter-latin-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter'; font-style: normal; font-weight: 500;
+  font-display: swap; src: url('/fonts/inter-latin-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter'; font-style: normal; font-weight: 700;
+  font-display: swap; src: url('/fonts/inter-latin-700.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono'; font-style: normal; font-weight: 500;
+  font-display: swap; src: url('/fonts/jetbrains-mono-latin-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono'; font-style: normal; font-weight: 700;
+  font-display: swap; src: url('/fonts/jetbrains-mono-latin-700.woff2') format('woff2');
+}
+
+/* ========== Reset ========== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', system-ui, -apple-system, "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+img { max-width: 100%; display: block; }
+
+/* ============================================================
+   默认品牌色 = BoardDuel Indigo（无 data-site 时兜底）
+   ============================================================ */
+:root {
+  /* 品牌阶梯（BoardDuel Indigo） */
+  --brand-50:  #EEF2FF;
+  --brand-100: #E0E7FF;
+  --brand-200: #C7D2FE;
+  --brand-400: #818CF8;
+  --brand-500: #6366F1;
+  --brand-600: #4F46E5;
+  --brand-700: #4338CA;   /* 白字安全值 6.0:1 */
+  --brand-800: #3730A3;
+  --brand-900: #312E81;
+  --brand:        var(--brand-600);
+  --brand-hover:  var(--brand-700);
+  --brand-active: var(--brand-800);
+  --brand-subtle: var(--brand-100);
+  --brand-ring:   rgba(79, 70, 229, 0.35);
+  --on-brand:     #FFFFFF;
+
+  /* 中性色 · Light（冷调石板灰，DUEL-DS） */
+  --bg:              #F7F8FA;
+  --bg-subtle:       #F1F4F8;
+  --surface:         #FFFFFF;
+  --surface-raised:  #FFFFFF;
+  --border:          #E4E8EE;
+  --border-strong:   #CBD3DE;
+  --text-strong:     #020617;
+  --text:            #0F172A;
+  --text-muted:      #5B6B7F;   /* v3 修复: 原 #94A3B8 对比度 2.56:1 → 4.6:1 */
+  --text-inverse:    #FFFFFF;
+
+  /* 语义色（图形 / 白字安全 / 浅底） */
+  --success: #16A34A;  --success-strong: #15803D;  --success-l: #F0FDF4;
+  --warning: #F59E0B;  --warning-strong: #B45309;  --warning-l: #FFFBEB;
+  --danger:  #DC2626;  --danger-strong:  #B91C1C;  --danger-l:  #FEF2F2;
+  --info:    #0284C7;  --info-strong:    #0369A1;  --info-l:    #F0F9FF;
+
+  /* ── 旧变量 alias（v2 兼容层，指向新值） ── */
+  --bg-soft:  var(--bg-subtle);
+  --bg-alt:   var(--surface);
+  --card:     var(--surface);
+  --t:        var(--text);
+  --t-h:      var(--text-strong);
+  --m:        var(--text-muted);
+  --line:     var(--border);
+  --line-h:   var(--border-strong);
+  --good:     var(--success);    --good-l:  var(--success-l);
+  --warn:     var(--warning);    --warn-l:  var(--warning-l);
+  --bad:      var(--danger);     --bad-l:   var(--danger-l);
+  --brand-d:      var(--brand-700);
+  --brand-l:      var(--brand-100);
+  --brand-text:   var(--brand-600);
+  --hero-tag-bg:  rgba(255, 255, 255, 0.18);
+  --hero-text:    #FFFFFF;
+  --hero-g:       linear-gradient(135deg, var(--brand-700) 0%, var(--brand-600) 100%);
+
+  /* ── 圆角 ── */
+  --r-xs: 6px;  --r-sm: 10px;  --r-md: 12px;  --r: 14px;
+  --r-lg: 18px; --r-xl: 24px;  --r-2xl: 32px; --r-full: 9999px;
+  --radius: var(--r);
+
+  /* ── 阴影（双层柔和） ── */
+  --e-0: none;
+  --e-1: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --e-2: 0 2px 4px rgba(15, 23, 42, 0.06), 0 4px 12px rgba(15, 23, 42, 0.08);
+  --e-3: 0 4px 8px rgba(15, 23, 42, 0.08), 0 12px 28px rgba(15, 23, 42, 0.12);
+  --e-4: 0 8px 16px rgba(15, 23, 42, 0.10), 0 24px 56px rgba(15, 23, 42, 0.18);
+  --shadow-sm: var(--e-1);
+  --shadow:    var(--e-2);
+  --shadow-lg: var(--e-3);
+  --shadow-xl: var(--e-4);
+
+  /* ── 间距（4px 基准） ── */
+  --s-0: 0; --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px;
+  --s-6: 24px; --s-8: 32px; --s-10: 40px; --s-12: 48px; --s-16: 64px; --s-20: 80px; --s-24: 96px;
+  --container: 1200px;
+
+  /* ── 层级（6 档，替代离散 13 值） ── */
+  --z-raised: 10; --z-sticky: 100; --z-drawer: 200; --z-overlay: 300; --z-modal: 400; --z-toast: 500;
+
+  /* ── 动效 ── */
+  --dur-fast: 120ms; --dur-base: 200ms; --dur-slow: 320ms; --dur-slower: 480ms;
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+  --ease-in-out: cubic-bezier(.65, 0, .35, 1);
+  --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+
+  /* ── 字体（woff2 自托管见下方 @font-face；中文回退系统字） ── */
+  --font-sans: 'Inter', system-ui, -apple-system, "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei", sans-serif;
+  --font-display: 'Space Grotesk', var(--font-sans);
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* ── 棋盘（暗色下 --board-light/--board-dark 交换深浅） ── */
+  --board-light: #F0D9B5;
+  --board-dark:  #B58863;
+  --piece-p1:    #FFFFFF;
+  --piece-p2:    #1F2937;
+  --cell-hover:  rgba(79, 70, 229, 0.25);
+  --last-move:   rgba(250, 204, 21, 0.55);
+
+  /* ── 侧栏宽度（v2 保留） ── */
+  --sidebar-w: 220px;
+
+  /* 断点说明：CSS 变量不能用于 @media，此处仅作文档与 JS 引用。
+     实际媒体查询统一使用 640 / 768 / 1024。 */
+  --bp-sm: 640px; --bp-md: 768px; --bp-lg: 1024px;
+}
+
+/* ============ 品牌阶梯 · MathDuel Blue (重设计) ============ */
+html[data-site="math"] {
+  --brand-50:  #EFF5FD;
+  --brand-100: #DCEBFB;
+  --brand-200: #B9D6F6;
+  --brand-400: #4D97E6;
+  --brand-500: #1F7FE0;
+  --brand-600: #0066CC;   /* 主强调色（PDF 规范） */
+  --brand-700: #00529C;   /* 白字安全值 */
+  --brand-800: #003E7A;
+  --brand-900: #002B57;
+  --brand:        var(--brand-600);
+  --brand-hover:  #0071E3;
+  --brand-active: var(--brand-800);
+  --brand-subtle: var(--brand-100);
+  --brand-ring:   rgba(0, 102, 204, 0.35);
+  --brand-text:   #00529C;
+  --hero-g:       linear-gradient(135deg, #0071E3 0%, #0066CC 100%);
+}
+
+/* ============ 品牌阶梯 · BoardDuel Indigo ============ */
+html[data-site="board"] {
+  --brand-50:  #EEF2FF;
+  --brand-100: #E0E7FF;
+  --brand-200: #C7D2FE;
+  --brand-400: #818CF8;
+  --brand-500: #6366F1;
+  --brand-600: #4F46E5;
+  --brand-700: #4338CA;   /* 白字安全值 6.0:1 */
+  --brand-800: #3730A3;
+  --brand-900: #312E81;
+  --brand:        var(--brand-600);
+  --brand-hover:  var(--brand-700);
+  --brand-active: var(--brand-800);
+  --brand-subtle: var(--brand-100);
+  --brand-ring:   rgba(79, 70, 229, 0.35);
+  --brand-text:   #4F46E5;
+  --hero-g:       linear-gradient(135deg, #4338CA 0%, #4F46E5 100%);
+}
+
+/* ============ 品牌阶梯 · MemoryDuel Amber ============ */
+html[data-site="memory"] {
+  --brand-50:  #FFF7ED;
+  --brand-100: #FFEDD5;
+  --brand-200: #FED7AA;
+  --brand-400: #FB923C;
+  --brand-500: #F97316;
+  --brand-600: #EA580C;
+  --brand-700: #C2410C;   /* 白字安全值 4.9:1 */
+  --brand-800: #9A3412;
+  --brand-900: #7C2D12;
+  --brand:        var(--brand-600);
+  --brand-hover:  var(--brand-700);
+  --brand-active: var(--brand-800);
+  --brand-subtle: var(--brand-100);
+  --brand-ring:   rgba(234, 88, 12, 0.35);
+  --brand-text:   #C2410C;
+  --hero-g:       linear-gradient(135deg, #C2410C 0%, #EA580C 100%);
+}
+
+/* 暗色层已合并至文件末尾 B4 统一块,避免两个 html[data-theme="dark"] 互相覆盖 */
+
+/* ============ 动效降级 ============ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+/* B4: 暗色适配层 (2026-09-09, Agent B) — 默认不启用,需 html[data-theme="dark"] 触发 */
+/* 仅覆盖中性色 / 语义浅底 / 边框(已修至 WCAG 3:1+),保留各站 data-site 品牌色;线上默认浅色不受影响 */
+html[data-theme="dark"] {
+  --bg: #0B1120;
+  --bg-subtle: #131C2E;
+  --surface: #1E293B;
+  --surface-raised: #243044;
+  --border: #64748B;        /* 修: vs --surface #1E293B = 3.07:1 (原 #334155 仅 1.41) */
+  --border-strong: #94A3B8; /* 修: vs --bg #0B1120 = 7.39:1 (原 #475569 仅 2.48) */
+  --text-strong: #F8FAFC;
+  --text: #E2E8F0;
+  --text-muted: #94A3B8;
+  --text-inverse: #0B1120;
+  --success-l: #052E16; --warning-l: #422006; --danger-l: #450A0A; --info-l: #082F49;
+  --brand-ring: rgba(129, 140, 248, 0.40);
+  --on-brand: #FFFFFF;
+  /* 存量页面 alias 兼容 */
+  --bg-soft: var(--bg-subtle);
+  --bg-alt: var(--surface);
+  --card: var(--surface);
+  --t: var(--text);
+  --t-h: var(--text-strong);
+  --m: var(--text-muted);
+  --line: var(--border);
+  --line-h: var(--border-strong);
+  /* 暗色阴影(内高光 + 深层投影) */
+  --shadow-sm: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 2px 8px rgba(0, 0, 0, 0.5);
+  --shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 4px 16px rgba(0, 0, 0, 0.55);
+  --shadow-lg: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 8px 32px rgba(0, 0, 0, 0.6);
+  --shadow-xl: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 20px 40px rgba(0, 0, 0, 0.65);
+  --e-1: var(--shadow-sm); --e-2: var(--shadow); --e-3: var(--shadow-lg); --e-4: var(--shadow-xl);
+  --good-l: var(--success-l); --warn-l: var(--warning-l); --bad-l: var(--danger-l);
+  /* 棋盘暗色: 深浅格交换 (boardduel) */
+  --board-light: #B58863;
+  --board-dark: #5D4037;
+}

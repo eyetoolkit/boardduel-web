@@ -1,0 +1,100 @@
+# Board Duel — 完整版
+
+> 在线棋盘对战 · 免费、无需下载、可与好友实时对弈
+> 更新时间: 2026-09-18
+
+## 1. 什么是 Board Duel
+
+Board Duel（boardduel.com）是一个在线棋盘游戏平台，收录 10 款经典棋盘与棋类游戏。全部游戏可在浏览器中直接游玩，无需安装客户端、无需下载 App。打开网页即可与 AI 对战、创建房间邀请好友实时对弈，或随机匹配真实玩家。
+
+核心设计原则：
+
+1. **零门槛** — 无需注册即可开局（注册用于保存战绩与进度）
+2. **三种对局模式** — AI 对战 / 好友邀请 / 随机匹配
+3. **无广告无追踪** — 专注对弈体验
+4. **可离线** — 通过 PWA 与 Service Worker 支持离线访问
+
+## 2. 游戏列表（10 款）
+
+| 游戏 | 路径 | 规则要点 |
+|---|---|---|
+| 井字棋 | `/games/tictactoe/` | 3×3 棋盘，率先连成一线者胜 |
+| 五子棋 | `/games/gomoku/` | 15×15 棋盘，率先连成五子者胜 |
+| 黑白棋（Reversi） | `/games/reversi/` | Reversi 规则变体 |
+| 四子棋 | `/games/connect4/` | 7×6 棋盘，纵向落子，率先连成四子者胜 |
+| 国际象棋 | `/games/chess/` | 完整规则，支持 AI 对战与联机 |
+
+## 3. 对局模式
+
+### 与 AI 对战
+
+每款游戏均内置 AI 对手，提供多档难度。适合单人练习规则与战术，无需等待对手。
+
+### 创建房间邀请好友
+
+创建房间后生成 **6 位房间码**与分享链接。好友可选择：
+
+- 打开分享链接直接进入房间，或
+- 输入 6 位房间码加入
+
+房间保存 7 天。
+
+### 随机匹配
+
+由系统匹配在线真实玩家对局。
+
+## 4. 账号与成长体系
+
+- **独立账号体系** — 注册 / 登录，战绩跨设备保存
+- **金币钱包** — 通过对局获取金币
+- **皮肤商店** — `/shop/` 使用金币兑换头像与表情
+- **全球排行榜** — `/rank/` 玩家积分排名
+- **我的战绩** — `/stats/` 个人对局统计与连胜记录
+
+## 5. 多语言
+
+站点首页支持 6 种语言，路径前缀为 `/zh/`、`/en/`、`/ja/`、`/de/`、`/es/`、`/fr/`。
+
+注意：语言前缀目前仅提供各语言的首页。游戏的详细页面（`/games/*/`）为单一语言（英文界面 + 客户端多语言文案切换），不提供语言前缀版本。
+
+## 6. 页面清单
+
+| 路径 | 说明 |
+|---|---|
+| `/` | 首页 |
+| `/games/{tictactoe,gomoku,othello,reversi,connect4,chess,checkers,mathlink15,bulls}/` | 各游戏页 |
+| `/how-to-play/{chess,gomoku,othello,connect4}/` | 玩法说明（目前覆盖 4 款） |
+| `/blog/board-games-vs-puzzle-games/` | 文章：棋盘游戏与解谜游戏 |
+| `/rank/` | 排行榜 |
+| `/shop/` | 皮肤商店 |
+| `/stats/` | 我的战绩 |
+| `/about/` | 关于 |
+| `/contact/` | 联系我们 |
+| `/privacy/` | 隐私政策 |
+| `/terms/` | 使用条款 |
+
+## 7. 技术栈
+
+- **前端**：HTML / CSS / 原生 JavaScript（无框架），Canvas 渲染棋盘，无构建步骤
+- **托管**：Cloudflare Pages（全球边缘分发）
+- **后端**：Cloudflare Workers，承载 API（账号 / 排行榜 / 房间匹配），路径前缀 `/api/*`
+- **实时对战**：WebSocket
+- **数据存储**：Cloudflare KV / D1
+- **离线**：Service Worker 缓存 + PWA manifest（`manifest.webmanifest`）
+- **多语言**：`i18n/` 目录下的按语言 JSON 词条 + 客户端 `i18n.js`
+
+## 8. AI 与爬虫说明
+
+- 本站欢迎 AI 爬虫与搜索引擎索引，`robots.txt` 已显式声明允许 GPTBot / ClaudeBot / PerplexityBot / Google-Extended 等。
+- 仅 `/api/`、`/ws`、`/data/` 路径禁止抓取。
+- 本站提供 `/llms.txt`（精简版）与本文件 `/llms-full.txt`（完整版，即本文件）供 AI 系统理解站点结构与内容。
+- 站点内容以事实性说明为主（游戏规则、玩法、功能清单），便于被直接引用。
+
+## 9. 链接
+
+- 主页：https://boardduel.com/
+- 国际象棋：https://boardduel.com/games/chess/
+- 五子棋：https://boardduel.com/games/gomoku/
+- 排行榜：https://boardduel.com/rank/
+- Sitemap：https://boardduel.com/sitemap.xml
+- LLMs 精简版：https://boardduel.com/llms.txt

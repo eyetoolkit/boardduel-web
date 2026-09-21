@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/img/favicon.svg">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title data-i18n-title="title.auto.hc_排行榜BoardDuel_24828">Leaderboard · Board Duel</title>
+  <meta data-i18n="meta.auto.hc_排行榜BoardDuel棋盘对决棋_74169" name="description" content="Leaderboard - Board Duel - a board game battle site.">
+  <link rel="canonical" href="https://boardduel.com/rank/">
+  
+  
+  <link rel="alternate" hreflang="zh-CN" href="https://boardduel.com/rank/" />
+  <link rel="alternate" hreflang="en" href="https://boardduel.com/rank/?lang=en" />
+  <link rel="alternate" hreflang="ja" href="https://boardduel.com/rank/?lang=ja" />
+  <link rel="alternate" hreflang="es" href="https://boardduel.com/rank/?lang=es" />
+  <link rel="alternate" hreflang="fr" href="https://boardduel.com/rank/?lang=fr" />
+  <link rel="alternate" hreflang="de" href="https://boardduel.com/rank/?lang=de" />
+  <link rel="alternate" hreflang="x-default" href="https://boardduel.com/rank/" />
+<style>
+    :root{ --p:#4f46e5; --p-d:#4338ca; --p-l:#eef2ff; --g:#22b573; --g-l:#e7f9f0; --bg:#faf9ff; --card:#fff; --t:#1e1b4b; --m:#6b7280; --line:rgba(23,24,40,0.08); }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--t);line-height:1.6}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:760px;margin:0 auto;padding:0 20px}
+    nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+    .nav-in{display:flex;align-items:center;gap:18px;height:60px;max-width:1080px;margin:0 auto;padding:0 20px}
+    .nav-in .brand{font-weight:800;font-size:18px}
+    .nav-in .brand span{color:var(--p)}
+    .nav-in .links{margin-left:auto;display:flex;gap:4px}
+    .nav-in .links a{color:var(--m);font-size:14px;padding:8px 12px;border-radius:999px;transition:.15s}
+    .nav-in .links a:hover,.nav-in .links a.active{color:var(--p);background:var(--p-l)}
+    .container{padding:36px 0 48px}
+    .container h1{font-size:1.7rem;margin-bottom:.5rem;color:var(--p-d)}
+    .sub{color:var(--m);margin-bottom:1.5rem}
+    .me-bar{background:linear-gradient(135deg,var(--p-l),var(--g-l));border-radius:14px;padding:16px 20px;margin-bottom:20px}
+    .me-bar .rank{font-size:1.6rem;font-weight:800;color:var(--p-d)}
+    .me-bar .det{color:var(--m);font-size:.9rem;margin-top:4px}
+    .list{display:flex;flex-direction:column;gap:10px}
+    .row{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:14px}
+    .row .pos{font-weight:800;color:var(--p);min-width:40px;font-size:1.1rem}
+    .row .name{flex:1;font-weight:600}
+    .row .solved{color:var(--m);font-size:.85rem}
+    .row .score{font-weight:800;color:var(--p-d)}
+    .row.mine{background:var(--p-l);border-color:var(--p)}
+    footer{margin-top:40px;border-top:1px solid var(--line);background:var(--card);padding:24px 0;text-align:center;color:var(--m);font-size:.8rem}
+    @media(max-width:640px){.nav-in .links{display:none}}
+  </style>
+  <link rel="stylesheet" href="/css/shared/tokens.css?v=p4fix2">
+  <link rel="stylesheet" href="/css/shared/brand-ds2.css?v=ds2-22">
+<script src="/i18n/i18n.js?v=33"></script>
+  <link rel="manifest" href="/manifest.zh.webmanifest">
+</head>
+<body>
+
+<div id="site-header" style="min-height:65px"
+     data-brand-a="Board" data-brand-b="Duel" data-mark="duel-chess"
+     data-nav='[{"label":"Home","href":"/","i18n":"nav.home"}]'
+     data-cta-label="Home" data-cta-href="/" data-cta-i18n="nav.home"></div>
+
+  <nav><div class="wrap nav-in">
+    <div class="brand">♟️ Board<span>Duel</span></div>
+    <div class="links"><a href="/" data-i18n="bd_rank_1">Home</a><a href="/rank/" class="active" data-i18n="bd_rank_2">Leaderboard</a><a href="/shop/" data-i18n="bd_rank_3">Shop</a><a href="/about/" data-i18n="bd_rank_4">About</a></div>
+  </div></nav>
+
+  <div class="container"><div class="wrap">
+    <h1 data-i18n="bd_rank_5">🏆 Global Leaderboard</h1>
+    <p class="sub" data-i18n="bd_rank_6">Ranked by points. Complete a match for +10 points; win streaks give bonus points.</p>
+    <div class="me-bar" id="meBar"><div style="color:var(--m)" data-i18n="bd_rank_7">Loading...</div></div>
+    <div class="list" id="list"><div style="color:var(--m);text-align:center;padding:20px;" data-i18n="bd_rank_8">Loading...</div></div>
+
+    <!-- P5: 段位天梯（Elo） -->
+    <div id="tiers-block" style="margin-top:28px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:.6rem;">
+        <h2 style="font-size:1.05rem;margin:0;">⚔️ <span data-i18n="bd_tiers_title">Tier Ladder (Elo)</span></h2>
+        <select id="tiers-game" style="padding:.35rem .6rem;border:1.5px solid var(--border,#ddd);border-radius:8px;background:#fff;font-size:.85rem;cursor:pointer;">
+          <option value="all">🌐 All games</option>
+          <option value="connect4">Connect 4</option>
+          <option value="reversi">Reversi</option>
+        </select>
+      </div>
+      <div class="list" id="tiers-list"><div style="color:var(--m);text-align:center;padding:20px;">Loading...</div></div>
+    </div>
+  </div></div>
+
+  <footer class="sites-footer">
+      <div class="wrap">
+        <div class="sf-title" data-i18n="home.site_network">🎯 Our Brand Network</div>
+        <div class="sf-matrix">
+          <a href="https://mathduel.games/" class="sf-item">
+            <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-calculator"></use></svg>
+            <span data-i18n="bd_rank_9">MathDuel</span>
+          </a>
+          <a href="https://boardduel.com/" class="sf-item">
+            <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-chess"></use></svg>
+            <span data-i18n="bd_rank_10">BoardDuel</span>
+          </a>
+          <a href="https://memoryduel.com/" class="sf-item">
+            <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-brain"></use></svg>
+            <span data-i18n="bd_rank_11">MemoryDuel</span>
+          </a>
+        </div>
+        <div class="sf-links">
+          <a href="/about/" data-i18n="nav.about">About</a>
+          <a href="/privacy/" data-i18n="nav.privacy">Privacy</a>
+          <a href="/terms/" data-i18n="nav.terms">Terms</a>
+          <a href="/contact/" data-i18n="nav.contact">Contact</a>
+        </div>
+        <div class="sf-copy" data-i18n="home.footer">© 2026 BoardDuel · Free to play · Privacy-first</div>
+      </div>
+      <div class="sf-note">© 2026 Board Duel</div>
+    </footer>
+
+  <script>
+  var api = function(path, opts){ return fetch(path, Object.assign({ credentials:'include' }, opts)).then(function(r){ return r.ok ? r.json() : Promise.reject(new Error('HTTP '+r.status)); }); };
+  function tt(k, fb) { try { if (window.t) { var v = window.t(k); if (v && v !== k) return v; } } catch (e) {} return fb; }
+  function locNick(n){ return String(n == null ? '' : n).replace(/^玩家/, tt('player.guest', '玩家')); }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function init() {
+    api('/api/leaderboard?limit=100').then(function(d){
+      var list = document.getElementById('list');
+      if (!d.entries || !d.entries.length) { list.innerHTML = '<div style="color:var(--m);text-align:center;padding:20px;">'+tt('rank.empty','暂无排行，快来玩一局！')+'</div>'; }
+      else {
+        list.innerHTML = d.entries.map(function(e,i){
+          return '<div class="row"><div class="pos">#'+(i+1)+'</div><div class="name">'+esc(locNick(e.nickname))+'</div><div class="solved">'+e.solved+tt('rank.games','局')+'</div><div class="score">'+e.score+tt('rank.points','分')+'</div></div>';
+        }).join('');
+      }
+      var me = d.me;
+      var mb = document.getElementById('meBar');
+      mb.innerHTML = me && me.rank ? '<div class="rank">'+tt('rank.my_rank','我的排名：')+'#'+me.rank+'</div><div class="det">'+me.score+' '+tt('rank.points','分')+' · '+me.solved+' '+tt('rank.games','局')+' · '+me.streak+' '+tt('account.win_streak','连胜')+'</div>' : '<div class="rank">'+tt('leaderboard.unranked','未入榜')+'</div><div class="det">'+tt('rank.unranked_hint','完成对局后即可上榜')+'</div>';
+    }).catch(function(){
+      document.getElementById('list').innerHTML = '<div style="color:var(--m);text-align:center;padding:20px;">'+tt('leaderboard.unavailable','排行榜暂不可用')+'</div>';
+    });
+    loadTiers('all');
+  }
+  /* P5: 段位天梯（Elo, /api/leaderboard/tiers）*/
+  function loadTiers(game) {
+    var box = document.getElementById('tiers-list');
+    if (!box) return;
+    box.innerHTML = '<div style="color:var(--m);text-align:center;padding:14px;">Loading...</div>';
+    api('/api/leaderboard/tiers?game=' + encodeURIComponent(game) + '&limit=50').then(function(d){
+      var list = d && (d.list || d.entries) || [];
+      if (!list.length) { box.innerHTML = '<div style="color:var(--m);text-align:center;padding:16px;">' + tt('rank.empty','暂无排行，快来玩一局！') + '</div>'; return; }
+      box.innerHTML = list.map(function(e,i){
+        var tier = e.tier || {};
+        var badge = '<span style="font-weight:700;color:' + (tier.color || '#4F46E5') + ';">' + (tier.emoji || '🎖') + ' ' + esc(tier.name || '') + '</span>';
+        return '<div class="row"><div class="pos">#'+(i+1)+'</div><div class="name">'+esc(locNick(e.nickname))+'</div><div class="solved">'+badge+'</div><div class="score"><b>'+e.elo+'</b> Elo</div></div>';
+      }).join('');
+    }).catch(function(){
+      box.innerHTML = '<div style="color:var(--m);text-align:center;padding:16px;">' + tt('leaderboard.unavailable','排行榜暂不可用') + '</div>';
+    });
+  }
+  document.addEventListener('change', function (e) {
+    if (e.target && e.target.id === 'tiers-game') loadTiers(e.target.value);
+  });
+  document.addEventListener('DOMContentLoaded', init);
+  window.addEventListener('i18n:ready', function () { try { init(); } catch (e) {} });
+  </script>
+  <script src="/shared/site-header.js?v=ds2-11"></script>
+  <script src="/shared/sso-bridge.js?v=1" defer></script>
+</body>
+</html>

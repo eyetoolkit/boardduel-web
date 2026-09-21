@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en" data-site="board">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How to Play Chess · BoardDuel</title>
+  <meta name="description" content="Learn chess from scratch: rules, piece movement, special moves, checkmate patterns, and winning strategies. The complete beginner's guide to chess.">
+  <link rel="canonical" href="https://boardduel.com/how-to-play/chess/">
+  
+  
+  <link rel="alternate" hreflang="zh-CN" href="https://boardduel.com/how-to-play/chess/" />
+  <link rel="alternate" hreflang="en" href="https://boardduel.com/how-to-play/chess/?lang=en" />
+  <link rel="alternate" hreflang="ja" href="https://boardduel.com/how-to-play/chess/?lang=ja" />
+  <link rel="alternate" hreflang="es" href="https://boardduel.com/how-to-play/chess/?lang=es" />
+  <link rel="alternate" hreflang="fr" href="https://boardduel.com/how-to-play/chess/?lang=fr" />
+  <link rel="alternate" hreflang="de" href="https://boardduel.com/how-to-play/chess/?lang=de" />
+  <link rel="alternate" hreflang="x-default" href="https://boardduel.com/how-to-play/chess/" />
+<link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+  <meta property="og:title" content="How to Play Chess · BoardDuel">
+  <meta property="og:description" content="Complete chess guide: rules, strategies, and checkmate patterns for beginners.">
+  <style>
+    :root{ --p:#4f46e5; --p-d:#4338ca; --p-l:#eef2ff; --bg:#faf9ff; --card:#fff; --t:#1e1b4b; --m:#6b7280; --line:rgba(23,24,40,0.08); }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--t);line-height:1.8}
+    a{color:var(--p);text-decoration:none}
+    a:hover{text-decoration:underline}
+    .wrap{max-width:780px;margin:0 auto;padding:0 20px}
+    nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+    .nav-inner{display:flex;align-items:center;gap:18px;height:60px;max-width:1080px;margin:0 auto;padding:0 20px}
+    .nav-brand{font-weight:800;font-size:18px}
+    .nav-links{margin-left:auto;display:flex;gap:4px}
+    .nav-links a{color:var(--m);font-size:14px;padding:8px 14px;border-radius:999px;transition:.15s}
+    .nav-links a:hover{color:var(--p);background:var(--p-l);text-decoration:none}
+    .container{padding:40px 0 60px}
+    h1{font-size:2rem;color:var(--p-d);margin-bottom:.6rem}
+    h2{font-size:1.3rem;color:var(--p-d);margin:2rem 0 .7rem;border-bottom:2px solid var(--p-l);padding-bottom:.4rem}
+    h3{font-size:1.05rem;color:var(--p-d);margin:1.2rem 0 .4rem}
+    p{color:var(--t);margin:.5rem 0;font-size:.97rem}
+    ul,ol{margin:.5rem 0 .8rem 1.6rem}
+    li{margin:.3rem 0;font-size:.97rem}
+    .intro-box{background:var(--p-l);border-radius:14px;padding:20px 24px;margin:1.2rem 0;border-left:4px solid var(--p)}
+    .piece-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:1rem 0}
+    .piece-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+    .piece-card .icon{font-size:28px;margin-bottom:6px}
+    .piece-card h3{margin:.4rem 0 .3rem;font-size:1rem}
+    .piece-card p{font-size:.88rem;color:var(--m);margin:0}
+    .tip-box{background:#fef9c3;border:1px solid #fde047;border-radius:10px;padding:14px 18px;margin:.8rem 0}
+    .tip-box strong{color:#854d0e}
+    .move-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:.7rem 0}
+    .move-card h3{margin-top:0}
+    .faq-item{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin:.6rem 0}
+    .faq-item summary{font-weight:700;color:var(--p-d);cursor:pointer;font-size:1rem}
+    .faq-item p{margin-top:.6rem}
+    .cta{display:inline-block;background:var(--p);color:#fff;border-radius:10px;padding:12px 28px;font-weight:700;font-size:15px;margin-top:1.5rem;transition:background .15s}
+    .cta:hover{background:var(--p-d);text-decoration:none}
+    .cta-row{text-align:center;margin:2rem 0}
+    .breadcrumb{color:var(--m);font-size:.85rem;margin-bottom:1rem}
+    .breadcrumb a{color:var(--m)}
+    footer{margin-top:40px;border-top:1px solid var(--line);padding:24px 0;text-align:center;color:var(--m);font-size:.85rem}
+    @media(max-width:640px){.nav-links{display:none}}
+  </style>
+  <link rel="stylesheet" href="/css/shared/tokens.css?v=p4fix2">
+  <link rel="stylesheet" href="/css/shared/brand-ds2.css?v=ds2-22">
+<script src="/i18n/i18n.js?v=33"></script>
+  <link rel="manifest" href="/manifest.zh.webmanifest">
+</head>
+<body>
+
+<div id="site-header" style="min-height:65px"
+     data-brand-a="Board" data-brand-b="Duel" data-mark="duel-chess"
+     data-nav='[{"label":"Home","href":"/","i18n":"nav.home"}]'
+     data-cta-label="Home" data-cta-href="/" data-cta-i18n="nav.home"></div>
+
+  <nav>
+    <div class="nav-inner">
+      <div class="nav-brand">♟️ BoardDuel</div>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/how-to-play/chess/">How to Play</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="wrap prose">
+      <div class="breadcrumb"><a href="/">← Back to Home</a></div>
+      <h1>How to Play Chess</h1>
+      <p>Chess is the world's most studied game — a battle of wits between two armies, each with 16 pieces. This guide covers everything from piece movement to checkmate patterns.</p>
+
+      <div class="intro-box">
+        <p><strong>The Goal:</strong> Checkmate your opponent's king — meaning the king is under attack and cannot escape. Unlike most games, there's no timer ticking down to defeat. Chess is about outthinking, outmaneuvering, and outlasting your opponent.</p>
+      </div>
+
+      <h2>♟️ The Chess Board and Setup</h2>
+      <p>A chessboard has 64 squares (8×8), alternating light and dark. Each player starts with:</p>
+      <ul>
+        <li><strong>8 Pawns</strong> — Row 2 (white) / Row 7 (black)</li>
+        <li><strong>8 Pieces:</strong> 1 King, 1 Queen, 2 Rooks, 2 Knights, 2 Bishops</li>
+        <li><strong>Queens on their own color</strong> — White queen on a white square, black queen on a black square</li>
+      </ul>
+
+      <h2>🎯 How Each Piece Moves</h2>
+
+      <div class="piece-grid">
+        <div class="piece-card">
+          <div class="icon">♔</div>
+          <h3 data-i18n="bd_how_to_play_chess_1">King</h3>
+          <p>One square in any direction: horizontal, vertical, or diagonal. The most important piece — lose it and you lose the game.</p>
+        </div>
+        <div class="piece-card">
+          <div class="icon">♕</div>
+          <h3 data-i18n="bd_how_to_play_chess_2">Queen</h3>
+          <p>The most powerful piece. Moves any number of squares in any direction: horizontal, vertical, or diagonal.</p>
+        </div>
+        <div class="piece-card">
+          <div class="icon">♖</div>
+          <h3 data-i18n="bd_how_to_play_chess_3">Rook</h3>
+          <p>Any number of squares horizontally or vertically. Excellent for controlling open files and the back rank.</p>
+        </div>
+        <div class="piece-card">
+          <div class="icon">♗</div>
+          <h3 data-i18n="bd_how_to_play_chess_4">Bishop</h3>
+          <p>Any number of squares diagonally. Each bishop stays on its starting color for the entire game.</p>
+        </div>
+        <div class="piece-card">
+          <div class="icon">♘</div>
+          <h3 data-i18n="bd_how_to_play_chess_5">Knight</h3>
+          <p>Moves in an "L" shape: 2 squares in one direction, then 1 square perpendicular. The only piece that can jump over others.</p>
+        </div>
+        <div class="piece-card">
+          <div class="icon">♙</div>
+          <h3 data-i18n="bd_how_to_play_chess_6">Pawn</h3>
+          <p>Forward 1 square (2 from starting position). Captures diagonally forward. Can promote to any piece upon reaching the last rank.</p>
+        </div>
+      </div>
+
+      <h2>⭐ Special Moves</h2>
+
+      <div class="move-card">
+        <h3>Castling</h3>
+        <p>King moves 2 squares toward a rook, and the rook jumps over the king to the adjacent square. Conditions: neither piece has moved, king is not in check, king doesn't pass through an attacked square.</p>
+      </div>
+
+      <div class="move-card">
+        <h3>En Passant</h3>
+        <p>If a pawn moves 2 squares from its starting position and lands beside an enemy pawn, that enemy pawn can capture it as if it only moved 1 square. This capture must happen on the very next move.</p>
+      </div>
+
+      <div class="move-card">
+        <h3>Pawn Promotion</h3>
+        <p>When a pawn reaches the opponent's back rank, it must be promoted to a Queen, Rook, Bishop, or Knight. In most cases, promoting to a Queen is best.</p>
+      </div>
+
+      <h2>⚔️ Key Concepts</h2>
+
+      <div class="move-card">
+        <h3>Check</h3>
+        <p>When your king is under attack. You must resolve check on your next move — by capturing the attacking piece, moving the king, or blocking the attack.</p>
+      </div>
+
+      <div class="move-card">
+        <h3>Checkmate</h3>
+        <p>When the king is in check and has no legal move to escape. The game ends immediately. The player delivering checkmate wins.</p>
+      </div>
+
+      <div class="move-card">
+        <h3>Opening Principles</h3>
+        <p><strong>1.</strong> Control the center early with pawns and pieces.<br><strong>2.</strong> Develop your knights and bishops (get them off the back rank).<br><strong>3.</strong> Castle early to protect your king.<br><strong>4.</strong> Don't bring your queen out too early — she can be chased by minor pieces.</p>
+      </div>
+
+      <div class="tip-box">
+        <strong>💡 Pro tip:</strong> At BoardDuel, you can play against AI at multiple difficulty levels. Start at a lower difficulty to practice opening principles, then increase the challenge as you improve.
+      </div>
+
+      <h2>❓ Frequently Asked Questions</h2>
+
+      <details class="faq-item">
+        <summary>Can a pawn capture a piece directly in front of it?</summary>
+        <p>No. Pawns can only capture diagonally forward, not straight ahead. They move forward but capture diagonally.</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>Can a knight be captured while jumping?</summary>
+        <p>No. The knight is the only piece that jumps over other pieces. It cannot be captured mid-jump — only the destination square matters.</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>What happens if only kings remain?</summary>
+        <p>The game is a draw (stalemate). No side can deliver checkmate with just a king. Stalemate occurs when one player has no legal moves but is not in check.</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>How long does a chess game take?</summary>
+        <p>It varies enormously. Casual games might last 15-30 minutes. Tournament games use time controls (e.g., 15+10: each player gets 15 minutes plus 10 seconds per move).</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>What's the Scholar's Mate?</summary>
+        <p>The fastest checkmate in chess — only 4 moves. It involves queen and bishop delivering a quick checkmate on f7 (or f2 for black). Easy to learn, fun to surprise opponents with!</p>
+      </details>
+
+      <div class="cta-row">
+        <a href="/games/chess/" class="cta">▶ Play Chess Now</a>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="sites-footer">
+      <div class="wrap">
+        <div class="sf-title" data-i18n="home.site_network">🎯 Our Brand Network</div>
+        <div class="sf-matrix">
+          <a href="https://mathduel.games/" class="sf-item">
+            <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-calculator"></use></svg>
+            <span data-i18n="bd_how_to_play_chess_7">MathDuel</span>
+          </a>
+          <a href="https://boardduel.com/" class="sf-item">
+            <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-chess"></use></svg>
+            <span data-i18n="bd_how_to_play_chess_8">BoardDuel</span>
+          </a>
+          <a href="https://memoryduel.com/" class="sf-item">
+            <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-brain"></use></svg>
+            <span data-i18n="bd_how_to_play_chess_9">MemoryDuel</span>
+          </a>
+        </div>
+        <div class="sf-links">
+          <a href="/about/" data-i18n="nav.about">About</a>
+          <a href="/privacy/" data-i18n="nav.privacy">Privacy</a>
+          <a href="/terms/" data-i18n="nav.terms">Terms</a>
+          <a href="/contact/" data-i18n="nav.contact">Contact</a>
+        </div>
+        <div class="sf-copy" data-i18n="home.footer">© 2026 BoardDuel · Free to play · Privacy-first</div>
+      </div>
+      <div class="sf-note">© 2026 BoardDuel · Free to play, privacy-first, pure strategy</div>
+    </footer>
+  <script src="/shared/site-header.js?v=ds2-11"></script>
+  <script src="/shared/sso-bridge.js?v=1" defer></script>
+</body>
+</html>

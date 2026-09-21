@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en" data-site="board">
+<head>
+  <meta charset="utf-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/img/favicon.svg">
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title data-i18n-title="game_connect4.title" data-i18n-title-suffix=" · Board Duel">Connect 4</title>
+    <meta data-i18n="meta.auto.hc_四子棋在线四子棋connectf_36570" name="keywords" content="Connect 4,online connect 4,connect four,7×6 board,gravity drop,board games,AI match,online battle">
+  <meta data-i18n="meta.auto.hc_四子棋在线玩76垂直下落棋盘轮_7209" name="description" content="Connect 4 play online: on a 7×6 gravity-drop board, players alternate dropping pieces; the first to line up four of the same color in any direction (horizontal/vertical/diagonal) wins. AI match, friend match, real-time random match and battle history replay. Play in browser, free to play, privacy-first.">
+  <link rel="canonical" href="https://boardduel.com/games/connect4/">
+  
+  
+  <link rel="alternate" hreflang="zh-CN" href="https://boardduel.com/games/connect4/" />
+  <link rel="alternate" hreflang="en" href="https://boardduel.com/games/connect4/?lang=en" />
+  <link rel="alternate" hreflang="ja" href="https://boardduel.com/games/connect4/?lang=ja" />
+  <link rel="alternate" hreflang="es" href="https://boardduel.com/games/connect4/?lang=es" />
+  <link rel="alternate" hreflang="fr" href="https://boardduel.com/games/connect4/?lang=fr" />
+  <link rel="alternate" hreflang="de" href="https://boardduel.com/games/connect4/?lang=de" />
+  <link rel="alternate" hreflang="x-default" href="https://boardduel.com/games/connect4/" />
+<link rel="stylesheet" href="/assets/css/puzzle-nav.css?v=20260830">
+    <!-- 棋盘游戏布局骨架层（全站游戏页共用） -->
+  <link rel="stylesheet" href="/css/boardduel-layout.css?v=bd2">
+<style>
+  /* ── 本页私有样式：仅保留游戏专属（棋子/棋盘/在线面板/玩家卡/聊天/比分）。
+     布局骨架（容器/页头/状态栏/控制区/棋盘卡/按钮/教练条）已抽到
+     /css/boardduel-layout.css，全站游戏页共用。改布局请改那一层。 ── */
+
+:root {
+--p0:#dc2626;--p1:#facc15;--bg:#f5f6fa;--card:#fff;--border:#e5e7eb;--text:#1e1b4b;--text2:#6b7280;--good:#16a34a;--bad:#dc2626;--line:rgba(23,24,40,.08);--board:#2563eb;--hole:#f5f6fa}
+
+* {
+box-sizing:border-box}
+
+body {
+font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);margin:0;padding:0;line-height:1.5;-webkit-tap-highlight-color:transparent}
+
+a {
+color:inherit;text-decoration:none}
+
+.g-nav {
+position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);position:relative}
+
+.g-nav-in {
+max-width:960px;margin:0 auto;padding:0 92px 0 20px;height:56px;display:flex;align-items:center;gap:18px}
+
+.g-brand {
+font-weight:800;font-size:18px;white-space:nowrap}
+
+.g-brand span {
+color:var(--p0)}
+
+.g-links {
+margin-left:auto;display:flex;gap:2px;flex-wrap:wrap}
+
+.g-links a {
+color:var(--text2);font-size:14px;padding:7px 12px;border-radius:999px;transition:all .15s}
+
+.g-links a:hover {
+color:var(--p0);background:#eef2ff}
+
+.g-links a.active {
+color:var(--p0);background:#eef2ff;font-weight:600}
+
+@media(max-width:760px) {
+.g-links a {
+display:none}
+
+.g-links a.active {
+display:inline-block}
+}
+
+.g-hamburger {
+display:none;background:none;border:none;color:var(--text);font-size:1.4rem;cursor:pointer;line-height:1;padding:2px}
+
+@media(max-width:760px) {
+.g-hamburger {
+display:inline-flex;align-items:center;justify-content:center}
+
+.g-nav-menu {
+position:absolute;top:56px;left:0;right:0;background:#fff;border-bottom:1px solid var(--line);display:none;flex-direction:column;padding:6px}
+
+.g-nav-menu.open {
+display:flex}
+
+.g-nav-menu a {
+color:var(--text2);font-size:14px;padding:10px 14px;border-radius:8px}
+
+.g-nav-menu a.active {
+color:var(--p0);background:#eef2ff;font-weight:600}
+}
+
+.g-nav-in {
+position:relative}
+
+/* === lang dropdown === */
+    .lang-dropdown {
+position:absolute;top:50%;transform:translateY(-50%);right:12px;z-index:60}
+
+.lang-btn {
+display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--card);font-weight:700;font-size:.85rem;cursor:pointer;color:var(--text);transition:border-color .15s,background .15s}
+
+.lang-btn:hover {
+border-color:var(--p0);background:#eef2ff}
+
+.lang-caret {
+width:12px;height:12px;transition:transform .2s}
+
+.lang-dropdown.open .lang-caret {
+transform:rotate(180deg)}
+
+.lang-menu {
+display:none;position:absolute;top:calc(100% + 6px);right:0;min-width:168px;padding:6px;background:var(--card);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12)}
+
+.lang-dropdown.open .lang-menu {
+display:block}
+
+.lang-item {
+display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;background:none;border:none;border-radius:6px;text-align:left;cursor:pointer;color:var(--text);font-size:.85rem}
+
+.lang-item:hover {
+background:#eef2ff}
+
+.lang-item.active {
+background:#eef2ff;color:var(--p0);font-weight:700}
+
+.lang-item .lang-code {
+font-weight:700;min-width:24px}
+
+.lang-item .lang-name {
+color:var(--text2)}
+
+.lang-item.active .lang-name {
+color:var(--p0)}
+
+.online-panel {
+max-width:520px;margin:10px auto;padding:0 16px}
+
+.op-create {
+display:flex;align-items:center;gap:.5rem;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;flex-wrap:wrap}
+
+.op-create .op-or {
+color:var(--text2);font-size:.85rem}
+
+.op-create input {
+min-width:90px;flex:1;padding:.5rem .7rem;border:1.5px solid var(--border);border-radius:8px;font-size:.9rem}
+
+.op-waiting {
+background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center}
+
+.op-code-lb {
+color:var(--text2);font-size:.9rem;font-weight:600}
+
+.op-code {
+font-size:1.5rem;font-weight:800;letter-spacing:.12em;color:var(--p0)}
+
+.op-status {
+margin:.5rem 0;color:var(--text2);font-weight:500}
+
+.op-players {
+display:flex;gap:.5rem;justify-content:center;margin-top:.5rem}
+
+.op-player {
+flex:1;padding:.4rem .6rem;background:#f9fafb;border:1.5px solid var(--border);border-radius:8px;font-size:.85rem;font-weight:600;color:var(--text)}
+
+.op-player.me {
+border-color:var(--p0);background:#f0fdfa;color:var(--p0)}
+
+.players-bar {
+display:flex;gap:.5rem;width:100%;max-width:440px}
+
+.p-card {
+flex:1;display:flex;align-items:center;gap:.4rem;padding:.4rem .6rem;background:#f9fafb;border:1.5px solid var(--border);border-radius:8px;font-size:.85rem;font-weight:600}
+
+.p-card.me {
+border-color:var(--p0);background:#f0fdfa;color:var(--p0)}
+
+.p-card.turn {
+box-shadow:0 0 0 3px rgba(220,38,38,.18)}
+
+.p-card .pl-mark {
+font-size:1.1rem}
+
+.p-card .pl-name {
+margin-left:auto;font-size:.82rem}
+
+.col-arrows {
+display:grid;grid-template-columns:repeat(7,1fr);gap:6px;width:100%;max-width:440px}
+
+.col-arrow {
+aspect-ratio:1;background:#fff;border:1.5px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text2);cursor:pointer;font-size:1.4rem;line-height:1}
+
+.col-arrow:hover:not(.off) {
+background:#f0fdfa;border-color:var(--p0);color:var(--p0)}
+
+.col-arrow.off {
+opacity:.3;cursor:not-allowed}
+
+.board {
+display:grid;grid-template-columns:repeat(7,1fr);gap:6px;background:var(--board);padding:6px;border-radius:8px;width:100%;max-width:440px;aspect-ratio:7/6}
+
+.cell {
+aspect-ratio:1;background:var(--hole);border-radius:50%;display:flex;align-items:center;justify-content:center}
+
+.stone {
+width:84%;height:84%;border-radius:50%;box-shadow:inset 0 2px 4px rgba(0,0,0,.3),0 1px 2px rgba(0,0,0,.2)}
+
+.stone.p0 {
+background:radial-gradient(circle at 30% 30%,#ff8888,#b91c1c)}
+
+.stone.p1 {
+background:radial-gradient(circle at 30% 30%,#fff89a,#ca8a04)}
+
+.cell.win {
+box-shadow:inset 0 0 0 3px var(--good),0 0 6px var(--good)}
+
+.result-overlay {
+display:none;position:absolute;inset:0;background:rgba(255,255,255,.94);border-radius:6px;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:20}
+
+.result-overlay.show {
+display:flex}
+
+.result-text {
+font-size:1.5rem;font-weight:800}
+
+.result-text.win {
+color:var(--good)}
+
+.result-text.lose {
+color:var(--bad)}
+
+.result-text.draw {
+color:var(--text2)}
+
+.coach-zh {
+font-size:.9rem;font-weight:600;color:#4338ca;line-height:1.4}
+
+.chat-panel {
+background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;margin:0 0 10px}
+
+.chat-panel h4 {
+margin:0 0 6px;font-size:.85rem;color:var(--text2);font-weight:700}
+
+.chat-list {
+max-height:140px;overflow-y:auto;font-size:.85rem;display:flex;flex-direction:column;gap:4px;margin-bottom:6px}
+
+.chat-msg {
+padding:3px 8px;border-radius:8px;background:#f6f7f9;line-height:1.4;word-break:break-word}
+
+.chat-msg .c-nm {
+font-weight:700;color:var(--p0);margin-right:5px}
+
+.chat-msg.me {
+background:#eef2ff}
+
+.chat-msg.emoji-only {
+font-size:1.4rem;background:transparent;padding:1px 4px}
+
+.chat-emoji {
+display:flex;flex-wrap:wrap;gap:2px;padding:4px 0;border-bottom:1px dashed var(--border)}
+
+.chat-emoji button {
+background:none;border:none;font-size:1.25rem;cursor:pointer;padding:2px 4px;border-radius:6px;transition:transform .1s}
+
+.chat-emoji button:hover {
+transform:scale(1.25)}
+
+.chat-input-row {
+display:flex;gap:6px;align-items:center;margin-top:6px}
+
+.chat-input-row input {
+flex:1;min-width:0;padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:.85rem}
+
+.chat-emoji-btn {
+background:#f6f7f9;border:1px solid var(--border);border-radius:8px;font-size:1rem;cursor:pointer;padding:5px 8px}
+
+.game-footer {
+max-width:640px;margin:0 auto;padding:8px 16px 32px;color:var(--text2);font-size:.85rem}
+
+.game-footer h3 {
+color:var(--text);font-size:1rem;margin:18px 0 6px}
+
+.game-footer p,.game-footer li {
+line-height:1.7}
+
+</style>
+  <!-- Tri-Sites Shared CSS -->
+  <link rel="stylesheet" href="/css/shared/tokens.css?v=p4fix2">
+  <link rel="stylesheet" href="/css/shared/sidebar.css?v=p28">
+  <link rel="stylesheet" href="/css/shared/components.css?v=p19fix2">
+  <link rel="stylesheet" href="/css/boardduel-game.css?v=p2fix3">
+  <link rel="stylesheet" href="/css/shared/toast.css?v=p3fix2">
+  <!-- Open Graph -->
+  <meta property="og:type" content="game" />
+  <meta data-i18n="meta.auto.hc_四子棋在线对战_86796" property="og:title" content="Connect 4 - Online" />
+  <meta data-i18n="meta.auto.hc_四子棋在线玩76垂直下落棋盘轮_13105" property="og:description" content="Connect 4 play online: on a 7×6 gravity-drop board, players alternate dropping pieces; the first to line up four of the same color in any direction (horizontal/vertical/diagonal) wins. AI match, friend match, real-time random match and battle history replay. Play in browser, free to play, privacy-first." />
+  <meta property="og:url" content="https://boardduel.com/games/connect4/" />
+  <meta data-i18n="meta.auto.hc_BoardDuel棋盘对决_74499" property="og:site_name" content="Board Duel - Board Games" />
+  <meta property="og:locale" content="zh_CN" />
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta data-i18n="meta.auto.hc_四子棋在线对战_28919" name="twitter:title" content="Connect 4 - Online" />
+  <meta data-i18n="meta.auto.hc_四子棋在线玩76垂直下落棋盘轮_51057" name="twitter:description" content="Connect 4 play online: on a 7×6 gravity-drop board, players alternate dropping pieces; the first to line up four of the same color in any direction (horizontal/vertical/diagonal) wins. AI match, friend match, real-time random match and battle history replay. Play in browser, free to play, privacy-first." />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "四子棋 - 在线对战 | Board Duel",
+    "description": "四子棋在线玩：7×6 垂直下落棋盘，轮流投掷棋子，先在横/竖/斜任一方向连成四个同色棋子者胜。支持人机对战、好友联机、实时随机配对、历史对战回放。网页即玩，无广告无追踪。",
+    "url": "https://boardduel.com/games/connect4/",
+    "inLanguage": "zh-CN",
+    "isPartOf": { "@type": "WebSite", "name": "Board Duel 棋盘对决", "url": "https://boardduel.com/" }
+  }
+  </script>
+  <!-- BreadcrumbList -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "首页", "item": "https://boardduel.com/" },
+      { "@type": "ListItem", "position": 2, "name": "游戏", "item": "https://boardduel.com/games/" },
+      { "@type": "ListItem", "position": 3, "name": "四子棋", "item": "https://boardduel.com/games/connect4/" }
+    ]
+  }
+  </script>  <meta property="og:image" content="https://boardduel.com/games/connect4/og.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="632" />
+  <meta property="og:image:alt" content="四子棋 - Board Duel 棋盘对决" />
+  <meta name="twitter:image" content="https://boardduel.com/games/connect4/og.jpg" />  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "VideoGame",
+    "name": "四子棋 - Board Duel",
+    "url": "https://boardduel.com/games/connect4/",
+    "image": "https://boardduel.com/games/connect4/og.jpg",
+    "description": "四子棋在线玩：7×6 垂直下落棋盘，轮流投掷棋子，先在横/竖/斜任一方向连成四个同色棋子者胜。支持人机对战、好友联机、实时随机配对、历史对战回放。网页即玩，无广告无追踪。",
+    "genre": "Strategy",
+    "playMode": "MultiPlayer,SinglePlayer",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Any (Web Browser)",
+    "inLanguage": "zh-CN",
+    "isAccessibleForFree": true,
+    "publisher": {
+      "@type": "Organization",
+      "name": "Board Duel 棋盘对决",
+      "url": "https://boardduel.com/"
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "CNY",
+      "availability": "https://schema.org/InStock"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.7",
+      "ratingCount": "120",
+      "bestRating": "5",
+      "worstRating": "1"
+    }
+  }
+  </script>  <link rel="stylesheet" href="/css/shared/brand-ds2.css?v=ds2-22">
+  <link rel="manifest" href="/manifest.zh.webmanifest">
+</head>
+<body>
+
+<div id="site-header" style="min-height:65px"
+     data-brand-a="Board" data-brand-b="Duel" data-mark="duel-chess"
+     data-nav='[{"label":"Home","href":"/","i18n":"nav.home"}]'
+     data-cta-label="Home" data-cta-href="/" data-cta-i18n="nav.home"></div>
+
+  <main class="game-shell">
+    <header class="game-header">
+      <h1>🔴 <span data-i18n="game_connect4.name">Connect 4</span></h1>
+      <p class="sub" data-i18n="game_connect4.desc">7×6 board with gravity. Connect four in a row to win.</p>
+    </header>
+
+    <div class="status-bar">
+      <div class="sb-item"><span class="sb-ico">👤</span><span data-i18n="match.mode">Mode</span><span class="sb-val" id="bd-mode-val" data-i18n="match.ai">🤖 vs AI</span></div>
+      <div class="sb-item"><span class="sb-ico">🎚️</span><span data-i18n="match.difficulty">Difficulty</span><span class="sb-val" id="aiDiffVal" data-i18n="difficulty.medium">Medium</span></div>
+      <div class="sb-item"><span class="sb-ico">♟️</span><span data-i18n="match.turn">Turn</span><span class="sb-val" id="turnVal">—</span></div>
+      <div class="sb-item"><span class="sb-ico">🏳️</span><span data-i18n="match.status">Status</span><span class="sb-val" id="stateVal" data-i18n="match.playing">Playing</span></div>
+    </div>
+
+    <div class="toolbar">
+      <button class="t-btn" id="newBtn" onclick="doNewGame()" data-i18n="common.new_game">New Game</button>
+      <span class="t-divider"></span>
+      <div class="toggle" id="bd-mode-toggle">
+        <button data-m="ai" class="on" data-i18n="match.ai">🤖 vs AI</button>
+        <button data-m="online" data-i18n="match.online">🌐 Online</button>
+        <button data-m="random" data-i18n="match.random">⚡ Random</button>
+      </div>
+      <span class="t-spacer"></span>
+      <div class="toggle" id="diffToggle">
+        <button data-d="easy" data-i18n="difficulty.easy">Easy</button>
+        <button data-d="normal" class="on" data-i18n="difficulty.normal">Normal</button>
+        <button data-d="hard" data-i18n="difficulty.hard">Hard</button>
+      </div>
+    </div>
+
+    <div class="coach-bar" id="coachBar"><span class="coach-icon">🧠</span><div class="coach-zh" id="coachZh"></div></div>
+
+    <div class="online-panel" id="bd-lobby" style="display:none">
+      <div class="op-create">
+        <input id="bd-name" data-i18n-placeholder="common.nickname_optional" placeholder="Nickname (optional)" maxlength="20">
+        <button class="btn-primary" id="bd-create-btn" data-i18n="match.create_room">➕ Create Room</button>
+        <span class="op-or" data-i18n="match.or">or</span>
+        <input id="bd-code-input" data-i18n-placeholder="common.enter_room_code" placeholder="Enter 6-digit code" maxlength="6">
+        <button class="btn-ghost" id="bd-join-btn" data-i18n="match.join">Join</button>
+      </div>
+    </div>
+    <div class="online-panel" id="bd-waiting" style="display:none">
+      <div class="op-waiting">
+        <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;justify-content:center">
+          <span class="op-code-lb" data-i18n="match.room_code">Room Code</span>
+          <span class="op-code" id="bd-code"></span>
+          <button class="btn-ghost" id="bd-copy-btn" style="font-size:.8rem;padding:.35rem .7rem" data-i18n="match.copy_invite">Copy Invite Link</button>
+        </div>
+        <div class="op-status" id="bd-status" data-i18n="match.connected_waiting">Connected, waiting for opponent…</div>
+        <div class="op-players" id="op-players"></div>
+      </div>
+    </div>
+    <div class="online-panel" id="bd-random-panel" style="display:none">
+      <div class="op-waiting">
+        <div style="font-size:1.2rem" data-i18n="match.finding">Finding opponent…</div>
+        <div class="op-status" id="bd-random-status" data-i18n="match.matching">Matching real players…</div>
+        <button class="btn-ghost" id="bd-random-cancel" style="margin-top:.8rem" data-i18n="match.cancel_match">Cancel</button>
+      </div>
+    </div>
+
+    <div class="board-wrap">
+      <div class="players-bar">
+        <div class="p-card" id="p0Card"><span class="pl-mark">🔴</span><span class="pl-name" id="p0Name" data-i18n="player.you">You</span></div>
+        <div class="p-card" id="p1Card"><span class="pl-mark">🟡</span><span class="pl-name" id="p1Name" data-i18n="player.cpu_ai">CPU AI</span></div>
+      </div>
+      <div class="col-arrows" id="colArrows"></div>
+      <div class="board" id="board"></div>
+      <div class="result-overlay" id="resultOverlay">
+        <div class="result-text" id="resultText"></div>
+        <div class="actions">
+          <button class="btn-primary" onclick="doNewGame()" data-i18n="common.play_again">Play Again</button>
+          <button class="btn-ghost" onclick="document.getElementById('resultOverlay').classList.remove('show')" data-i18n="common.keep_watching">Keep Watching</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-panel" id="chatPanel" style="display:none">
+      <h4 data-i18n="chat.title">💬 In-Game Chat</h4>
+      <div class="chat-list" id="chatList"></div>
+      <div class="chat-emoji" id="chatEmoji" style="display:none"></div>
+      <div class="chat-input-row">
+        <button class="chat-emoji-btn" id="chatEmojiBtn" type="button" onclick="toggleChatEmoji()">😀</button>
+        <input id="chatInput" type="text" maxlength="140" data-i18n-placeholder="chat.placeholder" placeholder="Say something… (Enter to send)" onkeydown="if(event.key==='Enter')sendChat()">
+        <button class="btn-ghost" onclick="sendChat()" data-i18n="chat.send">Send</button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="sites-footer">
+      <div class="wrap">
+        <div class="sf-title" data-i18n="home.site_network">🎯 Our Brand Network</div>
+        <div class="sf-matrix">
+          <a href="https://mathduel.games/" class="sf-item">
+            <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-calculator"></use></svg>
+            <span data-i18n="bd_games_connect4_1">MathDuel</span>
+          </a>
+          <a href="https://boardduel.com/" class="sf-item">
+            <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-chess"></use></svg>
+            <span data-i18n="bd_games_connect4_2">BoardDuel</span>
+          </a>
+          <a href="https://memoryduel.com/" class="sf-item">
+            <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-brain"></use></svg>
+            <span data-i18n="bd_games_connect4_3">MemoryDuel</span>
+          </a>
+        </div>
+        <div class="sf-links">
+          <a href="/about/" data-i18n="nav.about">About</a>
+          <a href="/privacy/" data-i18n="nav.privacy">Privacy</a>
+          <a href="/terms/" data-i18n="nav.terms">Terms</a>
+          <a href="/contact/" data-i18n="nav.contact">Contact</a>
+        </div>
+        <div class="sf-copy" data-i18n="home.footer">© 2026 BoardDuel · Free to play · Privacy-first</div>
+      </div>
+      
+    </footer>
+
+  <script src="/i18n/i18n.js?v=33"></script>
+  <script src="/assets/js/match-mode.js?v=20260901"></script>
+  <script type="module">
+  import { newGame as aiNewGame, applyMove as aiApplyMove, chooseMove, COLS } from './ai.js';
+  (function(){
+    'use strict';
+    // 翻译 helper：缺 key 或语言未就绪时回退中文 fb
+    function tt(k,fb){ try{ if(window.t){ var v=window.t(k); if(v&&v!==k)return v; } }catch(e){} return fb; }
+    const GAME='connect4';
+    const WS_BASE=(location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws?game='+GAME+'&code=';
+    let ws=null, you=0, code='', myName=tt('player.guest','玩家')+Math.floor(1000+Math.random()*9000);
+    let mode='ai'; let g=null; let aiFillName=null;
+    const $=id=>document.getElementById(id);
+    function setStatus(t){ $('stateVal').textContent=t; }
+    function showCoach(zh){ const bar=$('coachBar'); $('coachZh').textContent=zh; bar.classList.add('show'); }
+
+    function render(){
+      if(!g) return;
+      const b=$('board'); b.innerHTML='';
+      const winLine=g.winLine||[];
+      const youTurn=g.status==='playing' && g.turn===you;
+      const waitAI=(mode==='ai') && g.status==='playing' && g.turn!==you;
+      for(let i=0;i<42;i++){
+        const cell=document.createElement('div'); cell.className='cell';
+        const v=g.board[i];
+        if(v!=null){
+          const s=document.createElement('div');
+          s.className='stone p'+v;
+          cell.appendChild(s);
+        }
+        if(winLine.indexOf(i)>=0){ cell.classList.add('win'); }
+        b.appendChild(cell);
+      }
+      // 列箭头
+      const ca=$('colArrows'); ca.innerHTML='';
+      for(let c=0;c<COLS;c++){
+        const full=g.board[c]!=null;
+        const arrow=document.createElement('div');
+        arrow.className='col-arrow'+(full||!youTurn||waitAI?' off':'');
+        arrow.textContent='↓';
+        if(!full && youTurn && !waitAI && g.status==='playing'){
+          arrow.onclick=()=>localHumanMove(c);
+        }
+        ca.appendChild(arrow);
+      }
+      const oppName = aiFillName ? (tt('player.cpu','电脑')+'·'+aiFillName) : tt('player.cpu','电脑');
+      $('p0Name').textContent = (mode==='ai') ? (you===0?tt('player.you','你'):oppName) : ((you===0?tt('player.you_tag','(你)')+' ':'') + tt('player.player1','玩家 1'));
+      $('p1Name').textContent = (mode==='ai') ? (you===1?tt('player.you','你'):oppName) : ((you===1?tt('player.you_tag','(你)')+' ':'') + tt('player.player2','玩家 2'));
+      $('p0Card').classList.toggle('me', you===0);
+      $('p1Card').classList.toggle('me', you===1);
+      $('p0Card').classList.toggle('turn', g.turn===0);
+      $('p1Card').classList.toggle('turn', g.turn===1);
+      $('turnVal').textContent = (g.status==='over')?'—':(g.turn===you?tt('player.you','你'):tt('player.opp','对手'));
+      const overlay=$('resultOverlay'); const txt=$('resultText');
+      if(g.status==='over'){
+        const win=g.winner;
+        if(win==null){ txt.textContent=tt('status.draw_emoji','🤝 平局'); txt.className='result-text draw'; }
+        else if(mode==='ai'){ txt.textContent=win===you?tt('status.win_emoji','🎉 你赢了！'):(aiFillName?'😔 '+aiFillName+' '+tt('status.win_emoji','赢了')+'！':tt('status.cpu_win_emoji','😔 电脑赢了')); txt.className='result-text '+(win===you?'win':'lose'); }
+        else { txt.textContent=win===you?tt('status.win_emoji','🎉 你赢了！'):tt('status.lose_emoji','😔 你输了'); txt.className='result-text '+(win===you?'win':'lose'); }
+        overlay.classList.add('show');
+        setStatus(win==null?tt('status.draw','平局'):(win===you?tt('status.you_win','你胜'):tt('status.you_lose','你负')));
+      } else {
+        overlay.classList.remove('show');
+        setStatus(mode==='ai'?(g.turn===you?tt('status.your_turn','轮到你了'):(aiFillName?(aiFillName+' '+tt('status.thinking','思考中…')):tt('status.cpu_thinking','电脑思考中…'))):(g.turn===you?tt('status.your_turn','轮到你了'):tt('status.waiting','等待对手…')));
+      }
+    }
+    function renderPlayersOnline(){
+      if(mode!=='online') return;
+      const box=$('op-players'); if(!box) return;
+      let h='';
+      h+='<div class="op-player'+(you===0?' me':'')+'">🔴 '+((you===0?tt('player.you_tag','(你)')+' ':'')+tt('player.player1','玩家 1'))+'</div>';
+      h+='<div class="op-player'+(you===1?' me':'')+'">🟡 '+((you===1?tt('player.you_tag','(你)')+' ':'')+tt('player.player2','玩家 2'))+'</div>';
+      box.innerHTML=h;
+    }
+
+    function connectRoom(codeIn){
+      code=codeIn; mode='online';
+      g = aiNewGame(); you=0;
+      $('bd-lobby').style.display='none'; $('bd-waiting').style.display=''; $('bd-random-panel').style.display='none';
+      $('newBtn').style.display='none';
+      $('bd-code').textContent=code;
+      $('bd-status').textContent=tt('match.connecting','连接中…');
+      $('op-players').innerHTML='';
+      $('chatPanel').style.display='';
+      try{ if(ws) ws.close(); }catch(e){}
+      /* P5 (W8): 带 uuid 给后端做 Elo 结算 (accountStore key) */
+      const eloUuid = (window.MD_AUTH && window.MD_AUTH.uuid) ? window.MD_AUTH.uuid : '';
+      ws=new WebSocket(WS_BASE+code+'&name='+encodeURIComponent(myName)+(eloUuid ? '&uuid='+encodeURIComponent(eloUuid) : ''));
+      ws.onopen=()=>{ $('bd-status').textContent=tt('match.connected_waiting','已连接，等待对手加入…'); };
+      ws.onmessage=(e)=>{ let m; try{m=JSON.parse(e.data);}catch{return;} handleOnline(m); };
+      ws.onclose=()=>{ if(mode==='online'){ $('bd-status').textContent=tt('match.disconnected','连接已断开'); } };
+      ws.onerror=()=>{ $('bd-status').textContent=tt('match.connection_error','连接错误'); };
+    }
+    function handleOnline(m){
+      if(m.type==='error'){ $('bd-status').textContent=m.message||tt('common.error','错误'); return; }
+      if(m.type==='state'){
+        if(m.you!=null) you=m.you;
+        if(m.code) code=m.code;
+        renderPlayersOnline();
+      }
+      else if(m.type==='opponent_move'){
+        const opp=1-you;
+        const c = (typeof m.c==='number') ? m.c : (typeof m.i==='number' ? m.i : null);
+        if(c!=null){
+          const r=aiApplyMove(g, opp, c);
+          if(r && !r.ok){ $('bd-status').textContent=tt('match.move_error','对手走子异常'); return; }
+          render(); renderPlayersOnline();
+        }
+      }
+      else if(m.type==='opponent_leave'){ $('bd-status').textContent=tt('match.opponent_left','对手已离开'); }
+      else if(m.type==='restart_notify'){
+        g = aiNewGame(); render(); renderPlayersOnline();
+        $('bd-status').textContent=tt('match.restart_notify','对局已重新开始')+(you===0?tt('connect4.you_r',' 你执 🔴'):tt('connect4.you_y',' 你执 🟡'));
+      }
+      else if(m.type==='chat'){ appendChat(m); }
+      /* P5 (W8) boardduel Elo 结算 (服务端 settlement 后推送) */
+      else if(m.type==='game_over' && m.elo){
+        // 显示 Elo 变化横幅
+        const me = (m.elo.find(e => e.uuid === (window.MD_AUTH && window.MD_AUTH.uuid)));
+        if (me) {
+          let banner = document.getElementById('bd-elo-banner');
+          if (!banner) {
+            banner = document.createElement('div');
+            banner.id = 'bd-elo-banner';
+            banner.style.cssText = 'position:fixed;left:50%;top:80px;transform:translateX(-50%);background:rgba(15,23,42,.95);color:#fff;padding:12px 24px;border-radius:12px;font-weight:700;z-index:1000;box-shadow:0 6px 20px rgba(0,0,0,.3);font-size:14px;line-height:1.5;text-align:center;min-width:280px;';
+            document.body.appendChild(banner);
+          }
+          const sign = me.delta > 0 ? '+' : '';
+          const tierInfo = me.tierChange && me.tierChange.promoted ? ' 🎉 升段至 ' + me.tierChange.to + '!' : (me.tierChange && me.tierChange.demoted ? ' (降段至 ' + me.tierChange.to + ')' : '');
+          banner.innerHTML = (me.tier && me.tier.emoji ? me.tier.emoji + ' ' : '') + 'Elo ' + me.elo + ' (' + sign + me.delta + ')' + tierInfo;
+          banner.style.display = '';
+          setTimeout(() => { banner.style.display = 'none'; }, 6000);
+        }
+      }
+    }
+
+    function startAI(opts){
+      aiFillName=(opts&&opts.aiFillName)||null;
+      mode='ai'; you=0; g=aiNewGame();
+      $('bd-lobby').style.display='none'; $('bd-waiting').style.display='none'; $('bd-random-panel').style.display='none';
+      $('newBtn').style.display=''; $('chatPanel').style.display='none';
+      try{ if(ws){ws.close();ws=null;} }catch(e){}
+      render();
+      showCoach('🆕 '+tt('connect4.you_r','新对局开始，你执 🔴 先行。'));
+      if(g.turn!==you) scheduleAI();
+    }
+    function diffLabel(){ const d=document.querySelector('#diffToggle button.on'); return d?(d.dataset.d==='hard'?'hard':d.dataset.d==='normal'?'normal':'easy'):'normal'; }
+    // AI 思考延迟:本地人机快一些,随机配对(AI 补位)模拟真人节奏
+    function aiThinkDelay(){
+      const diff=diffLabel();
+      const baseByDiff = diff==='hard'?1100 : diff==='normal'?700 : 450;
+      const isRandom = !!aiFillName;
+      if(isRandom){
+        return Math.round(baseByDiff*1.8 + Math.random()*600);
+      }
+      return Math.round(baseByDiff + Math.random()*250);
+    }
+    function scheduleAI(){
+      const delay = aiThinkDelay();
+      setTimeout(function(){
+        if(mode!=='ai'||!g||g.status!=='playing') return;
+        if(g.turn===you) return;
+        const m=chooseMove(g, g.turn, diffLabel());
+        if(m==null) return;
+        aiApplyMove(g, g.turn, m);
+        render();
+        if(g.status==='playing' && g.turn===you) showCoach(tt('status.your_turn','轮到你了。'));
+      }, delay);
+    }
+    function localHumanMove(c){
+      if(!g||g.status!=='playing') return;
+      if(g.turn!==you) return;
+      const r=aiApplyMove(g, you, c);
+      if(!r||!r.ok) return;
+      render();
+      if(mode==='online' && ws && ws.readyState===1){
+        ws.send(JSON.stringify({type:'move', c:Number(c)}));
+      } else if(mode==='ai'){
+        if(g.status==='playing' && g.turn!==you) scheduleAI();
+      }
+    }
+
+    function stopAll(){
+      try{ if(ws){ws.close();ws=null;} }catch(e){}
+      if(window.BoardDuelMatch) window.BoardDuelMatch.stopMatch();
+    }
+    /* ────── 对局聊天 + emoji ────── */
+    var CHAT_EMOJIS=['😀','😄','😂','🤣','😎','🤩','😅','😭','😤','🤔','👍','👏','🙌','✌️','🤝','💪','🔥','🎉','😮','🙄'];
+    function chatVisible(){ return mode==='online' && ws && ws.readyState===1; }
+    function toggleChatEmoji(){
+      var box=$('chatEmoji'); if(!box)return;
+      if(box.style.display==='none'||!box.style.display){
+        var h='';
+        CHAT_EMOJIS.forEach(function(e){ h+='<button type="button" onclick="sendChatEmoji(this.textContent)">'+e+'</button>'; });
+        box.innerHTML=h; box.style.display='';
+      }else{ box.style.display='none'; }
+    }
+    function sendChatEmoji(emo){
+      if(!chatVisible())return;
+      ws.send(JSON.stringify({type:'chat',emoji:emo}));
+    }
+    function sendChat(){
+      if(!chatVisible())return;
+      var inp=$('chatInput'); var v=(inp.value||'').trim();
+      if(!v)return;
+      ws.send(JSON.stringify({type:'chat',text:v}));
+      inp.value='';
+    }
+    function appendChat(m){
+      var list=$('chatList'); if(!list)return;
+      var me=(m.by===you);
+      var div=document.createElement('div');
+      div.className='chat-msg'+(me?' me':'')+(m.emoji?' emoji-only':'');
+      div.innerHTML=(m.emoji?m.text:('<span class="c-nm">'+escapeHtml(m.name||tt('player.opp','玩家'))+':</span>'+escapeHtml(m.text)));
+      list.appendChild(div);
+      list.scrollTop=list.scrollHeight;
+    }
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});
+    }
+    window.doNewGame=function(){
+      if(mode==='ai') startAI({aiFillName: window.BoardDuelMatch?window.BoardDuelMatch.getAiFillName():null});
+      else if(mode==='online' && ws && ws.readyState===1){
+        g=aiNewGame(); render(); renderPlayersOnline();
+        ws.send(JSON.stringify({type:'restart'}));
+      }
+    };
+    function setDiff(d){
+      document.querySelectorAll('#diffToggle button').forEach(function(b){b.classList.toggle('on',b.dataset.d===d);});
+      const lbl=d==='hard'?tt('difficulty.hard','困难'):d==='normal'?tt('difficulty.normal','普通'):tt('difficulty.easy','入门');
+      $('aiDiffVal').textContent=lbl;
+      if(mode==='ai') startAI({aiFillName: window.BoardDuelMatch?window.BoardDuelMatch.getAiFillName():null});
+    }
+    document.querySelectorAll('#diffToggle button').forEach(function(b){ b.onclick = function(){ setDiff(b.dataset.d); }; });
+
+    window.BoardDuelMatch.init({ game: GAME, onStartAI: startAI, onEnterOnline: connectRoom, onStop: stopAll, name: myName });
+    (function(){
+      const c=new URLSearchParams(location.search).get('c');
+      if(c){ $('bd-code-input').value=c; window.BoardDuelMatch.setMode('online'); window.BoardDuelMatch.joinRoom(); return; }
+      window.BoardDuelMatch.setMode('ai');
+    })();
+    const hb=$('hamburger'); if(hb){ hb.onclick=()=>{ const m=$('navMenu'); const open=m.classList.toggle('open'); hb.setAttribute('aria-expanded',open?'true':'false'); }; }
+    document.addEventListener('click',function(e){ const m=$('navMenu'); if(m && hb && m.classList.contains('open')&&!e.target.closest('.g-nav')){ m.classList.remove('open'); hb.setAttribute('aria-expanded','false'); } });
+        function syncLangBtn(){
+      // 语言下拉菜单高亮由 i18n.js 全局 syncLangDropdown 自动处理
+    }
+    function refreshI18n(){
+      // 语言切换后刷新 JS 动态文案
+      if(g) render();
+      if(g && g.status==='playing' && !(g.moveCount||0)) showCoach('🆕 '+tt('connect4.you_r','新对局开始，你执 🔴 先行。'));
+      syncLangBtn();
+    }
+    window.addEventListener('langchange',refreshI18n);
+    setTimeout(syncLangBtn,500);
+  })();
+  </script>
+  <!--   <!-- Tri-Sites Sidebar -->
+  <script src="/js/sidebar.js?v=sb35" defer></script>
+  <script src="/js/toast.js?v=p27" defer></script>
+  <script src="/js/game-enhancer.js?v=1" defer></script>  <button class="g-tutorial-btn" id="gTutorialBtn" aria-label="View how to play" data-i18n-aria-label="bd_games_connect4_attr_4" data-i18n="bd_games_connect4_4">📖 How to Play</button>
+  <script>
+  document.getElementById('gTutorialBtn')?.addEventListener('click', function(){
+    var ft = document.querySelector('.game-footer');
+    if (ft) { ft.scrollIntoView({ behavior:'smooth', block:'start' }); }
+  });
+  </script>
+  <nav class="bottom-nav" aria-label="移动端导航">
+    <div class="bottom-nav-inner">
+      <a href="/" class="bottom-nav-item"><span class="bn-ico">🏠</span><span class="bn-label" data-i18n="nav.home">Home</span></a>
+      <a href="/games/tictactoe/" class="bottom-nav-item"><span class="bn-ico">✕◯</span><span class="bn-label" data-i18n="nav.ttt">✕◯ Tic-Tac-Toe</span></a>
+      <a href="/games/gomoku/" class="bottom-nav-item"><span class="bn-ico">⚫</span><span class="bn-label" data-i18n="nav.gomoku">⚫ Gomoku</span></a>
+      <a href="/games/chess/" class="bottom-nav-item"><span class="bn-ico">♞</span><span class="bn-label" data-i18n="nav.chess">♞ Chess</span></a>
+      <a href="/games/connect4/" class="bottom-nav-item"><span class="bn-ico">🔴</span><span class="bn-label" data-i18n="nav.connect4">🔴 Connect 4</span></a>
+    </div>
+  </nav>
+
+  <script src="/shared/site-header.js?v=ds2-11"></script>
+  <script src="/shared/sso-bridge.js?v=1" defer></script>
+  <!-- P5 (W8): 拉 /api/auth/me 注入 window.MD_AUTH (UUID + tier) 给 ws/Elo 用 -->
+  <script src="/shared/auth-helper.js?v=w8-1" defer></script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/img/favicon.svg">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title data-i18n-title="title.auto.hc_我的战绩BoardDuel_93074">My Record · Board Duel</title>
+  <meta name="description" data-i18n="stats.meta_desc" content="My stats - Board Duel board game battle site.">
+  <link rel="canonical" href="https://boardduel.com/stats/">
+  
+  
+  <link rel="alternate" hreflang="zh-CN" href="https://boardduel.com/stats/" />
+  <link rel="alternate" hreflang="en" href="https://boardduel.com/stats/?lang=en" />
+  <link rel="alternate" hreflang="ja" href="https://boardduel.com/stats/?lang=ja" />
+  <link rel="alternate" hreflang="es" href="https://boardduel.com/stats/?lang=es" />
+  <link rel="alternate" hreflang="fr" href="https://boardduel.com/stats/?lang=fr" />
+  <link rel="alternate" hreflang="de" href="https://boardduel.com/stats/?lang=de" />
+  <link rel="alternate" hreflang="x-default" href="https://boardduel.com/stats/" />
+<style>
+    :root{ --p:#4f46e5; --p-d:#4338ca; --p-l:#eef2ff; --g:#22b573; --g-l:#e7f9f0; --bg:#faf9ff; --card:#fff; --t:#1e1b4b; --m:#6b7280; --line:rgba(23,24,40,0.08); }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--t);line-height:1.6}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:760px;margin:0 auto;padding:0 20px}
+    nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+    .nav-in{display:flex;align-items:center;gap:18px;height:60px;max-width:1080px;margin:0 auto;padding:0 20px}
+    .nav-in .brand{font-weight:800;font-size:18px}
+    .nav-in .brand span{color:var(--p)}
+    .nav-in .links{margin-left:auto;display:flex;gap:4px}
+    .nav-in .links a{color:var(--m);font-size:14px;padding:8px 12px;border-radius:999px;transition:.15s}
+    .nav-in .links a:hover{color:var(--p);background:var(--p-l)}
+    .container{padding:36px 0 48px}
+    .container h1{font-size:1.7rem;margin-bottom:.5rem;color:var(--p-d)}
+    .sub{color:var(--m);margin-bottom:1.5rem}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:24px}
+    .stat-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;text-align:center}
+    .stat-card .val{font-size:2rem;font-weight:800;color:var(--p)}
+    .stat-card .lab{color:var(--m);font-size:.85rem;margin-top:4px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:14px}
+    .card .row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+    .card .row:last-child{border:none}
+    .card .row .k{color:var(--m);font-size:.9rem}
+    .card .row .v{font-weight:700}
+    footer{margin-top:40px;border-top:1px solid var(--line);background:var(--card);padding:24px 0;text-align:center;color:var(--m);font-size:.8rem}
+    @media(max-width:640px){.nav-in .links{display:none}}
+  </style>
+  <link rel="stylesheet" href="/css/shared/tokens.css?v=p4fix2">
+  <link rel="stylesheet" href="/css/shared/brand-ds2.css?v=ds2-22">
+<script src="/i18n/i18n.js?v=33"></script>
+  <link rel="manifest" href="/manifest.zh.webmanifest">
+</head>
+<body>
+
+<div id="site-header" style="min-height:65px"
+     data-brand-a="Board" data-brand-b="Duel" data-mark="duel-chess"
+     data-nav='[{"label":"Home","href":"/","i18n":"nav.home"}]'
+     data-cta-label="Home" data-cta-href="/" data-cta-i18n="nav.home"></div>
+
+  <nav><div class="wrap nav-in">
+    <div class="brand">♟️ Board<span>Duel</span></div>
+    <div class="links"><a href="/" data-i18n="stats.nav_home">Home</a><a href="/rank/" data-i18n="stats.nav_rank">Ranking</a><a href="/shop/" data-i18n="stats.nav_shop">Shop</a><a href="/about/" data-i18n="stats.nav_about">About</a></div>
+  </div></nav>
+
+  <div class="container"><div class="wrap">
+    <h1 data-i18n="stats.h1">📊 My Stats</h1>
+    <p class="sub" data-i18n="stats.subtitle">View your account statistics.</p>
+    <div class="grid">
+      <div class="stat-card"><div class="val" id="streak">—</div><div class="lab" data-i18n="stats.streak">Current Win Streak</div></div>
+      <div class="stat-card"><div class="val" id="balance">—</div><div class="lab" data-i18n="stats.coins">Coins</div></div>
+      <div class="stat-card"><div class="val" id="rank">—</div><div class="lab" data-i18n="stats.global_rank">Global Rank</div></div>
+      <div class="stat-card"><div class="val" id="solved">—</div><div class="lab" data-i18n="stats.games_played">Games Played</div></div>
+    </div>
+    <div class="card" id="info"><div style="color:var(--m)" data-i18n="stats.loading">Loading...</div></div>
+  </div></div>
+
+  <footer class="sites-footer">
+      <div class="wrap">
+        <div class="sf-title" data-i18n="home.site_network">🎯 Our Brand Network</div>
+        <div class="sf-matrix">
+          <a href="https://mathduel.games/" class="sf-item">
+            <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-calculator"></use></svg>
+            <span data-i18n="bd_stats_1">MathDuel</span>
+          </a>
+          <a href="https://boardduel.com/" class="sf-item">
+            <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-chess"></use></svg>
+            <span data-i18n="bd_stats_2">BoardDuel</span>
+          </a>
+          <a href="https://memoryduel.com/" class="sf-item">
+            <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-brain"></use></svg>
+            <span data-i18n="bd_stats_3">MemoryDuel</span>
+          </a>
+        </div>
+        <div class="sf-links">
+          <a href="/about/" data-i18n="nav.about">About</a>
+          <a href="/privacy/" data-i18n="nav.privacy">Privacy</a>
+          <a href="/terms/" data-i18n="nav.terms">Terms</a>
+          <a href="/contact/" data-i18n="nav.contact">Contact</a>
+        </div>
+        <div class="sf-copy" data-i18n="home.footer">© 2026 BoardDuel · Free to play · Privacy-first</div>
+      </div>
+      <div class="sf-note">© 2026 Board Duel</div>
+    </footer>
+
+  <script>
+  var api = function(path, opts){ return fetch(path, Object.assign({ credentials:'include' }, opts)).then(function(r){ return r.ok ? r.json() : Promise.reject(new Error('HTTP '+r.status)); }); };
+  function init() {
+    api('/api/account/me').then(function(a){
+      var info = document.getElementById('info');
+      if (!a.loggedIn) { info.innerHTML = '<div style="color:var(--m);text-align:center" data-i18n="stats.init_prompt">Please go back to homepage to initialize your account.</div>'; return; }
+      info.innerHTML =
+        '<div class="row"><span class="k" data-i18n="stats.nickname_label">👤 Nickname</span><span class="v">' + (a.nickname || '未命名') + '</span></div>' +
+        '<div class="row"><span class="k" data-i18n="stats.userid_label">🆔 User ID</span><span class="v" style="font-size:.8rem;color:var(--m)">' + a.uuid + '</span></div>' +
+        '<div class="row"><span class="k" data-i18n="stats.regtime_label">📅 Registration Time</span><span class="v">' + (a.created ? new Date(a.created).toLocaleString() : '—') + '</span></div>';
+      document.getElementById('streak').textContent = (a.streak || 0);
+      if (a.wallet) document.getElementById('balance').textContent = a.wallet.balance;
+    }).catch(function(){
+      document.getElementById('info').innerHTML = '<div style="color:var(--m);text-align:center" data-i18n="stats.unavailable">Stats temporarily unavailable</div>';
+    });
+    api('/api/leaderboard?limit=100').then(function(d){
+      var me = d.me;
+      document.getElementById('rank').textContent = me && me.rank ? ('#' + me.rank) : '未入榜';
+      document.getElementById('solved').textContent = me ? (me.solved || 0) : 0;
+      if (me && !document.getElementById('balance').textContent || document.getElementById('balance').textContent === '—') {
+      }
+    }).catch(function(){});
+  }
+  document.addEventListener('DOMContentLoaded', init);
+  </script>
+  <script src="/shared/site-header.js?v=ds2-11"></script>
+  <script src="/shared/sso-bridge.js?v=1" defer></script>
+</body>
+</html>

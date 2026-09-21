@@ -1,0 +1,62 @@
+# Board Duel
+
+> 在线棋盘对战 · 免费、无需下载、可与好友实时对弈
+
+## 项目概述
+
+Board Duel（boardduel.com）是一个在线棋盘游戏平台，收录 10 款经典棋盘与棋类游戏。全部游戏可在浏览器中直接游玩，支持与 AI 对战、与好友实时联机对战、以及随机匹配。无需安装任何客户端。
+
+## 游戏列表
+
+- **井字棋** (`/games/tictactoe/`) — 3×3 棋盘，率先连成一线者胜
+- **五子棋** (`/games/gomoku/`) — 15×15 棋盘，率先连成五子者胜
+- **黑白棋 / 奥赛罗** (`/games/reversi/`) — 8×8 棋盘，夹击翻转对方棋子
+- **四子棋** (`/games/connect4/`) — 7×6 棋盘，纵向落子，率先连成四子者胜
+- **国际象棋** (`/games/chess/`) — 完整规则的国际象棋，支持 AI 对战与联机
+
+## 核心功能
+
+- **三种对局模式** — 与 AI 对战（多档难度）、创建房间邀请好友、随机匹配真实玩家
+- **房间邀请** — 创建房间后生成 6 位房间码与分享链接，好友打开链接或输入房间码即可加入
+- **独立账号体系** — 注册/登录、金币钱包、连胜记录
+- **全球排行榜** — `/rank/` 查看玩家积分排名
+- **皮肤商店** — `/shop/` 使用金币兑换头像与表情
+- **我的战绩** — `/stats/` 个人对局统计
+- **多语言支持** — 简体中文、English、日本語、Deutsch、Español、Français
+- **PWA 支持** — 可安装到桌面/主屏幕，支持离线访问
+
+## 多语言
+
+站点首页支持 6 种语言，路径前缀为 `/zh/`、`/en/`、`/ja/`、`/de/`、`/es/`、`/fr/`。
+
+注意：语言前缀目前仅提供各语言的首页（如 `/zh/`、`/de/`）。游戏的详细页面（`/games/*/`）为单一语言（英文界面 + 多语言文案切换），不提供语言前缀版本。
+
+## 主要页面
+
+- `/` — 首页
+- `/games/{tictactoe|gomoku|othello|reversi|connect4|chess|checkers|mathlink15|bulls}/` — 各游戏页
+- `/rank/` — 排行榜
+- `/shop/` — 皮肤商店
+- `/stats/` — 我的战绩
+- `/how-to-play/{chess|gomoku|othello|connect4}/` — 玩法说明（目前覆盖 4 款）
+- `/blog/board-games-vs-puzzle-games/` — 文章
+- `/about/` — 关于
+- `/contact/` — 联系我们
+- `/privacy/` — 隐私政策
+- `/terms/` — 使用条款
+
+## 技术栈
+
+- 前端：HTML / CSS / 原生 JavaScript（无框架），Canvas 渲染棋盘
+- 后端：Cloudflare Workers（API 路由 / 账号 / 排行榜 / 房间）+ 静态资源由 Cloudflare Pages 托管
+- 实时对战：WebSocket
+- 数据存储：Cloudflare KV / D1
+- 离线：Service Worker + PWA manifest
+
+## 链接
+
+- 主页：https://boardduel.com/
+- 国际象棋：https://boardduel.com/games/chess/
+- 五子棋：https://boardduel.com/games/gomoku/
+- 排行榜：https://boardduel.com/rank/
+- Sitemap：https://boardduel.com/sitemap.xml

@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/img/favicon.svg">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title data-i18n-title="title.auto.hc_黑白棋BoardDuel_9005">Othello · Board Duel</title>
+  <meta data-i18n="meta.auto.hc_黑白棋ReversiOthell_30244" name="description" content="Othello (Reversi): on an 8×8 board, players alternate placing pieces to flip the opponent's trapped pieces; the player with more pieces at the end wins. AI match, friend online match and random match supported.">
+  <link rel="canonical" href="https://boardduel.com/games/reversi/">
+  
+  
+  <link rel="alternate" hreflang="zh-CN" href="https://boardduel.com/games/reversi/" />
+  <link rel="alternate" hreflang="en" href="https://boardduel.com/games/reversi/?lang=en" />
+  <link rel="alternate" hreflang="ja" href="https://boardduel.com/games/reversi/?lang=ja" />
+  <link rel="alternate" hreflang="es" href="https://boardduel.com/games/reversi/?lang=es" />
+  <link rel="alternate" hreflang="fr" href="https://boardduel.com/games/reversi/?lang=fr" />
+  <link rel="alternate" hreflang="de" href="https://boardduel.com/games/reversi/?lang=de" />
+  <link rel="alternate" hreflang="x-default" href="https://boardduel.com/games/reversi/" />
+<link rel="stylesheet" href="/assets/css/puzzle-nav.css?v=20260830">
+    <!-- 棋盘游戏布局骨架层（全站游戏页共用） -->
+  <link rel="stylesheet" href="/css/boardduel-layout.css?v=bd2">
+<style>
+  /* ── 本页私有样式：仅保留游戏专属（棋子/棋盘/在线面板/玩家卡/聊天/比分）。
+     布局骨架（容器/页头/状态栏/控制区/棋盘卡/按钮/教练条）已抽到
+     /css/boardduel-layout.css，全站游戏页共用。改布局请改那一层。 ── */
+
+:root {
+--p0:#1e1b4b;--p1:#f5f5f5;--bg:#f5f6fa;--card:#fff;--border:#e5e7eb;--text:#1e1b4b;--text2:#6b7280;--good:#16a34a;--bad:#dc2626;--line:rgba(23,24,40,.08);--board:#0e7c4a;--sq-light:#1b6e3f;--sq-dark:#0e5530}
+
+* {
+box-sizing:border-box}
+
+body {
+font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);margin:0;padding:0;line-height:1.5;-webkit-tap-highlight-color:transparent}
+
+a {
+color:inherit;text-decoration:none}
+
+.g-nav {
+position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+
+.g-nav-in {
+max-width:960px;margin:0 auto;padding:0 20px;height:56px;display:flex;align-items:center;gap:18px}
+
+.g-brand {
+font-weight:800;font-size:18px;white-space:nowrap}
+
+.g-brand span {
+color:var(--p0)}
+
+.g-links {
+margin-left:auto;display:flex;gap:2px;flex-wrap:wrap}
+
+.g-links a {
+color:var(--text2);font-size:14px;padding:7px 12px;border-radius:999px;transition:all .15s}
+
+.g-links a:hover {
+color:var(--p0);background:#eef2ff}
+
+.g-links a.active {
+color:var(--p0);background:#eef2ff;font-weight:600}
+
+@media(max-width:760px) {
+.g-links a {
+display:none}
+
+.g-links a.active {
+display:inline-block}
+}
+
+.g-hamburger {
+display:none;background:none;border:none;color:var(--text);font-size:1.4rem;cursor:pointer;line-height:1;padding:2px}
+
+@media(max-width:760px) {
+.g-hamburger {
+display:inline-flex;align-items:center;justify-content:center}
+
+.g-nav-menu {
+position:absolute;top:56px;left:0;right:0;background:#fff;border-bottom:1px solid var(--line);display:none;flex-direction:column;padding:6px}
+
+.g-nav-menu.open {
+display:flex}
+
+.g-nav-menu a {
+color:var(--text2);font-size:14px;padding:10px 14px;border-radius:8px}
+
+.g-nav-menu a.active {
+color:var(--p0);background:#eef2ff;font-weight:600}
+}
+
+.g-nav-in {
+position:relative}
+
+.online-panel {
+max-width:560px;margin:10px auto;padding:0 16px}
+
+.op-create {
+display:flex;align-items:center;gap:.5rem;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;flex-wrap:wrap}
+
+.op-create .op-or {
+color:var(--text2);font-size:.85rem}
+
+.op-create input {
+min-width:90px;flex:1;padding:.5rem .7rem;border:1.5px solid var(--border);border-radius:8px;font-size:.9rem}
+
+.op-waiting {
+background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center}
+
+.op-code-lb {
+color:var(--text2);font-size:.9rem;font-weight:600}
+
+.op-code {
+font-size:1.5rem;font-weight:800;letter-spacing:.12em;color:var(--p0)}
+
+.op-status {
+margin:.5rem 0;color:var(--text2);font-weight:500}
+
+.op-players {
+display:flex;gap:.5rem;justify-content:center;margin-top:.5rem}
+
+.op-player {
+flex:1;padding:.4rem .6rem;background:#f9fafb;border:1.5px solid var(--border);border-radius:8px;font-size:.85rem;font-weight:600;color:var(--text)}
+
+.op-player.me {
+border-color:var(--p0);background:#f0fdfa;color:var(--p0)}
+
+.score-bar {
+display:flex;gap:.5rem;width:100%;max-width:400px;justify-content:space-between}
+
+.score-card {
+flex:1;display:flex;align-items:center;gap:.4rem;padding:.4rem .6rem;background:#f9fafb;border:1.5px solid var(--border);border-radius:8px;font-size:.85rem;font-weight:600}
+
+.score-card.me {
+border-color:var(--p0);background:#f0fdfa;color:var(--p0)}
+
+.score-card .pl-mark {
+font-size:1.1rem}
+
+.score-card .pl-name {
+margin-left:auto;font-size:.82rem}
+
+.score-card .pl-score {
+margin-left:6px;font-weight:800;color:var(--p0);font-variant-numeric:tabular-nums}
+
+.board {
+display:grid;grid-template-columns:repeat(8,1fr);gap:1px;background:#000;padding:4px;border-radius:6px;width:100%;max-width:440px;aspect-ratio:1}
+
+.cell {
+position:relative;display:flex;align-items:center;justify-content:center;cursor:default;background:var(--board)}
+
+.cell.light {
+background:var(--sq-light)}
+
+.cell.dark {
+background:var(--sq-dark)}
+
+.cell.hint {
+box-shadow:inset 0 0 0 3px rgba(250,204,21,.55)}
+
+.cell.clickable {
+cursor:pointer}
+
+.disc {
+width:84%;height:84%;border-radius:50%;box-shadow:inset 0 -2px 4px rgba(0,0,0,.4),0 1px 2px rgba(0,0,0,.3);position:relative;z-index:2}
+
+.disc.p0 {
+background:radial-gradient(circle at 30% 30%,#555,#000)}
+
+.disc.p1 {
+background:radial-gradient(circle at 30% 30%,#fff,#bbb)}
+
+.disc.last::after {
+content:'';position:absolute;inset:-3px;border:2px solid var(--bad);border-radius:50%}
+
+.result-overlay {
+display:none;position:absolute;inset:0;background:rgba(255,255,255,.94);border-radius:6px;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:20}
+
+.result-overlay.show {
+display:flex}
+
+.result-text {
+font-size:1.5rem;font-weight:800}
+
+.result-text.win {
+color:var(--good)}
+
+.result-text.lose {
+color:var(--bad)}
+
+.result-text.draw {
+color:var(--text2)}
+
+.coach-zh {
+font-size:.9rem;font-weight:600;color:#4338ca;line-height:1.4}
+
+.game-footer {
+max-width:640px;margin:0 auto;padding:8px 16px 32px;color:var(--text2);font-size:.85rem}
+
+.game-footer h3 {
+color:var(--text);font-size:1rem;margin:18px 0 6px}
+
+.game-footer p,.game-footer li {
+line-height:1.7}
+
+</style>
+  <link rel="stylesheet" href="/css/shared/tokens.css?v=p4fix2">
+  <link rel="stylesheet" href="/css/shared/brand-ds2.css?v=ds2-22">
+<script src="/i18n/i18n.js?v=33"></script>
+  <link rel="manifest" href="/manifest.zh.webmanifest">
+</head>
+<body>
+
+<div id="site-header" style="min-height:65px"
+     data-brand-a="Board" data-brand-b="Duel" data-mark="duel-chess"
+     data-nav='[{"label":"Home","href":"/","i18n":"nav.home"}]'
+     data-cta-label="Home" data-cta-href="/" data-cta-i18n="nav.home"></div>
+
+  <main class="game-shell">
+    <header class="game-header">
+      <h1 data-i18n="bd_games_reversi_1">◐ Reversi</h1>
+      <p class="sub" data-i18n="bd_games_reversi_2">8×8 board · place pieces to flip opponents · most pieces wins · vs CPU · online · quick match</p>
+    </header>
+
+    <div class="status-bar">
+      <div class="sb-item"><span class="sb-ico">👤</span><span data-i18n="bd_games_reversi_3">Mode</span><span class="sb-val" id="bd-mode-val" data-i18n="bd_games_reversi_4">vs Computer</span></div>
+      <div class="sb-item"><span class="sb-ico">🎚️</span><span data-i18n="bd_games_reversi_5">Difficulty</span><span class="sb-val" id="aiDiffVal" data-i18n="bd_games_reversi_6">Normal</span></div>
+      <div class="sb-item"><span class="sb-ico">♟️</span><span data-i18n="bd_games_reversi_7">Round</span><span class="sb-val" id="turnVal">—</span></div>
+      <div class="sb-item"><span class="sb-ico">🏳️</span><span data-i18n="bd_games_reversi_8">Status</span><span class="sb-val" id="stateVal" data-i18n="bd_games_reversi_9">Battle</span></div>
+    </div>
+
+    <div class="toolbar">
+      <button class="t-btn" id="newBtn" onclick="doNewGame()" data-i18n="bd_games_reversi_10">🔄 New Game</button>
+      <span class="t-divider"></span>
+      <div class="toggle" id="bd-mode-toggle">
+        <button data-m="ai" class="on" data-i18n="bd_games_reversi_11">🤖 vs Computer</button>
+        <button data-m="online" data-i18n="bd_games_reversi_12">🌐 Online</button>
+        <button data-m="random" data-i18n="bd_games_reversi_13">⚡ Quick Match</button>
+      </div>
+      <span class="t-spacer"></span>
+      <div class="toggle" id="diffToggle">
+        <button data-d="easy" data-i18n="bd_games_reversi_14">Beginner</button>
+        <button data-d="normal" class="on" data-i18n="bd_games_reversi_15">Normal</button>
+        <button data-d="hard" data-i18n="bd_games_reversi_16">Hard</button>
+      </div>
+    </div>
+
+    <div class="coach-bar" id="coachBar"><span class="coach-icon">🧠</span><div class="coach-zh" id="coachZh"></div></div>
+
+    <div class="online-panel" id="bd-lobby" style="display:none">
+      <div class="op-create">
+        <input id="bd-name" placeholder="昵称(可选)" maxlength="20">
+        <button class="btn-primary" id="bd-create-btn" data-i18n="bd_games_reversi_17">➕ Create Room</button>
+        <span class="op-or" data-i18n="bd_games_reversi_18">or</span>
+        <input id="bd-code-input" placeholder="输入6位房间码" maxlength="6">
+        <button class="btn-ghost" id="bd-join-btn" data-i18n="bd_games_reversi_19">Join</button>
+      </div>
+    </div>
+    <div class="online-panel" id="bd-waiting" style="display:none">
+      <div class="op-waiting">
+        <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;justify-content:center">
+          <span class="op-code-lb" data-i18n="bd_games_reversi_20">Room Code</span>
+          <span class="op-code" id="bd-code"></span>
+          <button class="btn-ghost" id="bd-copy-btn" style="font-size:.8rem;padding:.35rem .7rem" data-i18n="bd_games_reversi_21">🔗 Copy Invite Link</button>
+        </div>
+        <div class="op-status" id="bd-status" data-i18n="bd_games_reversi_22">Connected, waiting for opponent to join…</div>
+        <div class="op-players" id="op-players"></div>
+      </div>
+    </div>
+    <div class="online-panel" id="bd-random-panel" style="display:none">
+      <div class="op-waiting">
+        <div style="font-size:1.2rem" data-i18n="bd_games_reversi_23">⚡ Finding opponent…</div>
+        <div class="op-status" id="bd-random-status" data-i18n="bd_games_reversi_24">Matching real players…</div>
+        <button class="btn-ghost" id="bd-random-cancel" style="margin-top:.8rem" data-i18n="bd_games_reversi_25">✖ Cancel Match</button>
+      </div>
+    </div>
+
+    <div class="board-wrap">
+      <div class="score-bar">
+        <div class="score-card" id="p0Card"><span class="pl-mark">⚫</span><span class="pl-name" id="p0Name" data-i18n="bd_games_reversi_26">You</span><span class="pl-score" id="p0Score">2</span></div>
+        <div class="score-card" id="p1Card"><span class="pl-mark">⚪</span><span class="pl-name" id="p1Name" data-i18n="bd_games_reversi_27">Computer</span><span class="pl-score" id="p1Score">2</span></div>
+      </div>
+      <div class="board" id="board"></div>
+      <div class="result-overlay" id="resultOverlay">
+        <div class="result-text" id="resultText"></div>
+        <div class="actions">
+          <button class="btn-primary" onclick="doNewGame()" data-i18n="bd_games_reversi_28">🔄 Play Again</button>
+          <button class="btn-ghost" onclick="document.getElementById('resultOverlay').classList.remove('show')" data-i18n="bd_games_reversi_29">Keep Watching</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="sites-footer">
+      <div class="wrap">
+        <div class="sf-title" data-i18n="home.site_network">🎯 Our Brand Network</div>
+        <div class="sf-matrix">
+          <a href="https://mathduel.games/" class="sf-item">
+            <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-calculator"></use></svg>
+            <span data-i18n="bd_games_reversi_30">MathDuel</span>
+          </a>
+          <a href="https://boardduel.com/" class="sf-item">
+            <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-chess"></use></svg>
+            <span data-i18n="bd_games_reversi_31">BoardDuel</span>
+          </a>
+          <a href="https://memoryduel.com/" class="sf-item">
+            <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-brain"></use></svg>
+            <span data-i18n="bd_games_reversi_32">MemoryDuel</span>
+          </a>
+        </div>
+        <div class="sf-links">
+          <a href="/about/" data-i18n="nav.about">About</a>
+          <a href="/privacy/" data-i18n="nav.privacy">Privacy</a>
+          <a href="/terms/" data-i18n="nav.terms">Terms</a>
+          <a href="/contact/" data-i18n="nav.contact">Contact</a>
+        </div>
+        <div class="sf-copy" data-i18n="home.footer">© 2026 BoardDuel · Free to play · Privacy-first</div>
+      </div>
+      
+    </footer>
+
+  <script src="/assets/js/match-mode.js?v=20260901"></script>
+  <script type="module">
+  import { newGame as aiNewGame, applyMove as aiApplyMove, chooseMove, legalCells } from './ai.js';
+  (function(){
+    'use strict';
+    const GAME='reversi';
+    const WS_BASE=(location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws?game='+GAME+'&code=';
+    let ws=null, you=0, code='', myName='玩家'+Math.floor(1000+Math.random()*9000);
+    let mode='ai'; let g=null; let aiFillName=null;
+    const $=id=>document.getElementById(id);
+    function setStatus(t){ $('stateVal').textContent=t; }
+    function showCoach(zh){ const bar=$('coachBar'); $('coachZh').textContent=zh; bar.classList.add('show'); }
+
+    function countBoard(){
+      let w=0,b=0;
+      for(const v of g.board){ if(v===0)b++; else if(v===1)w++; }
+      return {w,b};
+    }
+    function render(){
+      if(!g) return;
+      const b=$('board'); b.innerHTML='';
+      const youTurn=g.status==='playing' && g.turn===you;
+      const waitAI=(mode==='ai') && g.status==='playing' && g.turn!==you;
+      const legal = (g.status==='playing') ? new Set(legalCells(g.board, g.turn)) : new Set();
+      const lastMove=(typeof g.lastMove==='number')?g.lastMove:null;
+      for(let i=0;i<64;i++){
+        const r=Math.floor(i/8), c=i%8;
+        const cell=document.createElement('div');
+        cell.className='cell '+((r+c)%2===0?'light':'dark');
+        const v=g.board[i];
+        if(v!=null){
+          const d=document.createElement('div');
+          d.className='disc p'+v;
+          if(i===lastMove) d.classList.add('last');
+          cell.appendChild(d);
+        }
+        if(legal.has(i)){
+          cell.classList.add('hint');
+          if(youTurn && !waitAI){ cell.classList.add('clickable'); cell.onclick=()=>localHumanMove(i); }
+        }
+        b.appendChild(cell);
+      }
+      const cnt=countBoard();
+      $('p0Score').textContent=cnt.b; $('p1Score').textContent=cnt.w;
+      const oppName = aiFillName ? ('电脑·'+aiFillName) : '电脑';
+      $('p0Name').textContent = (mode==='ai') ? (you===0?'你':oppName) : ((you===0?'(你) ':'') + '玩家 1');
+      $('p1Name').textContent = (mode==='ai') ? (you===1?'你':oppName) : ((you===1?'(你) ':'') + '玩家 2');
+      $('p0Card').classList.toggle('me', you===0);
+      $('p1Card').classList.toggle('me', you===1);
+      $('p0Card').classList.toggle('turn', g.turn===0);
+      $('p1Card').classList.toggle('turn', g.turn===1);
+      $('turnVal').textContent = (g.status==='over')?'—':(g.turn===you?'你':'对手');
+      const overlay=$('resultOverlay'); const txt=$('resultText');
+      if(g.status==='over'){
+        const diff = cnt.w - cnt.b;
+        const youAreBlack = (you===0);
+        const yourCount = youAreBlack ? cnt.b : cnt.w;
+        const oppCount  = youAreBlack ? cnt.w : cnt.b;
+        if(diff===0){ txt.textContent='🤝 平局'; txt.className='result-text draw'; }
+        else if(mode==='ai'){ txt.textContent = yourCount>oppCount?'🎉 你赢了！':(aiFillName?'😔 '+aiFillName+' 赢了':'😔 电脑赢了'); txt.className='result-text '+(yourCount>oppCount?'win':'lose'); }
+        else { txt.textContent = yourCount>oppCount?'🎉 你赢了！':'😔 你输了'; txt.className='result-text '+(yourCount>oppCount?'win':'lose'); }
+        overlay.classList.add('show');
+        setStatus(yourCount===oppCount?'平局':(yourCount>oppCount?'你胜':'你负'));
+      } else {
+        overlay.classList.remove('show');
+        if(legal.size===0){
+          setStatus(mode==='ai'?(g.turn===you?'你无处可下，跳过':(aiFillName?(aiFillName+' 无处可下，跳过'):'电脑无处可下，跳过')):(g.turn===you?'你无处可下，跳过':'对手无处可下，跳过'));
+        } else {
+          setStatus(mode==='ai'?(g.turn===you?'轮到你了':(aiFillName?(aiFillName+' 思考中…'):'电脑思考中…')):(g.turn===you?'轮到你了':'等待对手…'));
+        }
+      }
+    }
+    function renderPlayersOnline(){
+      if(mode!=='online') return;
+      const box=$('op-players'); if(!box) return;
+      let h='';
+      h+='<div class="op-player'+(you===0?' me':'')+'">⚫ '+((you===0?'(你) ':'')+'玩家 1')+'</div>';
+      h+='<div class="op-player'+(you===1?' me':'')+'">⚪ '+((you===1?'(你) ':'')+'玩家 2')+'</div>';
+      box.innerHTML=h;
+    }
+
+    function connectRoom(codeIn){
+      code=codeIn; mode='online';
+      g = aiNewGame(); you=0;
+      $('bd-lobby').style.display='none'; $('bd-waiting').style.display=''; $('bd-random-panel').style.display='none';
+      $('newBtn').style.display='none';
+      $('bd-code').textContent=code;
+      $('bd-status').textContent='连接中…';
+      $('op-players').innerHTML='';
+      try{ if(ws) ws.close(); }catch(e){}
+      ws=new WebSocket(WS_BASE+code+'&name='+encodeURIComponent(myName));
+      ws.onopen=()=>{ $('bd-status').textContent='已连接，等待对手加入…'; };
+      ws.onmessage=(e)=>{ let m; try{m=JSON.parse(e.data);}catch{return;} handleOnline(m); };
+      ws.onclose=()=>{ if(mode==='online'){ $('bd-status').textContent='连接已断开'; } };
+      ws.onerror=()=>{ $('bd-status').textContent='连接错误'; };
+    }
+    function handleOnline(m){
+      if(m.type==='error'){ $('bd-status').textContent=m.message||'错误'; return; }
+      if(m.type==='state'){
+        if(m.you!=null) you=m.you;
+        if(m.code) code=m.code;
+        renderPlayersOnline();
+      }
+      else if(m.type==='opponent_move'){
+        const opp=1-you;
+        const i = (typeof m.i==='number') ? m.i : null;
+        if(i!=null){
+          const r=aiApplyMove(g, opp, i);
+          if(r && !r.ok){ $('bd-status').textContent='对手走子异常'; return; }
+          render(); renderPlayersOnline();
+        }
+      }
+      else if(m.type==='opponent_leave'){ $('bd-status').textContent='对手已离开'; }
+      else if(m.type==='restart_notify'){
+        g = aiNewGame(); render(); renderPlayersOnline();
+        $('bd-status').textContent='对局已重新开始'+(you===0?' 你执 ⚫':' 你执 ⚪');
+      }
+    }
+
+    function startAI(opts){
+      aiFillName=(opts&&opts.aiFillName)||null;
+      mode='ai'; you=0; g=aiNewGame();
+      $('bd-lobby').style.display='none'; $('bd-waiting').style.display='none'; $('bd-random-panel').style.display='none';
+      $('newBtn').style.display='';
+      try{ if(ws){ws.close();ws=null;} }catch(e){}
+      render();
+      showCoach('🆕 新对局开始，你执 ⚫ 先行。');
+      if(g.turn!==you) scheduleAI();
+    }
+    function diffLabel(){ const d=document.querySelector('#diffToggle button.on'); return d?(d.dataset.d==='hard'?'hard':d.dataset.d==='normal'?'normal':'easy'):'normal'; }
+    // AI 思考延迟:本地人机快一些,随机配对(AI 补位)模拟真人节奏
+    function aiThinkDelay(){
+      const diff=diffLabel();
+      const baseByDiff = diff==='hard'?1100 : diff==='normal'?700 : 450;
+      const isRandom = !!aiFillName;
+      if(isRandom){
+        // 黑白棋中盘吃多子要算很久,随机配对再加 ~1.7×
+        return Math.round(baseByDiff*1.7 + Math.random()*600);
+      }
+      return Math.round(baseByDiff + Math.random()*250);
+    }
+    function scheduleAI(){
+      const delay = aiThinkDelay();
+      setTimeout(function(){
+        if(mode!=='ai'||!g||g.status!=='playing') return;
+        if(g.turn===you) return;
+        const m=chooseMove(g, g.turn, diffLabel());
+        if(m==null) return;
+        aiApplyMove(g, g.turn, m);
+        render();
+        if(g.status==='playing' && g.turn===you) showCoach('轮到你了。');
+      }, delay);
+    }
+    function localHumanMove(i){
+      if(!g||g.status!=='playing') return;
+      if(g.turn!==you) return;
+      const r=aiApplyMove(g, you, i);
+      if(!r||!r.ok) return;
+      render();
+      if(mode==='online' && ws && ws.readyState===1){
+        ws.send(JSON.stringify({type:'move', i:Number(i)}));
+      } else if(mode==='ai'){
+        if(g.status==='playing' && g.turn!==you) scheduleAI();
+      }
+    }
+
+    function stopAll(){
+      try{ if(ws){ws.close();ws=null;} }catch(e){}
+      if(window.BoardDuelMatch) window.BoardDuelMatch.stopMatch();
+    }
+    window.doNewGame=function(){
+      if(mode==='ai') startAI({aiFillName: window.BoardDuelMatch?window.BoardDuelMatch.getAiFillName():null});
+      else if(mode==='online' && ws && ws.readyState===1){
+        g=aiNewGame(); render(); renderPlayersOnline();
+        ws.send(JSON.stringify({type:'restart'}));
+      }
+    };
+    function setDiff(d){
+      document.querySelectorAll('#diffToggle button').forEach(function(b){b.classList.toggle('on',b.dataset.d===d);});
+      const lbl=d==='hard'?'困难':d==='normal'?'普通':'入门';
+      $('aiDiffVal').textContent=lbl;
+      if(mode==='ai') startAI({aiFillName: window.BoardDuelMatch?window.BoardDuelMatch.getAiFillName():null});
+    }
+    document.querySelectorAll('#diffToggle button').forEach(function(b){ b.onclick = function(){ setDiff(b.dataset.d); }; });
+
+    window.BoardDuelMatch.init({ game: GAME, onStartAI: startAI, onEnterOnline: connectRoom, onStop: stopAll, name: myName });
+    (function(){
+      const c=new URLSearchParams(location.search).get('c');
+      if(c){ $('bd-code-input').value=c; window.BoardDuelMatch.setMode('online'); window.BoardDuelMatch.joinRoom(); return; }
+      window.BoardDuelMatch.setMode('ai');
+    })();
+    const hb=$('hamburger'); if(hb){ hb.onclick=()=>{ const m=$('navMenu'); const open=m.classList.toggle('open'); hb.setAttribute('aria-expanded',open?'true':'false'); }; }
+    document.addEventListener('click',function(e){ const m=$('navMenu'); if(m.classList.contains('open')&&!e.target.closest('.g-nav')){ m.classList.remove('open'); hb.setAttribute('aria-expanded','false'); } });
+  })();
+  </script>
+  <button class="g-tutorial-btn" id="gTutorialBtn" aria-label="View how to play" data-i18n-aria-label="bd_games_reversi_attr_33" data-i18n="bd_games_reversi_33">📖 How to Play</button>
+  <script>
+  document.getElementById('gTutorialBtn')?.addEventListener('click', function(){
+    var ft = document.querySelector('.game-footer');
+    if (ft) { ft.scrollIntoView({ behavior:'smooth', block:'start' }); }
+  });
+  </script>
+  <nav class="bottom-nav" aria-label="移动端导航">
+    <div class="bottom-nav-inner">
+      <a href="/" class="bottom-nav-item"><span class="bn-ico">🏠</span><span class="bn-label" data-i18n="bd_games_reversi_34">Home</span></a>
+      <a href="/games/tictactoe/" class="bottom-nav-item"><span class="bn-ico">✕◯</span><span class="bn-label" data-i18n="bd_games_reversi_35">Tic-Tac-Toe</span></a>
+      <a href="/games/gomoku/" class="bottom-nav-item"><span class="bn-ico">⚫</span><span class="bn-label" data-i18n="bd_games_reversi_36">Gomoku</span></a>
+      <a href="/games/chess/" class="bottom-nav-item"><span class="bn-ico">♞</span><span class="bn-label" data-i18n="bd_games_reversi_37">Chess</span></a>
+      <a href="/games/connect4/" class="bottom-nav-item"><span class="bn-ico">🔴</span><span class="bn-label" data-i18n="bd_games_reversi_38">Connect Four</span></a>
+    </div>
+  </nav>
+  <script src="/shared/site-header.js?v=ds2-11"></script>
+  <script src="/shared/sso-bridge.js?v=1" defer></script>
+</body>
+</html>

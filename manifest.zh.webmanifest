@@ -1,0 +1,20 @@
+{
+  "name": "棋盘对决 - 6 款经典棋类游戏",
+  "short_name": "棋盘对决",
+  "description": "6 款经典棋类游戏：国际象棋、五子棋、黑白棋、四子棋、西洋跳棋、井字棋。无广告无追踪。",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "start_url": "/?lang=zh",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#faf9ff",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♟️</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

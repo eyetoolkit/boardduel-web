@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="tt dd">
+  <title id="tt">Chess — BoardDuel</title>
+  <desc id="dd">Deep indigo square icon with a full alternating chessboard; a white pawn on a red tile faces a dark pawn diagonally across the board.</desc>
+  <rect width="512" height="512" fill="#312E81"/>
+  <rect x="56.5" y="56.5" width="87" height="87" rx="20" fill="#FFFFFF"/>
+  <rect x="160.5" y="56.5" width="87" height="87" rx="20" fill="#FFFFFF" fill-opacity="0.16"/>
+  <rect x="264.5" y="56.5" width="87" height="87" rx="20" fill="#FFFFFF"/>
+  <rect x="368.5" y="56.5" width="87" height="87" rx="20" fill="#FFFFFF" fill-opacity="0.16"/>
+  <rect x="56.5" y="160.5" width="87" height="87" rx="20" fill="#FFFFFF" fill-opacity="0.16"/>
+  <rect x="160.5" y="160.5" width="87" height="87" rx="20" fill="#FFFFFF"/>
+  <rect x="264.5" y="160.5" width="87" height="87" rx="20" fill="#FFFFFF" fill-opacity="0.16"/>
+  <rect x="368.5" y="160.5" width="87" height="87" rx="20" fill="#FFFFFF"/>
+  <rect x="56.5" y="264.5" width="87" height="87" rx="20" fill="#FFFFFF"/>
+  <rect x="160.5" y="264.5" width="87" height="87" rx="20" fill="#FFFFFF" fill-opacity="0.16"/>
+  <rect x="264.5" y="264.5" width="87" height="87" rx="20" fill="#FFFFFF"/>
+  <rect x="368.5" y="264.5" width="87" height="87" rx="20" fill="#FFFFFF" fill-opacity="0.16"/>
+  <rect x="56.5" y="368.5" width="87" height="87" rx="20" fill="#FFFFFF" fill-opacity="0.16"/>
+  <rect x="160.5" y="368.5" width="87" height="87" rx="20" fill="#FFFFFF"/>
+  <rect x="264.5" y="368.5" width="87" height="87" rx="20" fill="#FFFFFF" fill-opacity="0.16"/>
+  <rect x="368.5" y="368.5" width="87" height="87" rx="20" fill="#FFFFFF"/>
+  <rect x="56.5" y="264.5" width="87" height="87" rx="20" fill="#DC2626"/>
+  <circle cx="100.0" cy="292.8" r="9.1" fill="#FFFFFF"/>
+  <path d="M 91.3 300.1 L 83.9 324.1 L 116.1 324.1 L 108.7 300.1 Z" fill="#FFFFFF"/>
+  <rect x="88.3" y="299.4" width="23.5" height="4.8" rx="1.7" fill="#FFFFFF"/>
+  <rect x="79.6" y="324.1" width="40.9" height="5.7" rx="2.4" fill="#FFFFFF"/>
+  <circle cx="308.0" cy="84.8" r="9.1" fill="#1E1B39"/>
+  <path d="M 299.3 92.1 L 291.9 116.1 L 324.1 116.1 L 316.7 92.1 Z" fill="#1E1B39"/>
+  <rect x="296.3" y="91.4" width="23.5" height="4.8" rx="1.7" fill="#1E1B39"/>
+  <rect x="287.6" y="116.1" width="40.9" height="5.7" rx="2.4" fill="#1E1B39"/>
+</svg>

@@ -1,0 +1,29 @@
+Board Duel
+棋盘对战 · https://boardduel.com
+
+在线棋盘游戏平台，收录 10 款经典棋盘与棋类游戏，浏览器直接游玩，无需下载。
+支持与 AI 对战（多档难度）、创建房间邀请好友实时对战、随机匹配真实玩家。
+独立账号体系，含排行榜、金币钱包、皮肤商店。
+
+游戏：
+- /games/tictactoe/ 井字棋
+- /games/gomoku/ 五子棋
+- /games/reversi/ 黑白棋（Reversi）
+- /games/connect4/ 四子棋
+- /games/chess/ 国际象棋
+
+主要页面：
+- / 首页
+- /rank/ 排行榜
+- /shop/ 皮肤商店
+- /stats/ 我的战绩
+- /how-to-play/ 玩法说明
+- /blog/ 文章
+- /about/ 关于
+
+多语言：/zh/ /en/ /ja/ /de/ /es/ /fr/
+技术栈：HTML/CSS/原生 JS（无框架）+ Canvas + PWA；Cloudflare Pages 托管静态资源，
+Cloudflare Workers 提供 API（账号 / 排行榜 / 房间匹配），WebSocket 承载实时对战。
+
+AI 索引说明：欢迎搜索引擎与 AI 爬虫（GPTBot / ClaudeBot / PerplexityBot / Google-Extended）。
+详见 /llms.txt（精简）与 /llms-full.txt（完整）。

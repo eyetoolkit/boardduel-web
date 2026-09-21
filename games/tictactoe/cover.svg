@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="tt dd">
+  <title id="tt">Tic-Tac-Toe — BoardDuel</title>
+  <desc id="dd">Square indigo icon with a three by three board; the main diagonal is highlighted in green showing O completing a winning line.</desc>
+  <rect width="512" height="512" fill="#4F46E5"/>
+  <rect x="56.0" y="56.0" width="118" height="118" rx="27" fill="#22C55E"/>
+  <rect x="197.0" y="56.0" width="118" height="118" rx="27" fill="#FFFFFF"/>
+  <rect x="338.0" y="56.0" width="118" height="118" rx="27" fill="#FFFFFF"/>
+  <rect x="56.0" y="197.0" width="118" height="118" rx="27" fill="#FFFFFF"/>
+  <rect x="197.0" y="197.0" width="118" height="118" rx="27" fill="#22C55E"/>
+  <rect x="338.0" y="197.0" width="118" height="118" rx="27" fill="#FFFFFF"/>
+  <rect x="56.0" y="338.0" width="118" height="118" rx="27" fill="#FFFFFF"/>
+  <rect x="197.0" y="338.0" width="118" height="118" rx="27" fill="#FFFFFF"/>
+  <rect x="338.0" y="338.0" width="118" height="118" rx="27" fill="#22C55E"/>
+  <circle cx="115.0" cy="115.0" r="26.6" fill="none" stroke="#1E1B39" stroke-width="8"/>
+  <g stroke="#1E1B39" stroke-width="8" stroke-linecap="round"><line x1="228.3" y1="87.3" x2="283.7" y2="142.7"/><line x1="228.3" y1="142.7" x2="283.7" y2="87.3"/></g>
+  <g stroke="#1E1B39" stroke-width="8" stroke-linecap="round"><line x1="369.3" y1="87.3" x2="424.7" y2="142.7"/><line x1="369.3" y1="142.7" x2="424.7" y2="87.3"/></g>
+  <circle cx="256.0" cy="256.0" r="26.6" fill="none" stroke="#1E1B39" stroke-width="8"/>
+  <g stroke="#1E1B39" stroke-width="8" stroke-linecap="round"><line x1="369.3" y1="228.3" x2="424.7" y2="283.7"/><line x1="369.3" y1="283.7" x2="424.7" y2="228.3"/></g>
+  <circle cx="397.0" cy="397.0" r="26.6" fill="none" stroke="#1E1B39" stroke-width="8"/>
+</svg>

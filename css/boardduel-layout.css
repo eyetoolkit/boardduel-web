@@ -1,0 +1,897 @@
+/* ════════════════════════════════════════════════════════════════════════════
+   BoardDuel · 棋类游戏页布局骨架层  (boardduel-layout.css)
+   ────────────────────────────────────────────────────────────────────────────
+   来源：2026-09-14 从 mathduel「6x6 Sudoku」页实测提取的排版规格（用户认可），
+        改写为 **BoardDuel 兼容版** —— 选择器同时匹配 boardduel 各游戏页
+        现有类名（.game-shell / .toolbar / .t-btn / .board / .cell …），
+        页面只需 <link> 引入 + 删除页内私有布局样式，DOM 结构与 JS **零改动**。
+
+   ── 为什么需要这一层 ──────────────────────────────────────────────────────
+   实测发现：boardduel 11 个游戏页各自内联 41~273 行私有样式，各自定义
+   .game-shell/.toolbar/.board/.cell/.t-btn/.btn-primary 等一整套布局，
+   导致「容器宽度 / 棋盘尺寸 / 按钮栅格」11 页 11 个样，维护成本极高。
+   本层把「容器 / 页头 / 状态栏 / 控制区 / 棋盘 / 格子 / 玩家卡」统一为一套。
+
+   ── 设计规格（实测值，勿随手改）─────────────────────────────────────────────
+   容器     移动端全宽（不扣宽）／桌面 max-width 1200px
+   游戏页   移动 padding 16px 8px ／ 桌面 padding 24px，radius 24px
+   棋盘卡   白底 + radius 18px + padding 16px + 双层柔和阴影，max-width 388px
+   棋盘     等比（aspect-ratio），max-width 360px，居中
+   控制区   grid 3 列，gap 4.8px（=0.3rem）；≤340px 降 2 列
+   按钮     min-height/width 44px（触摸目标）· font .72rem · radius 8px
+            · 2px solid 边框 · hover 变主色
+
+   ── 引入方式 ──────────────────────────────────────────────────────────────
+   <link rel="stylesheet" href="/css/boardduel-layout.css?v=bd1">
+   建议放在共享层样式表与 /css/boardduel-game.css **之前**（骨架先定形，
+   增强层后覆盖），并删除页面 style 块里重复的布局规则。
+
+   ── 版本 ──────────────────────────────────────────────────────────────────
+   v=bd1 · 2026-09-14 首版（兼容层，含 .game-shell/.toolbar/.t-btn/.board/.cell）
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. 设计令牌（桥接到共享层变量，缺失时用自带兜底）────────────────────── */
+/* 说明：boardduel 已有 /css/shared/tokens.css，若其定义了同名变量则自动采用；
+   本层自带兜底值，保证「只引本文件」也不会样式崩塌。 */
+:root {
+  /* 品牌色：优先用共享层 --brand，缺失时回退 */
+  --bd-primary:      var(--brand, #0066CC);
+  --bd-primary-dark: var(--brand-d, #00529C);
+  --bd-primary-soft: var(--brand-l, #DCEBFB);
+  --bd-accent:       #7C3AED;   /* 对战按钮 */
+  --bd-success:      var(--good, #16A34A);
+  --bd-danger:       var(--bad, #EF4444);
+
+  --bd-page:    var(--bg, #F7F8FA);
+  --bd-card:    var(--card, #FFFFFF);
+  --bd-muted:   #F9FAFB;
+  --bd-text:    var(--t, #0F172A);
+  --bd-text-2:  var(--m, #6B7280);
+  --bd-border:  var(--line, #E4E8EE);
+  --bd-hairline: rgba(23, 24, 40, .08);
+
+  --bd-radius-sm: 8px;
+  --bd-radius-md: 12px;
+  --bd-radius-lg: 18px;
+  --bd-radius-xl: 24px;
+
+  --bd-touch: 44px;            /* 触摸目标最小边长 */
+
+  --bd-shadow-card: 0 2px 4px rgba(15, 23, 42, .06), 0 4px 12px rgba(15, 23, 42, .08);
+
+  --bd-shell: 1200px;          /* 桌面端容器最大宽度（全宽铺底）*/
+  --bd-content-max: 720px;     /* 桌面端内容中轴最大宽度（防「散架」）*/
+  --bd-board-max: 360px;       /* 棋盘最大边长 */
+  --bd-boardcard-max: 388px;   /* 棋盘卡最大宽度 */
+}
+
+/* ── 2. 布局骨架：容器 + 游戏页 ──────────────────────────────────────────── */
+/* ⚠️⚠️ 关键：移动端容器**必须全宽**，不能写 `width: min(100% - 40px, 1200px)`。
+   历史坑（2026-09-14 mathduel 实修）：那种「为内容型页面设计」的写法会让
+   360px 视口被 container + 多层 padding 逐层啃到 264px，棋盘显示不全、
+   看起来「整体偏右」。游戏页要的是**边缘到边缘**的可用面积。 */
+.game-shell,
+.bd-shell {
+  width: 100%;
+  max-width: var(--bd-shell);
+  margin-inline: auto;
+  padding: 12px 8px;                 /* 移动端 */
+}
+@media (min-width: 768px) {
+  .game-shell,
+  .bd-shell { padding: 20px; }
+}
+
+/* 游戏主区（可选包装层）
+   ⚠️ 机制说明（桌面端「散架」问题的解法）：
+   容器（.game-shell）是全宽 1200px，棋盘卡只有 388px 居中。
+   若「状态栏 / 控制区」直接铺满 1160px，会显得内容稀疏、左右大片空白，
+   整个页面看起来「散架」（2026-09-14 tictactoe 试点实拍确认）。
+   6x6 数独页的解法是：内容块各自有 **max-width 约束并居中**，
+   而不是无脑铺满容器。这里沿用同一机制 —— 状态栏/控制区/棋盘卡/页头
+   统一受 --bd-content-max 约束（默认 720px），保持一条视觉中轴。 */
+.game-main,
+.bd-game {
+  width: 100%;
+  border-radius: var(--bd-radius-xl);
+  padding: 16px 8px;                  /* 移动端 */
+}
+@media (min-width: 768px) {
+  .game-main,
+  .bd-game { padding: 24px; }
+}
+/* 内容中轴：所有主要区块居中且不超过 --bd-content-max */
+.game-shell .status-bar,
+.game-shell .toolbar,
+.game-shell .players-bar,
+.game-shell .coach-bar,
+.game-shell .online-panel,
+.game-shell .bd-players,
+.bd-shell .status-bar,
+.bd-shell .toolbar,
+.bd-shell .players-bar,
+.bd-shell .coach-bar {
+  max-width: var(--bd-content-max, 720px);
+  margin-left: auto;
+  margin-right: auto;
+}
+.game-shell .game-header,
+.bd-shell .bd-head {
+  max-width: var(--bd-content-max, 720px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ── 3. 页头：图标 + 标题 + 副标题 + 统计条 ─────────────────────────────── */
+.game-header,
+.bd-head {
+  text-align: center;
+  padding: 8px 0 12px;
+}
+.game-header h1,
+.bd-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.25;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+.game-header .sub,
+.bd-sub {
+  font-size: .85rem;
+  color: var(--bd-text-2);
+  margin: 4px 0 0;
+}
+
+/* ── 4. 状态栏：模式 / 难度 / 回合 / 状态 ───────────────────────────────── */
+/* ⚠️ 用 grid 而非 flex+wrap：flex+wrap 换行后末行不等宽，视觉参差。
+   桌面 4 列 / 移动 2 列，保证每项等宽对齐。 */
+.status-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  background: var(--bd-card);
+  border: 1px solid var(--bd-border);
+  border-radius: var(--bd-radius-md);
+  padding: 10px;
+  margin-bottom: 10px;
+}
+@media (max-width: 560px) {
+  .status-bar { grid-template-columns: repeat(2, 1fr); }
+}
+.sb-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: var(--bd-muted);
+  border-radius: var(--bd-radius-sm);
+  font-size: .82rem;
+  min-height: var(--bd-touch);
+  min-width: 0;                       /* 允许子项收缩，防溢出 */
+}
+.sb-ico { font-size: 1rem; line-height: 1; flex-shrink: 0; }
+/* 中间的文字标签（Mode / Difficulty / Turn / Status）*/
+.sb-item > span:not(.sb-ico):not(.sb-val) {
+  color: var(--bd-text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.sb-val {
+  margin-left: auto;
+  font-weight: 700;
+  color: var(--bd-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+/* ⚠️ 窄屏（≤380px）：标签 + 图标 + 值三者物理放不下。
+   实测 320px 下每格仅 ~139px，而「🏳️ Status Playing」需 ~150px，
+   会导致 .sb-val 被压到 43px 而 "Medium"(52px) 硬裁 → 文字被切。
+   策略：隐藏纯文字标签，保留图标（语义）+ 值（数据），信息不丢失。 */
+@media (max-width: 380px) {
+  .sb-item > span:not(.sb-ico):not(.sb-val) { display: none; }
+  .sb-item { justify-content: center; gap: 4px; }
+  .sb-val { margin-left: 0; }
+}
+
+/* ── 5. 控制区：3 列 grid（核心！）──────────────────────────────────────
+   ⚠️⚠️ 必须用 grid 而非 flex+wrap：
+       flex+wrap 在换行后不保证等宽对齐，末行会留空洞（历史实拍「按钮网格有空洞」）；
+       grid 的 1fr 列保证每列等宽，视觉整齐。
+   ⚠️ 不要用 white-space:nowrap + overflow:hidden ：
+       360px 下 3 列每列仅 ~84px，而 "🔄 New Game" 需 90px → 被硬裁 6px；
+       且含 emoji/CJK 时 text-overflow:ellipsis **不生效**，浏览器直接切字。
+   ⚠️ 移动端不要写 justify-content:center —— grid 下无意义，用 stretch 填满。
+
+   注：.toolbar 是 boardduel 现有「整条工具栏」容器（含分隔线/开关组），
+   语义上不等同纯按钮栅格，故单独处理（见第 5b 节）。 */
+.actions,
+.bd-controls {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .3rem;
+  justify-content: stretch;
+  margin: .5rem 0;
+}
+.actions > button,
+.bd-controls > .bd-btn {
+  width: 100%;
+  min-height: var(--bd-touch);
+}
+.actions > button {
+  padding: .42rem .15rem;
+  font-size: .72rem;
+  white-space: normal;        /* ← 允许换行，从根本上杜绝切字 */
+  overflow: visible;
+  line-height: 1.12;
+  justify-content: center;
+  word-break: keep-all;       /* ← 不劈词 */
+}
+/* 极窄屏（≤340px，如 iPhone SE1 的 320px）：3 列物理放不下 → 降 2 列。
+   320px 下 3 列每列仅 ~92px，而 "🔄 New Game" 单行需 90px+内边距 → 必然裁切。 */
+@media (max-width: 340px) {
+  .actions,
+  .bd-controls { grid-template-columns: repeat(2, 1fr); }
+  .actions > button { font-size: .74rem; padding: .45rem .2rem; }
+}
+
+/* ── 5b. 工具栏（复合容器：主按钮 + 分隔线 + 开关组）──────────────────────
+   boardduel 现有 .toolbar 内含 .t-btn / .t-divider / .t-spacer / .toggle。
+   语义是「一排混排控件」，用 flex 更贴切，但**必须允许换行 + 开关组占满行**，
+   否则窄屏下开关组被挤成 2px 宽（历史实拍「难度按钮看不见」）。 */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  background: var(--bd-card);
+  border: 1px solid var(--bd-border);
+  border-radius: var(--bd-radius-md);
+  padding: 8px;
+  margin-bottom: 10px;
+}
+.toolbar .t-divider { width: 1px; height: 20px; background: var(--bd-border); margin: 0 4px; }
+.toolbar .t-spacer { flex: 1; min-width: 0; }
+/* 开关组最小宽度：保证 3 个按钮不被压扁 */
+.toolbar .toggle { min-width: 0; }
+@media (max-width: 420px) {
+  .toolbar .t-spacer { display: none; }
+  .toolbar .toggle { flex: 1 1 100%; }
+}
+
+/* ── 6. 按钮 ───────────────────────────────────────────────────────────── */
+/* 统一三类现有按钮：.t-btn（工具栏）/ .btn-primary / .btn-ghost。
+   注意：<button class="btn btn-primary"> 这种双类名也覆盖（取并集）。 */
+.t-btn,
+.btn,
+.btn-primary,
+.btn-ghost,
+.btn-big,
+.btn-copy,
+.bd-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .3rem;
+  padding: .5rem .875rem;
+  background: var(--bd-card);
+  color: var(--bd-text);
+  border: 2px solid var(--bd-border);
+  border-radius: var(--bd-radius-sm);
+  font-size: .875rem;
+  font-weight: 500;
+  font-family: inherit;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: all .15s;
+  /* 触摸目标：站点统一 44px */
+  min-height: var(--bd-touch);
+  min-width: var(--bd-touch);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.t-btn:hover,
+.btn:hover,
+.btn-ghost:hover,
+.bd-btn:hover {
+  background: var(--bd-page);
+  border-color: var(--bd-primary);
+  color: var(--bd-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+}
+.t-btn:active,
+.btn:active,
+.btn-primary:active,
+.btn-ghost:active { transform: scale(.95); transition-duration: .08s; }
+.t-btn:focus-visible,
+.btn:focus-visible,
+.btn-primary:focus-visible,
+.btn-ghost:focus-visible { outline: 2px solid var(--bd-primary); outline-offset: 2px; }
+.t-btn[disabled], .btn[disabled], .btn-primary[disabled], .btn-ghost[disabled] { opacity: .5; cursor: not-allowed; }
+
+/* 主色实心 */
+.btn-primary,
+.bd-btn.is-primary {
+  background: var(--bd-primary);
+  color: #fff;
+  border-color: var(--bd-primary);
+  font-weight: 600;
+}
+.btn-primary:hover {
+  background: var(--bd-primary-dark);
+  border-color: var(--bd-primary-dark);
+  color: #fff;
+}
+/* 幽灵 / 次级 */
+.btn-ghost,
+.bd-btn.is-ghost {
+  background: var(--bd-card);
+  color: var(--bd-text);
+  border-color: var(--bd-border);
+}
+/* 选中态（.t-btn.active / .toggle button.on / [aria-pressed]）*/
+.t-btn.active,
+.bd-btn.active,
+.btn.active,
+.bd-btn[aria-pressed="true"] {
+  background: var(--bd-primary);
+  color: #fff;
+  border-color: var(--bd-primary);
+  box-shadow: 0 2px 8px rgba(0, 102, 204, .3);
+}
+/* 对战按钮：强调色 */
+.bd-btn.is-battle,
+.btn.battle-btn {
+  background: var(--bd-accent) !important;
+  color: #fff !important;
+  border-color: var(--bd-accent) !important;
+  font-weight: 600;
+}
+/* 危险操作 */
+.bd-btn.is-danger { background: var(--bd-danger); color: #fff; border-color: var(--bd-danger); }
+
+/* 开关组（模式 / 难度）*/
+.toggle {
+  display: inline-flex;
+  border: 1.5px solid var(--bd-border);
+  border-radius: var(--bd-radius-sm);
+  overflow: hidden;
+  background: var(--bd-card);
+}
+.toggle button {
+  border: none;
+  background: var(--bd-card);
+  padding: .5rem .8rem;
+  font-size: .82rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--bd-text-2);
+  cursor: pointer;
+  min-height: calc(var(--bd-touch) - 6px);
+  transition: background .15s, color .15s;
+  white-space: nowrap;
+}
+.toggle button + button { border-left: 1.5px solid var(--bd-border); }
+.toggle button.on,
+.toggle button.active {
+  background: var(--bd-primary);
+  color: #fff;
+}
+
+/* ── 7. 棋盘卡：白底卡片包住棋盘 ────────────────────────────────────────── */
+.board-wrap,
+.bd-boardcard {
+  background: var(--bd-card);
+  border-radius: var(--bd-radius-lg);
+  padding: 16px;
+  margin: 4px auto 10px;
+  max-width: var(--bd-boardcard-max);
+  width: 100%;
+  box-shadow: var(--bd-shadow-card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;       /* .result-overlay 绝对定位锚点 */
+}
+
+/* ── 8. 棋盘：等比网格 ─────────────────────────────────────────────────── */
+/* ⚠️ 宽高必须由 aspect-ratio 决定，别用固定 px —— 否则桌面端棋盘偏小。
+   列数/行数通过内联变量指定：
+   <div class="board" style="--bd-cols:3;--bd-rows:3"> */
+.board,
+.bd-board {
+  display: grid;
+  grid-template-columns: repeat(var(--bd-cols, 3), 1fr);
+  grid-template-rows: repeat(var(--bd-rows, 3), 1fr);
+  gap: var(--bd-board-gap, .5rem);
+  width: 100%;
+  max-width: var(--bd-board-max);
+  margin: 0 auto;
+  aspect-ratio: var(--bd-cols, 3) / var(--bd-rows, 3);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 网格线版（gap 透底方案）────────────────────────────────────────────────
+   原理：棋盘容器填充深色，格子填白，gap 让深色透出 → 天然贯穿的细线。
+   ✅ 线由布局缝隙生成，不存在「格子各自 border 取整导致错开」的问题。
+   ⚠️ 网格线颜色必须跟随主题变量，不能写死！暗色主题下格子背景变深，
+      若容器底仍写死深色 → 两者亮度接近 → 1px 缝完全看不见（实测线全消失）。*/
+.bd-board.is-lined,
+.board.is-lined {
+  --bd-grid-line: #333;
+  background: var(--bd-grid-line);
+  border: 2px solid var(--bd-grid-line);
+  border-radius: 4px;
+  gap: 1px;
+}
+.bd-board.is-lined > *,
+.board.is-lined > * { background: var(--bd-card); border-radius: 0; }
+
+/* ── 9. 格子 ───────────────────────────────────────────────────────────── */
+.cell,
+.bd-cell {
+  position: relative;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bd-card);
+  border: 2px solid var(--bd-border);
+  border-radius: var(--bd-radius-md);
+  font-size: clamp(1.4rem, 7vw, 2.6rem);
+  font-weight: 800;
+  font-family: inherit;
+  /* 垂直居中：line-height:1 避免行框把字形挤偏（实测 dy 可差 0.7px）*/
+  line-height: 1;
+  color: var(--bd-text);
+  cursor: pointer;
+  user-select: none;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: transform .08s, background .15s, border-color .15s;
+}
+.cell:active,
+.bd-cell:active { transform: scale(.96); }
+.cell:disabled,
+.bd-cell:disabled { cursor: default; }
+.cell:disabled:active,
+.bd-cell:disabled:active { transform: none; }
+
+/* 状态变体 */
+.bd-cell.is-selected   { background: var(--bd-primary-soft); }
+.bd-cell.is-given      { background: #F0F0F0; font-weight: 700; cursor: not-allowed; }
+.bd-cell.is-error      { color: var(--bd-danger); }
+.bd-cell.is-conflict   { background: #FEE2E2; color: #B91C1C; }
+
+/* 空位 hover（棋类通用）*/
+.cell.empty:hover { border-color: var(--bd-primary); background: #F0FDFA; }
+/* 胜负高亮 */
+.cell.win,
+.bd-cell.is-win {
+  border-color: var(--bd-success);
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, .45);
+  transform: scale(1.03);
+}
+.cell.blocked { cursor: not-allowed; opacity: .6; }
+
+/* 双方着色（棋类：黑/白、X/O 等）——默认取品牌色与琥珀色，
+   各游戏可用页内少量样式覆盖（例如需黑白棋子时）。*/
+.cell.p0,
+.bd-cell.p0 { color: var(--bd-primary); }
+.cell.p1,
+.bd-cell.p1 { color: #F59E0B; }
+/* 实心棋子风格（可选，给 .cell 加 .is-solid）*/
+.cell.is-solid.p0 { color: #fff; background: var(--bd-primary); border-color: var(--bd-primary); }
+.cell.is-solid.p1 { color: #7B5006; background: #FDE68A; border-color: #F59E0B; }
+
+/* ── 10. 玩家卡（对战双方信息）────────────────────────────────────────── */
+.players-bar,
+.bd-players {
+  display: flex;
+  gap: .5rem;
+  width: 100%;
+  max-width: var(--bd-board-max);
+  margin-bottom: 6px;
+}
+.p-card,
+.bd-player {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .4rem .6rem;
+  background: var(--bd-muted);
+  border: 1.5px solid var(--bd-border);
+  border-radius: var(--bd-radius-sm);
+  font-size: .82rem;
+  font-weight: 600;
+  transition: all .15s;
+}
+.p-card .pl-mark { font-size: 1.1rem; line-height: 1; flex-shrink: 0; }
+.p-card .pl-name {
+  margin-left: auto;
+  font-size: .82rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* 我方 / 对方 / 当前回合 */
+.p-card.me,
+.bd-player.me { border-color: var(--bd-primary); background: #F0FDFA; color: var(--bd-primary); }
+.p-card.opp,
+.bd-player.opp { border-color: var(--bd-text-2); color: var(--bd-text-2); }
+.p-card.turn,
+.bd-player.is-turn {
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, .18);
+  font-weight: 700;
+}
+.bd-player.p0 { border-color: var(--bd-primary); color: var(--bd-primary); }
+.bd-player.p1 { border-color: #F59E0B; color: #B45309; }
+
+/* ── 11. 对战状态栏（房号 / 回合 / 比分 / 倒计时）───────────────────────── */
+.bd-battle-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+  background: linear-gradient(135deg, #7C3AED, #4F46E5);
+  color: #fff;
+  padding: .7rem 1rem;
+  border-radius: var(--bd-radius-md);
+  margin: .5rem 0;
+  font-size: .85rem;
+}
+.bd-battle-bar .bd-room-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-weight: 700;
+  letter-spacing: .08em;
+  background: rgba(255, 255, 255, .18);
+  padding: .15rem .5rem;
+  border-radius: 6px;
+}
+.bd-battle-bar .bd-round { font-variant-numeric: tabular-nums; }
+.bd-battle-bar .bd-scores {
+  margin-left: auto;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.bd-battle-bar .bd-myturn {
+  font-size: .78rem;
+  opacity: .95;
+  background: rgba(255, 255, 255, .2);
+  padding: .15rem .5rem;
+  border-radius: 999px;
+}
+
+/* ── 12. 结果浮层 ─────────────────────────────────────────────────────── */
+.result-overlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, .94);
+  border-radius: var(--bd-radius-md);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  z-index: 20;
+  padding: 16px;
+}
+.result-overlay.show { display: flex; }
+.result-text { font-size: 1.5rem; font-weight: 800; text-align: center; }
+.result-text.win  { color: var(--bd-success); }
+.result-text.lose { color: var(--bd-danger); }
+.result-text.draw { color: var(--bd-text-2); }
+.result-overlay .actions {
+  grid-template-columns: repeat(2, 1fr);
+  width: 100%;
+  max-width: 300px;
+  margin: 0;
+}
+
+/* ── 13. 消息条 / 提示 ─────────────────────────────────────────────────── */
+.bd-message { margin-top: 16px; font-size: 16px; min-height: 28px; text-align: center; color: var(--bd-text); }
+.bd-message.is-error   { color: var(--bd-danger); }
+.bd-message.is-success { color: var(--bd-success); }
+.bd-tip { text-align: center; color: var(--bd-text-2); margin-top: .75rem; font-size: .85rem; }
+
+/* ── 14. 对战弹层（大厅 / 等待 / 结算）────────────────────────────────── */
+.bd-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, .4);
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.bd-overlay.is-open { display: flex; }
+.bd-modal {
+  background: var(--bd-card);
+  color: var(--bd-text);
+  border-radius: var(--bd-radius-md);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, .3);
+  padding: 1.5rem;
+  text-align: center;
+  max-width: 420px;
+  width: 100%;
+  max-height: 84vh;
+  overflow-y: auto;
+}
+.bd-modal h2, .bd-modal h3 { margin: 0 0 .75rem; }
+.bd-modal input[type="text"] {
+  width: 100%;
+  padding: .6rem .75rem;
+  border: 1.5px solid var(--bd-border);
+  border-radius: var(--bd-radius-sm);
+  font-size: .9rem;
+  font-family: inherit;
+  background: var(--bd-card);
+  color: var(--bd-text);
+  margin-bottom: .75rem;
+}
+.bd-modal input[type="text"]:focus { outline: none; border-color: var(--bd-primary); }
+.bd-modal .bd-modal-actions { display: flex; gap: .5rem; justify-content: center; flex-wrap: wrap; }
+
+/* ── 15. 战绩统计卡 ───────────────────────────────────────────────────── */
+.bd-statgrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  background: var(--bd-card);
+  border: 1px solid var(--bd-border);
+  border-radius: var(--bd-radius-md);
+  padding: 12px;
+  margin-bottom: 10px;
+}
+.bd-statgrid .bd-stat { text-align: center; }
+.bd-statgrid .bd-stat .val { font-size: 1.6rem; font-weight: 800; color: var(--bd-primary); display: block; }
+.bd-statgrid .bd-stat .lab { font-size: .75rem; color: var(--bd-text-2); }
+
+/* ── 16. 页脚玩法说明 ─────────────────────────────────────────────────── */
+.bd-footer { max-width: 640px; margin: 0 auto; padding: 8px 16px 32px; color: var(--bd-text-2); font-size: .85rem; }
+.bd-footer h3 { color: var(--bd-text); font-size: 1rem; margin: 18px 0 6px; }
+.bd-footer p, .bd-footer li { line-height: 1.7; }
+.bd-footer kbd {
+  display: inline-block;
+  background: var(--bd-card);
+  border: 1px solid var(--bd-border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: inherit;
+  font-size: .8rem;
+  color: var(--bd-text);
+  box-shadow: 0 1px 0 var(--bd-border);
+}
+
+/* ── 17. 暗色主题 ─────────────────────────────────────────────────────── */
+/* 用法：<html data-theme="dark">；共享层若已定义变量则本层自动跟随。 */
+[data-theme="dark"] {
+  --bd-page:   var(--bg, #0F172A);
+  --bd-card:   var(--card, #1E293B);
+  --bd-muted:  #172033;
+  --bd-text:   var(--t, #F1F5F9);
+  --bd-text-2: var(--m, #94A3B8);
+  --bd-border: var(--line, #334155);
+  --bd-hairline: rgba(255, 255, 255, .1);
+  --bd-primary-soft: #1E3A5F;
+  --bd-shadow-card: 0 2px 4px rgba(0, 0, 0, .4), 0 4px 12px rgba(0, 0, 0, .5);
+}
+/* ⚠️ 暗色下网格线必须换色，否则细线全消失（见第 8 节说明）*/
+[data-theme="dark"] .bd-board.is-lined,
+[data-theme="dark"] .board.is-lined { --bd-grid-line: #475569; }
+[data-theme="dark"] .bd-cell.is-given,
+[data-theme="dark"] .cell.is-given { background: #334155; }
+[data-theme="dark"] .bd-cell.is-selected,
+[data-theme="dark"] .cell.is-selected { background: #1E3A5F; }
+[data-theme="dark"] .result-overlay { background: rgba(15, 23, 42, .94); }
+[data-theme="dark"] .p-card.me,
+[data-theme="dark"] .bd-player.me { background: rgba(0, 102, 204, .14); }
+[data-theme="dark"] .cell.empty:hover { background: rgba(0, 102, 204, .12); }
+[data-theme="dark"] .toggle button { background: var(--bd-card); }
+
+/* ── 18. 减少动效偏好 ─────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .t-btn, .btn, .btn-primary, .btn-ghost, .bd-btn,
+  .cell, .bd-cell, .toggle button { transition: none; }
+  .t-btn:active, .btn:active, .btn-primary:active, .btn-ghost:active,
+  .cell:active, .bd-cell:active { transform: none; }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   19. 兼容层 B：.wrap 家族（bulls / mathlink15 / two048）
+   ────────────────────────────────────────────────────────────────────────────
+   实测 boardduel 11 页分两个家族：
+     A 家族 .game-shell —— checkers / connect4 / gomoku / othello / reversi
+                          / tictactoe（已由第 2~18 节覆盖）
+     B 家族 .wrap      —— bulls / mathlink15 / two048
+   两家族「容器 / 页头 / 状态区 / 控制区 / 按钮」类名完全不同：
+     容器   .game-shell        vs  .wrap（且宽度写在 .wrap 的 max-width:430px）
+     内容块 ——                vs  .card
+     页头   .game-header       vs  h1 + .sub
+     状态区 .status-bar/.sb-*  vs  .status + .players/.p
+     控制区 .toolbar + .t-btn  vs  .row + 裸 <button> + .btn-primary/.btn-ghost
+   本节把 B 家族映射到同一套设计令牌，使其与 A 家族视觉一致。
+   ⚠️ 不动 DOM：只加/改选择器，页面标签结构零改动。
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* 19.1 容器：.wrap 由「430px 窄容器」升级为「全宽铺底 + 内容中轴」 */
+.wrap {
+  width: 100%;
+  max-width: var(--bd-shell);
+  margin-inline: auto;
+  padding: 12px 8px;
+}
+@media (min-width: 768px) {
+  .wrap { padding: 20px; }
+}
+/* B 家族没有 .game-shell 包装层，直接用 .wrap 承载中轴约束 */
+.wrap > h1,
+.wrap > .sub,
+.wrap > .status,
+.wrap > .players,
+.wrap > .card {
+  max-width: var(--bd-content-max, 720px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* 19.2 页头：h1 + .sub（对应 A 家族 .game-header） */
+.wrap > h1 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.25;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+  text-align: center;
+  padding-top: 8px;
+}
+.wrap > .sub {
+  color: var(--bd-text-2);
+  font-size: .85rem;
+  margin: 4px 0 12px;
+  text-align: center;
+}
+
+/* 19.3 内容卡：.card（对应 A 家族 .board-wrap/.bd-boardcard 的容器角色） */
+.card {
+  background: var(--bd-card);
+  border: 1px solid var(--bd-border);
+  border-radius: var(--bd-radius-lg);
+  padding: 16px;
+  margin-bottom: 10px;
+  box-shadow: var(--bd-shadow-card);
+}
+
+/* 19.4 控制区：.row —— 由 flex+wrap 改为 grid（防末行参差） */
+/* ⚠️ 仅当 .row 里全是按钮时用 grid；含 input/select 的混合行保持 flex。
+   判据：本层用 :has() 做条件；不支持 :has() 的旧浏览器回退到 flex。 */
+.row {
+  display: flex;
+  gap: .3rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.row:has(> button):not(:has(> input)):not(:has(> select)) {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+@media (max-width: 340px) {
+  .row:has(> button):not(:has(> input)):not(:has(> select)) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* 19.5 按钮：B 家族用裸 <button>，统一到 A 家族按钮规格 */
+/* ⚠️ 裸 button 选择器会影响页面所有 button（含 .ai-* 面板内的）。
+   这里用 .row > button 限定到控制区，避免污染其他区域。 */
+.row > button,
+.card > button,
+.banner + button {
+  min-height: var(--bd-touch);
+  min-width: var(--bd-touch);
+  padding: .42rem .75rem;
+  border-radius: var(--bd-radius-sm);
+  border: 2px solid transparent;
+  font-family: inherit;
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+  white-space: normal;
+  word-break: keep-all;
+}
+/* 主按钮：实心品牌色 */
+.btn-primary,
+.row > button.btn-primary {
+  background: var(--bd-primary);
+  color: #fff;
+  border-color: var(--bd-primary);
+}
+.btn-primary:hover { background: var(--bd-primary-dark); border-color: var(--bd-primary-dark); }
+/* 次按钮：描边 */
+.btn-ghost,
+.row > button.btn-ghost {
+  background: var(--bd-card);
+  color: var(--bd-text);
+  border-color: var(--bd-border);
+}
+.btn-ghost:hover { border-color: var(--bd-primary); color: var(--bd-primary); }
+/* 强调按钮（AI 应招 / 确认）*/
+.btn-big {
+  background: var(--bd-success);
+  color: #fff;
+  border-color: var(--bd-success);
+}
+.btn-big:hover { filter: brightness(.94); }
+button:disabled { opacity: .5; cursor: not-allowed; }
+
+/* 19.6 状态区：.status + .players/.p（对应 A 家族 .status-bar + .p-card） */
+.status {
+  font-weight: 600;
+  font-size: .92rem;
+  margin: .3rem 0 .6rem;
+  padding: 8px 12px;
+  background: var(--bd-muted);
+  border: 1px solid var(--bd-border);
+  border-radius: var(--bd-radius-sm);
+  min-height: var(--bd-touch);
+  display: flex;
+  align-items: center;
+}
+.players {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  margin: .4rem 0 .8rem;
+}
+.p {
+  padding: 8px 10px;
+  border-radius: var(--bd-radius-sm);
+  border: 1.5px solid var(--bd-border);
+  background: var(--bd-card);
+  font-size: .85rem;
+  text-align: center;
+  min-height: var(--bd-touch);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+.p.p0 { color: var(--p0, var(--bd-primary)); border-color: var(--p0, var(--bd-primary)); }
+.p.p1 { color: var(--p1, #B45309); border-color: var(--p1, #B45309); }
+.p.mine { font-weight: 700; background: var(--bd-primary-soft); }
+.p.turn { box-shadow: 0 0 0 2px var(--bd-primary-soft); }
+
+/* 19.7 B 家族暗色补齐 */
+[data-theme="dark"] .card { background: var(--bd-card); border-color: var(--bd-border); }
+[data-theme="dark"] .status { background: var(--bd-muted); }
+[data-theme="dark"] .p { background: var(--bd-card); }
+[data-theme="dark"] .p.mine { background: rgba(0, 102, 204, .18); }
+[data-theme="dark"] .btn-ghost { background: var(--bd-card); color: var(--bd-text); }
+
+/* 19.8 B 家族减少动效 */
+@media (prefers-reduced-motion: reduce) {
+  .row > button, .card > button, .p { transition: none; }
+}
+
+/* ── 版本补充 ──────────────────────────────────────────────────────────────
+   v=bd2 · 2026-09-14 新增第 19 节：.wrap 家族兼容（bulls/mathlink15/two048）
+   ════════════════════════════════════════════════════════════════════════════ */

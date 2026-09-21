@@ -1,0 +1,105 @@
+/* ============================================================
+   Global Toast / Notification System
+   — 三站共享，轻量级，无依赖
+   ============================================================ */
+
+.bd-toast-stack {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+  max-width: 360px;
+}
+.bd-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--card, #fff);
+  border: 1px solid var(--line, #e5e7eb);
+  border-left: 4px solid var(--brand, #4f46e5);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--t, #1e1b4b);
+  transform: translateX(120%);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), opacity 0.25s;
+  animation: bd-toast-in 0.35s forwards;
+}
+.bd-toast.bd-toast-leave {
+  animation: bd-toast-out 0.3s forwards;
+}
+@keyframes bd-toast-in {
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes bd-toast-out {
+  to { transform: translateX(120%); opacity: 0; }
+}
+.bd-toast .bd-toast-ico {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.bd-toast .bd-toast-body {
+  flex: 1;
+  min-width: 0;
+}
+.bd-toast .bd-toast-title {
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+.bd-toast .bd-toast-msg {
+  font-size: 13px;
+  color: var(--m, #6b7280);
+}
+.bd-toast .bd-toast-close {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: var(--m, #6b7280);
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+.bd-toast .bd-toast-close:hover { opacity: 1; }
+
+/* Type variants */
+.bd-toast.bd-success { border-left-color: var(--good, #16a34a); }
+.bd-toast.bd-warning { border-left-color: #f59e0b; }
+.bd-toast.bd-error   { border-left-color: var(--bad, #dc2626); }
+.bd-toast.bd-info    { border-left-color: var(--brand, #4f46e5); }
+.bd-toast.bd-success .bd-toast-ico { content: attr(data-ico); }
+
+/* Mobile: bottom-aligned, full width */
+@media (max-width: 520px) {
+  .bd-toast-stack {
+    top: auto;
+    bottom: 80px;
+    left: 12px;
+    right: 12px;
+    max-width: none;
+  }
+  .bd-toast {
+    animation: bd-toast-in-mobile 0.35s forwards;
+  }
+  .bd-toast.bd-toast-leave {
+    animation: bd-toast-out-mobile 0.3s forwards;
+  }
+  @keyframes bd-toast-in-mobile {
+    from { transform: translateY(100%); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes bd-toast-out-mobile {
+    to { transform: translateY(100%); opacity: 0; }
+  }
+}

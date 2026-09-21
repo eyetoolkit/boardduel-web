@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en" data-site="board">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/img/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How to Play Gomoku · BoardDuel</title>
+  <meta name="description" content="Learn how to play Gomoku (Five in a Row). Rules, winning patterns, attack strategies, and defense tips for the classic strategy board game.">
+  <link rel="canonical" href="https://boardduel.com/how-to-play/gomoku/">
+  
+  
+  <link rel="alternate" hreflang="zh-CN" href="https://boardduel.com/how-to-play/gomoku/" />
+  <link rel="alternate" hreflang="en" href="https://boardduel.com/how-to-play/gomoku/?lang=en" />
+  <link rel="alternate" hreflang="ja" href="https://boardduel.com/how-to-play/gomoku/?lang=ja" />
+  <link rel="alternate" hreflang="es" href="https://boardduel.com/how-to-play/gomoku/?lang=es" />
+  <link rel="alternate" hreflang="fr" href="https://boardduel.com/how-to-play/gomoku/?lang=fr" />
+  <link rel="alternate" hreflang="de" href="https://boardduel.com/how-to-play/gomoku/?lang=de" />
+  <link rel="alternate" hreflang="x-default" href="https://boardduel.com/how-to-play/gomoku/" />
+<style>
+    :root{ --p:#4f46e5; --p-d:#4338ca; --p-l:#eef2ff; --bg:#faf9ff; --card:#fff; --t:#1e1b4b; --m:#6b7280; --line:rgba(23,24,40,0.08); }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--t);line-height:1.8}
+    a{color:var(--p);text-decoration:none}
+    a:hover{text-decoration:underline}
+    .wrap{max-width:780px;margin:0 auto;padding:0 20px}
+    nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+    .nav-inner{display:flex;align-items:center;gap:18px;height:60px;max-width:1080px;margin:0 auto;padding:0 20px}
+    .nav-brand{font-weight:800;font-size:18px}
+    .nav-links{margin-left:auto;display:flex;gap:4px}
+    .nav-links a{color:var(--m);font-size:14px;padding:8px 14px;border-radius:999px;transition:.15s}
+    .nav-links a:hover{color:var(--p);background:var(--p-l);text-decoration:none}
+    .container{padding:40px 0 60px}
+    h1{font-size:2rem;color:var(--p-d);margin-bottom:.6rem}
+    h2{font-size:1.3rem;color:var(--p-d);margin:2rem 0 .7rem;border-bottom:2px solid var(--p-l);padding-bottom:.4rem}
+    h3{font-size:1.05rem;color:var(--p-d);margin:1.2rem 0 .4rem}
+    p{color:var(--t);margin:.5rem 0;font-size:.97rem}
+    ul,ol{margin:.5rem 0 .8rem 1.6rem}
+    li{margin:.3rem 0;font-size:.97rem}
+    .intro-box{background:var(--p-l);border-radius:14px;padding:20px 24px;margin:1.2rem 0;border-left:4px solid var(--p)}
+    .pattern-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:1rem 0}
+    .pattern-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+    .pattern-card h3{margin-top:0;font-size:1rem}
+    .win-visual{display:flex;gap:4px;margin:10px 0;justify-content:center}
+    .dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700}
+    .dot.your{background:#4f46e5;color:#fff}
+    .dot.opp{background:#e5e7eb;color:#9ca3af}
+    .dot.win{background:#22c55e;color:#fff;border:2px solid #16a34a}
+    .tip-box{background:#fef9c3;border:1px solid #fde047;border-radius:10px;padding:14px 18px;margin:.8rem 0}
+    .tip-box strong{color:#854d0e}
+    .strategy-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:.7rem 0}
+    .strategy-card h3{margin-top:0}
+    .faq-item{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin:.6rem 0}
+    .faq-item summary{font-weight:700;color:var(--p-d);cursor:pointer;font-size:1rem}
+    .faq-item p{margin-top:.6rem}
+    .cta{display:inline-block;background:var(--p);color:#fff;border-radius:10px;padding:12px 28px;font-weight:700;font-size:15px;margin-top:1.5rem;transition:background .15s}
+    .cta:hover{background:var(--p-d);text-decoration:none}
+    .cta-row{text-align:center;margin:2rem 0}
+    .breadcrumb{color:var(--m);font-size:.85rem;margin-bottom:1rem}
+    .breadcrumb a{color:var(--m)}
+    footer{margin-top:40px;border-top:1px solid var(--line);padding:24px 0;text-align:center;color:var(--m);font-size:.85rem}
+    @media(max-width:640px){.nav-links{display:none}.pattern-grid{grid-template-columns:1fr}}
+  </style>
+  <link rel="stylesheet" href="/css/shared/tokens.css?v=p4fix2">
+  <link rel="stylesheet" href="/css/shared/brand-ds2.css?v=ds2-22">
+<script src="/i18n/i18n.js?v=33"></script>
+  <link rel="manifest" href="/manifest.zh.webmanifest">
+</head>
+<body>
+
+<div id="site-header" style="min-height:65px"
+     data-brand-a="Board" data-brand-b="Duel" data-mark="duel-chess"
+     data-nav='[{"label":"Home","href":"/","i18n":"nav.home"}]'
+     data-cta-label="Home" data-cta-href="/" data-cta-i18n="nav.home"></div>
+
+  <nav>
+    <div class="nav-inner">
+      <div class="nav-brand">♟️ BoardDuel</div>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/how-to-play/gomoku/">How to Play</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="wrap prose">
+      <div class="breadcrumb"><a href="/">← Back to Home</a></div>
+      <h1>How to Play Gomoku</h1>
+      <p>Gomoku — also known as Five in a Row — is an elegant strategy game with origins in ancient China. Two players take turns placing stones on a grid, racing to connect five in a row.</p>
+
+      <div class="intro-box">
+        <p><strong>The Goal:</strong> Place five of your stones in a continuous line — horizontally, vertically, or diagonally — before your opponent does. The first player to achieve five in a row wins immediately.</p>
+      </div>
+
+      <h2>📖 Basic Rules</h2>
+      <ul>
+        <li>Played on a 15×15 grid (or larger)</li>
+        <li>Black (first player) and White (second player) take turns placing one stone per turn</li>
+        <li>Stones are placed on the intersections (not the squares)</li>
+        <li>Once placed, stones cannot be moved or removed</li>
+        <li><strong>Win condition:</strong> Five consecutive stones in a row — horizontally, vertically, or diagonally</li>
+      </ul>
+
+      <h2>🏆 Winning Patterns</h2>
+
+      <div class="pattern-grid">
+        <div class="pattern-card">
+          <h3 data-i18n="bd_how_to_play_gomoku_1">Five in a Row (win)</h3>
+          <div class="win-visual">
+            <div class="dot opp">●</div>
+            <div class="dot opp">●</div>
+            <div class="dot your">●</div>
+            <div class="dot your">●</div>
+            <div class="dot win">●</div>
+          </div>
+          <p style="font-size:.88rem;color:var(--m)">Five consecutive stones wins the game</p>
+        </div>
+        <div class="pattern-card">
+          <h3 data-i18n="bd_how_to_play_gomoku_2">Open Four (double four)</h3>
+          <div class="win-visual">
+            <div class="dot opp">●</div>
+            <div class="dot your">●</div>
+            <div class="dot your">●</div>
+            <div class="dot your">●</div>
+            <div class="dot opp">●</div>
+          </div>
+          <p style="font-size:.88rem;color:var(--m)">Two ways to make five — very strong position</p>
+        </div>
+      </div>
+
+      <h2>🧠 Winning Strategies</h2>
+
+      <div class="strategy-card">
+        <h3>1. Control the Center</h3>
+        <p>The center of the board has the most potential lines. Early in the game, place your stones near the center to maximize future options and limit your opponent's possibilities.</p>
+      </div>
+
+      <div class="strategy-card">
+        <h3>2. Build Multiple Threats</h3>
+        <p>Create overlapping attack patterns. If you have two lines developing simultaneously, your opponent can only block one — forcing a win on the other.</p>
+      </div>
+
+      <div class="strategy-card">
+        <h3>3. Watch for Open Fours</h3>
+        <p>An "open four" (four in a row with open ends on both sides) is a winning move — your opponent cannot block it without blocking the other end, which you win immediately. Always be on the lookout for opportunities to create or defend against open fours.</p>
+      </div>
+
+      <div class="strategy-card">
+        <h3>4. The "Overline" Trap</h3>
+        <p>In some rulesets, six or more in a row also wins. Placing more than five can be a surprise tactic. In BoardDuel's rules, exactly five is the winning condition.</p>
+      </div>
+
+      <div class="tip-box">
+        <strong>💡 Pro tip:</strong> The best Gomoku players think several moves ahead, imagining all possible five-in-a-row lines their opponent could complete. Before placing a stone, ask: "Does this create a winning threat? Does this block a winning threat?"
+      </div>
+
+      <h2>🎮 Game Modes at BoardDuel</h2>
+      <ul>
+        <li><strong>vs AI</strong> — Practice against a computer opponent at multiple difficulty levels</li>
+        <li><strong>Local 2-Player</strong> — Play on the same device with a friend</li>
+        <li><strong>Online Match</strong> — Challenge other players worldwide</li>
+      </ul>
+
+      <h2>❓ Frequently Asked Questions</h2>
+
+      <details class="faq-item">
+        <summary>Who goes first in Gomoku?</summary>
+        <p>Black (the first player) traditionally places first. Some rule variants give white a compensation (like allowing a swap option) to balance the slight first-move advantage.</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>Can you win by placing more than five?</summary>
+        <p>In BoardDuel, exactly five consecutive stones wins. Six or more is also a winning configuration in some rule sets.</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>Is Gomoku the same as Renju?</summary>
+        <p>Renju is a professional variant of Gomoku with additional rules to balance the game, such as forbidden patterns for the first player. Gomoku in its standard form has no such restrictions.</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>What board size does BoardDuel use?</summary>
+        <p>BoardDuel uses a 15×15 board, which is the standard tournament size and provides the best balance of strategy and variety.</p>
+      </details>
+
+      <div class="cta-row">
+        <a href="/games/gomoku/" class="cta">▶ Play Gomoku Now</a>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="sites-footer">
+      <div class="wrap">
+        <div class="sf-title" data-i18n="home.site_network">🎯 Our Brand Network</div>
+        <div class="sf-matrix">
+          <a href="https://mathduel.games/" class="sf-item">
+            <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-calculator"></use></svg>
+            <span data-i18n="bd_how_to_play_gomoku_3">MathDuel</span>
+          </a>
+          <a href="https://boardduel.com/" class="sf-item">
+            <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-chess"></use></svg>
+            <span data-i18n="bd_how_to_play_gomoku_4">BoardDuel</span>
+          </a>
+          <a href="https://memoryduel.com/" class="sf-item">
+            <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-brain"></use></svg>
+            <span data-i18n="bd_how_to_play_gomoku_5">MemoryDuel</span>
+          </a>
+        </div>
+        <div class="sf-links">
+          <a href="/about/" data-i18n="nav.about">About</a>
+          <a href="/privacy/" data-i18n="nav.privacy">Privacy</a>
+          <a href="/terms/" data-i18n="nav.terms">Terms</a>
+          <a href="/contact/" data-i18n="nav.contact">Contact</a>
+        </div>
+        <div class="sf-copy" data-i18n="home.footer">© 2026 BoardDuel · Free to play · Privacy-first</div>
+      </div>
+      <div class="sf-note">© 2026 BoardDuel · Free to play, privacy-first, pure strategy</div>
+    </footer>
+  <script src="/shared/site-header.js?v=ds2-11"></script>
+  <script src="/shared/sso-bridge.js?v=1" defer></script>
+</body>
+</html>

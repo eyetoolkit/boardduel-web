@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="en" data-site="board">
+<head>
+  <meta charset="utf-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/img/favicon.svg">
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title data-i18n-title="game_chess.title" data-i18n-title-suffix=" · Board Duel">Chess</title>
+    <meta data-i18n="meta.auto.hc_国际象棋在线国际象棋chess_42173" name="keywords" content="Chess,OnlineChess,chess,Board Games,AI Match,Friend Match,8×8Board,Castling,En passant,Promotion">
+  <meta data-i18n="meta.auto.hc_国际象棋在线玩88标准棋盘王车_19000" name="description" content="Chess play online: everything you need on a standard 8×8 board — castling, en passant, promotion, move hints. AI match (4 AI levels), friend online match, random match, move-history replay. Independent accounts save your records and compete on the global leaderboard.">
+  <style>
+    :root{--p0:#4f46e5;--p1:#f59e0b;--bg:#f5f6fa;--card:#fff;--border:#e5e7eb;--text:#1e1b4b;--text2:#6b7280;--good:#16a34a;--bad:#dc2626;--line:rgba(23,24,40,.08);--sq-light:#f0d9b5;--sq-dark:#b58863;--sel:#facc15}
+    *{box-sizing:border-box}
+    body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);margin:0;padding:0;line-height:1.5;-webkit-tap-highlight-color:transparent}
+    a{color:inherit;text-decoration:none}
+    .g-nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);position:relative}
+    .g-nav-in{max-width:960px;margin:0 auto;padding:0 92px 0 20px;height:56px;display:flex;align-items:center;gap:18px}
+    .g-brand{font-weight:800;font-size:18px;white-space:nowrap}
+    .g-brand span{color:var(--p0)}
+    .g-links{margin-left:auto;display:flex;gap:2px;flex-wrap:wrap}
+    .g-links a{color:var(--text2);font-size:14px;padding:7px 12px;border-radius:999px;transition:all .15s}
+    .g-links a:hover{color:var(--p0);background:#eef2ff}
+    .g-links a.active{color:var(--p0);background:#eef2ff;font-weight:600}
+    @media(max-width:760px){.g-links a{display:none}.g-links a.active{display:inline-block}}
+    .game-shell{max-width:640px;margin:0 auto;padding:16px 16px 8px}
+    .game-header{text-align:center;padding:18px 0 12px}
+    .game-header h1{font-size:1.5rem;margin:0;display:flex;align-items:center;justify-content:center;gap:.5rem}
+    .sub{color:var(--text2);font-size:.85rem;margin:6px 16px 0}
+    .status-bar{display:flex;gap:8px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;margin-bottom:10px}
+    .sb-item{flex:1;min-width:80px;display:flex;align-items:center;gap:6px;padding:4px 8px;background:#f9fafb;border-radius:8px;font-size:.85rem}
+    .sb-ico{font-size:1rem}
+    .sb-val{margin-left:auto;font-weight:700;color:var(--p0)}
+    .toolbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:8px;margin-bottom:10px}
+    .t-btn{padding:.5rem .85rem;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .15s;color:var(--text)}
+    .t-btn:hover{border-color:var(--p0);color:var(--p0)}
+    .t-btn.active,.t-btn.preset.on{background:#eef2ff;border-color:var(--p0);color:var(--p0)}
+    .t-divider{width:1px;height:20px;background:var(--border);margin:0 4px}
+    .t-spacer{flex:1}
+    .toggle{display:inline-flex;border:1.5px solid var(--border);border-radius:8px;overflow:hidden}
+    .toggle button{border:none;background:#fff;padding:.5rem .8rem;font-size:.83rem;font-weight:600;cursor:pointer;color:var(--text2)}
+    .toggle button.on{background:var(--p0);color:#fff}
+    .diff-desc{display:none;background:var(--card);border:1px dashed var(--border);border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:.82rem}
+    .diff-desc.show{display:block}
+    .diff-desc .zh{color:var(--text);font-weight:600}
+    .diff-desc .en{color:var(--text2);font-size:.75rem;margin-top:2px}
+    .board-wrap{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;flex-direction:column;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.04)}
+    .clocks-bar{display:flex;align-items:center;justify-content:space-between;gap:.5rem;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:8px 12px;margin-bottom:10px;max-width:640px;margin-left:auto;margin-right:auto}
+    .clock-box{flex:1;display:flex;align-items:center;gap:8px;padding:6px 10px;background:#f9fafb;border:1.5px solid var(--border);border-radius:8px;transition:all .15s}
+    .clock-box.active{border-color:var(--p0);background:#eef2ff;box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+    .clock-box.low{border-color:var(--bad);background:#fef2f2;color:var(--bad);animation:pulse-low 1s infinite}
+    .clock-box .cl-lb{font-size:.82rem;color:var(--text2);font-weight:600}
+    .clock-box .cl-val{margin-left:auto;font-size:1.15rem;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+    .clock-box.low .cl-val{color:var(--bad)}
+    .clock-info{flex:0 0 auto;font-size:.85rem;color:var(--text2);font-weight:600;text-align:center;min-width:78px}
+    @keyframes pulse-low{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}
+    .rank-labels{width:100%;max-width:min(94vw,440px);display:flex}
+    .rank-labels span{width:11.111%;text-align:center;font-size:.7rem;color:var(--text2);font-weight:600}
+    .board{position:relative;width:100%;max-width:min(94vw,440px);aspect-ratio:1;border-radius:6px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.16);display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);user-select:none}
+    .sq{position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer}
+    .sq.light{background:var(--sq-light)}
+    .sq.dark{background:var(--sq-dark)}
+    .sq.sel{box-shadow:inset 0 0 0 3px var(--sel);z-index:2}
+    .sq.last{box-shadow:inset 0 0 0 2px var(--good);z-index:1}
+    .sq.empty{cursor:default}
+    .piece{font-size:clamp(18px,7.2vw,40px);line-height:1;z-index:3;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35));pointer-events:none}
+    .sq.selectable .dot{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:24%;height:24%;border-radius:50%;background:rgba(16,185,129,.6);pointer-events:none;z-index:2}
+    .sq.selectable.capture .dot{width:100%;height:100%;border-radius:50%;background:transparent;border:3px solid rgba(220,38,38,.55)}
+    .sq.check .piece{filter:drop-shadow(0 0 6px #ef4444);color:#dc2626!important}
+    .sq.dim{opacity:.35}
+    .coords-y{display:flex;flex-direction:column;justify-content:space-between;padding:1px 4px;font-size:.7rem;color:var(--text2);font-weight:600}
+    @media(max-width:480px){.coords-y{display:none}}
+    .result-overlay{display:none;position:absolute;inset:0;background:rgba(255,255,255,.94);border-radius:6px;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:20}
+    .result-overlay.show{display:flex}
+    .result-text{font-size:1.5rem;font-weight:800}
+    .result-text.win{color:var(--good)}
+    .result-text.lose{color:var(--bad)}
+    .result-text.draw{color:var(--text2)}
+    .actions{display:flex;gap:8px;margin-top:6px}
+    .actions button{padding:8px 18px;font-size:.9rem;border-radius:8px;font-weight:600;cursor:pointer;border:1.5px solid transparent}
+    .btn-primary{background:var(--p0);color:#fff;border-color:var(--p0)}
+    .btn-ghost{background:var(--card);color:var(--text);border-color:var(--border)}
+    .coach-bar{display:none;background:linear-gradient(135deg,#eef2ff,#f0fdf4);border:1px solid #c7d2fe;border-radius:12px;padding:.7rem .9rem;margin-bottom:10px;gap:.7rem;align-items:flex-start}
+    .coach-bar.show{display:flex}
+    .coach-icon{font-size:1.3rem;line-height:1.2}
+    .coach-zh{font-size:.9rem;font-weight:600;color:#4338ca;line-height:1.4}
+    .coach-en{font-size:.76rem;color:var(--text2);line-height:1.4;margin-top:2px}
+    .game-footer{max-width:640px;margin:0 auto;padding:8px 16px 32px;color:var(--text2);font-size:.85rem}
+    .game-footer h3{color:var(--text);font-size:1rem;margin:18px 0 6px}
+    .game-footer p,.game-footer li{line-height:1.7}
+    .game-footer kbd{display:inline-block;background:#fff;border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-family:inherit;font-size:.8rem;color:var(--text);box-shadow:0 1px 0 var(--border)}
+
+    /* ===== 局况信息增强 ===== */
+    .extra-panel{max-width:640px;margin:10px auto 0;padding:0 16px}
+    .info-row{display:flex;gap:8px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;margin-bottom:10px}
+    .info-item{flex:1;min-width:110px;display:flex;align-items:center;gap:6px;padding:4px 8px;background:#f9fafb;border-radius:8px;font-size:.85rem}
+    .info-item .lb{color:var(--text2)}
+    .info-item .vl{margin-left:auto;font-weight:700;color:var(--p0)}
+    .material-eval{display:flex;gap:6px;align-items:center;font-weight:700;font-size:.9rem}
+    .mat-w{color:var(--p0)}
+    .mat-b{color:#9a6700}
+    .mat-adv{font-size:.75rem;color:var(--text2);font-weight:500}
+    .history-panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;margin-bottom:10px}
+    .history-panel h4{margin:0 0 6px;font-size:.85rem;color:var(--text2);font-weight:700}
+    .history-list{display:flex;flex-wrap:wrap;gap:4px;max-height:88px;overflow-y:auto;font-size:.85rem}
+    .hist-item{padding:2px 7px;background:#f1f5f9;border-radius:5px;color:var(--text);font-variant-numeric:tabular-nums}
+    .hist-item .hnum{color:var(--text2)}
+    .hist-item.last{background:#ede9fe;color:#5b21b6;font-weight:700}
+
+    /* ===== 对局聊天 ===== */
+    .chat-list{max-height:140px;overflow-y:auto;font-size:.85rem;display:flex;flex-direction:column;gap:4px;margin-bottom:6px}
+    .chat-msg{padding:3px 8px;border-radius:8px;background:#f6f7f9;line-height:1.4;word-break:break-word}
+    .chat-msg .c-nm{font-weight:700;color:var(--p0);margin-right:5px}
+    .chat-msg.me{background:#eef2ff}
+    .chat-msg.emoji-only{font-size:1.4rem;background:transparent;padding:1px 4px}
+    .chat-emoji{display:flex;flex-wrap:wrap;gap:2px;padding:4px 0;border-bottom:1px dashed var(--border)}
+    .chat-emoji button{background:none;border:none;font-size:1.25rem;cursor:pointer;padding:2px 4px;border-radius:6px;transition:transform .1s}
+    .chat-emoji button:hover{transform:scale(1.25)}
+    .chat-input-row{display:flex;gap:6px;align-items:center;margin-top:6px}
+    .chat-input-row input{flex:1;min-width:0;padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:.85rem}
+    .chat-emoji-btn{background:#f6f7f9;border:1px solid var(--border);border-radius:8px;font-size:1rem;cursor:pointer;padding:5px 8px}
+
+    /* ===== 兵升变选择弹窗 ===== */
+    .promo-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center}
+    .promo-overlay.show{display:flex}
+    .promo-card{background:#fff;border-radius:16px;padding:20px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.3);max-width:340px;width:90%}
+    .promo-card h3{margin:0 0 12px;font-size:1.05rem;color:var(--text)}
+    .promo-choices{display:flex;gap:8px;justify-content:center}
+    .promo-choice{width:64px;height:64px;font-size:2rem;display:flex;align-items:center;justify-content:center;background:#fff;border:2px solid var(--border);border-radius:12px;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
+    .promo-choice:hover,.promo-choice:focus-visible{border-color:var(--p0);background:#f0fdfa;transform:scale(1.08)}
+
+    /* ===== 移动端汉堡菜单 ===== */
+    .g-hamburger{display:none;background:none;border:none;color:var(--text);font-size:1.4rem;cursor:pointer;line-height:1;padding:2px}
+    @media(max-width:760px){
+      .g-hamburger{display:inline-flex;align-items:center;justify-content:center}
+      .g-nav-menu{position:absolute;top:56px;left:0;right:0;background:#fff;border-bottom:1px solid var(--line);display:none;flex-direction:column;padding:6px}
+      .g-nav-menu.open{display:flex}
+      .g-nav-menu a{color:var(--text2);font-size:14px;padding:10px 14px;border-radius:8px}
+      .g-nav-menu a.active{color:var(--p0);background:#eef2ff;font-weight:600}
+    }
+    .g-nav-in{position:relative}
+    /* === lang dropdown === */
+    .lang-dropdown{position:absolute;top:50%;transform:translateY(-50%);right:12px;z-index:60}
+    .lang-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--card);font-weight:700;font-size:.85rem;cursor:pointer;color:var(--text);transition:border-color .15s,background .15s}
+    .lang-btn:hover{border-color:var(--p0);background:#eef2ff}
+    .lang-caret{width:12px;height:12px;transition:transform .2s}
+    .lang-dropdown.open .lang-caret{transform:rotate(180deg)}
+    .lang-menu{display:none;position:absolute;top:calc(100% + 6px);right:0;min-width:168px;padding:6px;background:var(--card);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12)}
+    .lang-dropdown.open .lang-menu{display:block}
+    .lang-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;background:none;border:none;border-radius:6px;text-align:left;cursor:pointer;color:var(--text);font-size:.85rem}
+    .lang-item:hover{background:#eef2ff}
+    .lang-item.active{background:#eef2ff;color:var(--p0);font-weight:700}
+    .lang-item .lang-code{font-weight:700;min-width:24px}
+    .lang-item .lang-name{color:var(--text2)}
+    .lang-item.active .lang-name{color:var(--p0)}
+
+    /* ===== 联机对战面板 ===== */
+    .online-panel{max-width:640px;margin:10px auto;padding:0 16px}
+    .op-create{display:flex;align-items:center;gap:.5rem;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;flex-wrap:wrap}
+    .op-create .op-or{color:var(--text2);font-size:.85rem}
+    .op-create input{min-width:90px}
+    .op-waiting{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center}
+    .op-code-lb{color:var(--text2);font-size:.9rem;font-weight:600}
+    .op-code{font-size:1.5rem;font-weight:800;letter-spacing:.12em;color:var(--p0)}
+    .op-status{margin:.5rem 0;color:var(--text2);font-weight:500}
+    .op-players{display:flex;gap:.5rem;justify-content:center;margin-top:.5rem}
+    .op-player{flex:1;padding:.4rem .6rem;background:#f9fafb;border:1.5px solid var(--border);border-radius:8px;font-size:.85rem;font-weight:600;color:var(--text)}
+    .op-player.me{border-color:var(--p0);background:#f0fdfa;color:var(--p0)}
+    <!--
+
+</style>
+  <!-- Tri-Sites Shared CSS -->
+  <link rel="stylesheet" href="/css/shared/tokens.css?v=p4fix2">
+  <link rel="stylesheet" href="/css/shared/sidebar.css?v=p28">
+  <link rel="stylesheet" href="/css/shared/components.css?v=p19fix2">
+  <link rel="stylesheet" href="/css/boardduel-game.css?v=p2fix3">
+  <link rel="stylesheet" href="/css/shared/toast.css?v=p3fix2">
+  <link rel="canonical" href="https://boardduel.com/games/chess/" />
+  
+  
+  <link rel="alternate" hreflang="zh-CN" href="https://boardduel.com/games/chess/" />
+  <link rel="alternate" hreflang="en" href="https://boardduel.com/games/chess/?lang=en" />
+  <link rel="alternate" hreflang="ja" href="https://boardduel.com/games/chess/?lang=ja" />
+  <link rel="alternate" hreflang="es" href="https://boardduel.com/games/chess/?lang=es" />
+  <link rel="alternate" hreflang="fr" href="https://boardduel.com/games/chess/?lang=fr" />
+  <link rel="alternate" hreflang="de" href="https://boardduel.com/games/chess/?lang=de" />
+  <link rel="alternate" hreflang="x-default" href="https://boardduel.com/games/chess/" />
+<!-- Open Graph -->
+  <meta property="og:type" content="game" />
+  <meta data-i18n="meta.auto.hc_国际象棋在线对战_68154" property="og:title" content="Chess - Online" />
+  <meta data-i18n="meta.auto.hc_国际象棋在线玩88标准棋盘王车_35255" property="og:description" content="Chess play online: everything you need on a standard 8×8 board — castling, en passant, promotion, move hints. AI match (4 AI levels), friend online match, random match, move-history replay. Independent accounts save your records and compete on the global leaderboard." />
+  <meta property="og:url" content="https://boardduel.com/games/chess/" />
+  <meta data-i18n="meta.auto.hc_BoardDuel棋盘对决_74499" property="og:site_name" content="Board Duel - Board Games" />
+  <meta property="og:locale" content="zh_CN" />
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta data-i18n="meta.auto.hc_国际象棋在线对战_47990" name="twitter:title" content="Chess - Online" />
+  <meta data-i18n="meta.auto.hc_国际象棋在线玩88标准棋盘王车_70356" name="twitter:description" content="Chess play online: everything you need on a standard 8×8 board — castling, en passant, promotion, move hints. AI match (4 AI levels), friend online match, random match, move-history replay. Independent accounts save your records and compete on the global leaderboard." />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "国际象棋 - 在线对战 | Board Duel",
+    "description": "国际象棋在线玩：8×8 标准棋盘，王车易位、吃过路兵、兵升变、走法提示一应俱全。支持人机对战（4 档 AI 难度）、好友联机对战、随机配对、走棋记录回放。独立账号保存战绩，全球排行榜竞技。",
+    "url": "https://boardduel.com/games/chess/",
+    "inLanguage": "zh-CN",
+    "isPartOf": { "@type": "WebSite", "name": "Board Duel 棋盘对决", "url": "https://boardduel.com/" }
+  }
+  </script>
+  <!-- BreadcrumbList -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "首页", "item": "https://boardduel.com/" },
+      { "@type": "ListItem", "position": 2, "name": "游戏", "item": "https://boardduel.com/games/" },
+      { "@type": "ListItem", "position": 3, "name": "国际象棋", "item": "https://boardduel.com/games/chess/" }
+    ]
+  }
+  </script>  <meta property="og:image" content="/games/chess/og.jpg" />
+  <meta property="og:image:width" content="/games/chess/og.jpg" />
+  <meta property="og:image:height" content="/games/chess/og.jpg" />
+  <meta property="og:image:alt" content="/games/chess/og.jpg" />
+  <meta name="twitter:image" content="https://boardduel.com/games/gomoku/og.jpg" />  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "VideoGame",
+    "name": "国际象棋 - Board Duel",
+    "url": "https://boardduel.com/games/chess/",
+    "image": "https://boardduel.com/games/chess/og.jpg",
+    "description": "国际象棋在线玩：8×8 标准棋盘，王车易位、吃过路兵、兵升变、走法提示一应俱全。支持人机对战（4 档 AI 难度）、好友联机对战、随机配对、走棋记录回放。独立账号保存战绩，全球排行榜竞技。",
+    "genre": "Strategy",
+    "playMode": "MultiPlayer,SinglePlayer",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Any (Web Browser)",
+    "inLanguage": "zh-CN",
+    "isAccessibleForFree": true,
+    "publisher": {
+      "@type": "Organization",
+      "name": "Board Duel 棋盘对决",
+      "url": "https://boardduel.com/"
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "CNY",
+      "availability": "https://schema.org/InStock"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.7",
+      "ratingCount": "120",
+      "bestRating": "5",
+      "worstRating": "1"
+    }
+  }
+  </script>  <link rel="stylesheet" href="/css/shared/brand-ds2.css?v=ds2-22">
+  <link rel="manifest" href="/manifest.zh.webmanifest">
+</head>
+<body>
+
+<div id="site-header" style="min-height:65px"
+     data-brand-a="Board" data-brand-b="Duel" data-mark="duel-chess"
+     data-nav='[{"label":"Home","href":"/","i18n":"nav.home"}]'
+     data-cta-label="Home" data-cta-href="/" data-cta-i18n="nav.home"></div>
+
+  <main class="game-shell">
+    <header class="game-header">
+      <h1>♞ <span data-i18n="game_chess.name">Chess</span></h1>
+      <p class="sub" data-i18n="game_chess.desc">The world's most classic strategy board game.</p>
+    </header>
+
+    <div class="status-bar">
+      <div class="sb-item"><span class="sb-ico">👤</span><span data-i18n="match.mode">Mode</span><span class="sb-val" id="modeVal" data-i18n="match.ai">🤖 vs AI</span></div>
+      <div class="sb-item"><span class="sb-ico">🎚️</span><span data-i18n="match.difficulty">Difficulty</span><span class="sb-val" id="diffVal" data-i18n="difficulty.medium">Medium</span></div>
+      <div class="sb-item"><span class="sb-ico">♟️</span><span data-i18n="match.turn">Turn</span><span class="sb-val" id="turnVal">—</span></div>
+      <div class="sb-item"><span class="sb-ico">🏳️</span><span data-i18n="match.status">Status</span><span class="sb-val" id="stateVal" data-i18n="match.playing">Playing</span></div>
+    </div>
+
+    <div class="toolbar">
+      <button class="t-btn" id="newBtn" onclick="newGame()" data-i18n="common.new_game">New Game</button>
+      <button class="t-btn" id="undoBtn" onclick="undoLast()" data-i18n="chess.undo">Undo</button>
+      <button class="t-btn" id="resignBtn" onclick="resign()" data-i18n="chess.resign">Resign</button>
+      <button class="t-btn" id="drawBtn" onclick="offerDraw()" data-i18n="chess.draw_offer">Offer Draw</button>
+      <span class="t-divider"></span>
+      <div class="toggle" id="modeToggle">
+        <button data-m="ai" class="on" onclick="setMode('ai')" data-i18n="match.ai">🤖 vs AI</button>
+        <button data-m="online" onclick="setMode('online')" data-i18n="match.online">🌐 Online</button>
+        <button data-m="random" onclick="setMode('random')" data-i18n="match.random">⚡ Random</button>
+      </div>
+      <span class="t-spacer"></span>
+      <div class="toggle" id="clockToggle">
+        <button data-c="off" class="on" onclick="setClock('off')" title="No limit" data-i18n-title="bd_games_chess_attr_1" data-i18n="bd_games_chess_1">No limit</button>
+        <button data-c="3" onclick="setClock('3')" title="3-min blitz" data-i18n-title="bd_games_chess_attr_2" data-i18n="bd_games_chess_2">3-min blitz</button>
+        <button data-c="5" onclick="setClock('5')" title="5-min rapid" data-i18n-title="bd_games_chess_attr_3" data-i18n="bd_games_chess_3">5-min rapid</button>
+        <button data-c="10" onclick="setClock('10')" title="10-min standard" data-i18n-title="bd_games_chess_attr_4" data-i18n="bd_games_chess_4">10-min standard</button>
+        <button data-c="15+10" onclick="setClock('15+10')" title="15 分钟 + 每步 10 秒">15+10</button>
+      </div>
+      <div class="toggle" id="diffToggle" style="margin-left:6px">
+        <button data-d="easy" onclick="setDiff('easy')" data-i18n="difficulty.easy">Easy</button>
+        <button data-d="med" class="on" onclick="setDiff('med')" data-i18n="difficulty.medium">Medium</button>
+        <button data-d="hard" onclick="setDiff('hard')" data-i18n="difficulty.hard">Hard</button>
+      </div>
+    </div>
+
+    <div class="diff-desc" id="diffDesc"><div class="zh" id="diffZh"></div><div class="en" id="diffEn"></div></div>
+
+    <div class="coach-bar" id="coachBar"><span class="coach-icon" id="coachIcon">🧠</span><div><div class="coach-zh" id="coachZh"></div><div class="coach-en" id="coachEn"></div></div></div>
+
+    <!-- 联机对战面板 -->
+    <div class="online-panel" id="onlinePanel" style="display:none">
+      <div class="op-create" id="opCreate">
+        <button class="btn btn-primary" id="opCreateBtn" data-i18n="match.create_room">➕ Create Room</button>
+        <span class="op-or" data-i18n="match.or">or</span>
+        <input id="opCodeInput" data-i18n-placeholder="match.enter_room_code" placeholder="Enter room code" maxlength="6" style="flex:1;padding:.5rem .7rem;border:1.5px solid var(--border,#e5e7eb);border-radius:8px;font-size:.9rem">
+        <button class="btn btn-ghost" id="opJoinBtn" data-i18n="match.join">Join</button>
+      </div>
+      <div class="op-waiting" id="opWaiting" style="display:none">
+        <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+          <span class="op-code-lb" data-i18n="match.room_code">Room Code</span>
+          <span class="op-code" id="opCode"></span>
+          <button class="btn btn-ghost" id="opCopyBtn" style="font-size:.8rem;padding:.35rem .7rem" data-i18n="match.copy_link">Copy Link</button>
+        </div>
+        <div class="op-status" id="opStatus" data-i18n="match.waiting">Waiting for opponent...</div>
+        <div class="op-players" id="opPlayers"></div>
+      </div>
+    </div>
+
+    <!-- 随机配对面板 -->
+    <div class="online-panel" id="matchPanel" style="display:none">
+      <div class="op-waiting">
+        <div style="font-size:1.2rem" data-i18n="match.finding">Finding opponent…</div>
+        <div class="op-status" id="matchStatus" data-i18n="match.matching">Matching real players…</div>
+        <button class="btn btn-ghost" id="matchCancelBtn" style="margin-top:.8rem" data-i18n="match.cancel">Cancel</button>
+      </div>
+    </div>
+
+    <div class="clocks-bar" id="clocksBar" style="display:none">
+      <div class="clock-box" id="clockW"><span class="cl-lb">♔ <span data-i18n="chess.white">White</span></span><span class="cl-val" id="clockWVal">--:--</span></div>
+      <div class="clock-info" id="clockInfo">⏱️ <span data-i18n="chess.no_clock">No clock</span></div>
+      <div class="clock-box" id="clockB"><span class="cl-lb">♚ <span data-i18n="chess.black">Black</span></span><span class="cl-val" id="clockBVal">--:--</span></div>
+    </div>
+
+    <div class="bd-tip" id="bdOppLeave" style="display:none"></div>
+
+    <div class="board-wrap">
+      <div style="display:flex;width:100%;max-width:min(94vw,440px)">
+        <div class="coords-y" id="coordsRight"><span>8</span><span>7</span><span>6</span><span>5</span><span>4</span><span>3</span><span>2</span><span>1</span></div>
+        <div style="flex:1">
+          <div class="board" id="board"></div>
+          <div class="rank-labels"><span>a</span><span>b</span><span>c</span><span>d</span><span>e</span><span>f</span><span>g</span><span>h</span></div>
+        </div>
+      </div>
+      <div class="result-overlay" id="resultOverlay">
+        <div class="result-text" id="resultText"></div>
+        <div class="actions">
+          <button class="btn-primary" onclick="newGame()" data-i18n="common.play_again">Play Again</button>
+          <button class="btn-ghost" onclick="$('#resultOverlay').classList.remove('show')" data-i18n="common.keep_watching">Keep Watching</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="extra-panel">
+      <div class="info-row">
+        <div class="info-item"><span class="lb">👥 <span data-i18n="match.turn">Turn</span></span><span class="vl" id="moveCount">0</span></div>
+        <div class="info-item"><span class="lb">🏷️ <span data-i18n="chess.position">Position</span></span><span class="vl" id="evalAdv">—</span></div>
+        <div class="info-item"><span class="lb">♟️</span><span class="vl">
+          <span class="material-eval"><span class="mat-w" id="matWhite">0</span><span class="mat-adv" id="matAdv" data-i18n="chess.material_even">Even</span><span class="mat-b" id="matBlack">0</span></span>
+        </span></div>
+      </div>
+      <div class="history-panel">
+        <h4>📜 <span data-i18n="chess.move_history">Move History</span></h4>
+        <div class="history-list" id="historyList"></div>
+      </div>
+
+      <div class="history-panel" id="chatPanel" style="display:none">
+        <h4>💬 <span data-i18n="chat.title">💬 In-Game Chat</span></h4>
+        <div class="chat-list" id="chatList"></div>
+        <div class="chat-emoji" id="chatEmoji" style="display:none"></div>
+        <div class="chat-input-row">
+          <button class="chat-emoji-btn" id="chatEmojiBtn" onclick="toggleChatEmoji()">😀</button>
+          <input id="chatInput" type="text" maxlength="140" data-i18n-placeholder="chat.placeholder" placeholder="Say something… (Enter to send)" onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="btn-ghost" onclick="sendChat()" data-i18n="chat.send">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="game-footer">
+      <h3>♟️ <span data-i18n="game_chess.rules_title">How to Play</span></h3>
+      <p data-i18n="game_chess.rules">White moves first. Move pieces one at a time to checkmate the opponent's king. A king with no legal moves while in check is checkmate — game over.</p>
+      <h3>🎓 <span data-i18n="game_chess.special_title">Special Moves</span></h3>
+      <ul>
+        <li><strong data-i18n="game_chess.special1_term">Castling</strong><span data-i18n="game_chess.special1">When neither king nor rook has moved and no pieces stand between them, move the king two squares toward the rook (O-O / O-O-O).</span></li>
+        <li><strong data-i18n="game_chess.special2_term">En Passant</strong><span data-i18n="game_chess.special2">After your pawn reaches the 5th rank, it may capture an enemy pawn that just moved two squares beside it.</span></li>
+        <li><strong data-i18n="game_chess.special3_term">Promotion</strong><span data-i18n="game_chess.special3">A pawn reaching the last rank automatically promotes to a queen.</span></li>
+      </ul>
+      <h3>🎯 <span data-i18n="game_chess.coach_title">Learning Coach</span></h3>
+      <p data-i18n="game_chess.coach_desc">Click a piece to highlight all legal moves; after each move, AI gives a bilingual tip to help you understand the position.</p>
+    </div>
+  </main>
+
+  <script src="/i18n/i18n.js?v=33"></script>
+  <script src="chess.js"></script>
+  <script>
+  // 翻译 helper：缺 key 或语言未就绪时回退中文 fb
+  function tt(k,fb){ try{ if(window.t){ var v=window.t(k); if(v&&v!==k)return v; } }catch(e){} return fb; }
+  var $ = function(id){return document.getElementById(id)};
+
+  var MODE='ai', DIFF='med';
+  var AI_COLOR='b';           // AI 执黑
+  var game, selected=null, legalMoves=[], lastMove=null, thinking=false, gameOver=false;
+  // 时钟配置:off / 3 / 5 / 10 / 15+10;单位为秒
+  var CLOCK='off', CLOCK_BASE=0, CLOCK_INC=0;
+  var CLK={w:0, b:0, lastTs:0, sideToTick:null, timer:null}; // 在线模式下 w/b 由服务器覆盖
+
+  var PIECE_GLYPH={k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'};
+  var DIFF_DESC={
+    easy:{zh:'简单 · 随机落子为主',en:'Easy: mostly random, occasionally grabs free pieces.'},
+    med:{zh:'中等 · 2 层搜索 + 子力/位置评估',en:'Medium: 2-ply search with material + positional eval.'},
+    hard:{zh:'困难 · 3 层搜索 + 吃子扩展',en:'Hard: 3-ply search with capture quiescence.'}
+  };
+
+  // —— 评估：子力价值 + 简单位置（白方视角，正=白优）——
+  var PIECE_VAL={p:100,n:320,b:330,r:500,q:900,k:20000};
+  // 位置表（按 8x8，索引 0=第8横排）
+  function posScore(type,color,row,col){
+    // row0 = rank8(top, black home), row7 = rank1(bottom, white home)
+    var val=0;
+    if(type==='p'){
+      // 兵：越深入敌方得分越高
+      var r8= color==='w' ? 7-row : 8-row; if(color==='w') r8=7-row; else r8=row;
+      val = color==='w' ? row*10 : (7-row)*10;
+      if(col===0||col===7) val-=10;   // 边兵略弱
+    }else if(type==='n'){
+      // 马：中心
+      var cr=Math.abs(3.5-row),cc=Math.abs(3.5-col);
+      val=20-(cr+cc)*6;
+    }else if(type==='b'){
+      // 象：对角有利
+      val=5;
+    }else if(type==='r'){
+      // 车：第7横排强
+      if(color==='w'&&row===6) val+=15;
+      if(color==='b'&&row===1) val+=15;
+      if(col===0||col===7) val-=5;
+    }else if(type==='q'){
+      val=0;
+    }else if(type==='k'){
+      // 国王中局向中心，残局也略中心
+      val=(Math.abs(3.5-row)+Math.abs(3.5-col))*-4;
+    }
+    return val;
+  }
+  function evalBoard(){
+    if(!game) return 0;
+    var b=game.board(),score=0;
+    for(var r=0;r<8;r++)for(var c=0;c<8;c++){
+      var s=b[r][c]; if(!s)continue;
+      var v=PIECE_VAL[s.type]+posScore(s.type,s.color,r,c);
+      score += s.color==='w'?v:-v;
+    }
+    return score;
+  }
+
+  // —— AI：negamax + alpha-beta（同一实例 move/undo）——
+  function getMovesSorted(){
+    var ms=game.moves({verbose:true});
+    ms.sort(function(a,b){
+      var va=(a.captured?PIECE_VAL[a.captured]:0)+(a.promotion?PIECE_VAL['q']:0);
+      var vb=(b.captured?PIECE_VAL[b.captured]:0)+(b.promotion?PIECE_VAL['q']:0);
+      return vb-va; // 吃大子优先（对着手排序，对 negamax 剪枝有益）
+    });
+    return ms;
+  }
+  var MATE=100000;
+  var nodes=0;
+  // 从当前走棋方视角评估（当前回合方==game.turn()）
+  function evalTurn(){
+    var s=evalBoard();
+    return game.turn()==='w'?s:-s;
+  }
+  function quiescence(alpha,beta){
+    var stand=evalTurn();
+    if(stand>=beta) return beta;
+    if(stand>alpha) alpha=stand;
+    var caps=game.moves({verbose:true}).filter(function(m){return m.captured;});
+    for(var i=0;i<caps.length;i++){
+      var m=game.move(caps[i]); if(!m)continue;
+      var sc=-quiescence(-beta,-alpha);
+      game.undo();
+      if(sc>=beta)return beta;
+      if(sc>alpha)alpha=sc;
+    }
+    return alpha;
+  }
+  function negamax(depth,alpha,beta){
+    nodes++;
+    if(Date.now()>AI_DEADLINE) return 0;          // 超出时间预算:返回中性分,跳出
+    if(game.in_checkmate()) return -MATE+nodes;   // 当前回合方被将死
+    if(game.in_stalemate()||game.in_draw()) return 0;
+    if(depth===0) return quiescence(alpha,beta);
+    var ms=getMovesSorted(),best=-Infinity;
+    for(var i=0;i<ms.length;i++){
+      var m=game.move(ms[i]); if(!m)continue;
+      var sc=-negamax(depth-1,-beta,-alpha);
+      game.undo();
+      if(sc>best)best=sc;
+      if(sc>alpha)alpha=sc;
+      if(alpha>=beta)break;
+    }
+    return best;
+  }
+  var AI_DEADLINE=0; // 搜索截止时间(ms),在 chooseAiMove 开始时设置
+  function chooseAiMove(){
+    var ms=getMovesSorted();
+    if(!ms.length)return null;
+    // 简单：随机挑（带一点吃子偏好）
+    if(DIFF==='easy'){
+      var caps=ms.filter(function(m){return m.captured;});
+      var pool=(caps.length&&Math.random()<0.6)?caps:ms;
+      return pool[Math.floor(Math.random()*pool.length)];
+    }
+    var depth=DIFF==='med'?2:3;
+    // 超时兜底：中等 1200ms / 困难 2500ms,到达即中止搜索返回当前最佳,避免"AI卡住"假象
+    AI_DEADLINE = Date.now() + (DIFF==='hard' ? 2500 : 1200);
+    var bestMove=ms[0],bestScore=-Infinity;
+    nodes=0;
+    for(var i=0;i<ms.length;i++){
+      if(Date.now()>AI_DEADLINE){ break; }
+      var m=game.move(ms[i]); if(!m)continue;
+      var sc=-negamax(depth-1,-Infinity,Infinity);
+      game.undo();
+      sc+= (Math.random()*8-4); // 打破对称、弱化无限排序
+      if(sc>bestScore){bestScore=sc;bestMove=m;}
+    }
+    return bestMove;
+  }
+
+  // —— UI ——
+  function iso(file,rank){return String.fromCharCode(97+file)+(8-rank);}   // file 0-7, rank 0-7
+
+  function renderBoard(){
+    var b=game.board(),html='';
+    for(var r=0;r<8;r++){
+      for(var c=0;c<8;c++){
+        var sq=iso(c,r);
+        var s=b[r][c];
+        var cls=( (r+c)%2===0 )?'light':'dark';
+        var clsSq='sq '+cls;
+        if(selected===sq)clsSq+=' sel';
+        if(lastMove&& (lastMove.to===sq||lastMove.from===sq) )clsSq+=' last';
+        // 合法步点
+        var isLegal=legalMoves.some(function(m){return m.to===sq;});
+        var selPieceOnTarget = isLegal && s;
+        if((selected&&isLegal) ) clsSq+=' selectable'+(selPieceOnTarget?' capture':'');
+        var glyph='';
+        if(s){ glyph = s.color==='w' ? {k:'♔',q:'♕',r:'♖',b:'♗',n:'♘',p:'♙'}[s.type] : PIECE_GLYPH[s.type]; }
+        html+='<div class="'+clsSq+'" data-sq="'+sq+'" onclick="clickSquare(\''+sq+'\')">'+
+              (isLegal?'<div class="dot"></div>':'')+
+              (glyph?'<span class="piece">'+glyph+'</span>':'')+
+              '</div>';
+      }
+    }
+    $('board').innerHTML=html;
+    // 将军高亮
+    if(game.in_check()){
+      var king=findKing(game.turn());
+      if(king){ $('board').querySelector('[data-sq="'+king+'"]').classList.add('check'); }
+    }
+  }
+  function findKing(color){
+    var b=game.board();
+    for(var r=0;r<8;r++)for(var c=0;c<8;c++){
+      var s=b[r][c]; if(s&&s.color===color&&s.type==='k')return iso(c,r);
+    }
+    return null;
+  }
+
+  function clickSquare(sq){
+    if(gameOver||thinking)return;
+    if(MODE==='ai'&&game.turn()===AI_COLOR)return;
+    var piece=game.get(sq);
+    // 若已选中且点击自己的另一个棋子 -> 换选
+    if(selected&&piece&&piece.color===game.turn()&&selected!==sq){
+      select(sq);return;
+    }
+    // 点击合法目标 -> 走子
+    if(selected&&legalMoves.some(function(m){return m.to===sq;})){
+      doPlayerMove(sq);
+      return;
+    }
+    // 选择己方棋子
+    if(piece&&piece.color===game.turn()){
+      select(sq);
+    }else{
+      selected=null;legalMoves=[];renderBoard();
+    }
+  }
+  function select(sq){
+    selected=sq;
+    legalMoves=game.moves({square:sq,verbose:true}).map(function(m){return m;});
+    renderBoard();
+    showCoach('♟️ 已选中棋子：'+pieceName(game.get(sq))+' · 可走 '+legalMoves.length+' 步',
+      'Selected. Click a highlighted square to move.','info');
+  }
+  function doPlayerMove(to){
+    var piece=game.get(selected);
+    // 兵到达对方底线 -> 弹窗选择升变棋子
+    if(piece&&piece.type==='p'){
+      var destRank = piece.color==='w'?0:7;
+      if(rankOf(to)===destRank){
+        pendingPromotion={from:selected,to:to};
+        choosePromotion();
+        return;
+      }
+    }
+    var mv=game.move({from:selected,to:to});
+    if(!mv){selected=null;legalMoves=[];renderBoard();return;}
+    selected=null;legalMoves=[];
+    lastMove=mv;
+    renderBoard();
+    coachAfterMove(mv,'w');
+    updateStatus();renderInfo();
+    clockApplyInc('w');
+    if(endCheck()){ clockStop(); return; }
+    autoDrawHint();
+    nextTurn();
+  }
+  function rankOf(sq){return 7-(sq.charCodeAt(1)-49);} // 0 top
+  function pieceName(p){
+    var n={k:'王',q:'后',r:'车',b:'象',n:'马',p:'兵'};
+    return (p.color==='w'?'白':'黑')+n[p.type];
+  }
+  function sanOf(mv){
+    var n={k:'王',q:'后',r:'车',b:'象',n:'马',p:''};
+    var s=(n[mv.piece]||''); if(!s)s=(mv.piece==='p'?'':n[mv.piece]);
+    if(mv.flags.indexOf('k')>-1)return '王车易位(O-O)';
+    if(mv.flags.indexOf('q')>-1)return '王车长易位(O-O-O)';
+    if(mv.piece==='p'&&mv.captured)return '兵吃'+''+(mv.to)+'';
+    if(mv.captured)return s+'×'+mv.to+' ('+mv.captured+')';
+    if(mv.piece==='p'&&mv.flags.indexOf('e')>-1)return '吃过路兵 '+mv.from+mv.to;
+    return s+((mv.promotion?'升变':'')+' ')+mv.from+mv.to;
+  }
+
+  function nextTurn(){
+    if(endCheck())return;
+    if(MODE==='ai'&&game.turn()===AI_COLOR){
+      thinking=true;
+      renderBoard();
+      showCoach('🤖 AI 思考中…','Calculating, please wait.','working');
+      setTimeout(aiPlay, 380+Math.random()*350);
+    }else{
+      thinking=false;
+      renderBoard();
+      updateStatus();
+    }
+  }
+  function aiPlay(){
+    var mv=chooseAiMove();
+    if(!mv){ // 无合法走法（被将死/逼和会被 endCheck 捕获，这里兜底）
+      endCheck();clockStop();return;
+    }
+    var applied=game.move(mv);
+    lastMove=mv;selected=null;legalMoves=[];
+    thinking=false;
+    renderBoard();
+    coachAfterMove(mv,'b');
+    updateStatus();
+    clockApplyInc('b');
+    if(endCheck()){ clockStop(); return; }
+    autoDrawHint();
+    nextTurn();
+  }
+
+  var PREV_EVAL=null;
+  function coachAfterMove(mv,color){
+    var oppName = (MODE==='random' && RN && RN.aiName) ? RN.aiName : (MODE==='ai'?'AI':'黑方');
+    var player=color==='w'?(MODE==='ai'?'你':'白方'):oppName;
+    var zh=[],en=[];
+    var mvSan=sanOf(mv);
+    if(mv.captured){
+      var pc={p:'兵',n:'马',b:'象',r:'车',q:'后'};
+      zh.push(player+'用 '+pieceName2(mv.piece)+' 吃掉对方'+pc[mv.captured]+'，赚得 '+PIECE_VAL[mv.captured]+' 分。');
+      en.push('A '+pc[mv.captured]+' was captured (+'+PIECE_VAL[mv.captured]+').');
+    }
+    if(mv.flags.indexOf('k')>-1){zh.push(player+'完成短易位(O-O)，巩固王城。');en.push('Castled kingside.');}
+    if(mv.flags.indexOf('q')>-1){zh.push(player+'完成长易位(O-O-O)。');en.push('Castled queenside.');}
+    if(mv.flags.indexOf('e')>-1){zh.push(player+'吃过路兵！');en.push('En passant captured.');}
+    if(mv.promotion){zh.push(mvSan+' —— 兵升变为后！');en.push('Pawn promoted to Queen.');}
+    var now=evalBoard();
+    var diff=color==='w'?now:-now; // 本轮走子方的+分
+    if(diff>=80){zh.push('这一手让局面更主动，优势明显。');en.push('This move gains clear advantage.');}
+    else if(diff<=-80){zh.push('这一手略有失势，仓位让对手舒服。');en.push('This gave your opponent a comfortable edge.');}
+    if(game.in_check()){
+      var opp=color==='w'?'黑':'白';
+      zh.push('🚨 '+opp+'方的王正被将军！');en.push('Check!');
+    }
+    showCoach((zh.join(' ')||(player+'走子 '+mvSan+'。')), (en.join(' ')||('Move: '+mvSan)), 'coach');
+    PREV_EVAL=now;
+  }
+  function pieceName2(t){var n={k:'王',q:'后',r:'车',b:'象',n:'马',p:'兵'};return n[t]||'';}
+
+  function updateStatus(){
+    if(!game)return;
+    $('modeVal').textContent = MODE==='online' ? tt('match.online','联机') : (MODE==='random' ? tt('match.random','随机配对') : tt('match.ai','人机'));
+    $('diffVal').textContent=DIFF==='easy'?tt('difficulty.easy','简单'):DIFF==='med'?tt('difficulty.medium','中等'):tt('difficulty.hard','困难');
+    $('turnVal').textContent=(game.turn()==='w'?tt('chess.white_side','白方'):tt('chess.black_side','黑方'))+tt('chess.to_move','走');
+    if(game.in_check()){ $('stateVal').textContent=tt('chess.check','将军！'); }
+    else if(game.in_checkmate()){ $('stateVal').textContent=tt('chess.checkmate','将死'); }
+    else if(game.in_stalemate()){ $('stateVal').textContent=tt('chess.stalemate','逼和'); }
+    else if(game.in_draw()){ $('stateVal').textContent=tt('chess.draw','和棋'); }
+    else { $('stateVal').textContent=tt('match.playing','对战'); }
+    renderInfo();
+  }
+
+  /* ===== 局况信息增强 ===== */
+  var MAT_VAL={p:1,n:3,b:3,r:5,q:9,k:0};
+  function materialScore(){
+    if(!game)return {w:0,b:0};
+    var b=game.board(),w=0,bl=0;
+    for(var r=0;r<8;r++)for(var c=0;c<8;c++){
+      var s=b[r][c]; if(!s)continue;
+      var v=MAT_VAL[s.type]||0;
+      if(s.color==='w')w+=v; else bl+=v;
+    }
+    return {w:w,b:bl};
+  }
+  function renderInfo(){
+    if(!game)return;
+    // 回合数
+    var hist=game.history();
+    $('moveCount').textContent=hist.length;
+    // 子力对比
+    var m=materialScore();
+    $('matWhite').textContent=m.w;
+    $('matBlack').textContent=m.b;
+    var adv=m.w-m.b;
+    if(adv===0){$('matAdv').textContent=tt('chess.even','均衡');}
+    else if(adv>0){$('matAdv').textContent=tt('chess.white','白')+' +'+adv;}
+    else{$('matAdv').textContent=tt('chess.black','黑')+' +'+(-adv);}
+    // 局面倾向
+    var ev=evalBoard(); // 白方视角
+    var evTxt;
+    if(ev>=80)evTxt=tt('chess.adv_white','白方占优');
+    else if(ev<=-80)evTxt=tt('chess.adv_black','黑方占优');
+    else if(ev>30)evTxt=tt('chess.edge_white','白方略优');
+    else if(ev<-30)evTxt=tt('chess.edge_black','黑方略优');
+    else evTxt=tt('chess.even','势均力敌');
+    $('evalAdv').textContent=evTxt;
+    // 走法历史
+    var hm=game.history({verbose:true});
+    var list=$('historyList');
+    var html='';
+    for(var i=0;i<hm.length;i++){
+      var n=Math.floor(i/2)+1;
+      var num=(i%2===0)?'<span class="hnum">'+n+'.</span> ':'';
+      var cls=(i===hm.length-1)?'last':'';
+      html+='<span class="hist-item '+cls+'">'+num+(hm[i].san||hm[i])+'</span>';
+    }
+    if(!html)html='<span style="color:var(--text2)">'+tt('chess.no_moves','对局开始')+'</span>';
+    list.innerHTML=html;
+    list.scrollTop=list.scrollHeight;
+  }
+  function endCheck(){
+    if(game.in_checkmate()){
+      var loser=game.turn(); var winner=loser==='w'?'黑':'白';
+      var winnerName=winner==='白'?tt('chess.white_side','白方'):tt('chess.black_side','黑方');
+      var loserName=loser==='w'?tt('chess.black_side','黑方'):tt('chess.white_side','白方');
+      gameOver=true; thinking=false; clockStop();
+      renderBoard();updateStatus();
+      showOver(winnerName+tt('chess.won_by_mate','获胜！将死')+loserName+tt('chess.king','国王。'),winner);
+      // 胜者判定（人机模式下）
+      var humanWin = winner==='白';
+      $('stateVal').textContent=winnerName+tt('chess.side_wins','胜');
+      reportGame(humanWin);
+      return true;
+    }
+    if(game.in_stalemate()){
+      gameOver=true;thinking=false;clockStop();renderBoard();updateStatus();
+      showOver(tt('chess.stalemate','逼和')+' — '+tt('chess.no_legal','无合法可走'),null);reportGame(false);return true;
+    }
+    if(game.in_draw()){
+      gameOver=true;thinking=false;clockStop();renderBoard();updateStatus();
+      showOver(tt('chess.draw','和棋')+' — '+drawReason(),null);reportGame(false);return true;
+    }
+    return false;
+  }
+  function drawReason(){
+    if(game.in_threefold_repetition())return tt('chess.threefold','三次重复局面');
+    if(game.insufficient_material())return tt('chess.insufficient','子力不足');
+    return tt('chess.fifty','50 回合规则');
+  }
+  function showOver(text,winner){
+    $('resultText').textContent=text;
+    $('resultText').className='result-text '+(winner===null?'draw':(MODE==='ai'&&winner!=='白')?'win':'win');
+    $('resultOverlay').classList.add('show');
+  }
+  // 对局结束上报（计入排行榜/钱包）。仅人机模式上报人类视角胜败。
+  function reportGame(win){
+    if(MODE!=='ai') return;
+    try{
+      fetch('/api/game/report',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({game:'chess',win:!!win,duration:0})}).catch(function(){});
+    }catch(e){}
+  }
+  function showCoach(zh,en,kind){
+    var map={coach:{i:'🧠',c:'#4338ca',b:'#c7d2fe',g:'linear-gradient(135deg,#eef2ff,#f0fdf4)'},
+             info:{i:'💡',c:'#4338ca',b:'#c7d2fe',g:'linear-gradient(135deg,#eef2ff,#f0fdf4)'},
+             working:{i:'⏳',c:'#7c3aed',b:'#ddd6fe',g:'linear-gradient(135deg,#faf5ff,#f5f3ff)'}};
+    var m=map[kind]||map.coach;
+    $('coachIcon').textContent=m.i;
+    $('coachZh').textContent=zh; $('coachZh').style.color=m.c;
+    $('coachEn').textContent=en;
+    $('coachBar').style.background=m.g;
+    $('coachBar').style.borderColor=m.b;
+    $('coachBar').classList.add('show');
+  }
+
+  function newGame(){
+    game=new Chess();
+    gameOver=false;thinking=false;selected=null;legalMoves=[];lastMove=null;PREV_EVAL=null;
+    $('resultOverlay').classList.remove('show');
+    renderBoard();updateStatus();
+    if(MODE!=='online'){
+      clockReset(); clockStart();
+    }
+    showCoach('🆕 新对局开始，执白先走。','White moves first. Click a white piece.','info');
+    nextTurn();
+  }
+  function undoLast(){
+    if(gameOver||thinking)return;
+    if(MODE==='online'){
+      if(ON.ws && ON.ws.readyState===1){
+        ON.ws.send(JSON.stringify({type:'takeback_request'}));
+        showCoach('已请求悔棋，等待对方同意…','Takeback request sent.','info');
+      }
+      return;
+    }
+    // 允许悔一步或两步（含 AI 的一步）
+    if((MODE==='ai'||MODE==='random')&&game.history().length>0){ game.undo(); selected=null;lastMove=null; }
+    if((MODE==='ai'||MODE==='random')&&game.history().length>0){ game.undo(); selected=null;lastMove=null; }
+    selected=null;legalMoves=[];lastMove=null;
+    renderBoard();updateStatus();
+    showCoach('♻️ 已悔棋。','Undo complete.','info');
+    nextTurn();
+  }
+  // 认输：本地直接判负，联机通知对方
+  function resign(){
+    if(gameOver) return;
+    if(!confirm(tt('chess.resign_confirm','确定认输吗？'))) return;
+    if(MODE==='online'){
+      if(ON.ws && ON.ws.readyState===1) ON.ws.send(JSON.stringify({type:'resign'}));
+      return;
+    }
+    doLocalResign();
+  }
+  function doLocalResign(){
+    var winner = MODE==='ai' ? '黑' : (game.turn()==='w'?'黑':'白');
+    var loser  = game.turn()==='w' ? '白' : '黑';
+    gameOver=true;thinking=false;clockStop();
+    renderBoard();updateStatus();
+    var wn=winner==='白'?tt('chess.white_side','白方'):tt('chess.black_side','黑方');
+    var ln=loser==='白'?tt('chess.white_side','白方'):tt('chess.black_side','黑方');
+    showOver(wn+tt('chess.side_wins2','方获胜！')+ln+tt('chess.side_resigned','方认输。'), winner==='白'?'win':'lose');
+    $('stateVal').textContent=ln+tt('chess.side_resigned_short','认输');
+    reportGame(MODE==='ai' && winner==='黑'); // 人机玩家执白,黑胜即玩家输
+  }
+  // 提议和棋：本地直接判和(人机模式下接受),联机通知对方
+  function offerDraw(){
+    if(gameOver) return;
+    if(MODE==='online'){
+      if(ON.ws && ON.ws.readyState===1) ON.ws.send(JSON.stringify({type:'draw_offer'}));
+      showCoach('已提议和棋，等待对方回应…','Draw offer sent.','info');
+      return;
+    }
+    if(confirm(tt('chess.draw_confirm','确认和棋？'))) endDraw('双方同意和棋','Draw by agreement');
+  }
+  function endDraw(zh, en){
+    gameOver=true;thinking=false;clockStop();
+    renderBoard();updateStatus();
+    showOver('🤝 '+zh,'draw');
+    $('stateVal').textContent=tt('chess.draw','和棋');
+    reportGame(false);
+  }
+  // 50回合/3次重复提示（自动检测来自 chess.js）
+  function autoDrawHint(){
+    if(gameOver) return;
+    var reason='';
+    if(game.in_threefold_repetition()) reason=tt('chess.threefold','三次重复局面');
+    else if(game.in_draw()) reason=tt('chess.fifty','50 回合规则');
+    if(reason){
+      showCoach('可考虑和棋：'+reason+'。点 🤝 直接判和。','Draw available: '+reason,'info');
+    }
+  }
+  function setMode(m){
+    MODE=m; $('modeVal').textContent = m==='online' ? tt('match.online','联机') : (m==='random' ? tt('match.random','随机配对') : tt('match.ai','人机'));
+    document.querySelectorAll('#modeToggle button').forEach(function(b){b.classList.toggle('on',b.dataset.m===m);});
+    // 聊天面板仅联机/随机配对显示（对局内实时交流）
+    if($('chatPanel'))$('chatPanel').style.display=(m==='ai')?'none':'';
+    // 切模式时重置
+    showDiff(false);
+    newGame();
+  }
+  function setDiff(d){
+    DIFF=d;
+    document.querySelectorAll('#diffToggle button').forEach(function(b){b.classList.toggle('on',b.dataset.d===d);});
+    if($('diffVal'))$('diffVal').textContent=DIFF==='easy'?tt('difficulty.easy','简单'):DIFF==='med'?tt('difficulty.medium','中等'):tt('difficulty.hard','困难');
+    showDiff(true);
+  }
+  function showDiff(show){
+    var d=DIFF_DESC[DIFF];
+    $('diffZh').textContent=d.zh; $('diffEn').textContent=d.en;
+    $('diffDesc').classList.toggle('show',show);
+  }
+
+  /* ═══════════ 时钟引擎 ═══════════ */
+  // 解析时限字符串如 '15+10' / '3' / 'off'
+  function parseClock(c){
+    if(c==='off'||!c) return {base:0, inc:0, label:tt('chess.no_clock','不限时')};
+    var m=String(c).match(/^(\d+)(?:\+(\d+))?$/);
+    if(!m) return {base:0, inc:0, label:tt('chess.no_clock','不限时')};
+    var min=parseInt(m[1],10), inc=parseInt(m[2]||'0',10);
+    return {base:min*60, inc:inc, label: c+(inc?' +'+inc+'″':'')};
+  }
+  function setClock(c){
+    CLOCK=c; var p=parseClock(c); CLOCK_BASE=p.base; CLOCK_INC=p.inc;
+    document.querySelectorAll('#clockToggle button').forEach(function(b){b.classList.toggle('on',b.dataset.c===c);});
+    if(CLOCK_BASE>0){
+      $('clocksBar').style.display='';
+      $('clockInfo').textContent='⏱️ '+p.label;
+    }else{
+      $('clocksBar').style.display='none';
+    }
+    // 联机模式:服务端权威,本地仅刷新显示
+    if(MODE==='online' && ON.ws && ON.ws.readyState===1){
+      try{ ON.ws.send(JSON.stringify({type:'set_clock', c:c})); }catch(e){}
+      return;
+    }
+    newGame();
+  }
+  function clockFmt(sec){
+    if(sec<0) sec=0;
+    var m=Math.floor(sec/60), s=Math.floor(sec%60);
+    return (m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+  }
+  function clockApplyInc(side){
+    if(CLOCK_BASE<=0) return;
+    if(side==='w') CLK.w+=CLOCK_INC; else CLK.b+=CLOCK_INC;
+  }
+  function clockStart(){
+    if(CLOCK_BASE<=0) return;
+    CLK.lastTs=Date.now();
+    CLK.sideToTick=game.turn();
+    if(CLK.timer) clearInterval(CLK.timer);
+    CLK.timer=setInterval(clockTick, 250);
+  }
+  function clockStop(){
+    if(CLK.timer){ clearInterval(CLK.timer); CLK.timer=null; }
+  }
+  function clockTick(){
+    if(gameOver||!game) return;
+    var now=Date.now(), dt=(now-CLK.lastTs)/1000; CLK.lastTs=now;
+    var side=game.turn();
+    if(side==='w'){ CLK.w=Math.max(0,CLK.w-dt); if(CLK.w<=0) onTimeout('w'); }
+    else { CLK.b=Math.max(0,CLK.b-dt); if(CLK.b<=0) onTimeout('b'); }
+    renderClocks();
+  }
+  function renderClocks(){
+    if(CLOCK_BASE<=0) return;
+    $('clockWVal').textContent=clockFmt(CLK.w);
+    $('clockBVal').textContent=clockFmt(CLK.b);
+    // 高亮用服务端权威走子方 clock.side(对齐休眠 DO 的回合归属), 本地 game.turn() 仅作兜底
+    var side = CLK.side || (game && game.turn && game.turn()) || 'w';
+    $('clockW').classList.toggle('active', side==='w' && !gameOver);
+    $('clockB').classList.toggle('active', side==='b' && !gameOver);
+    $('clockW').classList.toggle('low', CLK.w<=30 && CLK.w>0);
+    $('clockB').classList.toggle('low', CLK.b<=30 && CLK.b>0);
+  }
+  function onTimeout(loser){
+    if(gameOver) return; clockStop();
+    gameOver=true; thinking=false; renderBoard();
+    var winnerColor = loser==='w' ? '黑' : '白';
+    var loserSide = loser==='w'?tt('chess.white_side','白方'):tt('chess.black_side','黑方');
+    var winSide = winnerColor==='白'?tt('chess.white_side','白方'):tt('chess.black_side','黑方');
+    showOver('⏰ '+ loserSide +tt('chess.time_out','超时')+' — '+winSide+tt('chess.side_wins2','方获胜！'), winnerColor==='白'?'win':'lose');
+    $('stateVal').textContent=tt('chess.time_out_loss','超时负');
+    var humanWin = (MODE==='ai' && loser==='b') || (MODE==='random' && loser==='b');
+    reportGame(humanWin);
+  }
+  function clockReset(){
+    clockStop();
+    CLK.w=CLOCK_BASE; CLK.b=CLOCK_BASE;
+    if(CLOCK_BASE>0){ $('clocksBar').style.display=''; renderClocks(); }
+  }
+
+  newGame();
+
+  /* ===== 移动端汉堡菜单 ===== */
+  /* 防御: chess 页无 hamburger/navMenu 元素(旧模板残留绑定)。
+     未加保护时此处 TypeError 会中断整个内联脚本,
+     导致后面的"覆盖 setMode(online/random)"等初始化全部失效, 联机对战入口无法打开。 */
+  var _hamburger = document.getElementById('hamburger');
+  var _navMenu = document.getElementById('navMenu');
+  if (_hamburger && _navMenu) {
+    _hamburger.addEventListener('click', function(){
+      var open = _navMenu.classList.toggle('open');
+      _hamburger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    document.addEventListener('click', function(e){
+      if (_navMenu.classList.contains('open') && !e.target.closest('.g-nav')) {
+        _navMenu.classList.remove('open');
+        _hamburger.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  /* ===== 兵升变选择 ===== */
+  var pendingPromotion=null;
+  function choosePromotion(moveObj){
+    var overlay=$('promoOverlay');
+    var box=$('promoBox');
+    var color=game.turn(); // 升变方
+    var glyphs=color==='w'?{q:'♕',r:'♖',b:'♗',n:'♘'}:{q:'♛',r:'♜',b:'♝',n:'♞'};
+    box.innerHTML='<h3>'+tt('chess.choose_promotion','🎖️ 选择升变棋子')+'</h3><div class="promo-choices">'+
+      ['q','r','b','n'].map(function(p){
+        var label={q:tt('chess.queen','后'),r:tt('chess.rook','车'),b:tt('chess.bishop','象'),n:tt('chess.knight','马')}[p];
+        return '<button class="promo-choice" data-p="'+p+'" aria-label="'+label+'">'+glyphs[p]+'<span style="font-size:.6rem;display:block;color:#64748b">'+label+'</span></button>';
+      }).join('')+'</div>';
+    box.querySelectorAll('.promo-choice').forEach(function(btn){
+      btn.onclick=function(){
+        var pc=btn.getAttribute('data-p');
+        overlay.classList.remove('show');
+        applyPromotion(pc);
+      };
+    });
+    overlay.classList.add('show');
+  }
+  function applyPromotion(p){
+    if(!pendingPromotion)return;
+    var mv=pendingPromotion;
+    pendingPromotion=null;
+    mv=game.move({from:mv.from,to:mv.to,promotion:p});
+    if(!mv){selected=null;legalMoves=[];renderBoard();return;}
+    selected=null;legalMoves=[];
+    lastMove=mv;
+    renderBoard();
+    coachAfterMove(mv,'w');
+    updateStatus();renderInfo();
+    if(endCheck())return;
+    nextTurn();
+  }
+
+  /* ═══════════ 在线联机对战模块(房间链接中继) ═══════════ */
+  var ON={ws:null, code:null, idx:0, started:false, name:tt('player.guest','玩家')+Math.floor(1000+Math.random()*9000)};
+  $('modeVal').textContent = MODE==='online' ? tt('match.online','联机') : (MODE==='random' ? tt('match.random','随机配对') : tt('match.ai','人机'));
+  var _origNewGame=newGame, _origClickSquare=clickSquare, _origDoPlayerMove=doPlayerMove;
+
+  // 覆盖 setMode(支持 online / random)
+  setMode=function(m){
+    MODE=m;
+    document.querySelectorAll('#modeToggle button').forEach(function(b){b.classList.toggle('on',b.dataset.m===m);});
+    $('modeVal').textContent = m==='online' ? tt('match.online','联机') : (m==='random' ? tt('match.random','随机配对') : tt('match.ai','人机'));
+    $('diffToggle').style.display=(m==='online'||m==='random')?'none':'';
+    $('clockToggle').style.display=(m==='online')?'none':'';
+    showDiff(false);
+    if(m==='online'){
+      $('onlinePanel').style.display='';$('opCreate').style.display='flex';$('opWaiting').style.display='none';
+      $('matchPanel').style.display='none';
+      $('newBtn').style.display='none';$('undoBtn').style.display='none';
+      stopMatch(); hideConn();
+      return;
+    }
+    if(m==='random'){
+      $('onlinePanel').style.display='none';$('matchPanel').style.display='';
+      $('newBtn').style.display='none';$('undoBtn').style.display='none';
+      hideConn();
+      startMatch();
+      return;
+    }
+    $('onlinePanel').style.display='none';$('matchPanel').style.display='none';
+    $('newBtn').style.display='';$('undoBtn').style.display='';
+    stopMatch(); hideConn();
+    startLocalGame();
+  };
+  function hideConn(){ if(ON.ws){try{ON.ws.close();}catch(e){}} ON.ws=null;ON.code=null;ON.started=false; }
+  function startLocalGame(){
+    game=new Chess();gameOver=false;thinking=false;selected=null;legalMoves=[];lastMove=null;PREV_EVAL=null;$('resultOverlay').classList.remove('show');
+    renderBoard();updateStatus();
+    showCoach('🆕 新对局开始，执白先走。','White moves first.','info');
+    nextTurn();
+  }
+
+  /* ═══════════ 随机配对模块(待真人超时后 AI 补位) ═══════════ */
+  var RN={active:false, matchId:null, timer:null, aiName:null};
+  function startMatch(){
+    stopMatch();
+    $('matchStatus').textContent=tt('match.matching','正在匹配真实玩家…');
+    fetch('/api/match/join',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({game:'chess',name:ON.name})})
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(d.status==='matched'){ startMatched(d); return; }
+        RN.matchId=d.matchId;
+        RN.timer=setInterval(function(){
+          fetch('/api/match/poll?matchId='+encodeURIComponent(RN.matchId),{credentials:'same-origin'})
+            .then(function(r){ return r.json(); })
+            .then(function(p){
+              if(p.status==='matched'){ clearInterval(RN.timer); RN.timer=null; startMatched(p); }
+            }).catch(function(){});
+        },2000);
+      })
+      .catch(function(){ $('matchStatus').textContent=tt('match.match_fail','匹配失败，请重试'); });
+  }
+  function stopMatch(){
+    if(RN.timer){ clearInterval(RN.timer); RN.timer=null; }
+    if(RN.matchId){
+      var mid=RN.matchId;
+      fetch('/api/match/cancel',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({game:'chess',matchId:mid})}).catch(function(){});
+      RN.matchId=null;
+    }
+  }
+  function startMatched(d){
+    $('matchPanel').style.display='none';
+    if(d.ai){
+      // AI 补位：本地人机对弈，使用真人风格昵称，不主动告知对手是 AI
+      RN.active=true; RN.aiName=d.aiName||'神秘玩家';
+      MODE='random';
+      startLocalGame();
+      showCoach('对手已就位···'+RN.aiName+' 来自随机匹配。你执白先行。','Opponent joined from quick match. White moves first.','info');
+    }else{
+      RN.active=false;
+      enterOnlineWithCode(d.code);
+    }
+  }
+  function enterOnlineWithCode(code){
+    MODE='online';
+    ON.code=code;
+    $('onlinePanel').style.display=''; $('opCreate').style.display='none'; $('opWaiting').style.display='';
+    $('matchPanel').style.display='none';
+    $('newBtn').style.display='none';$('undoBtn').style.display='none';
+    if($('opCode'))$('opCode').textContent=code;
+    showWaiting(); connectRoom();
+  }
+  $('matchCancelBtn').onclick=function(){ stopMatch(); setMode('ai'); };
+
+  // 覆盖 doPlayerMove(online 发 ws)
+  doPlayerMove=function(to){
+    var piece=game.get(selected);
+    var isPromo=!!(piece&&piece.type==='p'&&rankOf(to)===(piece.color==='w'?0:7));
+    if(isPromo){ pendingPromotion={from:selected,to:to}; choosePromotion(); return; }
+    var mv=game.move({from:selected,to:to});
+    if(!mv){selected=null;legalMoves=[];renderBoard();return;}
+    selected=null;legalMoves=[];lastMove=mv;
+    renderBoard();coachAfterMove(mv,'w');updateStatus();renderInfo();
+    if(MODE==='online'&&ON.ws&&ON.ws.readyState===1)ON.ws.send(JSON.stringify({type:'move',from:mv.from,to:mv.to}));
+    if(endCheck())return;
+    nextTurn();
+  };
+  // 覆盖 applyPromotion(online 附带 promotion)
+  applyPromotion=function(p){
+    if(!pendingPromotion)return;
+    var mv=pendingPromotion;pendingPromotion=null;
+    mv=game.move({from:mv.from,to:mv.to,promotion:p});
+    if(!mv){selected=null;legalMoves=[];renderBoard();return;}
+    selected=null;legalMoves=[];lastMove=mv;
+    renderBoard();coachAfterMove(mv,'w');updateStatus();renderInfo();
+    if(MODE==='online'&&ON.ws&&ON.ws.readyState===1)ON.ws.send(JSON.stringify({type:'move',from:mv.from,to:mv.to,promotion:p}));
+    if(endCheck())return;
+    nextTurn();
+  };
+  // 覆盖 clickSquare(online 只允许自己一方走)
+  clickSquare=function(sq){
+    if(gameOver)return;
+    if(MODE==='online'){
+      if(!ON.started||!ON.ws||ON.ws.readyState!==1)return;
+      if(game.turn()!==(ON.idx===0?'w':'b'))return;
+    }else if((MODE==='ai'||MODE==='random')&&game.turn()===AI_COLOR)return;
+    var piece=game.get(sq);
+    if(selected&&piece&&piece.color===game.turn()&&selected!==sq){select(sq);return;}
+    if(selected&&legalMoves.some(function(m){return m.to===sq;})){doPlayerMove(sq);return;}
+    if(piece&&piece.color===game.turn()){select(sq);}else{selected=null;legalMoves=[];renderBoard();}
+  };
+  // 覆盖 nextTurn(online 不走 AI)
+  nextTurn=function(){
+    if(endCheck())return;
+    if(MODE==='online'){ thinking=false; renderBoard(); updateStatus(); return; }
+    if((MODE==='ai'||MODE==='random')&&game.turn()===AI_COLOR){ thinking=true;renderBoard();showCoach('🤖 思考中…','Thinking…','working');setTimeout(aiPlay,380+Math.random()*350); }
+    else{ thinking=false;renderBoard();updateStatus(); }
+  };
+  // online:对方走子消息
+  function onOpponentMove(m){
+    var mv=game.move({from:m.from,to:m.to,promotion:m.promotion});
+    if(!mv){toastErr(tt('chess.illegal_move','对方走了非法落子'));return;}
+    lastMove=mv;selected=null;legalMoves=[];thinking=false;
+    renderBoard();coachAfterMove(mv,'b');updateStatus();renderInfo();
+    if(endCheck())return;
+    nextTurn();
+  }
+  function toastErr(t){ if($('guMsg')){$('guMsg').textContent=t;} }
+
+  // 建房
+  function opCreateRoom(){
+    fetch('/api/gp/room?game=chess&name='+encodeURIComponent(ON.name),{credentials:'same-origin'})
+      .then(function(r){return r.ok?r.json():Promise.reject(new Error(tt('match.create_room_fail','建房失败')));})
+      .then(function(d){ ON.code=d.code; showWaiting(); connectRoom(); })
+      .catch(function(e){ alert(e.message); });
+  }
+  function opJoinRoom(){
+    var c=$('opCodeInput').value.trim().toUpperCase();
+    if(!/^[A-Z2-9]{6}$/.test(c)){alert(tt('match.invalid_code','请输入6位房间码'));return;}
+    ON.code=c; showWaiting(); connectRoom();
+  }
+  function showWaiting(){
+    $('opCreate').style.display='none';$('opWaiting').style.display='';
+    $('opCode').textContent=ON.code;
+    $('opPlayers').innerHTML=''; $('opStatus').textContent=tt('match.connecting','连接中…');
+  }
+  /* ────── 断线提示 + 自动重连（F4/F6） ────── */
+  var DISCONNECT_GRACE_MS = 60000;     // 对齐服务端 DISCONNECT_GRACE_MS
+  var _reconnectAttempts = 0, _reconnectTimer = null;
+  var _leaveTimer = null, _leaveDeadline = 0;
+  function scheduleReconnect(){
+    if(MODE!=='online' || gameOver) return;
+    if(_reconnectAttempts>=6){ $('opStatus').textContent=tt('match.reconnect_failed','重连失败，请刷新页面'); return; }
+    var delay = Math.min(15000, 1000 * Math.pow(2, _reconnectAttempts));
+    _reconnectAttempts++;
+    $('opStatus').textContent=tt('match.reconnecting','重连中…('+_reconnectAttempts+')');
+    if(_reconnectTimer) clearTimeout(_reconnectTimer);
+    _reconnectTimer = setTimeout(function(){
+      if(MODE==='online' && !(ON.ws && ON.ws.readyState===1)) connectRoom();
+    }, delay);
+  }
+  function showOpponentLeft(){
+    var el=$('bdOppLeave'); if(!el) return;
+    el.style.display='';
+    _leaveDeadline = Date.now() + DISCONNECT_GRACE_MS;
+    tickLeave();
+    if(_leaveTimer) clearInterval(_leaveTimer);
+    _leaveTimer = setInterval(tickLeave, 500);
+  }
+  function tickLeave(){
+    var el=$('bdOppLeave'); if(!el) return;
+    var rem = Math.max(0, Math.round((_leaveDeadline - Date.now())/1000));
+    el.textContent = tt('match.opponent_left_wait','对手掉线，'+rem+' 秒内未返回则判你胜');
+  }
+  function hideOpponentLeft(){
+    var el=$('bdOppLeave'); if(el) el.style.display='none';
+    if(_leaveTimer){ clearInterval(_leaveTimer); _leaveTimer=null; }
+  }
+  function gameOverReasonText(reason, iWon, isDraw){
+    switch(reason){
+      case 'resign': return iWon?tt('chess.opp_resigned','对手认输'):tt('chess.you_resigned','你认输');
+      case 'timeout': return iWon?tt('chess.opp_timeout','对手超时'):tt('chess.you_timeout','你超时');
+      case 'draw_agreed': return tt('chess.draw_agreed','双方同意和棋');
+      case 'opponent_left': return iWon?tt('match.opponent_left_win','对手离开，你获胜'):tt('match.you_left','你离开');
+      case 'natural_over': default: return '';
+    }
+  }
+
+  function connectRoom(){
+    var ws=new WebSocket('wss://'+location.host+'/ws?game=chess&code='+ON.code+'&name='+encodeURIComponent(ON.name));
+    ON.ws=ws;
+    ws.onopen=function(){
+      _reconnectAttempts=0; hideOpponentLeft();
+      if(!ON.started)$('opStatus').textContent=tt('match.connected_waiting','已连接，等待对手加入…');
+      // 把本地选定的时限推送给服务器(双方都会发,以最后收到的为准)
+      try{ ws.send(JSON.stringify({type:'set_clock',c:CLOCK})); }catch(e){}
+    };
+    ws.onmessage=function(e){ var m;try{m=JSON.parse(e.data);}catch(x){return;} handleOnline(m); };
+    ws.onclose=function(){
+      if(MODE!=='online' || gameOver) return;
+      $('opStatus').textContent=tt('match.disconnected','连接已断开');
+      scheduleReconnect();   // 退避自动重连(重连成功后服务端回 resume + clock_state)
+    };
+    ws.onerror=function(){ $('opStatus').textContent=tt('match.connection_error','连接错误'); };
+  }
+  // 把服务器时钟同步到本地视图(权威)
+  function applyServerClock(clk){
+    if(!clk){ $('clocksBar').style.display='none'; clockStop(); return; }
+    CLOCK_BASE = clk.base; CLOCK_INC = clk.inc;
+    $('clocksBar').style.display='';
+    $('clockInfo').textContent = '⏱️ ' + Math.round(clk.base/60) + (clk.inc?(' +'+clk.inc+'″'):'');
+    // 关闭本地 tick,改用 250ms 重新计算本地视图
+    clockStop();
+    CLK.w = clk.w; CLK.b = clk.b;
+    CLK.side = clk.side || CLK.side;   // 服务端权威走子方(高亮用)
+    // 启动"显示用"tick:不修改 server 状态,只从 CLK.w/b 减
+    CLK.lastTs = Date.now();
+    if(!CLK.timer) CLK.timer = setInterval(clockViewTick, 250);
+    renderClocks();
+    // 超时
+    if(clk.over){
+      var loser = clk.loser;
+      if(!gameOver){ onTimeout(loser); }
+    }
+  }
+  function clockViewTick(){
+    if(gameOver||!game){ clockStop(); return; }
+    if(!CLK._viewBase){ CLK._viewBase = CLOCK_BASE; }
+    // 不修改权威值,仅作显示衰减(每 250ms 减 0.25s)
+    var dt = 0.25;
+    if(game.turn()==='w') CLK.w = Math.max(0, CLK.w - dt);
+    else CLK.b = Math.max(0, CLK.b - dt);
+    renderClocks();
+  }
+  function handleOnline(m){
+    if(m.type==='state'){
+      if(m.you!==undefined && m.you!==null) ON.idx=m.you;   // 首连的顶层 you 才更新
+      var pl=m.players||(m.state&&m.state.players);
+      if(pl)renderPlayers(pl);
+    }
+    else if(m.type==='start'){
+      ON.started=true;
+      game=new Chess();gameOver=false;thinking=false;selected=null;legalMoves=[];lastMove=null;PREV_EVAL=null;$('resultOverlay').classList.remove('show');
+      $('opStatus').textContent=tt('chess.game_start','对局开始！')+(ON.idx===0?tt('chess.you_white',' 你执白先行'):tt('chess.you_black',' 你执黑，等白方走子'));
+      renderBoardOnlineStart();
+      applyServerClock(m.clock);
+    }
+    else if(m.type==='opponent_move'){ onOpponentMove(m); if(ON.started)$('opStatus').textContent=tt('chess.your_turn','轮到你走'); }
+    else if(m.type==='opponent_leave'){ ON.started=false; clockStop(); showOpponentLeft(); }
+    else if(m.type==='resume'){ hideOpponentLeft(); ON.started=true; $('opStatus').textContent=tt('match.resumed','对局继续'); applyServerClock(m.clock); }
+    else if(m.type==='restart_notify'){
+      game=new Chess();gameOver=false;thinking=false;selected=null;legalMoves=[];lastMove=null;PREV_EVAL=null;$('resultOverlay').classList.remove('show');renderBoard();updateStatus();
+      $('opStatus').textContent=tt('match.restart_notify','对局已重新开始')+(ON.idx===0?tt('chess.you_white_short',' 你执白'):tt('chess.you_black_short',' 你执黑'));
+      applyServerClock(m.clock);
+    }
+    else if(m.type==='move_ack'){ if(m.clock) applyServerClock(m.clock); }
+    else if(m.type==='clock_state'){ applyServerClock(m.clock); }
+    else if(m.type==='draw_offer'){
+      if(gameOver) return;
+      if(confirm(tt('chess.draw_offer_confirm','对方提议和棋，是否同意？'))){
+        if(ON.ws && ON.ws.readyState===1) ON.ws.send(JSON.stringify({type:'draw_accept'}));
+      }else{
+        if(ON.ws && ON.ws.readyState===1) ON.ws.send(JSON.stringify({type:'draw_decline'}));
+      }
+    }
+    else if(m.type==='draw_declined'){ showCoach('对方拒绝和棋。','Draw offer declined.','info'); }
+    else if(m.type==='game_over'){
+      // 服务端广播的终局(认输/和棋/超时/对手离开) —— 按 §1 新契约:winner 是 idx(0/1/'draw'),reason 决定文案
+      gameOver=true;thinking=false;clockStop();renderBoard();updateStatus();hideOpponentLeft();
+      var me=ON.idx;
+      var isDraw=(m.winner==='draw');
+      var iWon=(!isDraw && m.winner===me);
+      var reasonTxt=gameOverReasonText(m.reason, iWon, isDraw);
+      var cls=isDraw?'draw':(iWon?'win':'lose');
+      var head=isDraw?('🤝 '+tt('chess.draw','和棋')):(iWon?('🏆 '+tt('chess.you_win','你赢了！')):('😔 '+tt('chess.you_lose','你输了')));
+      showOver(head+(reasonTxt?(' — '+reasonTxt):''), cls);
+      $('stateVal').textContent=isDraw?tt('chess.draw','和棋'):(iWon?tt('chess.you_win','你赢了'):tt('chess.you_lose','你输了'));
+    }
+    else if(m.type==='takeback_request'){
+      if(gameOver) return;
+      if(confirm(tt('chess.takeback_confirm','对方请求悔棋，是否同意？'))){
+        if(ON.ws && ON.ws.readyState===1) ON.ws.send(JSON.stringify({type:'takeback_accept'}));
+      }else{
+        if(ON.ws && ON.ws.readyState===1) ON.ws.send(JSON.stringify({type:'takeback_decline'}));
+        showCoach('已拒绝悔棋请求。','Declined takeback.','info');
+      }
+    }
+    else if(m.type==='takeback_done'){
+      // 中继模式：服务端只通知，双方各自 game.undo() 一步
+      if(game.history().length>0){ try{ game.undo(); }catch(e){} }
+      selected=null;legalMoves=[];lastMove=null;
+      renderBoard();updateStatus();renderInfo();
+      applyServerClock(m.clock);
+      showCoach('↩️ 已悔棋。','Takeback done.','info');
+    }
+    else if(m.type==='takeback_declined'){ showCoach('对方拒绝悔棋。','Takeback declined.','info'); }
+    else if(m.type==='chat'){ appendChat(m); }
+    else if(m.type==='error'){ $('opStatus').textContent=m.message||tt('common.error','错误'); }
+  }
+  // ───────── 对局聊天 + emoji ─────────
+  var CHAT_EMOJIS=['😀','😄','😂','🤣','😎','🤩','😅','😭','😤','🤔','👍','👏','🙌','✌️','🤝','💪','🔥','🎉','😮','🙄'];
+  function chatVisible(){ return (MODE==='online'||MODE==='random') && ON && ON.ws; }
+  function toggleChatEmoji(){
+    var box=$('chatEmoji');
+    if(!box)return;
+    if(box.style.display==='none'||!box.style.display){
+      var h='';
+      CHAT_EMOJIS.forEach(function(e){ h+='<button type="button" onclick="sendChatEmoji(this.textContent)">'+e+'</button>'; });
+      box.innerHTML=h; box.style.display='';
+    }else{ box.style.display='none'; }
+  }
+  function sendChatEmoji(emo){
+    if(!chatVisible()||ON.ws.readyState!==1)return;
+    ON.ws.send(JSON.stringify({type:'chat',emoji:emo}));
+  }
+  function sendChat(){
+    if(!chatVisible()||ON.ws.readyState!==1)return;
+    var inp=$('chatInput'); var v=(inp.value||'').trim();
+    if(!v)return;
+    ON.ws.send(JSON.stringify({type:'chat',text:v}));
+    inp.value='';
+  }
+  function appendChat(m){
+    var list=$('chatList'); if(!list)return;
+    // 发送者回显与对方消息都广播,由服务端带 by；这里用 ON.idx 标"我"
+    var me=(m.by===ON.idx);
+    var div=document.createElement('div');
+    div.className='chat-msg'+(me?' me':'')+(m.emoji?' emoji-only':'');
+    div.innerHTML=(m.emoji?m.text:('<span class="c-nm">'+escapeHtml(m.name||tt('player.opp','玩家'))+':</span>'+escapeHtml(m.text)));
+    list.appendChild(div);
+    list.scrollTop=list.scrollHeight;
+  }
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});
+  }
+  function renderPlayers(pl){
+    if(!pl||!pl.length)return;
+    var h='';
+    pl.forEach(function(p){
+      var isMe=(p.idx===ON.idx);
+      var av=(window.BDAvatars?BDAvatars.chipHtml(BDAvatars.pick(p.name||('p'+p.idx))):'');
+      h+='<div class="op-player'+(isMe?' me':'')+'">'+av+(p.idx===0?('♔ '+tt('chess.white_side','白方')+' '):('♚ '+tt('chess.black_side','黑方')+' '))+(isMe?(tt('player.you_tag','(你)')+' '):'')+escapeHtml(p.name||tt('player.opp','玩家'))+'</div>';
+    });
+    $('opPlayers').innerHTML=h;
+  }
+  function renderBoardOnlineStart(){
+    renderBoard();updateStatus();
+    if(ON.idx===0){ showCoach('对局开始，你执白先行。','You play White first.','info'); }
+    else { showCoach('对局开始，你执黑。等白方走子。','You play Black.','info'); }
+  }
+
+  $('opCreateBtn').onclick=opCreateRoom;
+  $('opJoinBtn').onclick=opJoinRoom;
+  $('opCopyBtn').onclick=function(){ navigator.clipboard.writeText('https://'+location.host+'/b/chess/'+ON.code); toastRoom(tt('match.copied','邀请链接已复制')); };
+  function toastRoom(t){ $('opStatus').textContent=t; }
+
+  // 覆盖 newGame:online 模式改发 restart,否则本地重开
+  newGame=function(){
+    if(MODE==='online'){
+      if(ON.ws&&ON.ws.readyState===1)ON.ws.send(JSON.stringify({type:'restart'}));
+      return;
+    }
+    _origNewGame();
+  };
+
+  // 邀请链接 → 自动进入联机。支持 /b/chess/<code> 和 ?c=<code> 两种
+  (function(){
+    var pm=location.pathname.match(/^\/b\/chess\/([A-Za-z0-9]{5,8})$/);
+    var qc=new URLSearchParams(location.search).get('c');
+    var roomCode=pm?pm[1]:qc;
+    if(roomCode){
+      try{document.querySelector('#modeToggle button[data-m="online"]').classList.add('on');}catch(e){}
+      try{document.querySelector('#modeToggle button[data-m="ai"]').classList.remove('on');}catch(e){}
+      MODE='online'; if($('modeVal'))$('modeVal').textContent=tt('match.online','联机');
+      if($('diffToggle'))$('diffToggle').style.display='none';
+      if($('onlinePanel')){$('onlinePanel').style.display='';}
+      if($('opCreate'))$('opCreate').style.display='none';
+      if($('opWaiting'))$('opWaiting').style.display='';
+      if($('newBtn'))$('newBtn').style.display='none';
+      if($('undoBtn'))$('undoBtn').style.display='none';
+      ON.code=roomCode.toUpperCase();
+      if($('opCode'))$('opCode').textContent=ON.code;
+      showWaiting(); connectRoom();
+      return;
+    }
+    // 默认人机自动开局
+    startLocalGame();
+    function syncLangBtn(){
+      var l=window.getLang()||'zh';
+      var p=getComputedStyle(document.documentElement).getPropertyValue('--p0').trim()||'#4f46e5';
+      var zh=document.getElementById('langZh'); if(zh) zh.style.borderColor = l==='zh'?p:'transparent';
+      var en=document.getElementById('langEn'); if(en) en.style.borderColor = l==='en'?p:'transparent';
+      var ja=document.getElementById('langJa'); if(ja) ja.style.borderColor = l==='ja'?p:'transparent';
+    }
+    window.addEventListener('langchange',syncLangBtn);
+    setTimeout(syncLangBtn,500);
+  })();
+
+  // 语言切换后刷新 JS 动态文案(静态 data-i18n 由 i18n.js apply 处理)
+  function syncLangBtn(){
+    // lang dropdown highlight handled by i18n.js global syncLangDropdown
+  }
+  function refreshI18n(){
+    try{
+      if(game){ renderBoard(); updateStatus(); renderInfo(); }
+    }catch(e){}
+    syncLangBtn();
+  }
+  window.addEventListener('langchange',refreshI18n);
+  setTimeout(syncLangBtn,500);
+  </script>
+
+  <div class="promo-overlay" id="promoOverlay">
+    <div class="promo-card" id="promoBox"></div>
+  </div>
+  <!--   <!-- Tri-Sites Sidebar -->
+  <script src="/js/sidebar.js?v=sb35" defer></script>
+  <script src="/js/toast.js?v=p27" defer></script>
+  <script src="/js/game-enhancer.js?v=1" defer></script>  <button class="g-tutorial-btn" id="gTutorialBtn" aria-label="View how to play" data-i18n-aria-label="bd_games_chess_attr_5" data-i18n="bd_games_chess_5">📖 How to Play</button>
+  <script>
+  document.getElementById('gTutorialBtn')?.addEventListener('click', function(){
+    var ft = document.querySelector('.game-footer');
+    if (ft) { ft.scrollIntoView({ behavior:'smooth', block:'start' }); }
+  });
+  </script>
+  <nav class="bottom-nav" aria-label="移动端导航">
+    <div class="bottom-nav-inner">
+      <a href="/" class="bottom-nav-item"><span class="bn-ico">🏠</span><span class="bn-label" data-i18n="nav.home">Home</span></a>
+      <a href="/games/tictactoe/" class="bottom-nav-item"><span class="bn-ico">✕◯</span><span class="bn-label" data-i18n="nav.ttt">✕◯ Tic-Tac-Toe</span></a>
+      <a href="/games/gomoku/" class="bottom-nav-item"><span class="bn-ico">⚫</span><span class="bn-label" data-i18n="nav.gomoku">⚫ Gomoku</span></a>
+      <a href="/games/chess/" class="bottom-nav-item"><span class="bn-ico">♞</span><span class="bn-label" data-i18n="nav.chess">♞ Chess</span></a>
+      <a href="/games/connect4/" class="bottom-nav-item"><span class="bn-ico">🔴</span><span class="bn-label" data-i18n="nav.connect4">🔴 Connect 4</span></a>
+    </div>
+  </nav>
+<footer class="sites-footer">
+      <div class="wrap">
+        <div class="sf-title" data-i18n="home.site_network">🎯 Our Brand Network</div>
+        <div class="sf-matrix">
+          <a href="https://mathduel.games/" class="sf-item">
+            <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-calculator"></use></svg>
+            <span data-i18n="bd_games_chess_6">MathDuel</span>
+          </a>
+          <a href="https://boardduel.com/" class="sf-item">
+            <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-chess"></use></svg>
+            <span data-i18n="bd_games_chess_7">BoardDuel</span>
+          </a>
+          <a href="https://memoryduel.com/" class="sf-item">
+            <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-brain"></use></svg>
+            <span data-i18n="bd_games_chess_8">MemoryDuel</span>
+          </a>
+        </div>
+        <div class="sf-links">
+          <a href="/about/" data-i18n="nav.about">About</a>
+          <a href="/privacy/" data-i18n="nav.privacy">Privacy</a>
+          <a href="/terms/" data-i18n="nav.terms">Terms</a>
+          <a href="/contact/" data-i18n="nav.contact">Contact</a>
+        </div>
+        <div class="sf-copy" data-i18n="home.footer">© 2026 BoardDuel · Free to play · Privacy-first</div>
+      </div>
+      
+    </footer>
+  <script src="/shared/avatars.js?v=bd1" defer></script>
+  <script src="/shared/site-header.js?v=ds2-11"></script>
+  <script src="/shared/sso-bridge.js?v=1" defer></script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" data-site="board">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/img/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How to Play Connect Four · BoardDuel</title>
+  <meta name="description" content="Learn Connect Four rules, strategies, and tactics. Master the vertical dropping disc game with our complete guide.">
+  <link rel="canonical" href="https://boardduel.com/how-to-play/connect4/">
+  
+  
+  <link rel="alternate" hreflang="zh-CN" href="https://boardduel.com/how-to-play/connect4/" />
+  <link rel="alternate" hreflang="en" href="https://boardduel.com/how-to-play/connect4/?lang=en" />
+  <link rel="alternate" hreflang="ja" href="https://boardduel.com/how-to-play/connect4/?lang=ja" />
+  <link rel="alternate" hreflang="es" href="https://boardduel.com/how-to-play/connect4/?lang=es" />
+  <link rel="alternate" hreflang="fr" href="https://boardduel.com/how-to-play/connect4/?lang=fr" />
+  <link rel="alternate" hreflang="de" href="https://boardduel.com/how-to-play/connect4/?lang=de" />
+  <link rel="alternate" hreflang="x-default" href="https://boardduel.com/how-to-play/connect4/" />
+<style>
+    :root{ --p:#4f46e5; --p-d:#4338ca; --p-l:#eef2ff; --bg:#faf9ff; --card:#fff; --t:#1e1b4b; --m:#6b7280; --line:rgba(23,24,40,0.08); }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--t);line-height:1.8}
+    a{color:var(--p);text-decoration:none}
+    a:hover{text-decoration:underline}
+    .wrap{max-width:780px;margin:0 auto;padding:0 20px}
+    nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+    .nav-inner{display:flex;align-items:center;gap:18px;height:60px;max-width:1080px;margin:0 auto;padding:0 20px}
+    .nav-brand{font-weight:800;font-size:18px}
+    .nav-links{margin-left:auto;display:flex;gap:4px}
+    .nav-links a{color:var(--m);font-size:14px;padding:8px 14px;border-radius:999px;transition:.15s}
+    .nav-links a:hover{color:var(--p);background:var(--p-l);text-decoration:none}
+    .container{padding:40px 0 60px}
+    h1{font-size:2rem;color:var(--p-d);margin-bottom:.6rem}
+    h2{font-size:1.3rem;color:var(--p-d);margin:2rem 0 .7rem;border-bottom:2px solid var(--p-l);padding-bottom:.4rem}
+    h3{font-size:1.05rem;color:var(--p-d);margin:1.2rem 0 .4rem}
+    p{color:var(--t);margin:.5rem 0;font-size:.97rem}
+    ul,ol{margin:.5rem 0 .8rem 1.6rem}
+    li{margin:.3rem 0;font-size:.97rem}
+    .intro-box{background:var(--p-l);border-radius:14px;padding:20px 24px;margin:1.2rem 0;border-left:4px solid var(--p)}
+    .step-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:.7rem 0}
+    .step-card h3{margin-top:0}
+    .tip-box{background:#fef9c3;border:1px solid #fde047;border-radius:10px;padding:14px 18px;margin:.8rem 0}
+    .tip-box strong{color:#854d0e}
+    .faq-item{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin:.6rem 0}
+    .faq-item summary{font-weight:700;color:var(--p-d);cursor:pointer;font-size:1rem}
+    .faq-item p{margin-top:.6rem}
+    .cta{display:inline-block;background:var(--p);color:#fff;border-radius:10px;padding:12px 28px;font-weight:700;font-size:15px;margin-top:1.5rem;transition:background .15s}
+    .cta:hover{background:var(--p-d);text-decoration:none}
+    .cta-row{text-align:center;margin:2rem 0}
+    .breadcrumb{color:var(--m);font-size:.85rem;margin-bottom:1rem}
+    .breadcrumb a{color:var(--m)}
+    footer{margin-top:40px;border-top:1px solid var(--line);padding:24px 0;text-align:center;color:var(--m);font-size:.85rem}
+    @media(max-width:640px){.nav-links{display:none}}
+  </style>
+  <link rel="stylesheet" href="/css/shared/tokens.css?v=p4fix2">
+  <link rel="stylesheet" href="/css/shared/brand-ds2.css?v=ds2-22">
+<script src="/i18n/i18n.js?v=33"></script>
+  <link rel="manifest" href="/manifest.zh.webmanifest">
+</head>
+<body>
+
+<div id="site-header" style="min-height:65px"
+     data-brand-a="Board" data-brand-b="Duel" data-mark="duel-chess"
+     data-nav='[{"label":"Home","href":"/","i18n":"nav.home"}]'
+     data-cta-label="Home" data-cta-href="/" data-cta-i18n="nav.home"></div>
+
+  <nav>
+    <div class="nav-inner">
+      <div class="nav-brand">♟️ BoardDuel</div>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/how-to-play/connect4/">How to Play</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="wrap prose">
+      <div class="breadcrumb"><a href="/">← Back to Home</a></div>
+      <h1>How to Play Connect Four</h1>
+      <p>Connect Four is a classic vertical strategy game where two players race to align four discs. Simple rules, surprising depth — easy to learn, hard to master.</p>
+
+      <div class="intro-box">
+        <p><strong>The Goal:</strong> Drop colored discs into a 7-column, 6-row grid and be the first to connect four of your discs in a row — horizontally, vertically, or diagonally.</p>
+      </div>
+
+      <h2>📖 How to Play</h2>
+
+      <div class="step-card">
+        <h3>Step 1: Set Up the Board</h3>
+        <p>Connect Four is played on a standing board with 7 vertical columns and 6 horizontal rows. The board has openings at the top where discs can be dropped into each column.</p>
+      </div>
+
+      <div class="step-card">
+        <h3>Step 2: Take Turns</h3>
+        <p>Red (or Black) always goes first. Players take turns dropping one disc per turn into any column that is not yet full (6 discs maximum per column).</p>
+      </div>
+
+      <div class="step-card">
+        <h3>Step 3: Discs Fall to the Bottom</h3>
+        <p>Dropped discs fall to the lowest available empty space in that column — they stack on top of each other. You cannot place a disc mid-air or remove a placed disc.</p>
+      </div>
+
+      <div class="step-card">
+        <h3>Step 4: Win by Connecting Four</h3>
+        <p>The first player to get four of their discs in a continuous line — horizontally, vertically, or diagonally — wins. If the board fills without a winner, the game is a draw.</p>
+      </div>
+
+      <h2>🧠 Winning Strategies</h2>
+
+      <div class="step-card">
+        <h3>1. Control the Center Column</h3>
+        <p>The center column (column 4) gives you the most possible winning lines. Dominating the center limits your opponent's options and opens the most attack angles.</p>
+      </div>
+
+      <div class="step-card">
+        <h3>2. Create Multiple Threats</h3>
+        <p>Position your discs so that you have two ways to win on your next move. Your opponent can only block one — you win automatically with the other.</p>
+      </div>
+
+      <div class="step-card">
+        <h3>3. Beware the "7 Above" Trap</h3>
+        <p>Never play directly below a column that has 7 discs stacked. This "gives" your opponent a free winning move on top. Always check what your opponent can do after your move.</p>
+      </div>
+
+      <div class="step-card">
+        <h3>4. Think Vertically First</h3>
+        <p>Since discs stack vertically, it's easy to overlook vertical threats. Before dropping a disc, always scan for any columns where your opponent is one disc away from four in a vertical stack.</p>
+      </div>
+
+      <div class="tip-box">
+        <strong>💡 Pro tip:</strong> Connect Four is a solved game — the first player can force a win with perfect play. But in casual play, mistakes are common. Focus on creating double threats (two ways to win at once) and always defend against your opponent's winning moves.
+      </div>
+
+      <h2>❓ Frequently Asked Questions</h2>
+
+      <details class="faq-item">
+        <summary>Can you win by connecting four in any direction?</summary>
+        <p>Yes. Four in a row can be horizontal (across), vertical (up and down), or diagonal (at an angle). All three directions count as a win.</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>What happens if the board fills without a winner?</summary>
+        <p>The game is a draw. This is relatively rare in well-played games — most Connect Four games end with a winner well before the board is full.</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>Is Connect Four a solved game?</summary>
+        <p>Yes, Connect Four has been mathematically solved. With perfect play, the first player (Red) has a forced win. However, finding that perfect strategy is very difficult, so casual games are still highly enjoyable and competitive.</p>
+      </details>
+
+      <div class="cta-row">
+        <a href="/games/connect4/" class="cta">▶ Play Connect Four Now</a>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="sites-footer">
+      <div class="wrap">
+        <div class="sf-title" data-i18n="home.site_network">🎯 Our Brand Network</div>
+        <div class="sf-matrix">
+          <a href="https://mathduel.games/" class="sf-item">
+            <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-calculator"></use></svg>
+            <span data-i18n="bd_how_to_play_connect4_1">MathDuel</span>
+          </a>
+          <a href="https://boardduel.com/" class="sf-item">
+            <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-chess"></use></svg>
+            <span data-i18n="bd_how_to_play_connect4_2">BoardDuel</span>
+          </a>
+          <a href="https://memoryduel.com/" class="sf-item">
+            <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-brain"></use></svg>
+            <span data-i18n="bd_how_to_play_connect4_3">MemoryDuel</span>
+          </a>
+        </div>
+        <div class="sf-links">
+          <a href="/about/" data-i18n="nav.about">About</a>
+          <a href="/privacy/" data-i18n="nav.privacy">Privacy</a>
+          <a href="/terms/" data-i18n="nav.terms">Terms</a>
+          <a href="/contact/" data-i18n="nav.contact">Contact</a>
+        </div>
+        <div class="sf-copy" data-i18n="home.footer">© 2026 BoardDuel · Free to play · Privacy-first</div>
+      </div>
+      <div class="sf-note">© 2026 BoardDuel · Free to play, privacy-first, pure strategy</div>
+    </footer>
+  <script src="/shared/site-header.js?v=ds2-11"></script>
+  <script src="/shared/sso-bridge.js?v=1" defer></script>
+</body>
+</html>

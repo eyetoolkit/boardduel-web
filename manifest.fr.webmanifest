@@ -1,0 +1,20 @@
+{
+  "name": "Duel de Plateau - 6 Jeux de Plateau Classiques",
+  "short_name": "Duel de Plateau",
+  "description": "6 jeux de plateau classiques : Échecs, Gomoku, Othello, Puissance 4, Dames, Morpion. Sans pub ni suivi.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "/?lang=fr",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#faf9ff",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♟️</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

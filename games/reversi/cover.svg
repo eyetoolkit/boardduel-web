@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="tt dd">
+  <title id="tt">Othello — BoardDuel</title>
+  <desc id="dd">Square indigo icon with a four by four board; the classic centre opening is shown and the amber tile holds a disc mid-flip, half black and half white.</desc>
+  <rect width="512" height="512" fill="#3730A3"/>
+  <rect x="56.5" y="56.5" width="87" height="87" rx="20" fill="#FFFFFF"/>
+  <rect x="160.5" y="56.5" width="87" height="87" rx="20" fill="#FFFFFF"/>
+  <rect x="264.5" y="56.5" width="87" height="87" rx="20" fill="#FFFFFF"/>
+  <rect x="368.5" y="56.5" width="87" height="87" rx="20" fill="#FFFFFF"/>
+  <rect x="56.5" y="160.5" width="87" height="87" rx="20" fill="#FFFFFF"/>
+  <rect x="160.5" y="160.5" width="87" height="87" rx="20" fill="#FFFFFF"/>
+  <rect x="264.5" y="160.5" width="87" height="87" rx="20" fill="#FFFFFF"/>
+  <rect x="368.5" y="160.5" width="87" height="87" rx="20" fill="#FFFFFF"/>
+  <rect x="56.5" y="264.5" width="87" height="87" rx="20" fill="#FFFFFF"/>
+  <rect x="160.5" y="264.5" width="87" height="87" rx="20" fill="#FFFFFF"/>
+  <rect x="264.5" y="264.5" width="87" height="87" rx="20" fill="#F59E0B"/>
+  <rect x="368.5" y="264.5" width="87" height="87" rx="20" fill="#FFFFFF"/>
+  <rect x="56.5" y="368.5" width="87" height="87" rx="20" fill="#FFFFFF"/>
+  <rect x="160.5" y="368.5" width="87" height="87" rx="20" fill="#FFFFFF"/>
+  <rect x="264.5" y="368.5" width="87" height="87" rx="20" fill="#FFFFFF"/>
+  <rect x="368.5" y="368.5" width="87" height="87" rx="20" fill="#FFFFFF"/>
+  <circle cx="204.0" cy="204.0" r="25.2" fill="#1E1B39"/>
+  <circle cx="308.0" cy="204.0" r="25.2" fill="#FFFFFF" stroke="#1E1B39" stroke-width="4"/>
+  <circle cx="204.0" cy="308.0" r="25.2" fill="#1E1B39"/>
+  <path d="M 308.0 281.9 A 26.1 26.1 0 0 0 308.0 334.1 Z" fill="#1E1B39"/>
+  <path d="M 308.0 281.9 A 26.1 26.1 0 0 1 308.0 334.1 Z" fill="#FFFFFF"/>
+  <circle cx="308.0" cy="308.0" r="26.1" fill="none" stroke="#1E1B39" stroke-width="4"/>
+</svg>

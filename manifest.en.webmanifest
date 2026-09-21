@@ -1,0 +1,20 @@
+{
+  "name": "Board Duel - 6 Classic Board Games",
+  "short_name": "Board Duel",
+  "description": "6 classic board games: Chess, Gomoku, Othello, Connect 4, Checkers, Tic-Tac-Toe. No ads, no tracking.",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": "/?lang=en",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#faf9ff",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♟️</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

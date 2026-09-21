@@ -1,0 +1,20 @@
+{
+  "name": "ボードデュエル - クラシックボードゲーム6種",
+  "short_name": "ボードデュエル",
+  "description": "クラシックボードゲーム6種：チェス、五目並べ、オセロ、四目並べ、チェッカー、三目並べ。広告なし、追跡なし。",
+  "lang": "ja",
+  "dir": "ltr",
+  "start_url": "/?lang=ja",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#faf9ff",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♟️</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

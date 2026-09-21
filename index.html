@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en" data-site="board">
+<head>
+  <meta charset="UTF-8">
+  <meta name="theme-color" content="#4f46e5">
+  <!-- B4.3: 防闪烁 + 自动跟随系统主题(无显式选择时套用 prefers-color-scheme) -->
+  <script>
+    (function(){try{var t=localStorage.getItem('bd-theme');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}else if(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}})();
+  </script>
+  <script>
+    // 全局API配置 - 根据站点自动选择API服务器
+    (function() {
+      var site = document.documentElement.getAttribute('data-site') || 'board';
+      var apiHosts = {
+        'memory': 'api.memoryduel.com',
+        'math': 'api.mathduel.games',
+        'board': 'api.boardduel.com'
+      };
+      window.API_BASE = 'https://' + (apiHosts[site] || 'api.boardduel.com');
+      window.WS_BASE = 'wss://' + (apiHosts[site] || 'ws.boardduel.com');
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n-title="title.auto.hc_BoardDuel棋盘对决6款经典_73122">Board Duel — 10 Classic Board Games, Play Online Free</title>
+<meta data-i18n="meta.auto.hc_BoardDuel棋盘对决6款经典_71581" name="description" content="Play classic board games online free — Chess, Gomoku, Othello, Connect 4, Checkers, Tic-Tac-Toe and more. Play vs AI or invite a friend with a room link. No download, no signup to start.">
+  <meta data-i18n="meta.auto.hc_棋类对战棋盘游戏五子棋井字棋_77205" name="keywords" content="board games,online chess,gomoku,connect 4,reversi,board duel,AI match">
+  <link rel="icon" type="image/svg+xml" href="/assets/img/favicon.svg">
+  <link rel="canonical" href="https://boardduel.com/" />
+
+  
+  
+  <link rel="alternate" hreflang="zh-CN" href="https://boardduel.com/" />
+  <link rel="alternate" hreflang="en" href="https://boardduel.com/?lang=en" />
+  <link rel="alternate" hreflang="ja" href="https://boardduel.com/?lang=ja" />
+  <link rel="alternate" hreflang="es" href="https://boardduel.com/?lang=es" />
+  <link rel="alternate" hreflang="fr" href="https://boardduel.com/?lang=fr" />
+  <link rel="alternate" hreflang="de" href="https://boardduel.com/?lang=de" />
+  <link rel="alternate" hreflang="x-default" href="https://boardduel.com/" />
+<!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta data-i18n="meta.auto.hc_BoardDuel棋盘对决在线棋类_70737" property="og:title" content="Board Duel · 10 Classic Board Games Online" />
+  <meta data-i18n="meta.auto.hc_6款经典棋类游戏AI人机对战实时_64490" property="og:description" content="classic board games. Play vs AI or invite a friend online. Free to play, privacy-first, no download." />
+  <meta property="og:url" content="https://boardduel.com/" />
+<meta data-i18n="meta.auto.hc_BoardDuel棋盘对决_74499" property="og:site_name" content="Board Duel - Board Games" />
+<meta property="og:locale" content="en_US" />
+  <meta property="og:image" content="https://boardduel.com/games/gomoku/og.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="632" />
+  <meta property="og:image:alt" content="Board Duel 棋盘对决" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta data-i18n="meta.auto.hc_BoardDuel棋盘对决在线棋类_59484" name="twitter:title" content="Board Duel · 10 Classic Board Games Online" />
+  <meta data-i18n="meta.auto.hc_6款经典棋类游戏合集AI人机联机_83226" name="twitter:description" content="Classic Board Games · Play vs AI or invite a friend · Free to play, privacy-first." />
+  <meta name="twitter:image" content="https://boardduel.com/games/gomoku/og.jpg" />
+
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Board Duel 棋盘对决",
+    "url": "https://boardduel.com/",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Any (Web)",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "CNY" },
+    "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.7", "ratingCount": "200" },
+    "featureList": "国际象棋,五子棋,黑白棋,四子棋,西洋跳棋,井字棋,人机对战,实时联机,排行榜",
+    "i18n-name": "seo.software_name",
+    "i18n-desc": "seo.software_featurelist"
+  }
+  </script>
+
+  <!-- Tri-Sites Shared CSS -->
+  <link rel="stylesheet" href="/css/shared/tokens.css?v=p4">
+  <link rel="stylesheet" href="/css/shared/sidebar.css?v=p28">
+  <link rel="stylesheet" href="/css/shared/components.css?v=p20">
+  <link rel="stylesheet" href="/css/shared/toast.css?v=p3">
+  <link rel="stylesheet" href="/css/shared/brand-ds2.css?v=ds2-22">
+
+  <script src="/i18n/i18n.js?v=33" defer></script>
+  <link rel="manifest" href="/manifest.zh.webmanifest">
+  <style>.hero-h1 em{white-space:nowrap}</style>
+  <!-- 首页游戏卡：正方形的游戏图标 + 只保留游戏名（对齐 MathDuel 的卡片结构）。
+       目标形态 = 上方 1:1 图标，下方一行名称；原来的说明行与 Start Playing 按钮已一并删除。
+       共享库 components.css 把 .gc-cover 定成 16/9，且 .game-card-cover .gc-title 是 (0,2,0)；
+       下面用 .games-grid 前缀提到 (0,3,0) 覆盖 —— 只作用于 boardduel 首页，
+       底色改为 #2c3e50 深底、与 MathDuel 的深卡对齐；不改共享库、无需 --sync、也无需升 components.css 的 ?v=。 -->
+  <style>
+    /* ── 卡片底色对齐 MathDuel：#2c3e50 深底 + 白字名称 ──
+       MathDuel 的 .game-card.dark 用 background:#2c3e50 !important 夺回底色（其注释记录：
+       components.css 的 .game-card.dark{background:var(--card)} 文档顺序在后、特异性相同）。
+       BoardDuel 同理：共享库 .game-card-cover{background:var(--card)} 是 (0,1,0)，
+       下面 .games-grid .game-card-cover 已到 (0,2,0)，仍加 !important 防后加载库翻盘。 */
+    .games-grid .game-card-cover {
+      background: #2c3e50 !important;
+    }
+    /* 深底上不再需要浅色描边（MathDuel 的深卡同样无可见描边）；只解除静止态，
+       悬停时的品牌色描边与阴影仍由 brand-ds2.css 提供。 */
+    .games-grid .game-card-cover:not(:hover) {
+      border-color: transparent;
+    }
+    .games-grid .game-card-cover .gc-cover {
+      aspect-ratio: 1 / 1;
+      height: auto;                 /* 防共享库或别处给了固定 height（MathDuel 就踩过 120px） */
+      background: #2c3e50;          /* 图标解码前的占位色，避免深卡里闪白 */
+    }
+    .games-grid .game-card-cover .gc-body {
+      padding: 15px 16px 17px;
+      align-items: center;          /* 名称水平居中 */
+      text-align: center;
+    }
+    .games-grid .game-card-cover .gc-title {
+      font-size: 17px;
+      font-weight: 800;
+      line-height: 1.25;
+      letter-spacing: 0.01em;
+      color: #fff;                  /* 深底必须白字：白/#2c3e50 ≈ 10.4:1，达 WCAG AAA */
+    }
+    @media (max-width: 640px) {
+      .games-grid .game-card-cover .gc-body { padding: 10px 10px 12px; }
+      .games-grid .game-card-cover .gc-title { font-size: 14px; }
+    }
+  </style>
+  <!-- 首页板块重排（参考 papergames 极简首页）：游戏网格置顶、网站介绍下移。
+       网格区原本不是首块，`.duel-section{padding:80px 0}` 会在首屏顶部留一大段空白，
+       这里只对本页首块收窄留白；Hero 现排在网格之后，一并收窄它的上内边距。
+       ⚠️ 只写页内样式、不动共享库 brand-ds2.css ⇒ 无需 --sync、无需升 ?v=。 -->
+  <style>
+    .layout-main > .games-first {
+      padding-top: var(--s-8);      /* 32px：图标尽快进入首屏 */
+      padding-bottom: var(--s-12);
+    }
+    .layout-main > .games-first .sec-head {
+      margin-bottom: var(--s-8);    /* 标题与第一排图标收紧一点 */
+    }
+    /* Hero 现在紧跟在网格之后，成为「网站介绍」区 */
+    .layout-main > .games-first + .gradient-hero .home-hero-inner {
+      padding-top: var(--s-12);
+      padding-bottom: var(--s-8);
+    }
+  </style>
+  <!-- ===== 共享设计系统 ds 视觉（与 MathDuel 首页同构） =====
+       来源 docs/polish/ds-design-system.md：hero 渐变三站同靛蓝底，BoardDuel 末停微绿收尾；
+       主 CTA 用三站统一的琥珀渐变(--ds-grad-btn-cta)，次 CTA 与 chip 走玻璃态。
+       只作用于本页 .hero-ctas / .gradient-hero，不动共享库、不动 AI 快选区结构。 -->
+  <style>
+    .gradient-hero {
+      background: linear-gradient(135deg, #3730A3 0%, #4F46E5 50%, #312E81 94%, #22C55E 100%) !important;
+    }
+    .hero-ctas .btn-glow,
+    .hero-ctas .btn-glass {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-weight: 700; font-size: 1.05rem; line-height: 1;
+      padding: 0.95rem 1.4rem; border-radius: 12px;
+      transition: transform 220ms ease, box-shadow 220ms ease, background 220ms ease;
+      cursor: pointer; border: 0;
+    }
+    .hero-ctas .btn-glow {
+      color: #1E1B39;
+      background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+      box-shadow: 0 8px 24px rgba(245, 158, 11, 0.35);
+    }
+    .hero-ctas .btn-glow:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(245, 158, 11, 0.45);
+    }
+    .hero-ctas .btn-glass {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.10);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+    }
+    .hero-ctas .btn-glass:hover { background: rgba(255, 255, 255, 0.18); }
+    .gradient-hero .chip {
+      background: rgba(255, 255, 255, 0.10);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #fff;
+      border-radius: 999px;
+      padding: 0.4rem 0.85rem;
+      font-size: 0.85rem;
+      display: inline-flex; align-items: center; gap: 0.4rem;
+    }
+    .gradient-hero .chip .dot {
+      width: 6px; height: 6px; border-radius: 999px;
+      background: #22C55E; box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18);
+    }
+  </style>
+</head>
+<body>
+
+<!-- DUEL-DS v2 全局吸顶头部 (JS 注入) -->
+<div id="site-header" style="min-height:65px"
+     data-brand-a="Board" data-brand-b="Duel" data-mark="duel-chess"
+     data-nav='[]'
+     data-cta-label="开始对战" data-cta-href="/games/gomoku/" data-cta-i18n="home.btn_play"></div>
+
+<!-- 旧 nav 保留 DOM 结构给 i18n.js 引用，由 sidebar.js 隐藏 -->
+<div class="layout">
+  <div class="drawer-backdrop"></div>
+  <!-- Sidebar (由 sidebar.js 控制显示) -->
+  <aside class="sidebar" style="display:none" role="navigation">
+    <a href="/" class="sidebar-brand">♟️ <span data-i18n="site.title">Board Duel</span></a>
+    <div class="sidebar-group-label" data-i18n="sidebar.group_games">Games</div>
+    <a href="/games/gomoku/" class="sidebar-link"><span class="ico">⚫</span><span data-i18n="nav.gomoku">⚫ Gomoku</span></a>
+    <a href="/games/chess/" class="sidebar-link"><span class="ico">♞</span><span data-i18n="nav.chess">♞ Chess</span></a>
+    <a href="/games/connect4/" class="sidebar-link"><span class="ico">🔴</span><span data-i18n="nav.connect4">🔴 Connect 4</span></a>
+    <a href="/games/reversi/" class="sidebar-link"><span class="ico">⚫</span><span data-i18n="nav.reversi">◍ Reversi</span></a>
+    <a href="/games/tictactoe/" class="sidebar-link"><span class="ico">⭕</span><span data-i18n="nav.ttt">✕◯ Tic-Tac-Toe</span></a>
+    <div class="sidebar-group-label" data-i18n="sidebar.group_site">Site</div>
+    <a href="/about/" class="sidebar-link"><span class="ico">ℹ️</span><span data-i18n="nav.about">About</span></a>
+    <div class="sidebar-spacer"></div>
+    <div class="sidebar-footer">
+      <a href="/privacy/" data-i18n="nav.privacy">Privacy</a>
+      <a href="/terms/" data-i18n="nav.terms">Terms</a>
+      <a href="/contact/" data-i18n="nav.contact">Contact</a>
+    </div>
+  </aside>
+
+  <div class="layout-main">
+
+    <!-- ============ All Games 全部棋类 ============ -->
+    <section class="duel-section games-first">
+      <div class="duel-wrap">
+        <div class="sec-head">
+          <span class="sec-eyebrow"><svg class="duel-icon" aria-hidden="true"><use href="/shared/icons.svg#duel-sparkles"></use></svg></span>
+          <h2 class="sec-title-xl"><span data-i18n="home.all_title_prefix">All </span><span class="grad-text" data-i18n="home.all_title_accent">Board Games</span></h2>
+          <p class="sec-sub-xl" data-i18n="home.all_subtitle">Pick one and challenge friends anytime</p>
+        </div>
+        <div class="games-grid">
+          <a href="/games/gomoku/" class="game-card-cover">
+            <img src="/games/gomoku/cover.svg?v=20260917b" alt="五子棋" class="gc-cover" loading="lazy">
+            <div class="gc-body">
+              <span class="gc-title" data-i18n="game_gomoku.name">Gomoku</span>
+            </div>
+            <span class="gc-online"><span class="dot"></span><span data-i18n="home.badge_online">Online</span></span>
+          </a>
+          <a href="/games/chess/" class="game-card-cover">
+            <img src="/games/chess/cover.svg?v=20260917b" alt="国际象棋" class="gc-cover" loading="lazy">
+            <div class="gc-body">
+              <span class="gc-title" data-i18n="game_chess.name">Chess</span>
+            </div>
+            <span class="gc-new">NEW</span>
+            <span class="gc-online"><span class="dot"></span><span data-i18n="home.badge_online">Online</span></span>
+          </a>
+          <a href="/games/connect4/" class="game-card-cover">
+            <img src="/games/connect4/cover.svg?v=20260917b" alt="四子棋" class="gc-cover" loading="lazy">
+            <div class="gc-body">
+              <span class="gc-title" data-i18n="game_connect4.name">Connect 4</span>
+            </div>
+            <span class="gc-new">NEW</span>
+          </a>
+          <a href="/games/reversi/" class="game-card-cover">
+            <img src="/games/reversi/cover.svg?v=20260920" alt="黑白棋" class="gc-cover" loading="lazy">
+            <div class="gc-body">
+              <span class="gc-title" data-i18n="game_reversi.name">Reversi</span>
+            </div>
+            <span class="gc-online"><span class="dot"></span><span data-i18n="home.badge_online">Online</span></span>
+          </a>
+          <a href="/games/tictactoe/" class="game-card-cover">
+            <img src="/games/tictactoe/cover.svg?v=20260917b" alt="井字棋" class="gc-cover" loading="lazy">
+            <div class="gc-body">
+              <span class="gc-title" data-i18n="game_tictactoe.name">Tic-Tac-Toe</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Hero Section ============ -->
+    <section class="gradient-hero">
+      <span class="hero-orb o1"></span><span class="hero-orb o2"></span><span class="hero-orb o3"></span>
+      <div class="duel-wrap home-hero-inner">
+        <span class="sec-eyebrow"><svg class="duel-icon" aria-hidden="true"><use href="/shared/icons.svg#duel-sword"></use></svg> <span data-i18n="home.badge">🎮 Board game arena</span></span>
+        <h1 class="hero-h1"><span data-i18n="home.h1a">Think fast, </span><em class="grad-text" data-i18n="home.h1em">5-min</em><span data-i18n="home.h1b"> matches</span></h1>
+        <p class="hero-sub" data-i18n="home.desc">Curated board battle games. Pure strategy fun, free to play, privacy-first. Independent accounts, leaderboard, skin shop.</p>
+        <div class="hero-tags">
+          <span class="chip"><span class="dot"></span><span data-i18n="home.tag_ai">AI practice</span></span>
+          <span class="chip"><span class="dot"></span><span data-i18n="home.tag_online">Live battles</span></span>
+          <span class="chip"><span class="dot"></span><span data-i18n="home.tag_rank">Global ranking</span></span>
+          <span class="chip"><span class="dot"></span><span data-i18n="home.tag_mobile">Mobile friendly</span></span>
+        </div>
+        <div class="hero-ctas">
+          <a href="/games/gomoku/" class="btn-glow lg"><svg class="duel-icon" aria-hidden="true"><use href="/shared/icons.svg#duel-play"></use></svg> <span data-i18n="home.btn_play">Start Playing</span></a>
+          <button data-open-auth="register" class="btn-glass"><svg class="duel-icon" aria-hidden="true"><use href="/shared/icons.svg#duel-lock"></use></svg> <span data-i18n="home.btn_login">Login / Register (earn points)</span></button>
+        <div class="ai-quick-select">
+          <span class="ai-label" data-i18n="home.ai_label">Or challenge the AI:</span>
+          <div class="ai-chips">
+            <a href="/games/chess/?ai=beginner" class="ai-chip ai-easy"><span class="ai-icon">&#x1F331;</span><span data-i18n="home.ai_easy">Beginner AI</span></a>
+            <a href="/games/chess/?ai=intermediate" class="ai-chip ai-mid"><span class="ai-icon">&#x2694;</span><span data-i18n="home.ai_mid">Intermediate AI</span></a>
+            <a href="/games/chess/?ai=advanced" class="ai-chip ai-hard"><span class="ai-icon">&#x1F3C6;</span><span data-i18n="home.ai_hard">Master AI</span></a>
+          </div>
+        </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Stats Bar ============ -->
+    <section class="duel-section" style="padding-top:var(--s-12);padding-bottom:var(--s-12)">
+      <div class="duel-wrap">
+        <div class="stats-grid">
+          <div class="stat-pill"><span class="v">6</span><span class="l" data-i18n="home.stat_games">Classic games</span></div>
+          <div class="stat-pill"><span class="v">0</span><span class="l" data-i18n="home.stat_ads">Free to play</span></div>
+          <div class="stat-pill"><span class="v">AI</span><span class="l" data-i18n="home.stat_ai">Multi-difficulty AI</span></div>
+          <div class="stat-pill"><span class="v">∞</span><span class="l" data-i18n="home.stat_free">Free to play</span></div>
+          <div class="stat-pill online-live"><span class="v" id="onlineRooms">鈥?/span><span class="l" data-i18n="home.stat_online">rooms live</span></div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============ 账号 + 排行榜 ============ -->
+    <section class="duel-section tint">
+      <div class="duel-wrap home-2col">
+        <!-- 账号卡片 -->
+        <div>
+          <div class="sec-head" style="margin-bottom:16px;">
+            <span class="no">👤</span>
+            <h2 style="font-size:20px;margin:0;" data-i18n="account.title">👤 My Account</h2>
+          </div>
+          <div class="account-card" id="accountCard">
+            <div class="account-profile">
+              <div class="account-ava" id="accountAva">U</div>
+              <div class="account-id">
+                <div class="account-name" id="nickname">Loading...</div>
+                <div class="account-tag" data-i18n="account.title">My Account</div>
+              </div>
+            </div>
+            <div class="account-rows">
+              <div class="account-row"><span class="icon">🪙</span><span class="label" data-i18n="account.balance">Coins</span><span class="value" id="balance">—</span></div>
+              <div class="account-row"><span class="icon">🏅</span><span class="label" data-i18n="account.streak">Win streak</span><span class="value" id="streak">—</span></div>
+              <div class="account-row"><span class="icon">🆔</span><span class="label" data-i18n="account.id">User ID</span><span class="value mono" id="uuid" style="font-size:12px;">—</span></div>
+            </div>
+            <button class="btn btn-outline account-rename" id="renameBtn" onclick="promptRename()" data-i18n="account.set_nickname">✏️ Set Nickname</button>
+          </div>
+        </div>
+
+        <!-- 排行榜 -->
+        <div>
+          <div class="sec-head" style="margin-bottom:16px;">
+            <span class="no">🏆</span>
+            <h2 style="font-size:20px;margin:0;" data-i18n="leaderboard.title">🏆 Leaderboard</h2>
+          </div>
+          <div class="stats-card">
+            <div class="stats-head">
+              <h3 data-i18n="leaderboard.top5">Global Top 5</h3>
+              <a class="stats-all" href="/rank/" data-i18n="leaderboard.view_all">Full board →</a>
+            </div>
+            <div class="lb-list" id="leaderboard"><div class="lb-loading" data-i18n="leaderboard.loading">Loading...</div></div>
+            <div class="lb-my">
+              <span class="lb-my-label" data-i18n="leaderboard.my_rank">My rank:</span>
+              <span class="lb-my-val" id="my-rank">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Value Section ============ -->
+    <section class="duel-section">
+      <div class="duel-wrap">
+        <div class="sec-head">
+          <span class="sec-eyebrow"><svg class="duel-icon" aria-hidden="true"><use href="/shared/icons.svg#duel-trophy"></use></svg></span>
+          <h2 class="sec-title-xl"><span data-i18n="home.value_prefix">Why choose </span><span class="grad-text" data-i18n="site.title">Board Duel</span><span data-i18n="home.value_suffix">？</span></h2>
+          <p class="sec-sub-xl" data-i18n="home.value_sub">Back to pure board game fun — clean, distraction-free, play anytime</p>
+        </div>
+        <div class="value-grid">
+          <div class="duel-card">
+            <span class="vc-ico">✓</span>
+            <h4 data-i18n="home.v1_title">100% Free</h4>
+            <p data-i18n="home.v1_desc">No login, free to play, no paywalls — all games and features are completely free.</p>
+          </div>
+          <div class="duel-card">
+            <span class="vc-ico">🤖</span>
+            <h4 data-i18n="home.v2_title">AI Practice</h4>
+            <p data-i18n="home.v2_desc">Play against AI anytime with multiple difficulty levels — from beginner to advanced.</p>
+          </div>
+          <div class="duel-card">
+            <span class="vc-ico">🌐</span>
+            <h4 data-i18n="home.v3_title">Online Battles</h4>
+            <p data-i18n="home.v3_desc">Match with players worldwide in real-time — challenge friends and strangers alike.</p>
+          </div>
+          <div class="duel-card">
+            <span class="vc-ico">🏆</span>
+            <h4 data-i18n="home.v4_title">Global Ranking</h4>
+            <p data-i18n="home.v4_desc">Check leaderboards and game history — new opponents and challenges every day.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+  </div><!-- /.layout-main -->
+</div><!-- /.layout -->
+
+<!-- ============ Footer 品牌矩阵 ============ -->
+<footer class="sites-footer">
+  <div class="wrap">
+    <div class="sf-title" data-i18n="home.site_network">🎯 Our Brand Network</div>
+    <div class="sf-matrix">
+      <a href="https://mathduel.games/" class="sf-item">
+        <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-calculator"></use></svg>
+        <span data-i18n="bd_index_8">MathDuel</span>
+      </a>
+      <a href="https://boardduel.com/" class="sf-item">
+        <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-chess"></use></svg>
+        <span data-i18n="bd_index_9">BoardDuel</span>
+      </a>
+      <a href="https://memoryduel.com/" class="sf-item">
+        <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-brain"></use></svg>
+        <span data-i18n="bd_index_10">MemoryDuel</span>
+      </a>
+    </div>
+    <div class="sf-links">
+      <a href="/about/" data-i18n="nav.about">About</a>
+      <a href="/privacy/" data-i18n="nav.privacy">Privacy</a>
+      <a href="/terms/" data-i18n="nav.terms">Terms</a>
+      <a href="/contact/" data-i18n="nav.contact">Contact</a>
+    </div>
+    <div class="sf-copy" data-i18n="home.footer">© 2026 BoardDuel · Free to play · Privacy-first</div>
+  </div>
+</footer>
+
+<!-- 账号系统 JS -->
+<script>
+function tt(k, fb) { try { if (window.t) { var v = window.t(k); if (v && v !== k) return v; } } catch (e) {} return fb; }
+  // R-2: backend default nickname like "玩家bdb7" -> localized prefix
+  function locNick(n){ return String(n == null ? '' : n).replace(/^玩家/, tt('player.guest', 'Player')); }
+
+// R-2: 账户/排行榜常在 i18n 就绪前渲染(tt() 回退中文)，就绪后按当前语言重刷
+window.addEventListener('i18n:ready', function () {
+  try { if (typeof refreshAccount === 'function') refreshAccount(); } catch (e) {}
+  try { if (typeof refreshLeaderboard === 'function') refreshLeaderboard(); } catch (e) {}
+});
+function api(path, opts) {
+  opts = opts || {};
+  return fetch(path, Object.assign({ credentials: 'include' }, opts))
+    .then(function(r){ return r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)); });
+}
+
+function refreshAccount() {
+  function paint(nick) {
+    var nameEl = document.getElementById('nickname');
+    if (nameEl) nameEl.textContent = nick;
+    var ava = document.getElementById('accountAva');
+    if (ava) ava.textContent = (nick && nick.trim() ? nick.trim().charAt(0).toUpperCase() : 'U');
+  }
+  api('/api/account/me').then(function(a) {
+    if (a.loggedIn) {
+      paint(locNick(a.nickname) || tt('account.unnamed', 'Unnamed player'));
+      document.getElementById('uuid').textContent = (a.uuid || '—').substring(0, 8) + '...';
+      document.getElementById('streak').textContent = (a.streak || 0) + ' ' + tt('account.win_streak', 'win streak');
+    } else {
+      return api('/api/account/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
+        .then(function(a){
+          paint(locNick(a.nickname) || tt('player.guest','Player') + (a.uuid || '').slice(0,4));
+          document.getElementById('uuid').textContent = (a.uuid || '').slice(0,8) + '...';
+          document.getElementById('streak').textContent = '0 ' + tt('account.win_streak', 'win streak');
+        });
+    }
+  }).catch(function() {
+    paint(tt('account.offline', 'Offline'));
+  });
+  api('/api/wallet').then(function(w) {
+    document.getElementById('balance').textContent = '🪙 ' + ((w && w.balance != null) ? w.balance : 0);
+  }).catch(function() {
+    document.getElementById('balance').textContent = '🪙 0';
+  });
+}
+
+function refreshLeaderboard() {
+  api('/api/leaderboard?limit=5').then(function(d) {
+    var entries = d.entries || [];
+    var medals = ['🥇', '🥈', '🥉'];
+    var h = '';
+    if (!entries.length) {
+      h = '<div class="lb-empty">' + tt('leaderboard.empty', 'No players ranked yet') + '</div>';
+    } else {
+      entries.forEach(function(e, i) {
+        var ava = (locNick(e.nickname) || '?').trim().charAt(0).toUpperCase();
+        var rank = i < 3
+          ? '<span class="lb-medal">' + medals[i] + '</span>'
+          : '<span class="lb-medal lb-medal-num">#' + (i + 1) + '</span>';
+        h += '<div class="lb-item' + (i < 3 ? ' rank-' + (i + 1) : '') + '">'
+           + rank
+           + '<span class="lb-ava">' + ava + '</span>'
+           + '<span class="lb-name">' + locNick(e.nickname) + '</span>'
+           + '<span class="lb-score">' + e.score + ' ' + tt('leaderboard.points', '分') + '</span>'
+           + '</div>';
+      });
+    }
+    document.getElementById('leaderboard').innerHTML = h;
+    var me = d.me;
+    var myEl = document.getElementById('my-rank');
+    if (myEl) {
+      myEl.textContent = (me && me.rank) ? ('#' + me.rank + ' · ' + me.score + ' ' + tt('leaderboard.points', '分')) : tt('leaderboard.unranked', 'Unranked');
+      var wrap = myEl.parentElement;
+      if (wrap) wrap.classList.toggle('is-me', !!(me && me.rank));
+    }
+  }).catch(function() {
+    document.getElementById('leaderboard').innerHTML = '<div class="lb-empty">' + tt('leaderboard.unavailable', 'Leaderboard unavailable') + '</div>';
+  });
+}
+
+function promptRename() {
+  var cur = document.getElementById('nickname').textContent;
+  var nick = prompt(tt('footer.rename_title', 'Set a nickname (shown on the leaderboard):'), cur === tt('account.unnamed', 'Unnamed player') ? '' : cur);
+  if (nick == null) return;
+  api('/api/account/profile', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nickname: nick }) })
+    .then(function(){ document.getElementById('nickname').textContent = nick || tt('account.unnamed', 'Unnamed player'); refreshLeaderboard(); })
+    .catch(function(){ alert(tt('footer.rename_fail', 'Update failed')); });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  refreshAccount();
+  refreshLeaderboard();
+  window.addEventListener('langchange', function() { refreshAccount(); refreshLeaderboard(); });
+});
+</script>
+
+<!-- Tri-Sites Sidebar + Auth Modal -->
+<script defer src="/js/sidebar.js?v=sb35"></script>
+<script defer src="/js/toast.js?v=p27"></script>
+<script src="/shared/auth-extras.js?v=1"></script>
+  <script defer src="/shared/auth-modal.js?v=20260924"></script>
+
+<!-- 暗色切换已迁入全局头部 (#site-header) -->
+  <script src="/shared/site-header.js?v=ds2-11"></script>
+  <script src="/shared/sso-bridge.js?v=1" defer></script>
+
+<script>
+(function() {
+  var el = document.getElementById('onlineRooms');
+  if (!el) return;
+  function loadOnline() {
+    fetch('/api/online').then(function(r) { return r.json(); }).then(function(d) {
+      el.textContent = (d && typeof d.rooms === 'number') ? d.rooms : '\u2014';
+    }).catch(function() { el.textContent = '\u2014'; });
+  }
+  loadOnline();
+  setInterval(loadOnline, 30000);
+})();
+</script>
+<script src="/shared/onboard.js?v=20260917"></script><script src="/shared/achievements.js"></script></body>
+</html>
