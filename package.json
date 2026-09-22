@@ -4,6 +4,11 @@
   "version": "1.0.0",
   "type": "module",
   "description": "BoardDuel — 棋类对战站（Vite MPA + 发布阶段开关）",
+  "packageManager": "pnpm@10.11.1",
+  "engines": {
+    "node": ">=20.0.0 <23",
+    "pnpm": ">=10.0.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build && node scripts/copy-legacy.mjs && node scripts/filter-sitemap.mjs",
