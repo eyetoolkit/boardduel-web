@@ -269,18 +269,25 @@ function render(): void {
     }
   }
 
-  // 命中区 + 幽灵预览（可落子处）
-  const canPlay = !state.over && state.reviewAt === null && isMyTurn();
+  // 命中区 + 幽灵预览。
+  // ⚠️ 命中区**不能**由 isMyTurn() 决定是否下发：
+  //   轮不到你走时，若整片 .go-cell 都不渲染，对手侧就变成一张"死盘" ——
+  //   没有 hover 幽灵、没有指针光标、连棋盘格子都不存在（实测第二人入房
+  //   后 .go-cell 数从 225 掉到 0），既不像在等人，也无法在轮到自己的
+  //   瞬间立刻落子。这里始终渲染命中区，把"能不能落"的判断收进 onCell()，
+  //   视觉上用 .is-wait 表达"等着呢"。
+  const canPlay = !state.over && state.reviewAt === null;
+  const mine = isMyTurn();
   if (canPlay) {
     for (let i = 0; i < SIZE2; i++) {
       if (board[i] !== 0) continue;
       const [px, py] = cellXY(i);
       const isGhost = state.ghost === i;
-      hits += `<g class="go-cell${isGhost ? ' is-ghost' : ''}" data-i="${i}" style="cursor:pointer">
+      hits += `<g class="go-cell${isGhost ? ' is-ghost' : ''}${mine ? '' : ' is-wait'}" data-i="${i}">
         <rect x="${px - CELL / 2}" y="${py - CELL / 2}" width="${CELL}" height="${CELL}" fill="transparent"/>
       </g>`;
     }
-    if (state.ghost >= 0 && board[state.ghost] === 0) {
+    if (mine && state.ghost >= 0 && board[state.ghost] === 0) {
       const [gx2, gy2] = cellXY(state.ghost);
       stones += `<circle class="go-ghost" cx="${gx2}" cy="${gy2}" r="${STONE_R}" fill="none" stroke="#8A99A3" stroke-width="1.6" stroke-dasharray="4 4"/>`;
     }
@@ -303,6 +310,11 @@ function render(): void {
     });
     if (!isTouch()) {
       svg.addEventListener('mousemove', (ev) => {
+        // 只有轮到自己时才跟手显示幽灵；等待中不画，免得误导
+        if (!isMyTurn()) {
+          if (state.ghost !== -1) { state.ghost = -1; render(); }
+          return;
+        }
         const g = (ev.target as Element).closest?.('.go-cell') as SVGGElement | null;
         const i = g ? Number(g.dataset.i) : -1;
         if (i !== state.ghost) { state.ghost = i; render(); }
@@ -315,6 +327,11 @@ function render(): void {
 
   renderHud();
   renderRecorder();
+}
+
+/** 轮次提示文案（区分真人对手与引擎看门狗） */
+function oppWaitHint(): string {
+  return 'Not your turn — waiting for the opponent';
 }
 
 function isTouch(): boolean {
@@ -398,7 +415,12 @@ function pushHistory(): void {
 
 function onCell(i: number): void {
   if (state.over || state.board[i] !== 0 || state.reviewAt !== null) return;
-  if (!isMyTurn()) return;
+  // 命中区现在是常驻的（见 render），所以"轮不到你"要在这里明确挡下，
+  // 并给一句人话提示 —— 静默无响应会被当成卡死。
+  if (!isMyTurn()) {
+    if (!state.over) toast(oppWaitHint());
+    return;
+  }
 
   // 触屏两步落子：第一次只在本地显幽灵，第二次才真落
   if (isTouch() && state.ghost !== i) {

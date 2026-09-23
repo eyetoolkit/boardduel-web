@@ -266,6 +266,13 @@ img { max-width: 100%; display: block; }
 .go-ghost { opacity: .85; }
 .go-cell.is-ghost rect { fill: rgba(138, 153, 163, .08); }
 
+/* 命中区：常驻（轮到自己才可点）。可落 → 指针；等待中 → 默认光标 + 无 hover。 */
+.go-cell { cursor: pointer; }
+.go-cell.is-wait { cursor: default; }
+.go-cell.is-wait rect { fill: transparent; }
+/* 等待中不透出 hover 幽灵色，避免"看着能下其实下不了" */
+.go-cell.is-wait.is-ghost rect { fill: transparent; }
+
 /* 上一手：ember 实心点 */
 .go-stone.is-last { filter: drop-shadow(0 0 3px rgba(255, 106, 60, .5)); }
 
