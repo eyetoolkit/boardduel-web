@@ -4,18 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0E1419">
-<title>BoardDuel — five boards, one opens</title>
-<meta name="description" content="Five classic board games, each with a live engine. Play Gomoku, Tic-Tac-Toe, Connect 4, Reversi and Chess against AI or a friend on one screen.">
+<title>%%TITLE%%</title>
+<meta name="description" content="%%DESC%%">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="BoardDuel">
-<meta property="og:title" content="BoardDuel — five boards, five live engines">
-<meta property="og:description" content="Five classic board games, each with a live engine. Play Gomoku, Tic-Tac-Toe, Connect 4, Reversi and Chess against AI or a friend on one screen.">
+<meta property="og:title" content="%%OG_TITLE%%">
+<meta property="og:description" content="%%OG_DESC%%">
 <meta property="og:url" content="https://boardduel.com/">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="BoardDuel — five boards, five live engines">
-<meta name="twitter:description" content="Five classic board games, each with a live engine. Play Gomoku, Tic-Tac-Toe, Connect 4, Reversi and Chess against AI or a friend on one screen.">
+<meta name="twitter:title" content="%%OG_TITLE%%">
+<meta name="twitter:description" content="%%OG_DESC%%">
 <link rel="canonical" href="https://boardduel.com/">
 <link rel="alternate" hreflang="en" href="https://boardduel.com/">
 <link rel="alternate" hreflang="x-default" href="https://boardduel.com/">
@@ -35,14 +35,21 @@
   </div>
 </nav><main class="bd-main">
   <section class="bd-hero">
+<!--stage:beta-->
     <span class="bd-mode-badge">FIVE BOARDS · FIVE LIVE ENGINES</span>
     <h1>Five boards. <span class="bd-gold">Every one plays.</span></h1>
     <p class="bd-lead">Gomoku, Tic-Tac-Toe, Connect 4, Reversi and Chess — each with a real engine you can play right now, at three difficulty levels, or pass-and-play with a friend on one screen.</p>
+<!--/stage:beta-->
+<!--stage:prod-->
+    <span class="bd-mode-badge">GOMOKU · LIVE ENGINE</span>
+    <h1>One board. <span class="bd-gold">A real engine.</span></h1>
+    <p class="bd-lead">15×15 freestyle Gomoku against a pattern-matching engine at three difficulty levels — or pass-and-play with a friend on one screen. More boards are in the workshop.</p>
+<!--/stage:prod-->
   </section>
 
   <div class="bd-section-title">Pick a board</div>
   <div class="bd-cards">
-    <a class="bd-card is-live" href="/games/gomoku/">
+    <a class="bd-card is-live" href="/games/gomoku/" data-stage="live">
       <span class="bd-card-name">GOMOKU</span>
       <div class="bd-card-mini"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="2" width="60" height="60" stroke="#5C6B74" stroke-width="1.5" fill="none"/><path d="M2 14H62M2 26H62M2 38H62M2 50H62M14 2V62M26 2V62M38 2V62M50 2V62" stroke="#2A3741" stroke-width="0.7"/><circle cx="32" cy="32" r="3" fill="#F4F6F2"/><circle cx="22" cy="22" r="3" fill="#0E1419"/><circle cx="42" cy="42" r="3" fill="#F4F6F2"/></svg></div>
       <span class="bd-card-desc">15×15 · freestyle · pattern AI</span>
