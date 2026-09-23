@@ -19,6 +19,20 @@ const here = dirname(fileURLToPath(import.meta.url));
  *        D:/GAME/boardduel-web/src/styles/boardduel.css
  */
 export default defineConfig({
+  plugins: [
+    {
+      name: 'filter-stage',
+      // 生产构建（VITE_SHOW_BETA 未注入）时，从 index.html 剔除 beta/coming 阶段的游戏入口，
+      // 保证线上源码不残留未上线游戏的链接（SEO 准确，且不依赖运行时 JS）。
+      // beta 构建（VITE_SHOW_BETA=1）保留全部入口。
+      transformIndexHtml(html) {
+        if (process.env.VITE_SHOW_BETA === '1') return html;
+        return html
+          .replace(/<li[^>]*\sdata-stage="(?:beta|coming)"[^>]*>[\s\S]*?<\/li>/g, '')
+          .replace(/<a[^>]*\sdata-stage="(?:beta|coming)"[^>]*>[\s\S]*?<\/a>/g, '');
+      },
+    },
+  ],
   build: {
     outDir: 'dist',
     emptyOutDir: true,

@@ -8,6 +8,12 @@
  * CSS: src/styles/boardduel.css
  */
 
+// —— 兜底：若 CDN 缓存了旧 HTML（构建期未剔除 beta 元素），运行时再隐藏一次 ——
+(function hideBetaStages() {
+  if ((import.meta.env.VITE_SHOW_BETA ?? '') === '1') return;
+  document.querySelectorAll('[data-stage="beta"],[data-stage="coming"]').forEach((el) => el.remove());
+})();
+
 // —— 自动高亮当前 section 的 nav 链接 ——
 (function highlightNav() {
   const here = (location.pathname || '/').replace(/\/+$/, '') || '/';
