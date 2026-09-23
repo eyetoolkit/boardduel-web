@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0E1419">
+<title>BoardDuel — Gomoku (the stones are the paper)</title>
+<meta name="description" content="15×15 lines under a heavy frame — the largest and quietest board. Freestyle Gomoku, with ranked matchmaking, three AI levels, and pass-and-play.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="canonical" href="https://boardduel.com/games/gomoku/" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="BoardDuel" />
+<meta property="og:title" content="BoardDuel — Gomoku (the stones are the paper)" />
+<meta property="og:description" content="15×15 lines under a heavy frame — the largest and quietest board. Freestyle Gomoku, with ranked matchmaking, three AI levels, and pass-and-play." />
+<meta property="og:url" content="https://boardduel.com/games/gomoku/" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="alternate" hreflang="en" href="https://boardduel.com/games/gomoku/" />
+<link rel="alternate" hreflang="x-default" href="https://boardduel.com/games/gomoku/" />
+<link rel="stylesheet" href="/src/styles/boardduel.css">
+</head>
+<body>
+<div class="gnav"><div class="gwrap">
+  <div class="gmark">BOARD<span>DUEL</span></div>
+  <nav class="glinks">
+    <a href="/" data-pg="home">HOME</a>
+    <a href="/games/gomoku/" data-pg="gomoku">GOMOKU</a>
+    <a href="/games/tictactoe/" data-pg="ttt">TICTACTOE</a>
+    <a href="/games/connect4/" data-pg="c4">CONNECT4</a>
+    <a href="/games/reversi/" data-pg="rev">REVERSI</a>
+    <a href="/games/chess/" data-pg="chess">CHESS</a>
+  </nav>
+  <div class="gtag">all drafts · one file</div>
+</div></div>
+<div class="pg" id="pg-gomoku">
+
+
+<!-- MAST -->
+<div class="mast"><div class="wrap">
+  <div class="wordmark">BOARD<span>DUEL</span></div>
+  <nav class="switcher">
+    <a class="on" href="#gomoku-pg-gomoku">GOMOKU</a><a href="#gomoku-pg-c4">CONNECT4</a><a href="#gomoku-pg-ttt">TICTACTOE</a><a href="#gomoku-pg-rev">REVERSI</a><a href="#gomoku-pg-chess">CHESS</a>
+  </nav>
+  <span class="tag">Pilot · board language v1</span>
+</div></div>
+
+<!-- HERO -->
+<section class="hero" id="gomoku-top"><div class="wrap"><div class="grid">
+  <div>
+    <div class="kick">BOARDDUEL PILOT — <b>GOMOKU</b></div>
+    <h1>The stones are <span class="gold">the paper.</span></h1>
+    <p class="lead">Across the ARENA, paper is whatever carries the truth of the game: the card face, the given digit, the cage sum, the tower brick, the target card. Here it is the stone. Black and white carry everything the game knows — ember and teal never touch them. They stay UI: clocks, last-move dots, turn chips. Gold belongs to exactly one thing — the win line.</p>
+    <div class="mig" aria-label="paper carrier migration">
+      <b>card face</b><i>→</i><b>given digit</b><i>→</i><b>cage sum</b><i>→</i><b>tower brick</b><i>→</i><b>target card</b><i>→</i><b class="hot">stone</b>
+    </div>
+    <div class="facts">
+      <span><b>15×15</b> board</span><span><b>225</b> points</span><span><b>freestyle</b> rules</span><span><b>3</b> AI levels</span><span><b>live</b> matchmaking</span>
+    </div>
+  </div>
+  <div>
+    <div class="board " role="img" aria-label="Gomoku board position">
+    <div class="bwrap"><div class="bframe">
+      <div class="cl-row"><b class="cl">A</b><b class="cl">B</b><b class="cl">C</b><b class="cl">D</b><b class="cl">E</b><b class="cl">F</b><b class="cl">G</b><b class="cl">H</b><b class="cl">I</b><b class="cl">J</b><b class="cl">K</b><b class="cl">L</b><b class="cl">M</b><b class="cl">N</b><b class="cl">O</b></div>
+      <div class="rn-col"><b class="cl">15</b><b class="cl">14</b><b class="cl">13</b><b class="cl">12</b><b class="cl">11</b><b class="cl">10</b><b class="cl">9</b><b class="cl">8</b><b class="cl">7</b><b class="cl">6</b><b class="cl">5</b><b class="cl">4</b><b class="cl">3</b><b class="cl">2</b><b class="cl">1</b></div>
+      <div class="bgrid main"><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><i class="star"></i></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><i class="star"></i></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"><i class="star"></i><span class="stone st-b"></span></div><div class="ix"></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><span class="stone ghost"><i>1</i></span></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><span class="stone ghost"><i>3</i></span></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone ghost"><i>2</i></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><i class="star"></i></div><div class="ix"></div><div class="ix"><span class="stone st-w"><i class="lm"></i></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><i class="star"></i></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div></div>
+    </div></div>
+  </div>
+    <div class="bcap">Real engine position · move <b class="num">20</b> · black to move · last move <b>F4</b> · dashed = engine hint (below)</div>
+  </div>
+</div></div></section>
+
+<!-- FACT STRIP -->
+<div class="strip"><div class="wrap">
+  <div class="f"><b class="num">15×15</b><span>board · freestyle</span></div>
+  <div class="f"><b class="num">3</b><span>AI levels · heuristic</span></div>
+  <div class="f"><b>live</b><span>matchmaking + chat</span></div>
+  <div class="f"><b>spectate</b><span>rooms supported</span></div>
+  <div class="f"><b class="num">35</b><span>moves · proof game below</span></div>
+</div></div>
+
+<!-- BOARD LANGUAGE -->
+<section><div class="wrap">
+  <div class="kick">01 — BOARD LANGUAGE</div>
+  <h2>Six states. One vocabulary for all five games.</h2>
+  <p class="lead">This pilot fixes the rendering rules every BoardDuel game will inherit — stone fill, ghost preview, last-move dot, win ring, coordinates, star points. Once these read instantly, Connect4 checkers, Reversi discs and Chess pieces are the same language with different nouns.</p>
+  <div class="anat">
+    <div class="acard">
+      <div class="demo"><span class="bigstone st-b"></span><span class="bigstone st-w"></span></div>
+      <h3>Your stone / their stone</h3>
+      <p>Black = you, white = opponent. Pure fill, no faction color — allegiance is told by <code>turn</code> chips and clocks, never by painting the stone.</p>
+    </div>
+    <div class="acard">
+      <div class="demo"><span class="bigstone st-b"><span class="lm"></span></span><span class="bigstone st-w"><span class="lm"></span></span></div>
+      <h3>Last move</h3>
+      <p>A single ember dot, centered, on whichever stone moved last. On a 225-point board this is the difference between following the game and getting lost.</p>
+    </div>
+    <div class="acard">
+      <div class="demo"><span class="bigstone ghost-s"></span><span class="bigstone win-s"></span></div>
+      <h3>Ghost / win ring</h3>
+      <p>Dashed mute circle = the move you're about to make (with hint rank inside when hints are on). Gold ring = a completed five. Gold appears nowhere else.</p>
+    </div>
+    <div class="acard">
+      <div class="demo"><span class="bigstone empty-s"></span><span class="bigstone star-s"></span></div>
+      <h3>Point / star point</h3>
+      <p>Intersections, not squares — stones sit on crossings. Five star points anchor the eye: four 3-3 corners plus tengen <code>H8</code>.</p>
+    </div>
+    <div class="acard">
+      <div class="demo" style="flex-direction:column;gap:4px"><div style="display:flex;gap:2px"><b class="cl" style="aspect-ratio:auto">A</b><b class="cl" style="aspect-ratio:auto">B</b><b class="cl" style="aspect-ratio:auto">H</b><b class="cl" style="aspect-ratio:auto">O</b></div><div style="display:flex;gap:2px;align-items:center"><b class="cl" style="aspect-ratio:auto">15</b><b class="cl" style="aspect-ratio:auto">8</b><b class="cl" style="aspect-ratio:auto">1</b></div></div>
+      <h3>Coordinates A–O / 1–15</h3>
+      <p>Columns <code>A–O</code> left to right, rows <code>15→1</code> top to bottom. Standard gomoku notation, <code>I</code> kept. Recessive: 58% size, mute-2, recede further on phones.</p>
+    </div>
+    <div class="acard">
+      <div class="demo" style="gap:12px"><div style="display:flex;gap:4px"><span class="bigstone st-b"></span><span class="bigstone st-w"></span></div><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="#8A99A3" stroke-width="1.5"><path d="M2.5 3.5h11v7.5h-6L4 14v-3H2.5Z"/></svg></div>
+      <h3>Notation rail</h3>
+      <p>Moves listed in pairs, tabular numerals, like a flight recorder. Any move is a review anchor — tap one and the board rewinds to it (proposed).</p>
+    </div>
+  </div>
+</div></section>
+
+<!-- SCREEN 1 LOBBY -->
+<section class="alt" id="gomoku-lobby"><div class="wrap">
+  <div class="kick">02 — SCREEN 1 · LOBBY</div>
+  <h2>Find a human. Or test the machine.</h2>
+  <p class="lead">BoardDuel already ships real matchmaking — the lobby leads with it, unlike MathDuel's "coming soon". The engine path gets honest difficulty copy: the AI counts patterns, it does not search ahead.</p>
+  <div class="lob">
+    <div class="lc">
+      <div class="lv"><h3>Ranked match</h3><span class="pill live">live</span></div>
+      <p>Queue for a human opponent. Real-time room with chat and spectate already wired server-side — the lobby just surfaces it.</p>
+      <div class="lev">
+        <div><b>Finding opponent…</b><span class="num">0:07</span></div>
+        <div><b>Your rank</b><span>Stone II · 1,240</span></div>
+        <div><b>Avg wait</b><span class="num">~12s</span></div>
+      </div>
+      <button class="btn primary">Enter queue</button>
+    </div>
+    <div class="lc">
+      <div class="lv"><h3>Play the engine</h3><span class="pill ember">3 levels</span></div>
+      <p>Instant game vs the heuristic AI. Level names describe what it actually does — no "Grandmaster" theater.</p>
+      <div class="lev">
+        <div><b>Counter</b><span>counts pairs &amp; trios</span></div>
+        <div><b>Attacker</b><span>opens threats, still local</span></div>
+        <div><b>Punisher</b><span>sharpest weights, no lookahead</span></div>
+      </div>
+      <button class="btn">Start game</button>
+    </div>
+    <div class="lc">
+      <div class="lv"><h3>Pass &amp; play</h3><span class="pill prop">proposed</span></div>
+      <p>Two players, one screen. Zero server cost — the engine module already validates every move, so this is a mode flag, not a feature.</p>
+      <div class="lev">
+        <div><b>Board</b><span class="num">15×15</span></div>
+        <div><b>Rules</b><span>freestyle</span></div>
+        <div><b>Undo</b><span>allowed</span></div>
+      </div>
+      <button class="btn">New board</button>
+    </div>
+  </div>
+  <div class="oq" style="margin-top:28px">
+    <h3>Honesty note — ranked vs casual</h3>
+    <p style="font-size:.85rem;color:var(--mute)">Ranked matchmaking today has no rating persistence surfaced in the lobby meta; "Stone II · 1,240" shows the target state. Ship the mode first, badge second — the draft marks it, so nobody mistakes lobby chrome for shipped ranks.</p>
+  </div>
+</div></section>
+
+<!-- SCREEN 2 MATCH -->
+<section><div class="wrap">
+  <div class="kick">03 — SCREEN 2 · MATCH</div>
+  <h2>The board is the screen.</h2>
+  <p class="lead">Board center, clocks above, recorder and hints in the rail. Everything else is chrome. The position, the hint weights and the move list are one real game, move 20, black to move.</p>
+  <div class="screen">
+    <div>
+      <div class="hud">
+        <div class="clock act"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.2"/><path d="M8 4.8V8l2.3 1.6" stroke-linecap="round"/></svg><div><div class="who">You · black</div><div class="t num">09:47</div></div><span class="pulse"></span></div>
+        <div class="clock"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.2"/><path d="M8 4.8V8l2.3 1.6" stroke-linecap="round"/></svg><div><div class="who">Ken · white</div><div class="t num">10:00</div></div></div>
+      </div>
+      <div class="board " role="img" aria-label="Gomoku board position">
+    <div class="bwrap"><div class="bframe">
+      <div class="cl-row"><b class="cl">A</b><b class="cl">B</b><b class="cl">C</b><b class="cl">D</b><b class="cl">E</b><b class="cl">F</b><b class="cl">G</b><b class="cl">H</b><b class="cl">I</b><b class="cl">J</b><b class="cl">K</b><b class="cl">L</b><b class="cl">M</b><b class="cl">N</b><b class="cl">O</b></div>
+      <div class="rn-col"><b class="cl">15</b><b class="cl">14</b><b class="cl">13</b><b class="cl">12</b><b class="cl">11</b><b class="cl">10</b><b class="cl">9</b><b class="cl">8</b><b class="cl">7</b><b class="cl">6</b><b class="cl">5</b><b class="cl">4</b><b class="cl">3</b><b class="cl">2</b><b class="cl">1</b></div>
+      <div class="bgrid main"><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><i class="star"></i></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><i class="star"></i></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"><i class="star"></i><span class="stone st-b"></span></div><div class="ix"></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><span class="stone ghost"><i>1</i></span></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><span class="stone ghost"><i>3</i></span></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone ghost"><i>2</i></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><i class="star"></i></div><div class="ix"></div><div class="ix"><span class="stone st-w"><i class="lm"></i></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><i class="star"></i></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div></div>
+    </div></div>
+  </div>
+      <div class="ctl">
+        <button class="btn prop"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3.5 3 7l3.5 3.5"/><path d="M3 7h6.2a3.8 3.8 0 0 1 0 7.6H6"/></svg> Undo <i>×1 FREE</i></button>
+        <button class="btn prop"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 1.8a4.6 4.6 0 0 1 2.6 8.4c-.5.4-.8.9-.8 1.5v.5H6.2v-.5c0-.6-.3-1.1-.8-1.5A4.6 4.6 0 0 1 8 1.8Z"/><path d="M6.6 14.2h2.8"/></svg> Hint <i>LIVE</i></button>
+        <button class="btn"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 14V2.5"/><path d="M3.5 3h9l-2.4 3 2.4 3h-9"/></svg> Resign</button>
+      </div>
+      <div class="bcap">Move <b class="num">20</b> · black to move · last move <b>F4</b> · dashed circles = hint ranks 1–3</div>
+    </div>
+    <div class="scr-note">
+      <div class="pt"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 1.8a4.6 4.6 0 0 1 2.6 8.4c-.5.4-.8.9-.8 1.5v.5H6.2v-.5c0-.6-.3-1.1-.8-1.5A4.6 4.6 0 0 1 8 1.8Z"/><path d="M6.6 14.2h2.8"/></svg><div><b>Hint is real engine output, not decoration.</b> Three bars read the board's own <code>evaluateCell</code>: top F7 (11,319), then I6 (10,814) — blocking pressure — then G6 (3,979). G6 is the quiet one: it sits on the exact row black wins through nine moves later. The design story writes itself.</div></div>
+      <div class="pt tl"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M2.5 3.5h11v7.5h-6L4 14v-3H2.5Z"/></svg><div><b>Clocks are the only running color.</b> Your side breathes ember, theirs teal; the inactive clock goes grey. No other element on this screen may animate.</div></div>
+      <div class="pt"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3.5 3 7l3.5 3.5"/><path d="M3 7h6.2a3.8 3.8 0 0 1 0 7.6H6"/></svg><div><b>Undo is a first-class control, dashed until shipped.</b> The engine already validates retroactive states, so one free undo per game is a product decision, not a tech risk. After that it costs a coin.</div></div>
+      <div class="rail" style="margin-top:18px">
+        <h4>Move recorder <b class="num">1–20</b></h4>
+        <div class="mvs"><div class="mv"><em>1.</em> H8 <s>·</s> G9</div><div class="mv"><em>3.</em> H9 <s>·</s> H10</div><div class="mv"><em>5.</em> F8 <s>·</s> G8</div><div class="mv"><em>7.</em> G7 <s>·</s> I9</div><div class="mv"><em>9.</em> E9 <s>·</s> D10</div><div class="mv"><em>11.</em> H6 <s>·</s> I5</div><div class="mv"><em>13.</em> H7 <s>·</s> H5</div><div class="mv"><em>15.</em> I7 <s>·</s> J7</div><div class="mv"><em>17.</em> J8 <s>·</s> K9</div><div class="mv hl"><em>19.</em> G5 <s>·</s> F4</div></div>
+      </div>
+      <div class="rail" style="margin-top:12px">
+        <h4>Hint board <b>evaluateCell · raw</b></h4>
+        <div class="hints"><div class="hint-row top"><span class="hn">F7</span><span class="hbar"><i style="width:100%"></i></span><span class="hv">11,319</span></div><div class="hint-row"><span class="hn">I6</span><span class="hbar"><i style="width:96%"></i></span><span class="hv">10,814</span></div><div class="hint-row"><span class="hn">G6</span><span class="hbar"><i style="width:35%"></i></span><span class="hv">3,979</span></div></div>
+        <div class="hint-note">Raw weights from the live engine — attack + 0.95 × defense. Numbers stay raw; rounding them would lie about the margins.</div>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<!-- SCREEN 3 WIN -->
+<section class="alt"><div class="wrap">
+  <div class="kick">04 — SCREEN 3 · END</div>
+  <h2>Five in a row, gold, done.</h2>
+  <p class="lead">The game ends the instant the engine reports a win line — no confirm dialogs, no scoring phase. The five stones take gold rings; everything else dims a step; the result bar names the line in notation so the review can start without a replay.</p>
+  <div class="screen">
+    <div>
+      <div class="board " role="img" aria-label="Gomoku board position">
+    <div class="bwrap"><div class="bframe">
+      <div class="cl-row"><b class="cl">A</b><b class="cl">B</b><b class="cl">C</b><b class="cl">D</b><b class="cl">E</b><b class="cl">F</b><b class="cl">G</b><b class="cl">H</b><b class="cl">I</b><b class="cl">J</b><b class="cl">K</b><b class="cl">L</b><b class="cl">M</b><b class="cl">N</b><b class="cl">O</b></div>
+      <div class="rn-col"><b class="cl">15</b><b class="cl">14</b><b class="cl">13</b><b class="cl">12</b><b class="cl">11</b><b class="cl">10</b><b class="cl">9</b><b class="cl">8</b><b class="cl">7</b><b class="cl">6</b><b class="cl">5</b><b class="cl">4</b><b class="cl">3</b><b class="cl">2</b><b class="cl">1</b></div>
+      <div class="bgrid main"><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><i class="star"></i></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><i class="star"></i></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"><i class="star"></i><span class="stone st-b"></span></div><div class="ix"></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><span class="stone st-b win-ring"></span></div><div class="ix"><span class="stone st-b win-ring"></span></div><div class="ix"><span class="stone st-b win-ring"></span></div><div class="ix"><span class="stone st-b win-ring"></span></div><div class="ix"><span class="stone st-b win-ring"></span></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><i class="star"></i><span class="stone st-w"></span></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><i class="star"></i></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div></div>
+    </div></div>
+  </div>
+      <div class="winbar">
+        <span class="tro">You win</span>
+        <span style="font-size:.8rem;color:var(--mute)">move <b class="num">35</b> · vs engine · Punisher</span>
+        <span class="five">line <b>D6 – E6 – F6 – G6 – H6</b></span>
+      </div>
+      <div class="ctl">
+        <button class="btn primary">Rematch</button>
+        <button class="btn">Review moves</button>
+        <button class="btn">Back to lobby</button>
+      </div>
+    </div>
+    <div class="scr-note">
+      <div class="pt gd"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.2"/><path d="M5.5 8.2l1.8 1.8 3.4-4" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b>This win is the argument for the honesty section below.</b> A greedy near-stone player — zero lookahead, just "place where my count is highest" — beat the engine's hardest level in 35 moves. <b>D6 – E6 – F6 – G6 – H6</b> is a real engine output, not a staged position.</div></div>
+      <div class="pt"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2.5 8h11M9.5 4l4 4-4 4"/></svg><div><b>Review is the retention hook.</b> The recorder becomes a scrubber: every pair is a board state, the win line stays ringed, and "where did white go wrong" is one tap per move. Same component, second life.</div></div>
+      <div class="pt tl"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v12M2 8h12"/></svg><div><b>Draws exist and get a screen.</b> Our simulation also produced a full 225-point fill with no winner. Same bar, neutral paper text: "Board full · nobody broke through".</div></div>
+    </div>
+  </div>
+</div></section>
+
+<!-- HONESTY -->
+<section><div class="wrap">
+  <div class="kick">05 — WHAT THE SERVER ACTUALLY DOES</div>
+  <h2>Design against the real engine, not the brochure.</h2>
+  <p class="lead">Three facts verified in the shipped code. Each one changes what this UI is allowed to promise.</p>
+  <div class="honest">
+    <div class="hc">
+      <span class="sev p1">P1 · false advertising</span>
+      <h3>The forbidden-move toggle doesn't exist</h3>
+      <p>Three meta tags advertise "switchable global forbidden-move rules". <b>No implementation ships.</b> The draft's lobby never shows a rules toggle; mode copy says <b>freestyle</b> explicitly.</p>
+      <p class="fix">Until the engine supports renju checks, hiding the claim costs nothing and removes the only place the site currently overstates itself.</p>
+    </div>
+    <div class="hc">
+      <span class="sev p1">P1 · one-char bug</span>
+      <h3>The AI opens in the corner — by sign error</h3>
+      <p>The comment promises center-weighted openings. The code adds distance-from-center instead of subtracting it, so the engine's first move drifts to <b>B14</b>. Ten self-play moves, all hugging one corner:</p>
+      <div class="code"><i>B14</i>  <i>C14</i>  <i>B13</i>  <i>B12</i>  <i>C13</i>  <i>D13</i>  <i>D12</i>  <i>E11</i>  <i>E12</i>  <i>F12</i></div>
+      <div class="board mini"><div class="bwrap"><div class="bgrid main"><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"></div><div class="ix"><i class="star"></i><span class="stone st-b"></span></div><div class="ix"><span class="stone st-b"></span></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><i class="star"></i></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><span class="stone st-w"></span></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><i class="star"></i></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><i class="star"></i></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"><i class="star"></i></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div><div class="ix"></div></div></div></div>
+      <p class="fix">Flip <code>+ (center * 3)</code> to <code>- (center * 3)</code>. The mini board above re-renders honestly different the day it ships.</p>
+    </div>
+    <div class="hc">
+      <span class="sev p1">P1 · strength theater</span>
+      <h3>"Hard" lost to a greedy human</h3>
+      <p>All three AI levels are weighted pattern counts — <b>no search, no lookahead</b>. In the proof game on this page, a player who only maximizes their own local count beat "hard" in 35 moves.</p>
+      <p class="fix">Lobby copy names levels by behavior (Counter / Attacker / Punisher), and the real fix is the queued P1: shallow search rework. Until then, no ranking claims on the engine path.</p>
+    </div>
+  </div>
+</div></section>
+
+<!-- NOTES -->
+<section class="alt"><div class="wrap">
+  <div class="kick">06 — DESIGN NOTES</div>
+  <h2>What this pilot locks in.</h2>
+  <div class="notes">
+    <div class="note"><i>a</i><div><b>Stones carry the game.</b> Ember and teal never paint game pieces on any BoardDuel board — they stay on clocks, dots and turn chips. This is the family rule Connect4 and Reversi will inherit unchanged.</div></div>
+    <div class="note"><i>b</i><div><b>Gold is spend once.</b> Win ring and result bar, nothing else. When Chess ships, gold means checkmate — the same scarcity keeps it loud.</div></div>
+    <div class="note"><i>c</i><div><b>Slate, not wood.</b> A wooden board would drag the ARENA back to warm-brown defaults. Dark slate + stone contrast does the work; the grid lines are the same <code>line</code> token as every other draft.</div></div>
+    <div class="note"><i>d</i><div><b>Coordinates recede.</b> A–O / 15–1 ship at 58% size in mute-2 and shrink further under 620px. They're for review and chat notation, never for decoration.</div></div>
+    <div class="note"><i>e</i><div><b>Every position is engine output.</b> Hero, match, hint weights, both wins and the corner cluster come from the live <code>ai.js</code>. Zero staged boards — the draft is a regression test it can wear.</div></div>
+    <div class="note"><i>f</i><div><b>Two-step placing on touch.</b> Tap shows the ghost, tap again confirms. Mis-taps on a 225-point grid are the #1 mobile rage-quit; desktop keeps hover-ghost + click.</div></div>
+  </div>
+  <div class="oq">
+    <h3>Open questions</h3>
+    <ul>
+      <li><b>Hint economy:</b> free raw weights in casual, coin-priced "one bar only" in ranked? The engine computes both for free either way.</li>
+      <li><b>Undo scope:</b> one free undo everywhere, or casual-only? Ranked rooms already have an opponent to veto it.</li>
+      <li><b>Coordinates:</b> keep standard <code>I</code> column, or skip to <code>J</code> like some chess sets do? Standard keeps notation compatible with every gomoku tool.</li>
+    </ul>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <p>BOARDDUEL · Gomoku board-language pilot · ARENA tokens v1 · English default</p>
+  <div class="base"><span>family: mathduel.com · memoryduel.com · boardduel.com</span><span>all positions: live ai.js output</span></div>
+</div></footer>
+
+
+</div>
+
+<!-- ================= TICTACTOE ================= -->
+
+<script type="module" src="/src/games/gomoku/index.ts"></script>
+</body>
+</html>

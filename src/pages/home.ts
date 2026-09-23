@@ -1,21 +1,47 @@
-/// <reference types="vite/client" />
-
 /**
- * 首页发布阶段兜底。
+ * BoardDuel 首页 TS 装配层（pg-home）
+ * - 顶部 gnav 的 .cur 类自动匹配当前路径
+ * - wall 上 5 个 .wcard 锚点跳转 + hover 状态
+ * - pill 状态标记（live / dead / engine 404 / page 404）
  *
- * 正常情况下不需要这段逻辑——vite.config.ts 的 filter-stage 插件
- * 已在构建时把 data-stage="beta" 的元素从 HTML 中移除。
- * 这里只为一种边缘情况兜底：用户浏览器/CDN 缓存了旧版 HTML，
- * 此时页面里可能仍残留未上线游戏的入口。
- *
- * 保持极简：首页视觉与结构完全沿用原有静态实现，不做任何改版。
+ * 设计稿：D:/GAME/boardduel-web/boardduel-build/sections/pg-home.html
+ * CSS: src/styles/boardduel.css
  */
-const SHOW_BETA = import.meta.env.VITE_SHOW_BETA === '1';
 
-if (!SHOW_BETA) {
-  document
-    .querySelectorAll<HTMLElement>('[data-stage="beta"]')
-    .forEach((el) => {
-      el.style.display = 'none';
-    });
-}
+// —— 自动高亮当前 section 的 nav 链接 ——
+(function highlightNav() {
+  const here = (location.pathname || '/').replace(/\/+$/, '') || '/';
+  const map: Record<string, string> = {
+    '/': 'home',
+    '/games/gomoku/': 'gomoku',
+    '/games/tictactoe/': 'ttt',
+    '/games/connect4/': 'c4',
+    '/games/reversi/': 'rev',
+    '/games/chess/': 'chess',
+  };
+  const key = map[here];
+  document.querySelectorAll<HTMLAnchorElement>('.glinks a[data-pg]').forEach((a) => {
+    a.classList.toggle('cur', a.dataset.pg === key);
+  });
+})();
+
+// —— 在 wall 卡片上加 hover 提升（设计稿已写 .wcard:hover 边框） ——
+(function attachWallHover() {
+  document.querySelectorAll<HTMLElement>('.wall .wcard').forEach((c) => {
+    c.addEventListener('pointerenter', () => c.classList.add('is-hover'));
+    c.addEventListener('pointerleave', () => c.classList.remove('is-hover'));
+  });
+})();
+
+// —— pill 状态：live / dead / engine 404 / page 404 ——
+(function annotatePills() {
+  document.querySelectorAll<HTMLElement>('.wcard .pill').forEach((p) => {
+    const cls = p.classList.contains('live') ? 'live' :
+                p.classList.contains('dead') ? 'dead' :
+                p.classList.contains('prop') ? 'prop' : '';
+    if (cls) p.setAttribute('data-status', cls);
+  });
+})();
+
+// —— 暴露给开发者：console 标记本页面是 homepage ——
+console.info('[BoardDuel] home loaded at', new Date().toISOString());
