@@ -1,0 +1,164 @@
+/* ============================================================
+ * BoardDuel · Gomoku 模式选择页 · papergames 皮肤（2026-09-24）
+ * ------------------------------------------------------------
+ * 版式对齐 MathDuel「24 Game lobby」：居中游戏 Hero → 左模式网格 +
+ * 右信息栏 → How to play 四步 → 段位天梯 → 首页同款页脚。
+ * 视觉 token 与本站首页一致（紫罗兰 #7C3AED），全部锁在 body.home-v2
+ * 作用域下，5 个游戏页用的 boardduel.css 一行不受影响。
+ *
+ * 依赖：home-papergames.css 提供 sidebar / topbar / footer / .btn /
+ *       .panel / .chip / .ladder / .wrap / .main；本文件只补 lobby 专属块。
+ *
+ * 注意：lobby.ts 写出来的行 class 是稳定的（.bd-stat-row / .bd-side-note /
+ * .bd-code-err），这里只做浅色皮肤覆盖，不回头改 TS。
+ * ============================================================ */
+
+/* ── 游戏 Hero：居中封面 + 标题 + 一句话 + 三 chip ── */
+.home-v2 .g-hero { text-align: center; padding: 46px 0 8px; }
+.home-v2 .g-hero .gcover {
+  width: 104px; height: 104px; border-radius: 24px; overflow: hidden;
+  box-shadow: 0 14px 30px rgba(36, 28, 77, .22); display: inline-block; background: #fff;
+}
+.home-v2 .g-hero .gcover img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.home-v2 .g-hero h1 {
+  font-family: var(--disp); font-weight: 700;
+  font-size: clamp(29px, 4vw, 43px); line-height: 1.15; margin: 18px 0 8px;
+  text-wrap: balance;
+}
+.home-v2 .g-hero h1 em { font-style: normal; color: var(--violet); }
+.home-v2 .g-hero .sub { color: var(--mute); font-size: 1.05rem; max-width: 42em; margin: 0 auto; }
+.home-v2 .g-hero .chips { margin-top: 18px; }
+
+/* ── 主栅格：左模式网格 + 右信息栏 ── */
+.home-v2 .lobby-grid {
+  display: grid; grid-template-columns: 1.55fr 1fr; gap: 24px;
+  align-items: start; padding: 34px 0 8px;
+}
+.home-v2 .lobby-grid > * { min-width: 0; }
+.home-v2 .sec-h {
+  font-family: var(--disp); font-weight: 700;
+  font-size: 1.22rem; margin-bottom: 14px;
+}
+.home-v2 .sec-h small {
+  display: block; font-family: var(--ui); font-weight: 400;
+  font-size: .82rem; color: var(--mute); margin-top: 2px;
+}
+
+/* ── 模式卡：白底浅边框小卡，居中 ── */
+.home-v2 .modes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.home-v2 .mode {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; background: #fff; border: 1.5px solid var(--line); border-radius: 16px;
+  padding: 22px 14px 18px; color: var(--ink);
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+.home-v2 .mode:hover {
+  transform: translateY(-3px); border-color: var(--violet-bright);
+  box-shadow: 0 10px 22px rgba(36, 28, 77, .08);
+}
+.home-v2 .mode:active { transform: translateY(-1px); }
+.home-v2 .mode .mi { font-size: 2.2rem; line-height: 1; margin-bottom: 10px; }
+.home-v2 .mode .mt {
+  font-family: var(--disp); font-weight: 700;
+  font-size: 1.02rem; line-height: 1.25;
+  display: flex; align-items: center; justify-content: center;
+  gap: 7px; flex-wrap: wrap;
+}
+
+/* 首卡高亮（Ranked 是主推入口）：紫色顶 rail + 紫边 */
+.home-v2 .mode.feat { border-color: rgba(124, 58, 237, .5); }
+.home-v2 .mode.feat::before {
+  content: ""; position: absolute; inset: 0 0 auto 0; height: 4px;
+  border-radius: 16px 16px 0 0; background: linear-gradient(90deg, var(--violet), var(--violet-bright));
+}
+
+/* 卡内短标记（.go-tag 在 boardduel.css 里是深色皮肤，这里换成浅底） */
+.home-v2 .mode .tag {
+  font-size: .64rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  border-radius: 999px; padding: 2px 9px; white-space: nowrap;
+  background: var(--violet-soft); color: var(--violet); border: 1px solid #D8CCF8;
+}
+.home-v2 .mode .tag.is-live { background: #E7F8EF; color: #15803D; border-color: rgba(34, 197, 94, .45); }
+.home-v2 .mode .tag.is-gold { background: #FEF3E2; color: #B45309; border-color: rgba(245, 158, 11, .45); }
+.home-v2 .mode .tag.is-mute { background: var(--paper); color: var(--mute); border-color: var(--line); }
+
+/* 未上线模式：虚线灰态且不可点（<div> 承载，杜绝键盘聚焦） */
+.home-v2 .mode.soon { background: transparent; border-style: dashed; color: #9BA0B8; box-shadow: none; cursor: default; }
+.home-v2 .mode.soon .mi { filter: grayscale(1); opacity: .6; }
+.home-v2 .mode.soon .mt { color: #9BA0B8; }
+.home-v2 .mode.soon:hover { transform: none; border-color: #C6CAE4; box-shadow: none; }
+.home-v2 .mode.soon .tag { background: #F1F2F7; color: #8A90A8; border-color: #E3E6F0; }
+
+/* ── 右栏：白卡信息面板 ── */
+.home-v2 .side { display: grid; gap: 18px; }
+.home-v2 .panel .pnote { font-size: .82rem; color: var(--mute); margin-bottom: 12px; }
+/* 邀请码按钮：不占满 panel 宽度，与输入框等高 */
+.home-v2 .bd-code-row .btn-violet {
+  flex: none; padding: 11px 20px; font-size: .92rem; border-radius: 11px;
+}
+
+/* 榜单行（lobby.ts 写出的 class 保持不变，这里只换皮肤） */
+.home-v2 .bd-stat-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  font-size: .86rem; color: var(--mute);
+  padding: 7px 0; border-bottom: 1px dashed var(--line);
+}
+.home-v2 .bd-stat-row:last-child { border-bottom: 0; padding-bottom: 0; }
+.home-v2 .bd-stat-row b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.home-v2 .bd-side-note { font-size: .78rem; color: var(--mute); margin-top: 10px; }
+.home-v2 .bd-code-err { font-size: .8rem; color: var(--red); margin-top: 8px; min-height: 1.2em; }
+
+/* 邀请码输入 */
+.home-v2 .bd-code-row { display: flex; gap: 10px; margin-top: 12px; }
+.home-v2 .bd-code-row input {
+  flex: 1; min-width: 0; background: var(--paper);
+  border: 1.5px solid var(--line); border-radius: 11px;
+  color: var(--ink); font-family: var(--disp); font-weight: 700;
+  font-size: 1rem; letter-spacing: .18em; text-transform: uppercase;
+  padding: 11px 14px; outline: none;
+}
+.home-v2 .bd-code-row input:focus { border-color: var(--violet-bright); background: #fff; }
+.home-v2 .bd-code-row input::placeholder { color: #A7ACBF; letter-spacing: .12em; }
+
+/* 规则速览（boardduel.css 的 .bd-rules 是深色皮肤，浅底重上色） */
+.home-v2 .bd-rules { font-size: .84rem; color: var(--mute); line-height: 1.6; padding-left: 18px; }
+.home-v2 .bd-rules li { margin: 4px 0; }
+.home-v2 .bd-rules b { color: var(--ink); font-weight: 700; }
+
+/* ── How to play 四步 ── */
+.home-v2 .how { padding: 40px 0 8px; }
+.home-v2 .how-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.home-v2 .step { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+.home-v2 .step .sn {
+  width: 30px; height: 30px; border-radius: 99px;
+  background: var(--violet); color: #fff;
+  display: grid; place-items: center;
+  font-family: var(--disp); font-weight: 700; font-size: .9rem;
+  margin-bottom: 10px;
+}
+.home-v2 .step b { display: block; font-size: .95rem; margin-bottom: 4px; }
+.home-v2 .step span { font-size: .82rem; color: var(--mute); line-height: 1.55; display: block; }
+
+/* ── 天梯：home-papergames.css 已有 .ladder 布局，只补间距 ── */
+.home-v2 .ladder { padding: 32px 0 8px; }
+
+/* 模式页脚注 */
+.home-v2 .lobby-foot {
+  padding: 22px 0 70px; font-size: .82rem; color: var(--mute); text-align: center;
+}
+
+/* ── 移动端 ── */
+@media (max-width: 979px) {
+  .home-v2 .lobby-grid { grid-template-columns: 1fr; }
+  .home-v2 .how-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 639px) {
+  .home-v2 .g-hero { padding-top: 26px; }
+  .home-v2 .g-hero .gcover { width: 88px; height: 88px; }
+  .home-v2 .modes { gap: 10px; }
+  .home-v2 .mode { padding: 15px 8px 13px; border-radius: 13px; }
+  .home-v2 .mode .mi { font-size: 1.7rem; margin-bottom: 7px; }
+  .home-v2 .mode .mt { font-size: .92rem; }
+  .home-v2 .how-grid { grid-template-columns: 1fr; gap: 12px; }
+  .home-v2 .ladder { padding: 24px 0 8px; }
+}

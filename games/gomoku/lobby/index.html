@@ -3,162 +3,237 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#0E1419">
-<title>Choose Your Mode — Gomoku | BoardDuel</title>
-<meta name="description" content="Six ways to play Gomoku: ranked online, three engine temperaments, pass &amp; play on one screen, or tournament play. Same 15×15 board — only the opponent changes.">
+<meta name="theme-color" content="#F4F5F9">
+<title>Gomoku — Choose Your Mode · BoardDuel</title>
+<meta name="description" content="Six ways to play Gomoku: a ranked match against a rated opponent, three engine temperaments, pass &amp; play on one screen, or a private room by invite code. Same 15×15 board — only the opponent changes.">
+<link rel="canonical" href="https://boardduel.com/games/gomoku/lobby/">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="BoardDuel">
-<meta property="og:title" content="Choose Your Mode — Gomoku | BoardDuel">
-<meta property="og:description" content="Six ways to play Gomoku: ranked online, three engine temperaments, pass &amp; play on one screen, or tournament play. Same 15×15 board — only the opponent changes.">
+<meta property="og:title" content="Gomoku — Choose Your Mode · BoardDuel">
+<meta property="og:description" content="Six ways to play Gomoku: a ranked match against a rated opponent, three engine temperaments, pass &amp; play on one screen, or a private room by invite code.">
 <meta property="og:url" content="https://boardduel.com/games/gomoku/lobby/">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Choose Your Mode — Gomoku | BoardDuel">
-<meta name="twitter:description" content="Six ways to play Gomoku: ranked online, three engine temperaments, pass &amp; play on one screen, or tournament play.">
-<link rel="canonical" href="https://boardduel.com/games/gomoku/lobby/">
+<meta name="twitter:title" content="Gomoku — Choose Your Mode · BoardDuel">
+<meta name="twitter:description" content="Six ways to play Gomoku: ranked online, three engine levels, pass &amp; play, private rooms.">
 <link rel="alternate" hreflang="en" href="https://boardduel.com/games/gomoku/lobby/">
 <link rel="alternate" hreflang="x-default" href="https://boardduel.com/games/gomoku/lobby/">
-<link rel="stylesheet" href="/src/styles/boardduel.css">
+<link rel="preload" href="/fonts/space-grotesk-latin-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/inter-latin-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/src/styles/home-papergames.css">
+<link rel="stylesheet" href="/src/styles/gomoku-lobby.css">
 </head>
-<body>
-<nav class="bd-nav">
-  <div class="bd-wrap">
-    <div class="bd-mark">BOARD<span>DUEL</span></div>
-    <ul class="bd-links">
-      <li><a class="bd-link" href="/">HOME</a></li>
-      <li><a class="bd-link bd-link-cur" href="/games/gomoku/">GOMOKU</a></li>
-      <li data-stage="beta"><a class="bd-link" href="/games/tictactoe/">TICTACTOE</a></li>
-      <li data-stage="beta"><a class="bd-link" href="/games/connect4/">CONNECT4</a></li>
-      <li data-stage="beta"><a class="bd-link" href="/games/reversi/">REVERSI</a></li>
-      <li data-stage="beta"><a class="bd-link" href="/games/chess/">CHESS</a></li>
-    </ul>
-  </div>
-</nav>
+<body class="home-v2">
 
-<main class="bd-main">
-  <section class="bd-hero">
-    <h1>Five in a row<span class="bd-dot">.</span> <span class="bd-hero-sub">Pick your opponent.</span></h1>
-    <p class="bd-lead">Same 15×15 board, same freestyle rule — first to connect five wins. What changes is who sits across from you: a stranger with a rating, an engine with a temperament, or the person holding your phone.</p>
-    <div class="bd-game-meta">
-      <span><b>15×15</b> board</span>
-      <span><b>freestyle</b> rules</span>
-      <span><b>5</b> in a row wins</span>
-      <span><b>black</b> moves first</span>
+<!-- ═══════════ 移动端顶栏（<1120px 显示） ═══════════ -->
+<div class="topbar">
+  <button class="burger" id="burger" aria-label="Open navigation" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="logo" href="/">Board<b>Duel</b></a>
+  <a class="btn-login" href="/games/gomoku/">Play now</a>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<!-- ═══════════ 侧边导航（Gomoku 高亮） ═══════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-top">
+    <a class="logo" href="/">Board<b>Duel</b></a>
+    <button class="sb-collapse" id="collapse" title="Collapse navigation" aria-label="Collapse navigation">&laquo;</button>
+  </div>
+  <div class="sb-login">
+    <a class="btn-login" href="/games/gomoku/"><span>Play now</span></a>
+  </div>
+  <nav class="sb-nav" aria-label="Site navigation">
+    <a class="nav-item" href="/">
+      <svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><label>Home</label>
+    </a>
+    <a class="nav-item" href="/rank/">
+      <svg viewBox="0 0 24 24"><path d="M8 21h8m-4-4v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 5M17 6h3a3 3 0 0 1-3 5"/></svg><label>Leaderboard</label>
+    </a>
+    <a class="nav-item" href="/stats/">
+      <svg viewBox="0 0 24 24"><path d="M4 20V10m5 10V4m5 16v-7m5 7V8"/></svg><label>Stats</label>
+    </a>
+    <a class="nav-item" href="/shop/">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg><label>Coin shop</label>
+    </a>
+
+    <div class="nav-group">Play</div>
+    <a class="nav-item active" href="/games/gomoku/lobby/">
+      <img class="mini" src="/games/gomoku/cover.svg" alt="" aria-hidden="true"><label>Gomoku</label>
+    </a>
+    <a class="nav-item" href="/games/tictactoe/" data-stage="beta">
+      <img class="mini" src="/games/tictactoe/cover.svg" alt="" aria-hidden="true"><label>Tic-Tac-Toe</label>
+    </a>
+    <a class="nav-item" href="/games/connect4/" data-stage="beta">
+      <img class="mini" src="/games/connect4/cover.svg" alt="" aria-hidden="true"><label>Connect 4</label>
+    </a>
+    <a class="nav-item" href="/games/reversi/" data-stage="beta">
+      <img class="mini" src="/games/reversi/cover.svg" alt="" aria-hidden="true"><label>Othello</label>
+    </a>
+    <a class="nav-item" href="/games/chess/" data-stage="beta">
+      <img class="mini" src="/games/chess/cover.svg" alt="" aria-hidden="true"><label>Chess</label>
+    </a>
+
+    <div class="nav-group">Help</div>
+    <a class="nav-item" href="/how-to-play/gomoku/">
+      <svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></svg><label>How to play</label>
+    </a>
+  </nav>
+  <div class="nav-foot">
+    <span class="lang-pill"><b>EN</b></span>
+    <span class="sb-copy">&copy; 2026</span>
+  </div>
+</aside>
+
+<!-- ═══════════ 主区 ═══════════ -->
+<main class="main">
+
+  <!-- 游戏 Hero -->
+  <section class="g-hero">
+    <div class="wrap">
+      <span class="gcover" aria-hidden="true"><img src="/games/gomoku/cover.svg" alt="" width="104" height="104"></span>
+      <h1>Five in a row. <em>Pick your opponent.</em></h1>
+      <p class="sub">Same 15&times;15 board, same freestyle rule &mdash; first to connect five wins. What changes is who sits across from you: a rated stranger, an engine with a temperament, or the person holding your phone.</p>
+      <div class="chips">
+        <span class="chip"><span class="dot"></span>Solo &middot; Engine &middot; Ranked</span>
+        <span class="chip"><span class="dot"></span>15&times;15 freestyle</span>
+        <span class="chip"><span class="dot"></span>Black moves first</span>
+      </div>
     </div>
   </section>
 
-  <div class="bd-cols">
-    <!-- ══ 左列 · 模式卡（纯 &lt;a&gt; 深链，无 JS 也能点） ══ -->
-    <div>
-      <div class="bd-section-title">Game modes</div>
-      <div class="go-modes" id="modeGrid">
+  <!-- 模式选择 + 右栏 -->
+  <div class="wrap">
+    <div class="lobby-grid">
+      <section aria-labelledby="modesTitle">
+        <h2 class="sec-h" id="modesTitle">Choose your mode<small>Tap a card to jump straight in.</small></h2>
+        <div class="modes" id="modeGrid">
 
-        <!-- 01 · Ranked —— 真实匹配队列 + 5s AI 补位，结果影响 Elo -->
-        <a class="go-mode feat" href="/games/gomoku/?mode=ranked" data-mode="ranked">
-          <span class="go-mode-ico" aria-hidden="true">⚔️</span>
-          <span class="go-mode-top">
-            <span class="go-mode-name">Ranked Match</span>
-            <span class="go-tag">live</span>
-          </span>
-          <span class="go-mode-desc">The measured one. A real opponent at roughly your level, and the result moves your rating. No code, no lobby, no waiting around.</span>
-        </a>
+          <!-- 01 · Ranked —— 真实匹配队列，结果计入排名 -->
+          <a class="mode feat" href="/games/gomoku/?mode=ranked" data-mode="ranked">
+            <div class="mi" aria-hidden="true">⚔️</div>
+            <div class="mt">Ranked Match <span class="tag is-live">live</span></div>
+          </a>
 
-        <!-- 02 · Engine 1/3 —— Counter（原 easy） -->
-        <a class="go-mode" href="/games/gomoku/?mode=engine&amp;level=easy" data-mode="engine" data-level="easy">
-          <span class="go-mode-ico" aria-hidden="true">🛡️</span>
-          <span class="go-mode-top">
-            <span class="go-mode-name">Engine · Counter</span>
-            <span class="go-tag is-mute">level 1</span>
-          </span>
-          <span class="go-mode-desc">The reader. It counts your pairs and trios before it moves, so it sees a threat early — beat it by making two threats at once.</span>
-        </a>
+          <!-- 02 · Engine 1/3 —— Counter（原 easy） -->
+          <a class="mode" href="/games/gomoku/?mode=engine&amp;level=easy" data-mode="engine" data-level="easy">
+            <div class="mi" aria-hidden="true">🛡️</div>
+            <div class="mt">Engine &middot; Counter <span class="tag is-mute">level 1</span></div>
+          </a>
 
-        <!-- 03 · Engine 2/3 —— Attacker（原 medium） -->
-        <a class="go-mode" href="/games/gomoku/?mode=engine&amp;level=medium" data-mode="engine" data-level="medium">
-          <span class="go-mode-ico" aria-hidden="true">🔥</span>
-          <span class="go-mode-top">
-            <span class="go-mode-name">Engine · Attacker</span>
-            <span class="go-tag is-gold">level 2</span>
-          </span>
-          <span class="go-mode-desc">The pusher. It would rather build its own threat than answer yours — greedy, sharp, and perfectly beatable if you defend first.</span>
-        </a>
+          <!-- 03 · Engine 2/3 —— Attacker（原 medium） -->
+          <a class="mode" href="/games/gomoku/?mode=engine&amp;level=medium" data-mode="engine" data-level="medium">
+            <div class="mi" aria-hidden="true">🔥</div>
+            <div class="mt">Engine &middot; Attacker <span class="tag is-mute">level 2</span></div>
+          </a>
 
-        <!-- 04 · Engine 3/3 —— Punisher（原 hard） -->
-        <a class="go-mode" href="/games/gomoku/?mode=engine&amp;level=hard" data-mode="engine" data-level="hard">
-          <span class="go-mode-ico" aria-hidden="true">💀</span>
-          <span class="go-mode-top">
-            <span class="go-mode-name">Engine · Punisher</span>
-            <span class="go-tag is-gold">level 3</span>
-          </span>
-          <span class="go-mode-desc">The executioner. Sharpest weights in the book and no sympathy for a loose stone — one careless move is usually the whole game.</span>
-        </a>
+          <!-- 04 · Engine 3/3 —— Punisher（原 hard） -->
+          <a class="mode" href="/games/gomoku/?mode=engine&amp;level=hard" data-mode="engine" data-level="hard">
+            <div class="mi" aria-hidden="true">💀</div>
+            <div class="mt">Engine &middot; Punisher <span class="tag is-gold">level 3</span></div>
+          </a>
 
-        <!-- 05 · Pass &amp; Play —— 同屏双人 -->
-        <a class="go-mode" href="/games/gomoku/?mode=pass" data-mode="pass">
-          <span class="go-mode-ico" aria-hidden="true">👥</span>
-          <span class="go-mode-top">
-            <span class="go-mode-name">Pass &amp; Play</span>
-            <span class="go-tag is-mute">one screen</span>
-          </span>
-          <span class="go-mode-desc">The social one. Two humans, one device — no queue, no code, no excuses. Turn the screen around and settle it.</span>
-        </a>
+          <!-- 05 · Pass & Play —— 同屏双人 -->
+          <a class="mode" href="/games/gomoku/?mode=pass" data-mode="pass">
+            <div class="mi" aria-hidden="true">👥</div>
+            <div class="mt">Pass &amp; Play <span class="tag is-mute">one screen</span></div>
+          </a>
 
-        <!-- 06 · Tournament —— 未上线，灰态不可点 -->
-        <div class="go-mode ghost" aria-disabled="true" data-mode="tournament">
-          <span class="go-mode-ico" aria-hidden="true">🏆</span>
-          <span class="go-mode-top">
-            <span class="go-mode-name">Tournament</span>
-            <span class="go-tag">Coming soon</span>
-          </span>
-          <span class="go-mode-desc">The big one. Bracket play, seeded rounds and a season board. Still being built — this one is worth the wait.</span>
+          <!-- 06 · Tournament —— 未上线，灰态不可点 -->
+          <div class="mode soon" aria-disabled="true" data-mode="tournament">
+            <div class="mi" aria-hidden="true">🏆</div>
+            <div class="mt">Tournament <span class="tag">Soon</span></div>
+            <span class="soon-pill">SOON</span>
+          </div>
         </div>
-      </div>
-      <p class="bd-side-note">Every mode opens the same board — clocks, move recorder and engine hints included.</p>
+        <p class="bd-side-note" style="margin-top:14px">Every mode opens the same board &mdash; clocks, move recorder and engine hints included.</p>
+      </section>
+
+      <!-- 右栏 -->
+      <aside class="side">
+        <section class="panel" aria-labelledby="ratingTitle">
+          <h3 id="ratingTitle">Ranked standings</h3>
+          <p class="pnote">Who is holding a rating right now.</p>
+          <div id="rankRows" aria-live="polite">
+            <div class="bd-side-note">Loading the standings&hellip;</div>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="codeTitle">
+          <h3 id="codeTitle">Have an invite code?</h3>
+          <p class="pnote">Someone sent you a code for a private game. Drop it in and you land straight in their room.</p>
+          <div class="bd-code-row">
+            <input id="codeInput" type="text" maxlength="8" placeholder="ABC123"
+                   autocomplete="off" spellcheck="false" aria-label="Invite code">
+            <button class="btn btn-violet" id="codeJoin" type="button">Join</button>
+          </div>
+          <p class="bd-code-err" id="codeErr" role="alert"></p>
+        </section>
+
+        <section class="panel" aria-labelledby="rulesTitle">
+          <h3 id="rulesTitle">How to win</h3>
+          <ul class="bd-rules">
+            <li>Place stones on <b>intersections</b>, not in the squares.</li>
+            <li>Columns run <b>A&ndash;O</b>, rows <b>1&ndash;15</b> from the bottom.</li>
+            <li><b>Black</b> moves first.</li>
+            <li>First to <b>five in a row</b> &mdash; across, down or diagonal &mdash; wins.</li>
+            <li>On a touch screen: tap once for the ghost, tap again to commit.</li>
+          </ul>
+        </section>
+      </aside>
     </div>
 
-    <!-- ══ 右列 · 侧栏 ══ -->
-    <aside class="bd-side">
-      <section class="bd-lobby-card" aria-labelledby="ratingTitle">
-        <h3 id="ratingTitle">Ranked standings</h3>
-        <div id="rankRows" aria-live="polite">
-          <div class="bd-side-note">Loading the standings…</div>
-        </div>
-      </section>
+    <!-- How to play -->
+    <section class="how" aria-labelledby="howTitle">
+      <h2 class="sec-h" id="howTitle">How to play<small>Open &rarr; trade &rarr; connect five.</small></h2>
+      <div class="how-grid">
+        <div class="step"><span class="sn">1</span><b>Take the board</b><span>15&times;15 grid, 225 intersections. Fresh board every game, coordinates A&ndash;O and 1&ndash;15.</span></div>
+        <div class="step"><span class="sn">2</span><b>Trade stones</b><span>Black opens. A stone never moves once it is placed &mdash; every click is a commitment.</span></div>
+        <div class="step"><span class="sn">3</span><b>Connect five</b><span>Horizontal, vertical or diagonal. Five is five, whichever way the line runs.</span></div>
+        <div class="step"><span class="sn">4</span><b>Read the engine</b><span>Hover the board to see what the engine is weighing. Hints light its strongest answer.</span></div>
+      </div>
+    </section>
 
-      <section class="bd-lobby-card" aria-labelledby="codeTitle">
-        <h3 id="codeTitle">Have an invite code?</h3>
-        <p>Someone sent you a code for a private game. Enter it and you drop straight into their room.</p>
-        <div class="bd-code-row">
-          <input id="codeInput" type="text" maxlength="8" placeholder="ABC123"
-                 autocomplete="off" spellcheck="false" aria-label="Invite code">
-          <button class="go-btn is-primary" id="codeJoin" type="button">Join</button>
+    <!-- 段位天梯 -->
+    <section class="ladder" aria-label="Rank ladder">
+      <div class="ladder-panel">
+        <div class="ladder-title">Ranked ladder<small>Bronze to Master &middot; the ladder behind ranked play</small></div>
+        <div class="tiers">
+          <div class="tier"><i style="height:16px"></i><span>Bronze</span></div>
+          <div class="tier"><i style="height:22px"></i><span>Silver</span></div>
+          <div class="tier"><i style="height:28px"></i><span>Gold</span></div>
+          <div class="tier"><i style="height:34px"></i><span>Platinum</span></div>
+          <div class="tier"><i style="height:40px"></i><span>Diamond</span></div>
+          <div class="tier master"><i style="height:48px"></i><span>Master</span></div>
         </div>
-        <p class="bd-code-err" id="codeErr" role="alert"></p>
-      </section>
+      </div>
+    </section>
 
-      <section class="bd-lobby-card" aria-labelledby="rulesTitle">
-        <h3 id="rulesTitle">How to win</h3>
-        <ul class="bd-rules">
-          <li>Place stones on <b>intersections</b>, not in the squares.</li>
-          <li>Columns run <b>A–O</b>, rows <b>1–15</b> from the bottom.</li>
-          <li><b>Black</b> moves first.</li>
-          <li>First to <b>five in a row</b> — horizontally, vertically or diagonally — wins.</li>
-          <li>On touch screens: tap once for the ghost, tap again to commit.</li>
-        </ul>
-      </section>
-    </aside>
+    <p class="lobby-foot">No login, no ads, no downloads &mdash; open a board and play.</p>
   </div>
 </main>
 
-<div class="bd-foot">
-  <span><b>BoardDuel</b> · Gomoku mode select</span>
-  <span class="bd-foot-links">
-    <a href="/">Home</a>
-    <a href="/games/gomoku/">Play</a>
-    <a href="/games/gomoku/?mode=ranked">Ranked</a>
-  </span>
-</div>
+<!-- ═══════════ 页脚（与首页同款） ═══════════ -->
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="sf-title">Explore the Duel family</div>
+    <div class="sf-matrix">
+      <a class="sf-item current" href="https://boardduel.com"><span class="pip" style="background:#7C3AED"></span>BoardDuel &middot; Board Games</a>
+      <a class="sf-item" href="https://mathduel.games"><span class="pip" style="background:#F59E0B"></span>MathDuel &middot; Math Puzzles</a>
+      <a class="sf-item" href="https://memoryduel.com"><span class="pip" style="background:#4F46E5"></span>MemoryDuel &middot; Knowledge Battles</a>
+    </div>
+    <div class="sf-links">
+      <a href="/">Home</a>
+      <a href="/games/gomoku/">Gomoku</a>
+      <a href="/rank/">Leaderboard</a>
+      <a href="/how-to-play/gomoku/">How to play</a>
+    </div>
+    <div class="sf-copy">&copy; 2026 BoardDuel &middot; Pure static &middot; Privacy-first &middot; Free to play</div>
+  </div>
+</footer>
+
 <script type="module" src="/src/games/gomoku/lobby.ts"></script>
 </body>
 </html>
