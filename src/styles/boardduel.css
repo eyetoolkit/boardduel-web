@@ -232,17 +232,276 @@ img { max-width: 100%; display: block; }
 .c4-cell.is-hint rect {
   fill: var(--ember-soft);
 }
-.go-stone.is-last::after,
-.rv-stone.is-last::after,
-.c4-piece.is-last::after {
-  content: ''; display: block; width: 5px; height: 5px;
-  background: var(--ember); border-radius: 50%; margin: 3px auto 0;
-}
 .go-stone.is-hint, .rv-stone.is-hint, .c4-piece.is-hint {
   stroke: var(--ember); stroke-dasharray: 2 2; fill: var(--ember-soft);
 }
 .ttt-cell.is-x { color: var(--paper); }
 .ttt-cell.is-o { color: var(--ember); }
+
+/* ============================================================
+   Gomoku · 棋子语言（对齐设计稿 01 BOARD LANGUAGE / 02–04 SCREENS）
+   —— 金色**只**用于获胜连线（.go-win-ring），别处一律不用。
+   ============================================================ */
+
+/* ── SVG 内：坐标尺、幽灵、金环、提示点 ── */
+.go-board { width: 100%; aspect-ratio: 1; display: block; }
+.go-board svg { width: 100%; height: 100%; display: block; }
+.go-board-host { position: relative; }
+
+/* 坐标尺：退到 58% 尺寸、mute-2，<620px 再缩一档 */
+.go-coord {
+  font-family: var(--ui);
+  font-size: 10px;
+  letter-spacing: .06em;
+  fill: var(--mute2);
+  user-select: none;
+}
+.go-coord-x { font-size: 9.5px; }
+@media (max-width: 620px) {
+  .go-coord { font-size: 8px; letter-spacing: 0; }
+  .go-coord-x { font-size: 7.5px; }
+}
+
+/* 幽灵落子：虚线 mute 圆；触屏确认态更亮 */
+.go-ghost { opacity: .85; }
+.go-cell.is-ghost rect { fill: rgba(138, 153, 163, .08); }
+
+/* 上一手：ember 实心点 */
+.go-stone.is-last { filter: drop-shadow(0 0 3px rgba(255, 106, 60, .5)); }
+
+/* 获胜连线：全站唯一 gold 使用点 */
+.go-win-ring { filter: drop-shadow(0 0 6px rgba(242, 193, 78, .45)); }
+
+/* 提示点 */
+.go-hintdot { opacity: .9; }
+
+.go-hint-legend {
+  position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%);
+  background: rgba(20, 26, 32, .94); border: 1px solid var(--line);
+  color: var(--paper); font-size: .72rem; letter-spacing: .06em;
+  padding: 4px 10px; border-radius: 99px; pointer-events: none;
+}
+
+/* ── LOBBY：三张模式卡 ── */
+.go-modes {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  margin: 14px 0 6px;
+}
+.go-mode {
+  display: flex; flex-direction: column; gap: 8px; text-align: left;
+  background: var(--ink3); border: 1px solid var(--line); border-radius: 12px;
+  padding: 14px 16px; transition: border-color .14s, background .14s;
+}
+.go-mode:hover { border-color: var(--ember-dim); }
+.go-mode.is-cur { border-color: var(--ember); background: var(--ember-soft); }
+.go-mode-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.go-mode-name { font-family: var(--disp); font-weight: 700; font-size: 1rem; }
+.go-mode-desc { font-size: .82rem; color: var(--mute); line-height: 1.42; }
+.go-mode-meta {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  font-size: .72rem; color: var(--mute2); letter-spacing: .04em;
+  font-variant-numeric: tabular-nums;
+}
+.go-mode-wait { color: var(--teal); }
+.go-pill {
+  font-size: .64rem; letter-spacing: .12em; padding: 3px 8px;
+  border-radius: 99px; border: 1px solid var(--line); color: var(--mute2);
+  white-space: nowrap;
+}
+.go-pill.is-live { color: var(--teal); border-color: rgba(47, 196, 201, .35); background: var(--teal-soft); }
+
+/* ── 引擎档位 ── */
+.go-level-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.go-level {
+  display: flex; flex-direction: column; gap: 3px; text-align: left;
+  background: var(--ink2); border: 1px solid var(--line); border-radius: 10px;
+  padding: 10px 13px; transition: .13s;
+}
+.go-level:hover { border-color: var(--mute2); }
+.go-level.is-cur { border-color: var(--gold); background: var(--gold-soft); }
+.go-level-name { font-family: var(--disp); font-weight: 700; font-size: .92rem; }
+.go-level-desc { font-size: .7rem; color: var(--mute2); line-height: 1.35; }
+
+/* ── 匹配队列 ── */
+.go-queue { margin: 14px 0 6px; }
+.go-queue-inner {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--ink2); border: 1px solid var(--teal); border-radius: 12px;
+  padding: 14px 18px;
+}
+.go-queue-spin {
+  width: 22px; height: 22px; flex: 0 0 22px; border-radius: 50%;
+  border: 2px solid rgba(47, 196, 201, .25); border-top-color: var(--teal);
+  animation: goSpin .8s linear infinite;
+}
+@keyframes goSpin { to { transform: rotate(360deg); } }
+.go-queue-text { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.go-queue-text b { font-family: var(--disp); font-size: .95rem; }
+.go-queue-text span { font-size: .74rem; color: var(--mute2); }
+
+.go-start-row { display: flex; align-items: center; gap: 14px; margin: 18px 0 8px; }
+.go-start-note { font-size: .78rem; color: var(--mute2); }
+
+.go-btn {
+  font-size: .8rem; font-weight: 700; letter-spacing: .06em;
+  border: 1px solid var(--line); border-radius: 8px;
+  background: var(--ink3); color: var(--paper);
+  padding: 9px 16px; transition: .13s; white-space: nowrap;
+}
+.go-btn:hover { border-color: var(--mute2); }
+.go-btn.is-primary { border-color: var(--ember); color: var(--ember); }
+.go-btn.is-primary:hover { background: var(--ember-soft); }
+.go-btn.is-danger { color: var(--ember-dim); }
+.go-btn.is-danger:hover { border-color: var(--ember-dim); }
+
+/* ── 双棋钟 ── */
+.go-clocks { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0 4px; }
+.go-clock {
+  display: flex; align-items: baseline; justify-content: space-between;
+  background: var(--ink2); border: 1px solid var(--line); border-radius: 10px;
+  padding: 12px 16px; transition: .18s;
+}
+.go-clock.is-active { border-color: var(--ember); background: var(--ember-soft); }
+.go-clock-who { font-size: .68rem; letter-spacing: .13em; color: var(--mute2); }
+.go-clock.is-active .go-clock-who { color: var(--ember); }
+.go-clock-time {
+  font-family: var(--disp); font-weight: 700; font-size: 1.3rem;
+  font-variant-numeric: tabular-nums; letter-spacing: .01em;
+}
+.go-clock.is-active .go-clock-time { color: var(--paper); }
+.go-clock:not(.is-active) .go-clock-time { color: var(--mute2); }
+
+/* ── 侧栏状态卡 ── */
+.go-status-card {
+  background: var(--ink2); border: 1px solid var(--line); border-radius: 10px;
+  padding: 13px 16px;
+}
+.go-status-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin: 6px 0; font-size: .84rem;
+}
+.go-status-row:first-child { margin-top: 0; }
+.go-status-row:last-child { margin-bottom: 0; }
+.go-status-row span { color: var(--mute2); font-size: .72rem; letter-spacing: .07em; }
+.go-status-row b { font-weight: 700; font-variant-numeric: tabular-nums; }
+.go-turn-you { color: var(--paper); }
+.go-turn-opp { color: var(--ember); }
+
+.go-controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.go-controls .go-btn { padding: 9px 4px; text-align: center; }
+
+/* ── 提示板 ── */
+.go-hintcard {
+  background: var(--ink2); border: 1px solid var(--line); border-radius: 10px;
+  padding: 12px 14px;
+}
+.go-hintcard-h {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: .72rem; letter-spacing: .1em; color: var(--mute2); margin-bottom: 8px;
+}
+.go-hintcard-h button { font-size: 1.1rem; line-height: 1; color: var(--mute2); }
+.go-hint-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.go-hint-row { display: flex; align-items: center; gap: 8px; font-size: .78rem; }
+.go-hint-rank { width: 12px; color: var(--mute2); font-size: .7rem; }
+.go-hint-sq {
+  font-family: var(--disp); font-weight: 700; min-width: 30px;
+  font-variant-numeric: tabular-nums;
+}
+.go-hint-bar { flex: 1; height: 4px; background: var(--line); border-radius: 99px; overflow: hidden; }
+.go-hint-bar i { display: block; height: 100%; background: var(--ember); }
+.go-hint-w {
+  min-width: 52px; text-align: right; color: var(--mute2);
+  font-variant-numeric: tabular-nums; font-size: .72rem;
+}
+.go-hint-note { font-size: .66rem; color: var(--mute2); margin-top: 8px; letter-spacing: .03em; }
+
+/* ── 记谱器 ── */
+.go-recorder {
+  background: var(--ink2); border: 1px solid var(--line); border-radius: 10px;
+  padding: 12px 14px;
+}
+.go-recorder-h {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: .72rem; letter-spacing: .1em; color: var(--mute2); margin-bottom: 8px;
+}
+.go-recorder-list {
+  list-style: none; max-height: 190px; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 1px;
+}
+.go-rec-row {
+  display: grid; grid-template-columns: 26px 1fr 1fr; gap: 6px;
+  font-size: .78rem; padding: 3px 4px; border-radius: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.go-rec-row.is-cur { background: var(--ember-soft); }
+.go-rec-n { color: var(--mute2); font-size: .7rem; }
+.go-rec-b { font-weight: 700; }
+.go-rec-w { color: var(--mute); }
+
+/* ── 房间聊天 ── */
+.go-chat {
+  background: var(--ink2); border: 1px solid var(--line); border-radius: 10px;
+  padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;
+}
+.go-chat-h {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: .72rem; letter-spacing: .1em; color: var(--mute2);
+}
+.go-chat-room { color: var(--teal); font-size: .68rem; }
+.go-chat-log {
+  list-style: none; max-height: 130px; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 4px; font-size: .78rem;
+}
+.go-chat-row { display: flex; gap: 6px; }
+.go-chat-row b { color: var(--teal); font-weight: 700; white-space: nowrap; }
+.go-chat-row span { color: var(--mute); word-break: break-word; }
+.go-chat-row span.is-emoji { font-size: 1.2rem; }
+.go-chat-form { display: flex; gap: 6px; }
+.go-chat-form input {
+  flex: 1; min-width: 0; background: var(--ink3); border: 1px solid var(--line);
+  border-radius: 7px; padding: 7px 10px; color: var(--paper);
+  font-family: var(--ui); font-size: .78rem;
+}
+.go-chat-form input:focus { outline: none; border-color: var(--teal); }
+.go-chat-form .go-btn { padding: 7px 12px; }
+
+/* ── 结果条 ── */
+.go-endbar {
+  display: flex; align-items: center; justify-content: space-between; gap: 18px;
+  flex-wrap: wrap;
+  background: var(--ink2); border: 1px solid var(--line); border-radius: 12px;
+  padding: 18px 22px; margin: 14px 0 8px;
+}
+.go-end-main { display: flex; flex-direction: column; gap: 4px; }
+.go-end-verdict {
+  font-family: var(--disp); font-weight: 750; font-size: 1.5rem; letter-spacing: -.01em;
+}
+.go-end-verdict.is-win { color: var(--gold); }
+.go-end-verdict.is-loss { color: var(--mute); }
+.go-end-line {
+  font-family: var(--disp); font-size: .9rem; color: var(--mute2);
+  letter-spacing: .08em; font-variant-numeric: tabular-nums;
+}
+.go-end-acts { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* 英雄区副标题 */
+.bd-hero-sub {
+  display: block; font-size: clamp(.95rem, 2vw, 1.35rem);
+  color: var(--mute); font-weight: 400; letter-spacing: 0;
+  margin-top: 6px;
+}
+.bd-hero .bd-dot { color: var(--ember); }
+
+@media (max-width: 900px) {
+  .go-modes { grid-template-columns: 1fr; }
+  .go-level-row { grid-template-columns: 1fr; }
+  .go-clocks { grid-template-columns: 1fr; }
+  .go-endbar { flex-direction: column; align-items: flex-start; }
+}
+@media (max-width: 620px) {
+  .go-controls { grid-template-columns: 1fr 1fr; }
+  .go-controls .go-btn:last-child { grid-column: span 2; }
+}
 
 /* ============== toast ============== */
 .bd-toast {

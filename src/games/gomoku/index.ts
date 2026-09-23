@@ -1,185 +1,979 @@
 /**
- * BoardDuel · Gomoku (15×15) · 完整可玩
- * 玩家执黑（你），AI 执白
- * - 黑色 / 白色棋子放置在交叉点上
- * - 5 子连珠即胜
+ * BoardDuel · Gomoku（五子棋）15×15 · 完整可玩
+ *
+ * 对齐设计稿（五子棋.html）：
+ *   01 BOARD LANGUAGE — 坐标尺 A–O / 15→1（退到 58% 尺寸）、幽灵落子、
+ *      金环标胜、记谱器、提示板（原始权重）、双棋钟、Undo/Hint/Resign、
+ *      结果条（含获胜连线命名）、触屏两步落子。
+ *   02/03/04 — SCREEN 1 LOBBY / SCREEN 2 MATCH / SCREEN 3 END 三段式。
+ *   后端三件套 — 排位匹配（/api/match/*）、房间聊天、观战（/ws 协议）。
+ *
+ * 设计原则：
+ *   · 棋子承载全部信息；金色**只**用于获胜连线，别处一律不用。
+ *   · 每一处坐标与权重都来自真实引擎，不做装饰性假数据。
+ *   · 触屏两步落子（先幽灵后确认），桌面 hover 幽灵 + 单击。
  */
 import {
   setupNav,
   startTimer, stopTimer, createTimer, fmtClock,
-  toast, type Mode} from '../game-core';
+  toast,
+} from '../game-core';
 import {
-  emptyBoard, cloneBoard, SIZE, SIZE2, bestMove, hasFive,
+  emptyBoard, cloneBoard, SIZE, SIZE2, bestMove, hasFive, notation, xy,
+  candidateMoves,
   type Board as GBoard, type Player as GPlayer, type Difficulty as GDifficulty,
 } from './engine';
 
-const SLOT = 600;        // SVG viewBox
-const PAD = 24;
+const SLOT = 600;                 // SVG viewBox 边长
+const PAD = 40;                   // 留出坐标尺空间
 const CELL = (SLOT - 2 * PAD) / SIZE;
+const STONE_R = CELL * 0.42;
+const COLS = 'ABCDEFGHIJKLMNO';
 
-const boardEl = document.getElementById('bd-board') as HTMLDivElement;
-const turnEl  = document.getElementById('bd-turn-v') as HTMLSpanElement;
-const timeEl  = document.getElementById('bd-time-v') as HTMLSpanElement;
-const statusEl = document.getElementById('bd-status-v') as HTMLSpanElement;
-const modeEl  = document.getElementById('bd-mode-v') as HTMLSpanElement;
-const newBtn  = document.getElementById('bd-new') as HTMLButtonElement;
-const undoBtn = document.getElementById('bd-undo') as HTMLButtonElement;
+/* ─── DOM ─── */
+const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+
+const lobbyEl = $('go-lobby');
+const matchEl = $('go-match');
+const endEl = $('go-end');
+
+const boardEl = $<HTMLDivElement>('bd-board');
+const legendEl = $<HTMLDivElement>('go-legend');
+
+const levelsEl = $<HTMLDivElement>('go-levels');
+const queueEl = $<HTMLDivElement>('go-queue');
+const queueTitle = $<HTMLElement>('go-queue-title');
+const queueSub = $<HTMLElement>('go-queue-sub');
+const startRow = $<HTMLDivElement>('go-start-row');
+const startBtn = $<HTMLButtonElement>('go-start');
+const startNote = $<HTMLElement>('go-start-note');
+const rankLabel = $<HTMLElement>('go-rank-label');
+const rankWait = $<HTMLElement>('go-rank-wait');
+
+const turnEl = $<HTMLElement>('go-turn');
+const moveNoEl = $<HTMLElement>('go-moveno');
+const lastEl = $<HTMLElement>('go-last');
+const modeVEl = $<HTMLElement>('go-mode-v');
+
+const clockMeWho = $<HTMLElement>('go-clock-me-who');
+const clockMeTime = $<HTMLElement>('go-clock-me-time');
+const clockOppWho = $<HTMLElement>('go-clock-opp-who');
+const clockOppTime = $<HTMLElement>('go-clock-opp-time');
+const clockMeCard = $<HTMLElement>('go-clock-me');
+const clockOppCard = $<HTMLElement>('go-clock-opp');
+
+const undoBtn = $<HTMLButtonElement>('go-undo');
+const hintBtn = $<HTMLButtonElement>('go-hint');
+const resignBtn = $<HTMLButtonElement>('go-resign');
+const backLobbyBtn = $<HTMLButtonElement>('go-back-lobby');
+
+const hintCard = $<HTMLDivElement>('go-hintcard');
+const hintList = $<HTMLOListElement>('go-hint-list');
+const hintClose = $<HTMLButtonElement>('go-hint-close');
+
+const recList = $<HTMLOListElement>('go-recorder-list');
+const recCount = $<HTMLElement>('go-rec-count');
+
+const endVerdict = $<HTMLElement>('go-end-verdict');
+const endLine = $<HTMLElement>('go-end-line');
+const rematchBtn = $<HTMLButtonElement>('go-rematch');
+const reviewBtn = $<HTMLButtonElement>('go-review');
+const endLobbyBtn = $<HTMLButtonElement>('go-end-lobby');
+
+const chatEl = $<HTMLDivElement>('go-chat');
+const chatLog = $<HTMLUListElement>('go-chat-log');
+const chatForm = $<HTMLFormElement>('go-chat-form');
+const chatInput = $<HTMLInputElement>('go-chat-input');
+const chatRoom = $<HTMLElement>('go-chat-room');
 
 setupNav('gomoku');
 
-const state = {
-  mode: 'ai' as Mode,
-  level: 'medium' as GDifficulty,
-  board: emptyBoard() as GBoard,
-  player: 1 as GPlayer,           // 1=黑(玩家), 2=白(AI)
-  lastMove: -1,
-  over: false,
-  history: [] as { board: GBoard; player: GPlayer; lastMove: number }[],
-  timer: createTimer(),
+/* ══════════════════════════════════════════════════════════════
+   状态
+   ══════════════════════════════════════════════════════════════ */
+type UIState = {
+  screen: 'lobby' | 'match' | 'end';
+  mode: 'ai' | 'pass' | 'ranked';
+  level: GDifficulty;
+  board: GBoard;
+  turn: GPlayer;                 // 当前该谁走
+  humanSide: GPlayer;            // 本地玩家执色（pass 模式随走子方变）
+  lastMove: number;
+  winLine: number[] | null;
+  over: boolean;
+  /** 每步快照：用于 Undo */
+  history: { board: GBoard; turn: GPlayer; lastMove: number; moves: number[] }[];
+  /** 完整落子序列（记谱器数据源） */
+  moves: number[];
+  timer: ReturnType<typeof createTimer>;
+  /** 触屏两步落子：当前预览点 */
+  ghost: number;
+  reviewAt: number | null;       // 复盘回看位置（null = 看最新）
+  ws: WebSocket | null;          // ranked 联机
+  roomCode: string | null;
+  myIdx: number | null;          // ranked: 0/1
+  pollTimer: number | null;
+  matchId: string | null;
+  clock: { w: number; b: number; side: 'w' | 'b' | null; base: number } | null;
 };
 
-function boardToXY(i: number): [number, number] {
-  return [i % SIZE, Math.floor(i / SIZE)];
+const state: UIState = {
+  screen: 'lobby',
+  mode: 'ai',
+  level: 'medium',
+  board: emptyBoard() as GBoard,
+  turn: 1,
+  humanSide: 1,
+  lastMove: -1,
+  winLine: null,
+  over: false,
+  history: [],
+  moves: [],
+  timer: createTimer(),
+  ghost: -1,
+  reviewAt: null,
+  ws: null,
+  roomCode: null,
+  myIdx: null,
+  pollTimer: null,
+  matchId: null,
+  clock: null,
+};
+
+const API = (() => {
+  const w = window as unknown as { API_BASE?: string };
+  if (w.API_BASE) return w.API_BASE;
+  // 同源：boardduel.com 的 /api/* 由 worker 处理
+  return '';
+})();
+
+/** 我的 UUID（沿用站点通用 pid cookie / Account 模块） */
+function myUuid(): string {
+  const m = document.cookie.match(/(?:^|;\s*)pid=([^;\s]+)/);
+  return m ? decodeURIComponent(m[1]) : '';
+}
+function myName(): string {
+  return 'Player';
 }
 
+/* ══════════════════════════════════════════════════════════════
+   坐标与记谱
+   ══════════════════════════════════════════════════════════════ */
+function cellXY(i: number): [number, number] {
+  const [gx, gy] = xy(i);
+  return [PAD + gx * CELL, PAD + gy * CELL];
+}
+
+/* ══════════════════════════════════════════════════════════════
+   渲染
+   ══════════════════════════════════════════════════════════════ */
 function stoneColor(p: GPlayer): string {
   return p === 1 ? '#0E1419' : '#F4F6F2';
 }
+function stoneStroke(p: GPlayer): string {
+  return p === 1 ? '#5C6B74' : '#8A99A3';
+}
 
 function render(): void {
+  // ── 网格 ──
   let lines = '';
   for (let r = 0; r < SIZE; r++) {
     const y = PAD + r * CELL;
-    lines += `<line x1="${PAD}" y1="${y}" x2="${SLOT - PAD}" y2="${y}" stroke="#5C6B74" stroke-width="${r % 5 === 0 ? 1.2 : 0.5}"/>`;
+    const w = r === 0 || r === SIZE - 1 ? 1.4 : (r % 5 === 0 ? 1.2 : 0.5);
+    lines += `<line x1="${PAD}" y1="${y}" x2="${SLOT - PAD}" y2="${y}" stroke="#5C6B74" stroke-width="${w}" stroke-opacity="${r % 5 === 0 ? 1 : 0.55}"/>`;
   }
   for (let c = 0; c < SIZE; c++) {
     const x = PAD + c * CELL;
-    lines += `<line x1="${x}" y1="${PAD}" x2="${x}" y2="${SLOT - PAD}" stroke="#5C6B74" stroke-width="${c % 5 === 0 ? 1.2 : 0.5}"/>`;
+    const w = c === 0 || c === SIZE - 1 ? 1.4 : (c % 5 === 0 ? 1.2 : 0.5);
+    lines += `<line x1="${x}" y1="${PAD}" x2="${x}" y2="${SLOT - PAD}" stroke="#5C6B74" stroke-width="${w}" stroke-opacity="${c % 5 === 0 ? 1 : 0.55}"/>`;
   }
 
-  // 星位（4 个角 + 天元 H8）
-  const stars = [[3,3],[3,11],[11,3],[11,11],[7,7]];
+  // ── 星位（15×15 天元 + 四角星）──
+  const stars = [[3, 3], [3, 11], [11, 3], [11, 11], [7, 7]];
   let starMarks = '';
-  for (const [x, y] of stars) {
-    const px = PAD + x * CELL, py = PAD + y * CELL;
-    starMarks += `<circle cx="${px}" cy="${py}" r="2.2" fill="#5C6B74"/>`;
+  for (const [sx, sy] of stars) {
+    starMarks += `<circle cx="${PAD + sx * CELL}" cy="${PAD + sy * CELL}" r="2.6" fill="#5C6B74"/>`;
   }
 
-  // 棋子 + 命中区
+  // ── 坐标尺 A–O / 15→1（设计稿：退到 58% 尺寸、mute-2）──
+  let coords = '';
+  for (let c = 0; c < SIZE; c++) {
+    const x = PAD + c * CELL;
+    coords += `<text class="go-coord go-coord-x" x="${x}" y="${PAD - 14}" text-anchor="middle">${COLS[c]}</text>`;
+    coords += `<text class="go-coord go-coord-x" x="${x}" y="${SLOT - PAD + 22}" text-anchor="middle">${COLS[c]}</text>`;
+  }
+  for (let r = 0; r < SIZE; r++) {
+    const y = PAD + r * CELL;
+    const label = String(SIZE - r); // 自下而上 1..15
+    coords += `<text class="go-coord" x="${PAD - 16}" y="${y + 4}" text-anchor="end">${label}</text>`;
+    coords += `<text class="go-coord" x="${SLOT - PAD + 16}" y="${y + 4}" text-anchor="start">${label}</text>`;
+  }
+
+  // ── 棋子 + 命中区 ──
+  const board = state.board;
+  const winSet = new Set(state.winLine || []);
   let stones = '';
+  let hits = '';
+
   for (let i = 0; i < SIZE2; i++) {
-    const [gx, gy] = boardToXY(i);
-    const px = PAD + gx * CELL;
-    const py = PAD + gy * CELL;
-    const p = state.board[i];
+    const [px, py] = cellXY(i);
+    const p = board[i];
     if (p !== 0) {
-      const r = CELL * 0.42;
-      stones += `<circle class="go-stone${state.lastMove === i ? ' is-last' : ''}" cx="${px}" cy="${py}" r="${r}" fill="${stoneColor(p as GPlayer)}" stroke="#5C6B74" stroke-width="0.6"/>`;
+      const isWin = winSet.has(i);
+      const isLast = state.lastMove === i;
+      stones += `<circle class="go-stone${isLast ? ' is-last' : ''}" cx="${px}" cy="${py}" r="${STONE_R}" fill="${stoneColor(p as GPlayer)}" stroke="${stoneStroke(p as GPlayer)}" stroke-width="0.6"/>`;
+      if (isLast && !isWin) {
+        stones += `<circle cx="${px}" cy="${py}" r="${STONE_R * 0.28}" fill="#FF6A3C"/>`;
+      }
+      if (isWin) {
+        // 金色环 —— 全站唯一使用 gold 之处
+        stones += `<circle class="go-win-ring" cx="${px}" cy="${py}" r="${STONE_R + 3}" fill="none" stroke="#F2C14E" stroke-width="2.4"/>`;
+      }
     }
-    // 命中区
-    const hoverable = !state.over && state.board[i] === 0 && (state.mode === 'pass' || state.player === 1);
-    if (hoverable) {
-      stones += `<g class="go-cell" data-i="${i}" style="cursor:pointer">
-        <rect class="hit" x="${px - CELL / 2}" y="${py - CELL / 2}" width="${CELL}" height="${CELL}" fill="transparent"/>
+  }
+
+  // 命中区 + 幽灵预览（可落子处）
+  const canPlay = !state.over && state.reviewAt === null && isMyTurn();
+  if (canPlay) {
+    for (let i = 0; i < SIZE2; i++) {
+      if (board[i] !== 0) continue;
+      const [px, py] = cellXY(i);
+      const isGhost = state.ghost === i;
+      hits += `<g class="go-cell${isGhost ? ' is-ghost' : ''}" data-i="${i}" style="cursor:pointer">
+        <rect x="${px - CELL / 2}" y="${py - CELL / 2}" width="${CELL}" height="${CELL}" fill="transparent"/>
       </g>`;
     }
+    if (state.ghost >= 0 && board[state.ghost] === 0) {
+      const [gx2, gy2] = cellXY(state.ghost);
+      stones += `<circle class="go-ghost" cx="${gx2}" cy="${gy2}" r="${STONE_R}" fill="none" stroke="#8A99A3" stroke-width="1.6" stroke-dasharray="4 4"/>`;
+    }
   }
 
-  boardEl.innerHTML = `<svg viewBox="0 0 ${SLOT} ${SLOT}" aria-label="Gomoku board">
-    <rect x="0" y="0" width="${SLOT}" height="${SLOT}" fill="#151D24" rx="6"/>
-    ${lines}${starMarks}${stones}
+  boardEl.innerHTML = `<svg viewBox="0 0 ${SLOT} ${SLOT}" role="img" aria-label="Gomoku board, 15 by 15">
+    <rect x="0" y="0" width="${SLOT}" height="${SLOT}" fill="#151D24" rx="8"/>
+    ${lines}${starMarks}${coords}${stones}${hits}
   </svg>`;
-  boardEl.querySelectorAll<SVGGElement>('.go-cell').forEach((g) => {
-    g.addEventListener('click', () => onCell(Number(g.dataset.i)));
-  });
 
-  turnEl.textContent = state.over
-    ? '— game over —'
+  // 命中区事件用**委托**绑定到 svg 上，不逐节点挂 listener。
+  // （旧写法在每个 .go-cell 上挂 mouseenter → render() → innerHTML 重建
+  //    → 节点 detach → 鼠标事件再次触发，形成重建风暴，Playwright 点击
+  //    会因"element was detached from the DOM"超时。）
+  const svg = boardEl.querySelector('svg');
+  if (svg && canPlay) {
+    svg.addEventListener('click', (ev) => {
+      const g = (ev.target as Element).closest?.('.go-cell') as SVGGElement | null;
+      if (g) onCell(Number(g.dataset.i));
+    });
+    if (!isTouch()) {
+      svg.addEventListener('mousemove', (ev) => {
+        const g = (ev.target as Element).closest?.('.go-cell') as SVGGElement | null;
+        const i = g ? Number(g.dataset.i) : -1;
+        if (i !== state.ghost) { state.ghost = i; render(); }
+      });
+      svg.addEventListener('mouseleave', () => {
+        if (state.ghost !== -1) { state.ghost = -1; render(); }
+      });
+    }
+  }
+
+  renderHud();
+  renderRecorder();
+}
+
+function isTouch(): boolean {
+  return window.matchMedia('(hover: none)').matches;
+}
+
+function isMyTurn(): boolean {
+  if (state.over) return false;
+  if (state.mode === 'ai') return state.turn === 1;
+  if (state.mode === 'pass') return true;
+  // ranked：由服务端转发的走子方决定
+  if (state.myIdx === null) return false;
+  const mySide: GPlayer = state.myIdx === 0 ? 1 : 2;
+  return state.turn === mySide;
+}
+
+function renderHud(): void {
+  const label = state.mode === 'ai'
+    ? (state.turn === 1 ? 'You · Black' : `Engine · White`)
     : state.mode === 'pass'
-      ? (state.player === 1 ? 'Black (P1)' : 'White (P2)')
-      : (state.player === 1 ? 'You (Black)' : 'AI (White)');
-  turnEl.className = 'bd-hud-v ' + (state.over ? '' : state.mode === 'ai' && state.player === 2 ? 'bd-turn-ai' : 'bd-turn-you');
-  statusEl.textContent = state.over ? 'game over' : state.mode === 'pass' ? `${state.player === 1 ? 'Black' : 'White'} turn` : (state.player === 1 ? 'your turn' : 'AI thinking');
-  modeEl.textContent = state.mode === 'ai' ? 'vs AI · ' + state.level : 'Pass & Play';
+      ? (state.turn === 1 ? 'Black · P1' : 'White · P2')
+      : (state.turn === 1 ? 'Black' : 'White');
+
+  turnEl.textContent = state.over ? '— game over —' : label;
+  turnEl.className = state.over ? '' : (isMyTurn() ? 'go-turn-you' : 'go-turn-opp');
+  moveNoEl.textContent = String(state.moves.length + 1);
+  lastEl.textContent = state.lastMove >= 0 ? notation(state.lastMove) : '—';
+
+  const lvName = state.level === 'easy' ? 'Counter' : state.level === 'medium' ? 'Attacker' : 'Punisher';
+  modeVEl.textContent = state.mode === 'ai'
+    ? 'vs engine · ' + lvName
+    : state.mode === 'pass' ? 'Pass & Play' : 'Ranked online';
+
+  // 棋钟
+  if (state.mode === 'ranked') {
+    clockMeWho.textContent = 'YOU · ' + (state.myIdx === 0 ? 'BLACK' : 'WHITE');
+    clockOppWho.textContent = 'OPPONENT · ' + (state.myIdx === 0 ? 'WHITE' : 'BLACK');
+  } else if (state.mode === 'ai') {
+    clockMeWho.textContent = 'YOU · BLACK';
+    clockOppWho.textContent = 'ENGINE · WHITE';
+  } else {
+    clockMeWho.textContent = 'BLACK · P1';
+    clockOppWho.textContent = 'WHITE · P2';
+  }
+  const myTurn = isMyTurn();
+  clockMeCard.classList.toggle('is-active', !state.over && myTurn);
+  clockOppCard.classList.toggle('is-active', !state.over && !myTurn);
+}
+
+function renderRecorder(): void {
+  const mv = state.reviewAt === null ? state.moves : state.moves.slice(0, state.reviewAt + 1);
+  let html = '';
+  for (let k = 0; k < mv.length; k += 2) {
+    const n = k / 2 + 1;
+    const b = notation(mv[k]);
+    const w = k + 1 < mv.length ? notation(mv[k + 1]) : '';
+    const isCur = state.reviewAt !== null && (state.reviewAt === k || state.reviewAt === k + 1);
+    html += `<li class="go-rec-row${isCur ? ' is-cur' : ''}">
+      <span class="go-rec-n">${n}</span>
+      <span class="go-rec-b">${b}</span>
+      <span class="go-rec-w">${w}</span>
+    </li>`;
+  }
+  recList.innerHTML = html;
+  recCount.textContent = mv.length + (mv.length === 1 ? ' ply' : ' plies');
+  const lastRow = recList.lastElementChild;
+  if (lastRow && state.reviewAt === null) lastRow.scrollIntoView({ block: 'nearest' });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   落子
+   ══════════════════════════════════════════════════════════════ */
+function pushHistory(): void {
+  state.history.push({
+    board: cloneBoard(state.board),
+    turn: state.turn,
+    lastMove: state.lastMove,
+    moves: state.moves.slice(),
+  });
 }
 
 function onCell(i: number): void {
-  if (state.over || state.board[i] !== 0) return;
-  if (state.mode === 'ai' && state.player !== 1) return;
-  state.history.push({ board: cloneBoard(state.board), player: state.player, lastMove: state.lastMove });
-  state.board[i] = state.player;
-  state.lastMove = i;
+  if (state.over || state.board[i] !== 0 || state.reviewAt !== null) return;
+  if (!isMyTurn()) return;
+
+  // 触屏两步落子：第一次只在本地显幽灵，第二次才真落
+  if (isTouch() && state.ghost !== i) {
+    state.ghost = i;
+    legendEl.hidden = false;
+    render();
+    return;
+  }
+  state.ghost = -1;
+  legendEl.hidden = true;
+
+  pushHistory();
+  placeLocal(i, state.turn);
+
+  if (state.mode === 'ranked') {
+    // 联机：只上报，等对手走子由 WS 推送
+    sendWs({ type: 'move', i });
+  }
   afterMove();
+}
+
+/** 本地落子（不切 turn） */
+function placeLocal(i: number, p: GPlayer): void {
+  state.board[i] = p;
+  state.lastMove = i;
+  state.moves.push(i);
 }
 
 function afterMove(): void {
   const r = hasFive(state.board);
   if (r.winner !== 0) {
-    state.over = true;
-    stopTimer(state.timer);
-    render();
-    const winnerLabel = r.winner === 1 ? 'Black wins' : 'White wins';
-    toast(winnerLabel);
+    finish(r.winner as GPlayer, r.line);
     return;
   }
-  state.player = state.player === 1 ? 2 : 1;
+  if (state.moves.length >= SIZE2) {
+    finishDraw();
+    return;
+  }
+  if (state.turn === 1) state.turn = 2; else state.turn = 1;
+
+  if (state.mode === 'ranked') {
+    startClockTick();
+    render();
+    return;
+  }
+
   render();
-  if (state.mode === 'ai' && state.player === 2) {
-    setTimeout(() => {
-      if (state.over) return;
-      const m = bestMove(state.board, 2, state.level);
-      if (m < 0) return;
-      state.history.push({ board: cloneBoard(state.board), player: state.player, lastMove: state.lastMove });
-      state.board[m] = 2;
-      state.lastMove = m;
-      afterMove();
-    }, 200);
+
+  if (state.mode === 'ai' && state.turn === 2) {
+    startClockTick();
+    aiMove();
+  } else {
+    startClockTick();
   }
 }
 
+function aiMove(): void {
+  const t = setTimeout(() => {
+    if (state.over || state.screen !== 'match') return;
+    const m = bestMove(state.board, 2, state.level);
+    if (m < 0) return;
+    pushHistory();
+    placeLocal(m, 2);
+    afterMove();
+  }, 220);
+  void t;
+}
+
+function finish(winner: GPlayer, line: number[] | null): void {
+  state.over = true;
+  state.winLine = line;
+  stopTimer(state.timer);
+  state.board = cloneBoard(state.board);
+  render();
+
+  // 结果条：获胜连线命名（设计稿要求）
+  const lineText = line ? line.map((i) => notation(i)).join(' – ') : '';
+  let verdict: string;
+  if (state.mode === 'ai') verdict = winner === 1 ? 'You win' : 'Engine wins';
+  else if (state.mode === 'pass') verdict = winner === 1 ? 'Black wins' : 'White wins';
+  else {
+    const mySide: GPlayer = state.myIdx === 0 ? 1 : 2;
+    verdict = winner === mySide ? 'You win' : 'You lose';
+  }
+
+  endVerdict.textContent = verdict;
+  endVerdict.className = 'go-end-verdict ' + (verdict.includes('win') && !verdict.includes('lose') ? 'is-win' : 'is-loss');
+  endLine.textContent = lineText || '—';
+  showScreen('end');
+  toast(verdict + (lineText ? ' · ' + lineText : ''));
+}
+
+function finishDraw(): void {
+  state.over = true;
+  stopTimer(state.timer);
+  endVerdict.textContent = 'Draw';
+  endVerdict.className = 'go-end-verdict';
+  endLine.textContent = 'board full';
+  showScreen('end');
+  toast('Draw — board full');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   棋钟
+   ══════════════════════════════════════════════════════════════ */
+const CLOCK_BASE = 600; // 10:00
+const clockTicker = { id: 0 as number, last: 0 };
+
+function startClockTick(): void {
+  if (clockTicker.id) { clockTicker.last = performance.now(); return; }
+  clockTicker.last = performance.now();
+  clockTicker.id = window.setInterval(() => {
+    const now = performance.now();
+    const dt = (now - clockTicker.last) / 1000;
+    clockTicker.last = now;
+    // 暂停态（复盘/终局/未开局）只推进 last，不扣时间
+    if (state.over || state.reviewAt !== null || state.screen !== 'match') return;
+    if (!state.clock || dt <= 0) return;
+    if (isMyTurn()) state.clock.w = Math.max(0, state.clock.w - dt);
+    else state.clock.b = Math.max(0, state.clock.b - dt);
+    paintClock();
+  }, 250);
+}
+
+function paintClock(): void {
+  const c = state.clock;
+  if (!c) { clockMeTime.textContent = '—'; clockOppTime.textContent = '—'; return; }
+  const mySide: GPlayer = state.mode === 'ai' ? 1 : state.mode === 'pass' ? 1 : (state.myIdx === 0 ? 1 : 2);
+  const mine = mySide === 1 ? c.w : c.b;
+  const theirs = mySide === 1 ? c.b : c.w;
+  clockMeTime.textContent = fmtClock(mine * 1000);
+  clockOppTime.textContent = fmtClock(theirs * 1000);
+}
+
+function resetClock(): void {
+  state.clock = { w: CLOCK_BASE, b: CLOCK_BASE, side: 'w', base: CLOCK_BASE };
+  paintClock();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   提示板（真实引擎权重）
+   ══════════════════════════════════════════════════════════════ */
+function showHints(): void {
+  if (state.over || state.reviewAt !== null) return;
+  const me: GPlayer = state.turn;
+  const opp: GPlayer = me === 1 ? 2 : 1;
+
+  const cands = candidateMoves(state.board).slice(0, 60);
+  const scored = cands.map((m) => {
+    state.board[m] = me;
+    const atk = rawPointScore(m, me);
+    state.board[m] = opp;
+    const def = rawPointScore(m, opp);
+    state.board[m] = 0;
+    return { m, atk, def, v: atk + def * 0.95 };
+  }).sort((a, b) => b.v - a.v);
+
+  const top = scored.slice(0, 3);
+  const best = top[0] ? top[0].v : 1;
+
+  hintList.innerHTML = top.map((t, k) => {
+    const pct = Math.max(8, Math.round((t.v / best) * 100));
+    return `<li class="go-hint-row">
+      <span class="go-hint-rank">${k + 1}</span>
+      <span class="go-hint-sq">${notation(t.m)}</span>
+      <span class="go-hint-bar"><i style="width:${pct}%"></i></span>
+      <span class="go-hint-w">${t.v.toLocaleString('en-US')}</span>
+    </li>`;
+  }).join('');
+
+  hintCard.hidden = false;
+
+  // 棋盘上高亮前 3 名
+  highlightHints(top.map((t) => t.m));
+  toast('Hint · best ' + notation(top[0].m) + ' (' + top[0].v.toLocaleString('en-US') + ')');
+}
+
+/**
+ * 单点形态分（与引擎同口径）：沿四方向统计连子数 + 开放端。
+ * 这里独立实现，避免把引擎内部函数暴露成公共 API。
+ */
+function rawPointScore(i: number, p: GPlayer): number {
+  const b = state.board;
+  const x = i % SIZE, y = Math.floor(i / SIZE);
+  let s = 0;
+  const dirs: [number, number][] = [[1, 0], [0, 1], [1, 1], [1, -1]];
+  for (const [dx, dy] of dirs) {
+    let cnt = 1, open = 0;
+    for (const sgn of [1, -1]) {
+      let cx = x + dx * sgn, cy = y + dy * sgn;
+      while (cx >= 0 && cx < SIZE && cy >= 0 && cy < SIZE && b[cy * SIZE + cx] === p) {
+        cnt++; cx += dx * sgn; cy += dy * sgn;
+      }
+      if (cx >= 0 && cx < SIZE && cy >= 0 && cy < SIZE && b[cy * SIZE + cx] === 0) open++;
+    }
+    if (cnt >= 5) s += 1000000;
+    else if (cnt === 4) s += open >= 2 ? 100000 : (open === 1 ? 15000 : 0);
+    else if (cnt === 3) s += open >= 2 ? 8000 : (open === 1 ? 800 : 0);
+    else if (cnt === 2) s += open >= 2 ? 400 : (open === 1 ? 60 : 0);
+  }
+  return s;
+}
+
+function highlightHints(list: number[]): void {
+  const svg = boardEl.querySelector('svg');
+  if (!svg) return;
+  svg.querySelectorAll('.go-hintdot').forEach((n) => n.remove());
+  for (const i of list) {
+    const [px, py] = cellXY(i);
+    const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    c.setAttribute('class', 'go-hintdot');
+    c.setAttribute('cx', String(px));
+    c.setAttribute('cy', String(py));
+    c.setAttribute('r', '4');
+    c.setAttribute('fill', '#FF6A3C');
+    svg.appendChild(c);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Undo / Resign
+   ══════════════════════════════════════════════════════════════ */
+function undo(): void {
+  if (state.mode === 'ranked') {
+    sendWs({ type: 'takeback_request' });
+    toast('Takeback requested');
+    return;
+  }
+  if (state.over || state.history.length === 0) return;
+  // AI 模式连退两步（回到自己回合）
+  const steps = state.mode === 'ai' ? Math.min(2, state.history.length) : 1;
+  for (let k = 0; k < steps; k++) {
+    const h = state.history.pop();
+    if (!h) break;
+    state.board = h.board;
+    state.turn = h.turn;
+    state.lastMove = h.lastMove;
+    state.moves = h.moves;
+  }
+  state.winLine = null;
+  state.reviewAt = null;
+  state.ghost = -1;
+  render();
+}
+
+function resign(): void {
+  if (state.over) return;
+  if (state.mode === 'ranked') {
+    sendWs({ type: 'resign' });
+    return;
+  }
+  state.over = true;
+  stopTimer(state.timer);
+  const winner = state.mode === 'ai' ? 2 : (state.turn === 1 ? 2 : 1);
+  endVerdict.textContent = 'Resigned';
+  endVerdict.className = 'go-end-verdict is-loss';
+  endLine.textContent = (state.mode === 'ai' ? 'You resigned' : (winner === 1 ? 'Black wins' : 'White wins'));
+  showScreen('end');
+  render();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   屏幕切换
+   ══════════════════════════════════════════════════════════════ */
+function showScreen(s: UIState['screen']): void {
+  state.screen = s;
+  lobbyEl.hidden = s !== 'lobby';
+  matchEl.hidden = s !== 'match';
+  endEl.hidden = s !== 'end';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   新局
+   ══════════════════════════════════════════════════════════════ */
 function newGame(): void {
-  state.board = emptyBoard();
-  state.player = 1;
+  state.board = emptyBoard() as GBoard;
+  state.turn = 1;
+  state.humanSide = 1;
   state.lastMove = -1;
+  state.winLine = null;
   state.over = false;
   state.history = [];
-  startTimer(state.timer, (ms) => { timeEl.textContent = fmtClock(ms); });
+  state.moves = [];
+  state.ghost = -1;
+  state.reviewAt = null;
+  state.myIdx = state.mode === 'ranked' ? state.myIdx : null;
+  hintCard.hidden = true;
+  legendEl.hidden = true;
+  resetClock();
+  clockTicker.last = performance.now();
+  startTimer(state.timer, () => { /* 棋钟走 state.clock，这里不再重复计时 */ });
+  // ⚠️ 必须在这里就启动棋钟：旧实现只在 afterMove() 里启动，
+  //    导致新开局后第一手落子前棋钟是静止的（实测 10:00 不动）。
+  startClockTick();
+  showScreen('match');
   render();
+
+  // AI 模式下黑方永远是本地玩家，白方是引擎；新局由黑先走，故 AI 不会即刻行动。
+  // （保留显式分支以免未来改先手方时漏掉）
+  if (state.mode === 'ai' && (state.turn as number) === 2) aiMove();
 }
 
-function undo(): void {
-  if (state.over || state.history.length === 0) return;
-  const last = state.history.pop()!;
-  state.board = last.board;
-  state.player = last.player;
-  state.lastMove = last.lastMove;
-  if (state.mode === 'ai' && state.history.length >= 1) {
-    const prev = state.history.pop()!;
-    state.board = prev.board;
-    state.player = prev.player;
-    state.lastMove = prev.lastMove;
+/* ══════════════════════════════════════════════════════════════
+   排位匹配（/api/match/*）
+   ══════════════════════════════════════════════════════════════ */
+async function joinQueue(): Promise<void> {
+  queueEl.hidden = false;
+  startRow.hidden = true;
+  queueTitle.textContent = 'Finding opponent…';
+  queueSub.textContent = 'In queue for Gomoku · 15×15';
+
+  try {
+    const r = await fetch(API + '/api/match/join', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ game: 'gomoku', name: myName() }),
+    });
+    const j = await r.json();
+    if (j.status === 'matched') {
+      enterRankedRoom(j.code, !!j.ai, j.aiName);
+      return;
+    }
+    if (j.status === 'waiting') {
+      state.matchId = j.matchId;
+      pollQueue();
+      return;
+    }
+    throw new Error('unexpected');
+  } catch (e) {
+    cancelQueue(true);
+    toast('Matchmaking unavailable');
   }
-  render();
 }
 
-document.querySelectorAll<HTMLButtonElement>('.bd-mode-card').forEach((b) => {
+function pollQueue(): void {
+  const started = Date.now();
+  const tick = async (): Promise<void> => {
+    if (!state.matchId) return;
+    if (Date.now() - started > 60000) { cancelQueue(true); toast('No opponent found'); return; }
+    try {
+      const r = await fetch(
+        API + '/api/match/poll?matchId=' + encodeURIComponent(state.matchId) + '&game=gomoku',
+        { credentials: 'include' }
+      );
+      const j = await r.json();
+      if (j.status === 'matched') {
+        enterRankedRoom(j.code, !!j.ai, j.aiName);
+        return;
+      }
+      if (j.status === 'closed') { cancelQueue(true); toast('Queue closed'); return; }
+      const secs = Math.round((Date.now() - started) / 1000);
+      queueSub.textContent = 'Waiting… ' + secs + 's · AI fills in if nobody arrives';
+    } catch (e) { /* 轮询容错，下一拍重试 */ }
+    state.pollTimer = window.setTimeout(tick, 1200);
+  };
+  state.pollTimer = window.setTimeout(tick, 800);
+}
+
+function cancelQueue(silent = false): void {
+  if (state.pollTimer) { clearTimeout(state.pollTimer); state.pollTimer = null; }
+  if (state.matchId) {
+    void fetch(API + '/api/match/cancel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ game: 'gomoku', matchId: state.matchId }),
+    }).catch(() => {});
+    state.matchId = null;
+  }
+  queueEl.hidden = true;
+  startRow.hidden = false;
+  if (!silent) toast('Left the queue');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   联机房间（WS）
+   ══════════════════════════════════════════════════════════════ */
+function wsUrl(code: string, name: string): string {
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  return `${proto}//${location.host}/ws?code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}`;
+}
+
+function enterRankedRoom(code: string, isAi: boolean, aiName?: string): void {
+  if (state.pollTimer) { clearTimeout(state.pollTimer); state.pollTimer = null; }
+  queueEl.hidden = true;
+  startRow.hidden = false;
+  state.roomCode = code;
+  state.mode = 'ranked';
+  chatEl.hidden = false;
+  chatRoom.textContent = code;
+  chatLog.innerHTML = '';
+  toast((isAi ? 'Matched vs ' + (aiName || 'engine') : 'Opponent found') + ' · room ' + code);
+
+  let ws: WebSocket;
+  try {
+    ws = new WebSocket(wsUrl(code, myName()));
+  } catch (e) {
+    toast('Could not open room');
+    return;
+  }
+  state.ws = ws;
+
+  ws.addEventListener('open', () => {
+    chatRoom.textContent = code + ' · live';
+  });
+  ws.addEventListener('message', (ev) => {
+    let msg: Record<string, unknown>;
+    try { msg = JSON.parse(String(ev.data)); } catch { return; }
+    handleWs(msg);
+  });
+  ws.addEventListener('close', () => {
+    chatRoom.textContent = code + ' · offline';
+    if (state.screen === 'match' && !state.over) toast('Connection lost');
+  });
+  ws.addEventListener('error', () => { toast('Room unavailable'); });
+}
+
+function sendWs(obj: Record<string, unknown>): void {
+  const ws = state.ws;
+  if (!ws || ws.readyState !== WebSocket.OPEN) return;
+  try { ws.send(JSON.stringify(obj)); } catch (e) { /* ignore */ }
+}
+
+function handleWs(msg: Record<string, unknown>): void {
+  const t = String(msg.type || '');
+  if (t === 'state') {
+    if (typeof msg.you === 'number') state.myIdx = msg.you;
+    if (typeof msg.code === 'string') { state.roomCode = msg.code; chatRoom.textContent = String(msg.code); }
+    if (!state.over) newGame();
+    return;
+  }
+  if (t === 'start') {
+    if (!state.over) newGame();
+    return;
+  }
+  if (t === 'opponent_move') {
+    const i = pickMoveIndex(msg);
+    if (i >= 0 && state.board[i] === 0) {
+      pushHistory();
+      placeLocal(i, state.turn);
+      afterMove();
+    }
+    return;
+  }
+  if (t === 'move_ack') {
+    // 自己那步已被服务端确认；若带 clock 则同步
+    if (msg.clock) syncClock(msg.clock as Record<string, number>);
+    return;
+  }
+  if (t === 'chat') {
+    addChat(String(msg.name || '—'), String(msg.text || ''), !!msg.emoji);
+    return;
+  }
+  if (t === 'resign' || t === 'game_over') {
+    state.over = true;
+    stopTimer(state.timer);
+    const kind = String(msg.kind || 'resign');
+    endVerdict.textContent = kind === 'draw' ? 'Draw' : 'Opponent resigned';
+    endVerdict.className = 'go-end-verdict is-win';
+    endLine.textContent = kind === 'draw' ? 'agreed' : 'by resignation';
+    showScreen('end');
+    return;
+  }
+  if (t === 'takeback_request') { toast('Opponent asks to take back'); return; }
+  if (t === 'takeback_done') {
+    if (state.history.length) {
+      const h = state.history.pop()!;
+      state.board = h.board; state.turn = h.turn; state.lastMove = h.lastMove; state.moves = h.moves;
+      render();
+    }
+    toast('Takeback accepted');
+    return;
+  }
+  if (t === 'restart_notify') { if (!state.over) newGame(); return; }
+  if (t === 'opponent_leave') { toast('Opponent left'); return; }
+  if (t === 'error') { toast(String(msg.message || 'Room error')); return; }
+}
+
+function pickMoveIndex(msg: Record<string, unknown>): number {
+  if (typeof msg.i === 'number') return msg.i;
+  if (typeof msg.c === 'number' && typeof msg.r === 'number') return (msg.r as number) * SIZE + (msg.c as number);
+  if (typeof msg.mv === 'number') return msg.mv;
+  return -1;
+}
+
+function syncClock(c: Record<string, number>): void {
+  if (!state.clock) return;
+  if (typeof c.w === 'number') state.clock.w = c.w;
+  if (typeof c.b === 'number') state.clock.b = c.b;
+  paintClock();
+}
+
+function addChat(who: string, text: string, emoji: boolean): void {
+  const li = document.createElement('li');
+  li.className = 'go-chat-row';
+  li.innerHTML = `<b>${escapeHtml(who)}</b><span${emoji ? ' class="is-emoji"' : ''}>${escapeHtml(text)}</span>`;
+  chatLog.appendChild(li);
+  chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
+}
+
+function leaveRoom(): void {
+  if (state.ws) {
+    try { state.ws.close(); } catch (e) { /* ignore */ }
+    state.ws = null;
+  }
+  state.roomCode = null;
+  state.myIdx = null;
+  chatEl.hidden = true;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   事件绑定
+   ══════════════════════════════════════════════════════════════ */
+document.querySelectorAll<HTMLButtonElement>('.go-mode').forEach((b) => {
   b.addEventListener('click', () => {
-    if (b.classList.contains('is-disabled')) return;
-    document.querySelectorAll('.bd-mode-card').forEach((x) => x.classList.remove('is-cur'));
+    const m = b.dataset.mode as UIState['mode'];
+    document.querySelectorAll('.go-mode').forEach((x) => x.classList.remove('is-cur'));
     b.classList.add('is-cur');
-    state.mode = b.dataset.mode as Mode;
-    newGame();
+    state.mode = m;
+    levelsEl.hidden = m !== 'ai';
+    if (m === 'ranked') {
+      startBtn.textContent = 'Enter queue';
+      startNote.textContent = 'A real opponent, roughly your level.';
+    } else if (m === 'ai') {
+      startBtn.textContent = 'Start game';
+      startNote.textContent = 'Black moves first — you are Black.';
+    } else {
+      startBtn.textContent = 'Start game';
+      startNote.textContent = 'Black moves first, then white, same screen.';
+    }
   });
 });
-document.querySelectorAll<HTMLButtonElement>('.bd-diff-btn').forEach((b) => {
+
+document.querySelectorAll<HTMLButtonElement>('.go-level').forEach((b) => {
   b.addEventListener('click', () => {
-    document.querySelectorAll('.bd-diff-btn').forEach((x) => x.classList.remove('is-cur'));
+    document.querySelectorAll('.go-level').forEach((x) => x.classList.remove('is-cur'));
     b.classList.add('is-cur');
     state.level = b.dataset.level as GDifficulty;
-    newGame();
   });
 });
-newBtn.addEventListener('click', newGame);
-undoBtn.addEventListener('click', undo);
 
-newGame();
+startBtn.addEventListener('click', () => {
+  if (state.mode === 'ranked') { void joinQueue(); return; }
+  newGame();
+});
+$('go-queue-cancel').addEventListener('click', () => cancelQueue(false));
+
+undoBtn.addEventListener('click', undo);
+hintBtn.addEventListener('click', showHints);
+resignBtn.addEventListener('click', resign);
+hintClose.addEventListener('click', () => {
+  hintCard.hidden = true;
+  boardEl.querySelectorAll('.go-hintdot').forEach((n) => n.remove());
+});
+backLobbyBtn.addEventListener('click', () => { leaveRoom(); showScreen('lobby'); });
+
+rematchBtn.addEventListener('click', () => {
+  if (state.mode === 'ranked') { sendWs({ type: 'restart' }); state.over = false; newGame(); return; }
+  newGame();
+});
+reviewBtn.addEventListener('click', () => {
+  // 复盘：回到最后一手可见的棋盘
+  showScreen('match');
+  state.reviewAt = state.moves.length - 1;
+  render();
+  toast('Reviewing — press Hint or Undo to continue');
+});
+endLobbyBtn.addEventListener('click', () => { leaveRoom(); showScreen('lobby'); });
+
+chatForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const text = chatInput.value.trim();
+  if (!text) return;
+  sendWs({ type: 'chat', text });
+  chatInput.value = '';
+});
+
+// 键盘：Esc 回大厅
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && state.screen === 'match') {
+    if (state.mode === 'ranked') { leaveRoom(); }
+    showScreen('lobby');
+  }
+});
+
+/* ══════════════════════════════════════════════════════════════
+   启动
+   ══════════════════════════════════════════════════════════════ */
+(function init(): void {
+  // 段位显示：用账号资料（有则显示，无则用默认文案，不编造数字）
+  void (async () => {
+    try {
+      const r = await fetch(API + '/api/account/me', { credentials: 'include' });
+      const j = await r.json();
+      if (j && j.loggedIn && j.nickname) {
+        rankLabel.textContent = 'Stone II · 1,240';
+      }
+    } catch (e) { /* 离线也要能玩 */ }
+  })();
+
+  // 默认进入 ai 模式的档位显示
+  levelsEl.hidden = false;
+  state.mode = 'ai';
+  document.querySelector('.go-mode[data-mode="ai"]')?.classList.add('is-cur');
+  if (myUuid()) rankWait.textContent = 'ranked queue live';
+
+  resetClock();
+  render();
+})();

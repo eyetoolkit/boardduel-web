@@ -1,24 +1,35 @@
 /**
  * Gomoku（五子棋）engine — 15×15 自由式规则
- * AI 档位（设计稿 / 01 — BOARD LANGUAGE）：
- *   easy   (Counter)     "counts pairs & trios"          — 启发式 + depth=1
- *   medium (Attacker)    "opens threats, still local"    — 启发式 + αβ depth=2 + move ordering
- *   hard   (Punisher)    "sharpest weights, no lookahead" — 启发式 + αβ depth=4 + kill move
+ * AI 档位（对齐设计稿 01 — BOARD LANGUAGE 的命名与性格）：
+ *   easy   (Counter)   "counts pairs & trios"            — 启发式 + depth=1
+ *   medium (Attacker)  "opens threats, still local"      — 启发式 + αβ depth=2
+ *   hard   (Punisher)  "sharpest weights, no lookahead"   — 启发式 + αβ depth=4 + 必胜/必挡短路
  *
  * 数据结构：
- *   Board = number[225] 0=空 1=黑(我) 2=白(对手)
+ *   Board = number[225]  0=空 1=黑(我) 2=白(对手)
  *   索引：index = y*15 + x，左上角为 (0,0)
  *
- * 棋盘评分（每条线 5 连方向，pattern scoring）：
- *   五连 / open-4 = 100_000    （必胜，无法挡）
- *   double-4    = 50_000
- *   open-3      = 1_000
- *   closed-4    = 100
- *   double-3    = 500
- *   open-2      = 50
- *   closed-3    = 10
- *   closed-2    = 1
- *   ——评估总分 = Σ(我方) - 1.2 * Σ(对手)  （防守略弱于进攻，符合设计稿"freestyle"）
+ * 评分（每条线的 pattern scoring，**区分开放/封闭**）：
+ *   五连          = 1_000_000（已成）
+ *   open-4 (X.XXX 两端任一可延伸) = 100_000   —— 必胜，无法挡
+ *   4 成子差1（立四/冲四，仅一端）= 15_000   —— 必须立即挡
+ *   open-3  (.XXX. 两端可延伸)     = 8_000    —— 不挡则下一手变 open-4
+ *   closed-3                       = 800
+ *   open-2  (.XX.)                 = 400
+ *   closed-2                       = 60
+ *   ——评估总分 = Σ(我方) - 1.15 * Σ(对手)
+ *
+ * ⚠️ 历史缺陷（本次修复）：
+ *   1) 旧 scorePatternFor 对 5 元素窗口 `for (i=0; i<=5)` 多跑一次，
+ *      `slice(5,10)` 得空数组 → 幽灵窗口；已改为精确遍历。
+ *   2) 旧 scoreWindow 完全不看开放度：`XXXX`（立四，一端被堵）与
+ *      `XXXX.`（活四）同给 10_000，导致 AI 分不清"该挡"与"该冲"；
+ *      且 `XXX..` 与 `.XXX.` 同分。已引入 left/right 开放标记。
+ *   3) 旧 evaluate 用 `px = x-dx*4` 做起点守卫并嵌套 k 循环，会把合法
+ *      线整段跳过；已改为直接以「五连窗口」为主循环。
+ *   4) 旧 bestMove 无「先看自己能否成五 / 再看对手能否成五」短路，
+ *      深搜在数百候选点上极慢（实测 hard 档单手超时）；
+ *      已加胜/挡短路 + 候选按启发式排序 + 只保留 Top-N 做深搜。
  */
 
 export type Player = 1 | 2;
@@ -29,7 +40,18 @@ export type Difficulty = 'easy' | 'medium' | 'hard';
 export const SIZE = 15;
 export const SIZE2 = SIZE * SIZE;
 const DIRS: ReadonlyArray<[number, number]> = [[1, 0], [0, 1], [1, 1], [1, -1]];
-const INF = 1_000_000;
+const INF = 1_000_000_000;
+
+/** 评分常量（越大越关键） */
+const S = {
+  FIVE: 1_000_000,
+  OPEN4: 100_000,
+  FOUR: 15_000,      // 立四 / 冲四：差 1 成五，必须立即处理
+  OPEN3: 8_000,      // 活三：不挡则成 open-4
+  CLOSED3: 800,
+  OPEN2: 400,
+  CLOSED2: 60,
+};
 
 export function emptyBoard(): Board {
   return new Array(SIZE2).fill(0);
@@ -50,111 +72,119 @@ function idx(x: number, y: number) {
   return y * SIZE + x;
 }
 
-/** 对一条 5 格线评分（中心点是 player）。返回 (我方分, 对手分) */
-function scoreLine(line: Cell[], centerPlayer: Player): { me: number; opp: number } {
-  // 评分模式（基于"我方视角"的 5 连段）
-  //   XXXXX = 100000    OOOOO = 必挡 → 给对手 100000（防守优先级高）
-  //   XXXX. / .XXXX = open-4 = 10000
-  //   XXXXO / OXXXX = closed-4 = 100
-  //   XXX.. / ..XXX = open-3 = 1000
-  //   XXX.O / OXXX. = closed-3 = 10
-  //   XX... / ..XX. = open-2 = 50
-  //   XX..O / OXX.. = closed-2 = 1
-  const me = scorePatternFor(line, centerPlayer);
-  const opp = scorePatternFor(line, (centerPlayer === 1 ? 2 : 1) as Player);
-  return { me, opp };
+/** 越界判定 */
+function inb(x: number, y: number) {
+  return x >= 0 && x < SIZE && y >= 0 && y < SIZE;
 }
 
-/** 评一种 pattern 视角的分数 */
-function scorePatternFor(line: Cell[], player: Player): number {
+export function xy(i: number): [number, number] {
+  return [i % SIZE, Math.floor(i / SIZE)];
+}
+
+/** 行列坐标 → 记谱（列 A–O，行 1–15 自下而上；与设计稿一致） */
+export function notation(i: number): string {
+  const [x, y] = xy(i);
+  return String.fromCharCode(65 + x) + (SIZE - y);
+}
+
+/**
+ * 沿方向 (dx,dy) 从 (x,y) 起统计 player 的连子数 + 两端是否开放。
+ * 返回 { count, openEnds }：count 含起点自身。
+ */
+function runInfo(b: Board, x: number, y: number, dx: number, dy: number, p: Player) {
+  let count = 1;
+  // 正向
+  let cx = x + dx, cy = y + dy;
+  while (inb(cx, cy) && b[idx(cx, cy)] === p) { count++; cx += dx; cy += dy; }
+  const openFwd = inb(cx, cy) && b[idx(cx, cy)] === 0;
+  // 反向
+  let bx = x - dx, by = y - dy;
+  while (inb(bx, by) && b[idx(bx, by)] === p) { count++; bx -= dx; by -= dy; }
+  const openBwd = inb(bx, by) && b[idx(bx, by)] === 0;
+  return { count, openEnds: (openFwd ? 1 : 0) + (openBwd ? 1 : 0) };
+}
+
+/** 单点对 player 的「形态分」：该点若属于 player，沿四方向累计其连子价值 */
+function pointScore(b: Board, i: number, p: Player): number {
+  const [x, y] = xy(i);
   let s = 0;
-  // 滑窗 5 格
-  for (let i = 0; i <= 5; i++) {
-    const w = line.slice(i, i + 5);
-    s += scoreWindow(w, player);
+  const seen = new Set<string>();
+  for (const [dx, dy] of DIRS) {
+    const { count, openEnds } = runInfo(b, x, y, dx, dy, p);
+    if (count >= 5) { s += S.FIVE; continue; }
+    // 用方向+跨度去重，避免同一段被两端重复计
+    const key = `${dx},${dy},${count},${openEnds}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    if (count === 4) s += openEnds >= 2 ? S.OPEN4 : (openEnds === 1 ? S.FOUR : 0);
+    else if (count === 3) s += openEnds >= 2 ? S.OPEN3 : (openEnds === 1 ? S.CLOSED3 : 0);
+    else if (count === 2) s += openEnds >= 2 ? S.OPEN2 : (openEnds === 1 ? S.CLOSED2 : 0);
   }
   return s;
 }
 
-function scoreWindow(w: Cell[], player: Player): number {
-  const opp = (player === 1 ? 2 : 1) as Player;
-  const my = w.filter((c) => c === player).length;
-  const op = w.filter((c) => c === opp).length;
-  const empty = w.filter((c) => c === 0).length;
-
-  // 含对手子 = 不可能属于我的连子
-  if (op > 0) return 0;
-
-  if (my === 5) return 100_000;
-  if (my === 4 && empty === 1) {
-    // open-4（无墙边界 → 完全开放）
-    return 10_000;
-  }
-  if (my === 3 && empty === 2) {
-    return 1_000;
-  }
-  if (my === 2 && empty === 3) {
-    return 50;
-  }
-  if (my === 1 && empty === 4) return 0;
-  return 0;
-}
-
-/** 全局评估：从 player 视角的"局面分"，越大越有利 */
+/**
+ * 全局评估：以"所有落点形态分之和"构造，从 player 视角。
+ * 比旧版逐窗口扫更快且不会漏线。
+ */
 export function evaluate(b: Board, player: Player): number {
-  let score = 0;
-  for (let y = 0; y < SIZE; y++) {
-    for (let x = 0; x < SIZE; x++) {
-      for (const [dx, dy] of DIRS) {
-        // 只在每条线的"起点"评分，避免重复
-        const px = x - dx * 4, py = y - dy * 4;
-        if (px < 0 || px >= SIZE || py < 0 || py >= SIZE) continue;
-        // 5+1=6 格，过中心 (x, y) → 一条线 —— 取起点 (x-4dx, y-4dy) 到中心共 5 格
-        const w: Cell[] = [];
-        for (let k = -4; k <= 0; k++) {
-          const xx = x + dx * k, yy = y + dy * k;
-          if (xx < 0 || xx >= SIZE || yy < 0 || yy >= SIZE) { w.length = 0; break; }
-          w.push(b[idx(xx, yy)] as Cell);
-        }
-        if (w.length !== 5) continue;
-        const { me, opp } = scoreLine(w, player);
-        score += me - opp * 1.2;
-      }
+  const opp = (player === 1 ? 2 : 1) as Player;
+  let mine = 0, theirs = 0;
+  let myFive = false, oppFive = false;
+  for (let i = 0; i < SIZE2; i++) {
+    const c = b[i];
+    if (c === 0) continue;
+    if (c === player) {
+      const v = pointScore(b, i, player);
+      if (v >= S.FIVE) myFive = true;
+      mine += v;
+    } else if (c === opp) {
+      const v = pointScore(b, i, opp);
+      if (v >= S.FIVE) oppFive = true;
+      theirs += v;
     }
   }
-  return score;
+  // 终局优先：己方成五绝对赢；对手成五绝对输
+  if (myFive && !oppFive) return 100_000_000;
+  if (oppFive && !myFive) return -100_000_000;
+  return mine - theirs * 1.15;
 }
 
 /** αβ 搜索 */
 function alphabeta(b: Board, depth: number, alpha: number, beta: number, player: Player, ai: Player): number {
-  const moves = legalMoves(b);
+  const moves = candidateMoves(b);
   if (depth === 0 || moves.length === 0) return evaluate(b, ai);
 
+  // 立即终局检测（避免深搜在已结束局面上继续）
   const maximizing = player === ai;
   let best = maximizing ? -INF : INF;
-  for (const m of moves) {
+  const ordered = orderMoves(b, moves, player).slice(0, 12);
+  for (const m of ordered) {
     b[m] = player;
-    const v = alphabeta(b, depth - 1, alpha, beta, (player === 1 ? 2 : 1) as Player, ai);
+    let v: number;
+    if (pointScore(b, m, player) >= S.FIVE) {
+      v = player === ai ? 100_000_000 - (10 - depth) : -100_000_000 + (10 - depth);
+    } else {
+      v = alphabeta(b, depth - 1, alpha, beta, (player === 1 ? 2 : 1) as Player, ai);
+    }
     b[m] = 0;
     if (maximizing) {
-      best = Math.max(best, v);
-      alpha = Math.max(alpha, v);
+      if (v > best) best = v;
+      if (best > alpha) alpha = best;
     } else {
-      best = Math.min(best, v);
-      beta = Math.min(beta, v);
+      if (v < best) best = v;
+      if (best < beta) beta = best;
     }
     if (beta <= alpha) break;
   }
   return best;
 }
 
-/** 选择候选点：仅在已有棋子周围 2 格内（freestyle Gomoku 不可能全盘搜） */
-function candidateMoves(b: Board): number[] {
+/** 候选点：已有棋子周围 2 格 */
+export function candidateMoves(b: Board): number[] {
   const moves = legalMoves(b);
   if (moves.length === 0) return [];
-  // 第一手落天元
   if (moves.length === SIZE2) return [Math.floor(SIZE2 / 2)];
-  // 已有棋子 → 取每颗 2 格内的空点
   const seen = new Set<number>();
   for (let i = 0; i < SIZE2; i++) {
     if (b[i] === 0) continue;
@@ -162,39 +192,82 @@ function candidateMoves(b: Board): number[] {
     for (let dy = -2; dy <= 2; dy++) {
       for (let dx = -2; dx <= 2; dx++) {
         const xx = x + dx, yy = y + dy;
-        if (xx < 0 || xx >= SIZE || yy < 0 || yy >= SIZE) continue;
+        if (!inb(xx, yy)) continue;
         const k = idx(xx, yy);
         if (b[k] === 0) seen.add(k);
       }
     }
   }
-  if (seen.size === 0) return moves; // 极端：棋盘满（不可能）
-  return [...seen];
+  return seen.size === 0 ? moves : [...seen];
+}
+
+/** 按启发式排序：我方进攻分 + 对手威胁分（对手在此点的价值=必挡价值） */
+function orderMoves(b: Board, moves: number[], me: Player): number[] {
+  const opp = (me === 1 ? 2 : 1) as Player;
+  const scored = moves.map((m) => {
+    b[m] = me;
+    const atk = pointScore(b, m, me);
+    b[m] = opp;
+    const def = pointScore(b, m, opp);
+    b[m] = 0;
+    return { m, s: atk + def * 0.95 };
+  });
+  scored.sort((a, b2) => b2.s - a.s);
+  return scored.map((x) => x.m);
+}
+
+/** 找「下一手即成五」的点（返回全部，便于必胜/必挡短路） */
+function winPoints(b: Board, p: Player): number[] {
+  const out: number[] = [];
+  for (const m of candidateMoves(b)) {
+    b[m] = p;
+    if (pointScore(b, m, p) >= S.FIVE) out.push(m);
+    b[m] = 0;
+  }
+  return out;
 }
 
 export function bestMove(b: Board, player: Player, difficulty: Difficulty): number {
   const moves = legalMoves(b);
   if (moves.length === 0) return -1;
+  if (moves.length === SIZE2) return Math.floor(SIZE2 / 2); // 首手天元
 
-  // 第一手：落天元
-  if (moves.length === SIZE2) return Math.floor(SIZE2 / 2);
+  const opp = (player === 1 ? 2 : 1) as Player;
 
-  const candidates = candidateMoves(b);
+  // ① 能赢就赢（最高优先，防止"看见胜机却去堵"）
+  const mine = winPoints(b, player);
+  if (mine.length) return mine[0];
 
-  let depth = 2;
-  if (difficulty === 'medium') depth = 2;
-  if (difficulty === 'hard') depth = 4;
+  // ② 对手能赢就必须堵
+  const theirs = winPoints(b, opp);
+  if (theirs.length) return theirs[0];
 
-  let bestI = candidates[0];
-  let bestS = -INF;
-  for (const m of candidates) {
-    b[m] = player;
-    const s = alphabeta(b, depth - 1, -INF, INF, (player === 1 ? 2 : 1) as Player, player);
-    b[m] = 0;
-    if (s > bestS) {
-      bestS = s;
-      bestI = m;
+  const depth = difficulty === 'easy' ? 1 : difficulty === 'medium' ? 2 : 4;
+  const candidates = orderMoves(b, candidateMoves(b), player);
+
+  // easy：只看一层静态分（"counts pairs & trios"）
+  if (depth === 1) {
+    let bestI = candidates[0], bestS = -INF;
+    for (const m of candidates) {
+      b[m] = player;
+      const s = evaluate(b, player);
+      b[m] = 0;
+      if (s > bestS) { bestS = s; bestI = m; }
     }
+    return bestI;
+  }
+
+  // medium/hard：只对启发式 Top-K 做深搜，控制耗时
+  const K = depth >= 4 ? 10 : 14;
+  const top = candidates.slice(0, K);
+  let bestI = top[0], bestS = -INF;
+  for (const m of top) {
+    b[m] = player;
+    let s: number;
+    if (pointScore(b, m, player) >= S.FIVE) s = 100_000_000;
+    else s = alphabeta(b, depth - 1, -INF, INF, opp, player);
+    b[m] = 0;
+    if (s > bestS) { bestS = s; bestI = m; }
   }
   return bestI;
 }
@@ -203,19 +276,19 @@ export function bestMove(b: Board, player: Player, difficulty: Difficulty): numb
 export function hasFive(b: Board): { winner: 0 | Player; line: number[] | null } {
   for (let y = 0; y < SIZE; y++) {
     for (let x = 0; x < SIZE; x++) {
-      if (b[idx(x, y)] === 0) continue;
-      const me = b[idx(x, y)] as Player;
+      const me = b[idx(x, y)];
+      if (me === 0) continue;
       for (const [dx, dy] of DIRS) {
-        // 起点检查
         const px = x - dx, py = y - dy;
-        if (px >= 0 && px < SIZE && py >= 0 && py < SIZE && b[idx(px, py)] === me) continue;
-        // 5 连
+        if (inb(px, py) && b[idx(px, py)] === me) continue; // 非起点
+        const line: number[] = [];
         let ok = true;
-        for (let k = 1; k < 5; k++) {
+        for (let k = 0; k < 5; k++) {
           const xx = x + dx * k, yy = y + dy * k;
-          if (xx < 0 || xx >= SIZE || yy < 0 || yy >= SIZE || b[idx(xx, yy)] !== me) { ok = false; break; }
+          if (!inb(xx, yy) || b[idx(xx, yy)] !== me) { ok = false; break; }
+          line.push(idx(xx, yy));
         }
-        if (ok) return { winner: me, line: [idx(x, y), idx(x + dx, y + dy), idx(x + dx * 2, y + dy * 2), idx(x + dx * 3, y + dy * 3), idx(x + dx * 4, y + dy * 4)] };
+        if (ok) return { winner: me as Player, line };
       }
     }
   }
@@ -226,34 +299,54 @@ export function hasFive(b: Board): { winner: 0 | Player; line: number[] | null }
 export function selfTest(): { ok: boolean; details: string[] } {
   const details: string[] = [];
   let ok = true;
-  // 第一手 = 天元
+  const chk = (cond: boolean, msg: string) => { if (!cond) { ok = false; details.push(msg); } };
+
+  // ① 首手天元
   let b = emptyBoard();
-  const m1 = bestMove(b, 1, 'easy');
-  if (m1 !== 112) {
-    ok = false;
-    details.push('first move should be center (112), got ' + m1);
-  }
-  // 构造 5 连检测（必须正好 5 子才赢）
+  chk(bestMove(b, 1, 'easy') === 112, 'first move should be center (112)');
+
+  // ② 正好 5 子才赢
   b = emptyBoard();
   for (let x = 0; x < 5; x++) b[idx(7 + x, 7)] = 1;
-  const r = hasFive(b);
-  if (r.winner !== 1) {
-    ok = false;
-    details.push('5-in-row should detect winner=1, got ' + r.winner);
-  }
-  // 反面：4 连不应判胜
+  chk(hasFive(b).winner === 1, '5-in-row should detect winner=1');
+  // ③ 4 连不判胜
   b = emptyBoard();
   for (let x = 0; x < 4; x++) b[idx(7 + x, 7)] = 1;
-  if (hasFive(b).winner !== 0) {
-    ok = false;
-    details.push('4-in-row must NOT be a win');
-  }
-  // 斜向 5 连
+  chk(hasFive(b).winner === 0, '4-in-row must NOT be a win');
+  // ④ 斜向 5 连 + line 长度
   b = emptyBoard();
   for (let k = 0; k < 5; k++) b[idx(3 + k, 3 + k)] = 2;
-  if (hasFive(b).winner !== 2) {
-    ok = false;
-    details.push('diagonal 5-in-row should detect winner=2');
+  const d = hasFive(b);
+  chk(d.winner === 2, 'diagonal 5-in-row should detect winner=2');
+  chk(!!d.line && d.line.length === 5, 'win line must contain 5 points');
+
+  // ⑤ 有必胜点必须直接连五（各档）
+  for (const diff of ['easy', 'medium', 'hard'] as Difficulty[]) {
+    b = emptyBoard();
+    b[idx(3, 3)] = 2; b[idx(4, 3)] = 2; b[idx(5, 3)] = 2; b[idx(6, 3)] = 2;
+    const m = bestMove(b, 2, diff);
+    chk(m === idx(2, 3) || m === idx(7, 3), `${diff}: should complete four->five, got ${notation(m)}`);
   }
+
+  // ⑥ 对手立四必须挡（各档）
+  for (const diff of ['easy', 'medium', 'hard'] as Difficulty[]) {
+    b = emptyBoard();
+    b[idx(5, 5)] = 1; b[idx(6, 5)] = 1; b[idx(7, 5)] = 1; b[idx(8, 5)] = 1;
+    const m = bestMove(b, 2, diff);
+    chk(m === idx(4, 5) || m === idx(9, 5), `${diff}: must block opponent four, got ${notation(m)}`);
+  }
+
+  // ⑦ 开放度区分：open-4 分数必须显著高于立四
+  b = emptyBoard();
+  b[idx(3, 3)] = 1; b[idx(4, 3)] = 1; b[idx(5, 3)] = 1; b[idx(6, 3)] = 1; // .XXXX.
+  const open4 = pointScore(b, idx(4, 3), 1);
+  const b2 = emptyBoard();
+  b2[idx(0, 3)] = 1; b2[idx(1, 3)] = 1; b2[idx(2, 3)] = 1; b2[idx(3, 3)] = 1; // XXXX. 贴边一端
+  const closed4 = pointScore(b2, idx(1, 3), 1);
+  chk(open4 > closed4, `open-4 (${open4}) should outscore closed four (${closed4})`);
+
+  // ⑧ 记谱正确性：天元 112 → H8
+  chk(notation(112) === 'H8', `notation(112) should be H8, got ${notation(112)}`);
+
   return { ok, details };
 }

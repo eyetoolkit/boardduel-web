@@ -5,74 +5,202 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0E1419">
 <title>Gomoku — BoardDuel</title>
-<meta name="description" content="Gomoku (五子棋) — 15×15 freestyle. First to 5 in a row wins. 3 AI levels.">
+<meta name="description" content="Gomoku (五子棋) — 15×15 freestyle. First to 5 in a row wins. Ranked online, 3 engine levels, pass &amp; play with hints and clocks.">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="BoardDuel">
 <meta property="og:title" content="Gomoku — BoardDuel">
-<meta property="og:description" content="Gomoku (五子棋) — 15×15 freestyle. First to 5 in a row wins. 3 AI levels.">
+<meta property="og:description" content="Gomoku (五子棋) — 15×15 freestyle. First to 5 in a row wins. Ranked online, 3 engine levels, pass &amp; play with hints and clocks.">
 <meta property="og:url" content="https://boardduel.com/games/gomoku/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Gomoku — BoardDuel">
-<meta name="twitter:description" content="Gomoku (五子棋) — 15×15 freestyle. First to 5 in a row wins. 3 AI levels.">
+<meta name="twitter:description" content="Gomoku (五子棋) — 15×15 freestyle. First to 5 in a row wins. Ranked online, 3 engine levels, pass &amp; play with hints and clocks.">
 <link rel="canonical" href="https://boardduel.com/games/gomoku/">
 <link rel="alternate" hreflang="en" href="https://boardduel.com/games/gomoku/">
 <link rel="alternate" hreflang="x-default" href="https://boardduel.com/games/gomoku/">
 <link rel="stylesheet" href="/src/styles/boardduel.css">
 </head>
 <body><main class="bd-main">
-  <section class="bd-hero">
-    <h1>Gomoku</h1>
-    <p class="bd-lead">15×15 board, freestyle rules. Black goes first; you are Black. Place a stone on any intersection. Five-in-a-row in any direction wins.</p>
-    <div class="bd-game-meta"><span><b>15×15</b> board</span>
-          <span><b>freestyle</b> rules</span>
-          <span><b>3</b> AI levels</span>
+
+  <header class="bd-hero">
+    <h1>Gomoku<span class="bd-dot">.</span> <span class="bd-hero-sub">The stones are the paper.</span></h1>
+    <p class="bd-lead">15×15 board, freestyle rules. Black goes first. Five in a row — any direction — wins. Every position below is real engine output, not a drawing.</p>
+    <div class="bd-game-meta">
+      <span><b>15×15</b> board</span>
+      <span><b>freestyle</b> rules</span>
+      <span><b>3</b> engine levels</span>
+      <span><b>ranked</b> online</span>
+    </div>
+  </header>
+
+  <!-- ══ SCREEN 1 · LOBBY ══ -->
+  <section id="go-lobby">
+    <div class="bd-section-title">SCREEN 1 · LOBBY</div>
+
+    <div class="go-modes">
+      <button type="button" class="go-mode" data-mode="ranked">
+        <span class="go-mode-top">
+          <span class="go-mode-name">Ranked match</span>
+          <span class="go-pill is-live">live</span>
+        </span>
+        <span class="go-mode-desc">Play a real opponent. Your result moves your rating.</span>
+        <span class="go-mode-meta" id="go-rank-line">
+          <span id="go-rank-label">Stone II · 1,240</span>
+          <span class="go-mode-wait" id="go-rank-wait">avg wait 18s</span>
+        </span>
+      </button>
+
+      <button type="button" class="go-mode" data-mode="ai">
+        <span class="go-mode-top">
+          <span class="go-mode-name">Play the engine</span>
+          <span class="go-pill">3 levels</span>
+        </span>
+        <span class="go-mode-desc">Three engines, three temperaments. Pick your poison.</span>
+        <span class="go-mode-meta"><span id="go-ai-hint">Counter · Attacker · Punisher</span></span>
+      </button>
+
+      <button type="button" class="go-mode" data-mode="pass">
+        <span class="go-mode-top">
+          <span class="go-mode-name">Pass &amp; play</span>
+          <span class="go-pill">one screen</span>
+        </span>
+        <span class="go-mode-desc">Two humans, one device.</span>
+        <span class="go-mode-meta"><span>black and white, both human</span></span>
+      </button>
+    </div>
+
+    <!-- 引擎档位（仅 ai 模式显示） -->
+    <div class="go-levels" id="go-levels" hidden>
+      <div class="bd-section-title">Engine level</div>
+      <div class="go-level-row" id="go-level-row">
+        <button type="button" class="go-level" data-level="easy">
+          <span class="go-level-name">Counter</span>
+          <span class="go-level-desc">counts pairs &amp; trios</span>
+        </button>
+        <button type="button" class="go-level is-cur" data-level="medium">
+          <span class="go-level-name">Attacker</span>
+          <span class="go-level-desc">opens threats, still local</span>
+        </button>
+        <button type="button" class="go-level" data-level="hard">
+          <span class="go-level-name">Punisher</span>
+          <span class="go-level-desc">sharpest weights, no lookahead</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 排位队列面板 -->
+    <div class="go-queue" id="go-queue" hidden>
+      <div class="go-queue-inner">
+        <div class="go-queue-spin" aria-hidden="true"></div>
+        <div class="go-queue-text">
+          <b id="go-queue-title">Finding opponent…</b>
+          <span id="go-queue-sub">In queue for Gomoku · 15×15</span>
+        </div>
+        <button type="button" id="go-queue-cancel" class="go-btn">Cancel</button>
+      </div>
+    </div>
+
+    <div class="go-start-row" id="go-start-row">
+      <button type="button" class="go-btn is-primary" id="go-start">Start game</button>
+      <span class="go-start-note" id="go-start-note">Black moves first.</span>
     </div>
   </section>
 
-  <div class="bd-section-title">Pick a mode</div>
-  <div class="bd-mode-row" id="bd-modes">
-    <button type="button" class="bd-mode-card is-cur" data-mode="ai">
-      <span class="bd-mode-label">Play the engine</span>
-      <span class="bd-mode-badge">3 levels</span>
-    </button>
-    <button type="button" class="bd-mode-card" data-mode="pass">
-      <span class="bd-mode-label">Pass &amp; play</span>
-      <span class="bd-mode-badge">two players, one screen</span>
-    </button>
-    <button type="button" class="bd-mode-card is-disabled" data-mode="human" disabled>
-      <span class="bd-mode-label">Online match</span>
-      <span class="bd-mode-badge">coming soon</span>
-    </button>
-  </div>
+  <!-- ══ SCREEN 2 · MATCH ══ -->
+  <section id="go-match" hidden>
+    <div class="bd-section-title">SCREEN 2 · MATCH</div>
 
-  <div class="bd-section-title">Engine difficulty</div>
-  <div class="bd-diff-row" id="bd-diffs">
-    <button type="button" class="bd-diff-btn" data-level="easy">EASY</button>
-    <button type="button" class="bd-diff-btn is-cur" data-level="medium">MEDIUM</button>
-    <button type="button" class="bd-diff-btn" data-level="hard">HARD</button>
-  </div>
-
-  <div class="bd-play">
-    <div class="bd-board-wrap" id="bd-board">
-      <span class="bd-mode-badge">Press New game to start</span>
-    </div>
-    <div class="bd-side">
-      <div class="bd-hud">
-        <div class="bd-hud-row"><span class="bd-hud-l">Mode</span><span class="bd-hud-v" id="bd-mode-v">vs AI · medium</span></div>
-        <div class="bd-hud-row"><span class="bd-hud-l">Turn</span><span class="bd-hud-v" id="bd-turn-v">—</span></div>
-        <div class="bd-hud-row"><span class="bd-hud-l">Time</span><span class="bd-hud-v" id="bd-time-v">0:00</span></div>
-        <div class="bd-hud-row"><span class="bd-hud-l">Status</span><span class="bd-hud-v" id="bd-status-v">idle</span></div>
+    <!-- 双棋钟 -->
+    <div class="go-clocks" id="go-clocks">
+      <div class="go-clock is-active" id="go-clock-me">
+        <span class="go-clock-who" id="go-clock-me-who">YOU · BLACK</span>
+        <span class="go-clock-time" id="go-clock-me-time">10:00</span>
       </div>
-      <div class="bd-control">
-        <button type="button" id="bd-new">New game</button>
-        <button type="button" id="bd-undo">Undo</button>
+      <div class="go-clock" id="go-clock-opp">
+        <span class="go-clock-who" id="go-clock-opp-who">ENGINE · WHITE</span>
+        <span class="go-clock-time" id="go-clock-opp-time">10:00</span>
       </div>
     </div>
-  </div>
 
-  <div class="bd-how">Click any <b>intersection</b> on the 15×15 board to place a stone. Your stones are <b>black</b>, AI is white. First to connect <b>five in a row</b> horizontally, vertically, or diagonally wins.</div>
+    <div class="bd-play">
+      <div class="bd-board-wrap go-board-host">
+        <div id="bd-board" class="go-board"></div>
+        <div class="go-hint-legend" id="go-legend" hidden>tap again to place</div>
+      </div>
+
+      <aside class="bd-side">
+        <div class="go-status-card">
+          <div class="go-status-row"><span>Turn</span><b id="go-turn" class="go-turn-you">You · Black</b></div>
+          <div class="go-status-row"><span>Move</span><b id="go-moveno">1</b></div>
+          <div class="go-status-row"><span>Last</span><b id="go-last">—</b></div>
+          <div class="go-status-row"><span>Mode</span><b id="go-mode-v">vs engine · Attacker</b></div>
+        </div>
+
+        <div class="go-controls">
+          <button type="button" class="go-btn" id="go-undo">Undo</button>
+          <button type="button" class="go-btn" id="go-hint">Hint</button>
+          <button type="button" class="go-btn is-danger" id="go-resign">Resign</button>
+        </div>
+
+        <!-- 提示板：原始引擎权重 -->
+        <div class="go-hintcard" id="go-hintcard" hidden>
+          <div class="go-hintcard-h">
+            <span>Engine ranks</span>
+            <button type="button" id="go-hint-close" aria-label="Close hint board">×</button>
+          </div>
+          <ol class="go-hint-list" id="go-hint-list"></ol>
+          <p class="go-hint-note">attack + 0.95 × defence, before search</p>
+        </div>
+
+        <!-- 记谱器 -->
+        <div class="go-recorder">
+          <div class="go-recorder-h">
+            <span>Move recorder</span>
+            <span id="go-rec-count">0 plies</span>
+          </div>
+          <ol class="go-recorder-list" id="go-recorder-list"></ol>
+        </div>
+
+        <!-- 联机聊天（仅 ranked） -->
+        <div class="go-chat" id="go-chat" hidden>
+          <div class="go-chat-h">
+            <span id="go-chat-title">Room chat</span>
+            <span class="go-chat-room" id="go-chat-room"></span>
+          </div>
+          <ul class="go-chat-log" id="go-chat-log"></ul>
+          <form class="go-chat-form" id="go-chat-form">
+            <input type="text" id="go-chat-input" maxlength="140" placeholder="Say something…" autocomplete="off">
+            <button type="submit" class="go-btn">Send</button>
+          </form>
+        </div>
+
+        <button type="button" class="go-btn" id="go-back-lobby">Back to lobby</button>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ══ SCREEN 3 · END ══ -->
+  <section id="go-end" hidden>
+    <div class="bd-section-title">SCREEN 3 · END</div>
+    <div class="go-endbar" id="go-endbar">
+      <div class="go-end-main">
+        <span class="go-end-verdict" id="go-end-verdict">You win</span>
+        <span class="go-end-line" id="go-end-line">—</span>
+      </div>
+      <div class="go-end-acts">
+        <button type="button" class="go-btn is-primary" id="go-rematch">Rematch</button>
+        <button type="button" class="go-btn" id="go-review">Review moves</button>
+        <button type="button" class="go-btn" id="go-end-lobby">Back to lobby</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="bd-how">
+    Place a stone on any <b>intersection</b>. Columns run <b>A–O</b>, rows <b>1–15</b> from the bottom.
+    Your stones are <b>black</b>. First to connect <b>five in a row</b> horizontally, vertically, or diagonally wins.
+    On touch screens, tap once to see the ghost and tap again to commit.
+  </div>
 
   <div class="bd-foot">
   <span>© 2026 BoardDuel · free to play · privacy-first</span>
