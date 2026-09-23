@@ -9,6 +9,7 @@ const here = dirname(fileURLToPath(import.meta.url));
  * 入口：
  *   main         → /                          首页（pg-home 视觉：5 卡片 + family + contract + honesty + notes）
  *   gomoku       → /games/gomoku/             五子棋 15×15 视觉页（pg-gomoku 完整 6 节）
+ *   gomokuLobby  → /games/gomoku/lobby/       五子棋模式选择页（6 张卡 + 侧栏，纯 <a> 深链进 ?mode=…）
  *   tictactoe    → /games/tictactoe/          井字 3×3 视觉页（pg-ttt）
  *   connect4     → /games/connect4/           四子棋 6×7 视觉页（pg-c4）
  *   reversi      → /games/reversi/            黑白棋 8×8 视觉页（pg-rev）
@@ -25,6 +26,7 @@ export default defineConfig({
       input: {
         main: resolve(here, 'index.html'),
         gomoku: resolve(here, 'games/gomoku/index.html'),
+        gomokuLobby: resolve(here, 'games/gomoku/lobby/index.html'),
         tictactoe: resolve(here, 'games/tictactoe/index.html'),
         connect4: resolve(here, 'games/connect4/index.html'),
         reversi: resolve(here, 'games/reversi/index.html'),

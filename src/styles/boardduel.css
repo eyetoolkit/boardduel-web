@@ -16,6 +16,9 @@
   --ember-dim: #C24A27;
   --ember-soft: rgba(255, 106, 60, .14);
   --teal: #2FC4C9;
+  /* .go-pill.is-live 一直在引用 --teal-soft，但这里原先没有定义，
+     导致 live 胶囊的底色静默失效（只有文字变青）。补上，勿删。 */
+  --teal-soft: rgba(47, 196, 201, .14);
   --gold: #F2C14E;
   --gold-soft: rgba(242, 193, 78, .14);
   --sqL: #DEE4DB;
@@ -289,45 +292,56 @@ img { max-width: 100%; display: block; }
   padding: 4px 10px; border-radius: 99px; pointer-events: none;
 }
 
-/* ── LOBBY：三张模式卡 ── */
+/* ── LOBBY：模式卡（2 列网格，视觉对齐 24 点模式页） ──
+   两种载体共用同一套卡片样式：
+     · 独立模式页 /games/gomoku/lobby/  → <a href="?mode=…">（可分享、可抓取）
+     · 游戏页 SCREEN 1 内的同页切换     → <button data-mode="…">
+   因此这里只描述外观，不在选择器里绑定标签或行为。 */
 .go-modes {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;
   margin: 14px 0 6px;
 }
 .go-mode {
-  display: flex; flex-direction: column; gap: 8px; text-align: left;
-  background: var(--ink3); border: 1px solid var(--line); border-radius: 12px;
-  padding: 14px 16px; transition: border-color .14s, background .14s;
+  display: flex; flex-direction: column; gap: 6px; text-align: left;
+  background: var(--ink2); border: 1px solid var(--line); border-radius: 14px;
+  padding: 16px; color: var(--paper);
+  transition: border-color .15s, transform .15s, background .15s;
 }
 .go-mode:hover { border-color: var(--ember-dim); }
+a.go-mode:hover { border-color: var(--ember); transform: translateY(-2px); }
+a.go-mode:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
 .go-mode.is-cur { border-color: var(--ember); background: var(--ember-soft); }
+.go-mode-ico { font-size: 1.5rem; line-height: 1.2; }
 .go-mode-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .go-mode-name { font-family: var(--disp); font-weight: 700; font-size: 1rem; }
-.go-mode-desc { font-size: .82rem; color: var(--mute); line-height: 1.42; }
+.go-mode-desc { font-size: .82rem; color: var(--mute); line-height: 1.45; }
 .go-mode-meta {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
   font-size: .72rem; color: var(--mute2); letter-spacing: .04em;
   font-variant-numeric: tabular-nums;
 }
 .go-mode-wait { color: var(--teal); }
+/* 首卡高亮（Ranked 是主推入口） */
+.go-mode.feat {
+  border-color: var(--ember);
+  background: linear-gradient(180deg, var(--ember-soft), var(--ink2));
+}
+/* 未上线模式：灰态且不可点。用 <div> 而非 <a>/<button>，从根上杜绝键盘聚焦与点击 */
+.go-mode.ghost { opacity: .5; cursor: not-allowed; }
+.go-mode.ghost .go-tag { background: var(--line); color: var(--mute); }
 .go-pill {
   font-size: .64rem; letter-spacing: .12em; padding: 3px 8px;
   border-radius: 99px; border: 1px solid var(--line); color: var(--mute2);
   white-space: nowrap;
 }
 .go-pill.is-live { color: var(--teal); border-color: rgba(47, 196, 201, .35); background: var(--teal-soft); }
-
-/* ── 引擎档位 ── */
-.go-level-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.go-level {
-  display: flex; flex-direction: column; gap: 3px; text-align: left;
-  background: var(--ink2); border: 1px solid var(--line); border-radius: 10px;
-  padding: 10px 13px; transition: .13s;
+/* 实心标签（24 点同款），用于卡内短标记 */
+.go-tag {
+  font-size: .68rem; font-weight: 700; letter-spacing: .02em; text-transform: uppercase;
+  color: var(--ink); background: var(--teal); border-radius: 999px; padding: 2px 8px;
 }
-.go-level:hover { border-color: var(--mute2); }
-.go-level.is-cur { border-color: var(--gold); background: var(--gold-soft); }
-.go-level-name { font-family: var(--disp); font-weight: 700; font-size: .92rem; }
-.go-level-desc { font-size: .7rem; color: var(--mute2); line-height: 1.35; }
+.go-tag.is-gold { background: var(--gold); }
+.go-tag.is-mute { background: var(--line); color: var(--mute); }
 
 /* ── 匹配队列 ── */
 .go-queue { margin: 14px 0 6px; }
@@ -348,6 +362,71 @@ img { max-width: 100%; display: block; }
 
 .go-start-row { display: flex; align-items: center; gap: 14px; margin: 18px 0 8px; }
 .go-start-note { font-size: .78rem; color: var(--mute2); }
+
+/* ── 模式页两栏（左：模式网格；右：侧栏卡片） ── */
+.bd-cols {
+  display: grid; grid-template-columns: 1.35fr .95fr; gap: 26px;
+  align-items: start; margin-top: 4px;
+}
+.bd-side { display: grid; gap: 16px; }
+.bd-lobby-card {
+  background: var(--ink2); border: 1px solid var(--line);
+  border-radius: 14px; padding: 18px;
+}
+.bd-lobby-card h3 {
+  font-family: var(--disp); font-size: 1.05rem; font-weight: 700;
+  margin-bottom: 6px;
+}
+.bd-lobby-card p { font-size: .82rem; color: var(--mute); line-height: 1.5; }
+.bd-side-note { font-size: .72rem; color: var(--mute2); margin-top: 8px; }
+
+/* 侧栏：段位/统计行 */
+.bd-stat-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  font-size: .82rem; color: var(--mute);
+  padding: 6px 0; border-bottom: 1px solid var(--line);
+}
+.bd-stat-row:last-child { border-bottom: 0; padding-bottom: 0; }
+.bd-stat-row b { color: var(--paper); font-variant-numeric: tabular-nums; }
+
+/* 侧栏：邀请码输入 */
+.bd-code-row { display: flex; gap: 8px; margin-top: 10px; }
+.bd-code-row input {
+  flex: 1; min-width: 0;
+  background: var(--ink3); border: 1px solid var(--line); border-radius: 8px;
+  color: var(--paper); font-family: var(--disp); font-size: .95rem;
+  letter-spacing: .14em; text-transform: uppercase;
+  padding: 9px 12px; outline: none;
+}
+.bd-code-row input:focus { border-color: var(--ember); }
+.bd-code-row input::placeholder { color: var(--mute2); letter-spacing: .1em; }
+.bd-code-err { font-size: .74rem; color: var(--ember); margin-top: 6px; min-height: 1em; }
+
+/* 侧栏：规则速览 */
+.bd-rules { font-size: .82rem; color: var(--mute); line-height: 1.6; padding-left: 18px; }
+.bd-rules li { margin: 3px 0; }
+.bd-rules b { color: var(--paper); font-weight: 700; }
+
+/* 页脚 */
+.bd-foot {
+  max-width: 1120px; margin: 0 auto; padding: 22px 28px 40px;
+  border-top: 1px solid var(--line);
+  display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between;
+  font-size: .74rem; color: var(--mute2);
+}
+.bd-foot b { color: var(--mute); font-weight: 700; }
+.bd-foot-links { display: flex; flex-wrap: wrap; gap: 14px; }
+.bd-foot-links a:hover { color: var(--mute); }
+
+@media (max-width: 900px) {
+  .bd-cols { grid-template-columns: 1fr; gap: 18px; }
+  .go-modes { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 560px) {
+  .go-modes { grid-template-columns: 1fr; }
+  .bd-main { padding: 0 16px 60px; }
+  .bd-hero { padding: 40px 0 28px; }
+}
 
 .go-btn {
   font-size: .8rem; font-weight: 700; letter-spacing: .06em;
@@ -501,8 +580,8 @@ img { max-width: 100%; display: block; }
 .bd-hero .bd-dot { color: var(--ember); }
 
 @media (max-width: 900px) {
-  .go-modes { grid-template-columns: 1fr; }
-  .go-level-row { grid-template-columns: 1fr; }
+  /* .go-modes 的列数在文件上半部分随 .bd-cols 一起收敛，这里不再重复声明，
+     否则会覆盖上面的 2 列规则（同断点两条规则，后者胜） */
   .go-clocks { grid-template-columns: 1fr; }
   .go-endbar { flex-direction: column; align-items: flex-start; }
 }

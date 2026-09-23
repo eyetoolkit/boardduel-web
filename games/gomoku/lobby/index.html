@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0E1419">
+<title>Choose Your Mode — Gomoku | BoardDuel</title>
+<meta name="description" content="Six ways to play Gomoku: ranked online, three engine temperaments, pass &amp; play on one screen, or tournament play. Same 15×15 board — only the opponent changes.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="BoardDuel">
+<meta property="og:title" content="Choose Your Mode — Gomoku | BoardDuel">
+<meta property="og:description" content="Six ways to play Gomoku: ranked online, three engine temperaments, pass &amp; play on one screen, or tournament play. Same 15×15 board — only the opponent changes.">
+<meta property="og:url" content="https://boardduel.com/games/gomoku/lobby/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Choose Your Mode — Gomoku | BoardDuel">
+<meta name="twitter:description" content="Six ways to play Gomoku: ranked online, three engine temperaments, pass &amp; play on one screen, or tournament play.">
+<link rel="canonical" href="https://boardduel.com/games/gomoku/lobby/">
+<link rel="alternate" hreflang="en" href="https://boardduel.com/games/gomoku/lobby/">
+<link rel="alternate" hreflang="x-default" href="https://boardduel.com/games/gomoku/lobby/">
+<link rel="stylesheet" href="/src/styles/boardduel.css">
+</head>
+<body>
+<nav class="bd-nav">
+  <div class="bd-wrap">
+    <div class="bd-mark">BOARD<span>DUEL</span></div>
+    <ul class="bd-links">
+      <li><a class="bd-link" href="/">HOME</a></li>
+      <li><a class="bd-link bd-link-cur" href="/games/gomoku/">GOMOKU</a></li>
+      <li><a class="bd-link" href="/games/tictactoe/">TICTACTOE</a></li>
+      <li><a class="bd-link" href="/games/connect4/">CONNECT4</a></li>
+      <li><a class="bd-link" href="/games/reversi/">REVERSI</a></li>
+      <li><a class="bd-link" href="/games/chess/">CHESS</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main class="bd-main">
+  <section class="bd-hero">
+    <h1>Five in a row<span class="bd-dot">.</span> <span class="bd-hero-sub">Pick your opponent.</span></h1>
+    <p class="bd-lead">Same 15×15 board, same freestyle rule — first to connect five wins. What changes is who sits across from you: a stranger with a rating, an engine with a temperament, or the person holding your phone.</p>
+    <div class="bd-game-meta">
+      <span><b>15×15</b> board</span>
+      <span><b>freestyle</b> rules</span>
+      <span><b>5</b> in a row wins</span>
+      <span><b>black</b> moves first</span>
+    </div>
+  </section>
+
+  <div class="bd-cols">
+    <!-- ══ 左列 · 模式卡（纯 &lt;a&gt; 深链，无 JS 也能点） ══ -->
+    <div>
+      <div class="bd-section-title">Game modes</div>
+      <div class="go-modes" id="modeGrid">
+
+        <!-- 01 · Ranked —— 真实匹配队列 + 5s AI 补位，结果影响 Elo -->
+        <a class="go-mode feat" href="/games/gomoku/?mode=ranked" data-mode="ranked">
+          <span class="go-mode-ico" aria-hidden="true">⚔️</span>
+          <span class="go-mode-top">
+            <span class="go-mode-name">Ranked Match</span>
+            <span class="go-tag">live</span>
+          </span>
+          <span class="go-mode-desc">The measured one. A real opponent at roughly your level, and the result moves your rating. No code, no lobby, no waiting around.</span>
+        </a>
+
+        <!-- 02 · Engine 1/3 —— Counter（原 easy） -->
+        <a class="go-mode" href="/games/gomoku/?mode=engine&amp;level=easy" data-mode="engine" data-level="easy">
+          <span class="go-mode-ico" aria-hidden="true">🛡️</span>
+          <span class="go-mode-top">
+            <span class="go-mode-name">Engine · Counter</span>
+            <span class="go-tag is-mute">level 1</span>
+          </span>
+          <span class="go-mode-desc">The reader. It counts your pairs and trios before it moves, so it sees a threat early — beat it by making two threats at once.</span>
+        </a>
+
+        <!-- 03 · Engine 2/3 —— Attacker（原 medium） -->
+        <a class="go-mode" href="/games/gomoku/?mode=engine&amp;level=medium" data-mode="engine" data-level="medium">
+          <span class="go-mode-ico" aria-hidden="true">🔥</span>
+          <span class="go-mode-top">
+            <span class="go-mode-name">Engine · Attacker</span>
+            <span class="go-tag is-gold">level 2</span>
+          </span>
+          <span class="go-mode-desc">The pusher. It would rather build its own threat than answer yours — greedy, sharp, and perfectly beatable if you defend first.</span>
+        </a>
+
+        <!-- 04 · Engine 3/3 —— Punisher（原 hard） -->
+        <a class="go-mode" href="/games/gomoku/?mode=engine&amp;level=hard" data-mode="engine" data-level="hard">
+          <span class="go-mode-ico" aria-hidden="true">💀</span>
+          <span class="go-mode-top">
+            <span class="go-mode-name">Engine · Punisher</span>
+            <span class="go-tag is-gold">level 3</span>
+          </span>
+          <span class="go-mode-desc">The executioner. Sharpest weights in the book and no sympathy for a loose stone — one careless move is usually the whole game.</span>
+        </a>
+
+        <!-- 05 · Pass &amp; Play —— 同屏双人 -->
+        <a class="go-mode" href="/games/gomoku/?mode=pass" data-mode="pass">
+          <span class="go-mode-ico" aria-hidden="true">👥</span>
+          <span class="go-mode-top">
+            <span class="go-mode-name">Pass &amp; Play</span>
+            <span class="go-tag is-mute">one screen</span>
+          </span>
+          <span class="go-mode-desc">The social one. Two humans, one device — no queue, no code, no excuses. Turn the screen around and settle it.</span>
+        </a>
+
+        <!-- 06 · Tournament —— 未上线，灰态不可点 -->
+        <div class="go-mode ghost" aria-disabled="true" data-mode="tournament">
+          <span class="go-mode-ico" aria-hidden="true">🏆</span>
+          <span class="go-mode-top">
+            <span class="go-mode-name">Tournament</span>
+            <span class="go-tag">Coming soon</span>
+          </span>
+          <span class="go-mode-desc">The big one. Bracket play, seeded rounds and a season board. Still being built — this one is worth the wait.</span>
+        </div>
+      </div>
+      <p class="bd-side-note">Every mode opens the same board — clocks, move recorder and engine hints included.</p>
+    </div>
+
+    <!-- ══ 右列 · 侧栏 ══ -->
+    <aside class="bd-side">
+      <section class="bd-lobby-card" aria-labelledby="ratingTitle">
+        <h3 id="ratingTitle">Ranked standings</h3>
+        <div id="rankRows" aria-live="polite">
+          <div class="bd-side-note">Loading the standings…</div>
+        </div>
+      </section>
+
+      <section class="bd-lobby-card" aria-labelledby="codeTitle">
+        <h3 id="codeTitle">Have an invite code?</h3>
+        <p>Someone sent you a code for a private game. Enter it and you drop straight into their room.</p>
+        <div class="bd-code-row">
+          <input id="codeInput" type="text" maxlength="8" placeholder="ABC123"
+                 autocomplete="off" spellcheck="false" aria-label="Invite code">
+          <button class="go-btn is-primary" id="codeJoin" type="button">Join</button>
+        </div>
+        <p class="bd-code-err" id="codeErr" role="alert"></p>
+      </section>
+
+      <section class="bd-lobby-card" aria-labelledby="rulesTitle">
+        <h3 id="rulesTitle">How to win</h3>
+        <ul class="bd-rules">
+          <li>Place stones on <b>intersections</b>, not in the squares.</li>
+          <li>Columns run <b>A–O</b>, rows <b>1–15</b> from the bottom.</li>
+          <li><b>Black</b> moves first.</li>
+          <li>First to <b>five in a row</b> — horizontally, vertically or diagonally — wins.</li>
+          <li>On touch screens: tap once for the ghost, tap again to commit.</li>
+        </ul>
+      </section>
+    </aside>
+  </div>
+</main>
+
+<div class="bd-foot">
+  <span><b>BoardDuel</b> · Gomoku mode select</span>
+  <span class="bd-foot-links">
+    <a href="/">Home</a>
+    <a href="/games/gomoku/">Play</a>
+    <a href="/games/gomoku/?mode=ranked">Ranked</a>
+  </span>
+</div>
+<script type="module" src="/src/games/gomoku/lobby.ts"></script>
+</body>
+</html>

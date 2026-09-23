@@ -40,7 +40,6 @@ const endEl = $('go-end');
 const boardEl = $<HTMLDivElement>('bd-board');
 const legendEl = $<HTMLDivElement>('go-legend');
 
-const levelsEl = $<HTMLDivElement>('go-levels');
 const queueEl = $<HTMLDivElement>('go-queue');
 const queueTitle = $<HTMLElement>('go-queue-title');
 const queueSub = $<HTMLElement>('go-queue-sub');
@@ -992,31 +991,31 @@ function leaveRoom(): void {
 /* ══════════════════════════════════════════════════════════════
    事件绑定
    ══════════════════════════════════════════════════════════════ */
-document.querySelectorAll<HTMLButtonElement>('.go-mode').forEach((b) => {
+/** 引擎三档的展示名（与卡片、结算文案共用一份，避免各处硬编码走样） */
+const LEVEL_LABEL: Record<GDifficulty, string> = {
+  easy: 'Counter',
+  medium: 'Attacker',
+  hard: 'Punisher',
+};
+
+/** 点卡片 = 选模式。引擎三档各占一张卡，所以难度直接写在卡片上。 */
+document.querySelectorAll<HTMLButtonElement>('.go-mode[data-mode]').forEach((b) => {
   b.addEventListener('click', () => {
     const m = b.dataset.mode as UIState['mode'];
     document.querySelectorAll('.go-mode').forEach((x) => x.classList.remove('is-cur'));
     b.classList.add('is-cur');
     state.mode = m;
-    levelsEl.hidden = m !== 'ai';
+    if (b.dataset.level) state.level = b.dataset.level as GDifficulty;
     if (m === 'ranked') {
       startBtn.textContent = 'Enter queue';
       startNote.textContent = 'A real opponent, roughly your level.';
     } else if (m === 'ai') {
       startBtn.textContent = 'Start game';
-      startNote.textContent = 'Black moves first — you are Black.';
+      startNote.textContent = `Black moves first — you are Black, engine plays ${LEVEL_LABEL[state.level]}.`;
     } else {
       startBtn.textContent = 'Start game';
       startNote.textContent = 'Black moves first, then white, same screen.';
     }
-  });
-});
-
-document.querySelectorAll<HTMLButtonElement>('.go-level').forEach((b) => {
-  b.addEventListener('click', () => {
-    document.querySelectorAll('.go-level').forEach((x) => x.classList.remove('is-cur'));
-    b.classList.add('is-cur');
-    state.level = b.dataset.level as GDifficulty;
   });
 });
 
@@ -1067,6 +1066,45 @@ document.addEventListener('keydown', (e) => {
 /* ══════════════════════════════════════════════════════════════
    启动
    ══════════════════════════════════════════════════════════════ */
+/* ─── 模式深链 ───
+   与 24 点同款两段式：/games/gomoku/lobby/ 选模式 → /games/gomoku/?mode=… 直接开局。
+     ?mode=ranked           → 进页面即入队（省掉一次点击）
+     ?mode=engine&level=…   → 直接开局，难度取 easy|medium|hard（缺省 medium）
+     ?mode=pass             → 直接开同屏双人
+   未知 mode 一律 replace 回模式页 —— 否则会停在一个「什么模式都没选」的半空大厅，
+   玩家以为页面坏了。 */
+const MODE_PAGE = '/games/gomoku/lobby/';
+
+function pickModeCard(sel: string): boolean {
+  const card = document.querySelector<HTMLButtonElement>(sel);
+  if (!card) return false;
+  card.click(); // 复用卡片自身的点击逻辑，选中态与 Start 文案一并就位
+  return true;
+}
+
+function applyDeepLink(): void {
+  const q = new URLSearchParams(location.search);
+  const raw = (q.get('mode') || '').toLowerCase();
+  if (!raw) return;
+
+  if (raw === 'ranked') {
+    pickModeCard('.go-mode[data-mode="ranked"]');
+    void joinQueue();
+    return;
+  }
+  if (raw === 'pass') {
+    if (pickModeCard('.go-mode[data-mode="pass"]')) newGame();
+    return;
+  }
+  if (raw === 'engine' || raw === 'ai') {
+    const lv = (q.get('level') || '').toLowerCase();
+    const level: GDifficulty = lv === 'easy' || lv === 'hard' ? lv : 'medium';
+    if (pickModeCard(`.go-mode[data-level="${level}"]`)) newGame();
+    return;
+  }
+  location.replace(MODE_PAGE);
+}
+
 (function init(): void {
   // 段位显示：用账号资料（有则显示，无则用默认文案，不编造数字）
   void (async () => {
@@ -1074,22 +1112,27 @@ document.addEventListener('keydown', (e) => {
       const r = await fetch(API + '/api/account/me', { credentials: 'include' });
       const j = await r.json();
       if (j && j.loggedIn && j.nickname) {
-        rankLabel.textContent = 'Stone II · 1,240';
+        rankLabel.textContent = String(j.nickname);
+        rankWait.textContent = 'rating kept';
+      } else {
+        rankLabel.textContent = 'Guest';
+        rankWait.textContent = 'unrated';
       }
     } catch (e) { /* 离线也要能玩 */ }
   })();
 
-  // 默认进入 ai 模式的档位显示
-  levelsEl.hidden = false;
+  // 默认停在引擎 · Attacker（原「Play the engine」的中间档）
   state.mode = 'ai';
-  document.querySelector('.go-mode[data-mode="ai"]')?.classList.add('is-cur');
+  state.level = 'medium';
+  document.querySelector('.go-mode[data-level="medium"]')?.classList.add('is-cur');
   if (myUuid()) rankWait.textContent = 'ranked queue live';
 
   resetClock();
   render();
 
-  // ── 邀请深链：?c=<CODE> 直接进房，跳过大厅 ──
-  //   必须放在 render() 之后：此时棋盘已画好，进房后 newGame() 能立刻接管。
+  // ── 深链优先级：?c= 邀请房 > ?mode= 模式 ──
+  //   邀请是点对点的具体房间，比「选个模式」更明确，所以先消费它。
+  //   两者都必须放在 render() 之后：此时棋盘已画好，进房/开局能立刻接管。
   const code = inviteCode();
   if (code) {
     const host = inviteIsHost();
@@ -1099,5 +1142,7 @@ document.addEventListener('keydown', (e) => {
     toast(host
       ? 'Room ' + code + ' created — waiting for your opponent'
       : 'Joining room ' + code);
+  } else {
+    applyDeepLink();
   }
 })();

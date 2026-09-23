@@ -38,56 +38,70 @@
   <section id="go-lobby">
     <div class="bd-section-title">SCREEN 1 · LOBBY</div>
 
-    <div class="go-modes">
-      <button type="button" class="go-mode" data-mode="ranked">
+    <div class="go-modes" id="go-modes">
+      <button type="button" class="go-mode feat" data-mode="ranked">
+        <span class="go-mode-ico" aria-hidden="true">⚔️</span>
         <span class="go-mode-top">
-          <span class="go-mode-name">Ranked match</span>
+          <span class="go-mode-name">Ranked Match</span>
           <span class="go-pill is-live">live</span>
         </span>
-        <span class="go-mode-desc">Play a real opponent. Your result moves your rating.</span>
+        <span class="go-mode-desc">The measured one. A real opponent at roughly your level — the result moves your rating.</span>
         <span class="go-mode-meta" id="go-rank-line">
           <span id="go-rank-label">Stone II · 1,240</span>
           <span class="go-mode-wait" id="go-rank-wait">avg wait 18s</span>
         </span>
       </button>
 
-      <button type="button" class="go-mode" data-mode="ai">
+      <button type="button" class="go-mode" data-mode="ai" data-level="easy">
+        <span class="go-mode-ico" aria-hidden="true">🛡️</span>
         <span class="go-mode-top">
-          <span class="go-mode-name">Play the engine</span>
-          <span class="go-pill">3 levels</span>
+          <span class="go-mode-name">Engine · Counter</span>
+          <span class="go-tag is-mute">level 1</span>
         </span>
-        <span class="go-mode-desc">Three engines, three temperaments. Pick your poison.</span>
-        <span class="go-mode-meta"><span id="go-ai-hint">Counter · Attacker · Punisher</span></span>
+        <span class="go-mode-desc">The reader. Counts your pairs and trios before it moves.</span>
+      </button>
+
+      <button type="button" class="go-mode" data-mode="ai" data-level="medium">
+        <span class="go-mode-ico" aria-hidden="true">🔥</span>
+        <span class="go-mode-top">
+          <span class="go-mode-name">Engine · Attacker</span>
+          <span class="go-tag is-gold">level 2</span>
+        </span>
+        <span class="go-mode-desc">The pusher. Opens its own threats first — defend, then punish.</span>
+      </button>
+
+      <button type="button" class="go-mode" data-mode="ai" data-level="hard">
+        <span class="go-mode-ico" aria-hidden="true">💀</span>
+        <span class="go-mode-top">
+          <span class="go-mode-name">Engine · Punisher</span>
+          <span class="go-tag is-gold">level 3</span>
+        </span>
+        <span class="go-mode-desc">The executioner. Sharpest weights, no sympathy for a loose stone.</span>
       </button>
 
       <button type="button" class="go-mode" data-mode="pass">
+        <span class="go-mode-ico" aria-hidden="true">👥</span>
         <span class="go-mode-top">
-          <span class="go-mode-name">Pass &amp; play</span>
-          <span class="go-pill">one screen</span>
+          <span class="go-mode-name">Pass &amp; Play</span>
+          <span class="go-tag is-mute">one screen</span>
         </span>
-        <span class="go-mode-desc">Two humans, one device.</span>
-        <span class="go-mode-meta"><span>black and white, both human</span></span>
+        <span class="go-mode-desc">The social one. Two humans, one device — no queue, no code.</span>
       </button>
-    </div>
 
-    <!-- 引擎档位（仅 ai 模式显示） -->
-    <div class="go-levels" id="go-levels" hidden>
-      <div class="bd-section-title">Engine level</div>
-      <div class="go-level-row" id="go-level-row">
-        <button type="button" class="go-level" data-level="easy">
-          <span class="go-level-name">Counter</span>
-          <span class="go-level-desc">counts pairs &amp; trios</span>
-        </button>
-        <button type="button" class="go-level is-cur" data-level="medium">
-          <span class="go-level-name">Attacker</span>
-          <span class="go-level-desc">opens threats, still local</span>
-        </button>
-        <button type="button" class="go-level" data-level="hard">
-          <span class="go-level-name">Punisher</span>
-          <span class="go-level-desc">sharpest weights, no lookahead</span>
-        </button>
+      <!-- 未上线：灰态且不是交互元素，所以键盘也聚焦不到 -->
+      <div class="go-mode ghost" aria-disabled="true">
+        <span class="go-mode-ico" aria-hidden="true">🏆</span>
+        <span class="go-mode-top">
+          <span class="go-mode-name">Tournament</span>
+          <span class="go-tag">Coming soon</span>
+        </span>
+        <span class="go-mode-desc">The big one. Bracket play and a season board — still being built.</span>
       </div>
     </div>
+
+    <p class="bd-side-note">
+      <a class="go-start-note" href="/games/gomoku/lobby/">All six modes, explained →</a>
+    </p>
 
     <!-- 排位队列面板 -->
     <div class="go-queue" id="go-queue" hidden>
