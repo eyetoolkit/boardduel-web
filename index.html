@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#0E1419">
+<meta name="theme-color" content="#F4F5F9">
 <title>%%TITLE%%</title>
 <meta name="description" content="%%DESC%%">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -19,69 +19,236 @@
 <link rel="canonical" href="https://boardduel.com/">
 <link rel="alternate" hreflang="en" href="https://boardduel.com/">
 <link rel="alternate" hreflang="x-default" href="https://boardduel.com/">
-<link rel="stylesheet" href="/src/styles/boardduel.css">
+<link rel="stylesheet" href="/src/styles/home-papergames.css">
 </head>
-<body><nav class="bd-nav">
-  <div class="bd-wrap">
-    <div class="bd-mark">BOARD<span>DUEL</span></div>
-    <ul class="bd-links">
-      <li><a class="bd-link" href="/">HOME</a></li>
-      <li><a class="bd-link" href="/games/gomoku/">GOMOKU</a></li>
-      <li data-stage="beta"><a class="bd-link" href="/games/tictactoe/">TICTACTOE</a></li>
-      <li data-stage="beta"><a class="bd-link" href="/games/connect4/">CONNECT4</a></li>
-      <li data-stage="beta"><a class="bd-link" href="/games/reversi/">REVERSI</a></li>
-      <li data-stage="beta"><a class="bd-link" href="/games/chess/">CHESS</a></li>
-    </ul>
+<body class="home-v2">
+
+<!-- ═══════════ 移动端顶栏（<1120px 显示） ═══════════ -->
+<div class="topbar">
+  <button class="burger" id="burger" aria-label="Open navigation" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="logo" href="/">Board<b>Duel</b></a>
+  <a class="btn-login" href="/games/gomoku/">Play now</a>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<!-- ═══════════ 侧边导航 ═══════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-top">
+    <a class="logo" href="/">Board<b>Duel</b></a>
+    <button class="sb-collapse" id="collapse" title="Collapse navigation" aria-label="Collapse navigation">&laquo;</button>
   </div>
-</nav><main class="bd-main">
-  <section class="bd-hero">
-<!--stage:beta-->
-    <span class="bd-mode-badge">FIVE BOARDS · FIVE LIVE ENGINES</span>
-    <h1>Five boards. <span class="bd-gold">Every one plays.</span></h1>
-    <p class="bd-lead">Gomoku, Tic-Tac-Toe, Connect 4, Reversi and Chess — each with a real engine you can play right now, at three difficulty levels, or pass-and-play with a friend on one screen.</p>
-<!--/stage:beta-->
-<!--stage:prod-->
-    <span class="bd-mode-badge">GOMOKU · LIVE ENGINE</span>
-    <h1>One board. <span class="bd-gold">A real engine.</span></h1>
-    <p class="bd-lead">15×15 freestyle Gomoku against a pattern-matching engine at three difficulty levels — or pass-and-play with a friend on one screen. More boards are in the workshop.</p>
-<!--/stage:prod-->
+  <div class="sb-login">
+    <a class="btn-login" href="/games/gomoku/"><span>Play now</span></a>
+  </div>
+  <nav class="sb-nav" aria-label="Site navigation">
+    <a class="nav-item active" href="/">
+      <svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><label>Home</label>
+    </a>
+    <a class="nav-item" href="/rank/">
+      <svg viewBox="0 0 24 24"><path d="M8 21h8m-4-4v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 5M17 6h3a3 3 0 0 1-3 5"/></svg><label>Leaderboard</label>
+    </a>
+    <a class="nav-item" href="/stats/">
+      <svg viewBox="0 0 24 24"><path d="M4 20V10m5 10V4m5 16v-7m5 7V8"/></svg><label>Stats</label>
+    </a>
+    <a class="nav-item" href="/shop/">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg><label>Coin shop</label>
+    </a>
+
+    <div class="nav-group">Play</div>
+    <a class="nav-item" href="/games/gomoku/" data-stage="live">
+      <img class="mini" src="/games/gomoku/cover.svg" alt="" aria-hidden="true"><label>Gomoku</label>
+    </a>
+    <a class="nav-item" href="/games/tictactoe/" data-stage="beta">
+      <img class="mini" src="/games/tictactoe/cover.svg" alt="" aria-hidden="true"><label>Tic-Tac-Toe</label>
+    </a>
+    <a class="nav-item" href="/games/connect4/" data-stage="beta">
+      <img class="mini" src="/games/connect4/cover.svg" alt="" aria-hidden="true"><label>Connect 4</label>
+    </a>
+    <a class="nav-item" href="/games/reversi/" data-stage="beta">
+      <img class="mini" src="/games/reversi/cover.svg" alt="" aria-hidden="true"><label>Othello</label>
+    </a>
+    <a class="nav-item" href="/games/chess/" data-stage="beta">
+      <img class="mini" src="/games/chess/cover.svg" alt="" aria-hidden="true"><label>Chess</label>
+    </a>
+
+    <div class="nav-group">Help</div>
+    <a class="nav-item" href="/how-to-play/gomoku/">
+      <svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></svg><label>How to play</label>
+    </a>
+  </nav>
+  <div class="nav-foot">
+    <span class="lang-pill"><b>EN</b></span>
+    <span class="sb-copy">&copy; 2026</span>
+  </div>
+</aside>
+
+<!-- ═══════════ 主区 ═══════════ -->
+<main class="main">
+
+  <!-- 游戏墙：首屏。未上线的板子由 vite filter-stage 在构建期剔除 -->
+  <section class="wall" id="games" aria-label="All boards">
+    <div class="wrap">
+      <div class="wall-grid">
+        <a class="gcard" href="/games/gomoku/" data-stage="live">
+          <span class="gcard-art"><img src="/games/gomoku/cover.svg" alt="Gomoku" width="512" height="512"></span>
+          <span class="gcard-body"><span class="gcard-name">Gomoku</span><span class="gcard-tags"><i>1v1</i><i>AI</i></span></span>
+        </a>
+        <a class="gcard" href="/games/tictactoe/" data-stage="beta">
+          <span class="gcard-art"><img src="/games/tictactoe/cover.svg" alt="Tic-Tac-Toe" width="512" height="512"></span>
+          <span class="gcard-body"><span class="gcard-name">Tic-Tac-Toe</span><span class="gcard-tags"><i>1v1</i><i>AI</i></span></span>
+        </a>
+        <a class="gcard" href="/games/connect4/" data-stage="beta">
+          <span class="gcard-art"><img src="/games/connect4/cover.svg" alt="Connect 4" width="512" height="512"></span>
+          <span class="gcard-body"><span class="gcard-name">Connect 4</span><span class="gcard-tags"><i>1v1</i><i>AI</i></span></span>
+        </a>
+        <a class="gcard" href="/games/reversi/" data-stage="beta">
+          <span class="gcard-art"><img src="/games/reversi/cover.svg" alt="Othello" width="512" height="512"></span>
+          <span class="gcard-body"><span class="gcard-name">Othello</span><span class="gcard-tags"><i>1v1</i><i>AI</i></span></span>
+        </a>
+        <a class="gcard" href="/games/chess/" data-stage="beta">
+          <span class="gcard-art"><img src="/games/chess/cover.svg" alt="Chess" width="512" height="512"></span>
+          <span class="gcard-body"><span class="gcard-name">Chess</span><span class="gcard-tags"><i>1v1</i><i>AI</i></span></span>
+        </a>
+        <div class="gcard soon" aria-disabled="true" aria-label="Checkers — in the workshop">
+          <span class="gcard-art">
+            <svg viewBox="0 0 512 512" role="img" aria-label="Checkers preview">
+              <rect width="512" height="512" fill="#241C4D"/>
+              <g fill="#FFFFFF" fill-opacity="0.14">
+                <rect x="56" y="56" width="90" height="90" rx="20"/><rect x="166" y="56" width="90" height="90" rx="20"/>
+                <rect x="276" y="56" width="90" height="90" rx="20"/><rect x="386" y="56" width="70" height="70" rx="16"/>
+                <rect x="56" y="166" width="90" height="90" rx="20"/><rect x="166" y="166" width="90" height="90" rx="20"/>
+                <rect x="276" y="166" width="90" height="90" rx="20"/><rect x="386" y="166" width="70" height="70" rx="16"/>
+                <rect x="56" y="276" width="90" height="90" rx="20"/><rect x="166" y="276" width="90" height="90" rx="20"/>
+                <rect x="276" y="276" width="90" height="90" rx="20"/><rect x="386" y="276" width="70" height="70" rx="16"/>
+                <rect x="56" y="386" width="90" height="90" rx="20"/><rect x="166" y="386" width="90" height="90" rx="20"/>
+                <rect x="276" y="386" width="90" height="90" rx="20"/><rect x="386" y="386" width="70" height="70" rx="16"/>
+              </g>
+              <g fill="#7C3AED">
+                <circle cx="101" cy="101" r="26"/><circle cx="211" cy="101" r="26"/><circle cx="321" cy="101" r="26"/>
+                <circle cx="101" cy="211" r="26"/><circle cx="211" cy="211" r="26"/><circle cx="321" cy="211" r="26"/>
+                <circle cx="101" cy="321" r="26"/><circle cx="211" cy="321" r="26"/><circle cx="321" cy="321" r="26"/>
+                <circle cx="101" cy="431" r="26"/><circle cx="211" cy="431" r="26"/><circle cx="321" cy="431" r="26"/>
+              </g>
+            </svg>
+          </span>
+          <span class="gcard-body"><span class="gcard-name">Checkers</span><span class="gcard-tags"><i>In the workshop</i></span></span>
+          <span class="soon-pill">SOON</span>
+        </div>
+      </div>
+    </div>
   </section>
 
-  <div class="bd-section-title">Pick a board</div>
-  <div class="bd-cards">
-    <a class="bd-card is-live" href="/games/gomoku/" data-stage="live">
-      <span class="bd-card-name">GOMOKU</span>
-      <div class="bd-card-mini"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="2" width="60" height="60" stroke="#5C6B74" stroke-width="1.5" fill="none"/><path d="M2 14H62M2 26H62M2 38H62M2 50H62M14 2V62M26 2V62M38 2V62M50 2V62" stroke="#2A3741" stroke-width="0.7"/><circle cx="32" cy="32" r="3" fill="#F4F6F2"/><circle cx="22" cy="22" r="3" fill="#0E1419"/><circle cx="42" cy="42" r="3" fill="#F4F6F2"/></svg></div>
-      <span class="bd-card-desc">15×15 · freestyle · pattern AI</span>
-      <span class="bd-card-pill is-live">live engine</span>
-    </a>
-    <a class="bd-card is-live" href="/games/tictactoe/" data-stage="beta">
-      <span class="bd-card-name">TICTACTOE</span>
-      <div class="bd-card-mini"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M22 8V56M42 8V56M8 22H56M8 42H56" stroke="#5C6B74" stroke-width="1.5" fill="none"/><path d="M16 16L24 24M44 16L36 24" stroke="#F4F6F2" stroke-width="3" stroke-linecap="round"/><circle cx="28" cy="40" r="3" fill="none" stroke="#FF6A3C" stroke-width="2.5"/><circle cx="44" cy="36" r="3" fill="none" stroke="#FF6A3C" stroke-width="2.5"/><circle cx="36" cy="44" r="3" fill="none" stroke="#FF6A3C" stroke-width="2.5"/></svg></div>
-      <span class="bd-card-desc">Nine squares — perfect play draws</span>
-      <span class="bd-card-pill is-live">live engine</span>
-    </a>
-    <a class="bd-card is-live" href="/games/connect4/" data-stage="beta">
-      <span class="bd-card-name">CONNECT4</span>
-      <div class="bd-card-mini"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="2" width="60" height="60" stroke="#5C6B74" stroke-width="1.5" fill="none"/><g fill="#F4F6F2"><circle cx="14" cy="14" r="4"/><circle cx="26" cy="14" r="4"/><circle cx="38" cy="14" r="4"/><circle cx="50" cy="14" r="4"/><circle cx="14" cy="24" r="4"/></g><g fill="#0E1419"><circle cx="26" cy="24" r="4"/><circle cx="38" cy="24" r="4"/><circle cx="14" cy="34" r="4"/><circle cx="26" cy="34" r="4"/><circle cx="38" cy="34" r="4"/></g></svg></div>
-      <span class="bd-card-desc">7×6 grid · gravity drop · αβ engine</span>
-      <span class="bd-card-pill is-live">live engine</span>
-    </a>
-    <a class="bd-card is-live" href="/games/reversi/" data-stage="beta">
-      <span class="bd-card-name">REVERSI</span>
-      <div class="bd-card-mini"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="2" width="60" height="60" stroke="#5C6B74" stroke-width="1.5" fill="none"/><path d="M18 2V62M2 18H62M34 2V62M2 34H62M50 2V62M2 50H62" stroke="#2A3741" stroke-width="0.7"/><circle cx="26" cy="26" r="3" fill="#0E1419"/><circle cx="42" cy="26" r="3" fill="#0E1419"/><circle cx="34" cy="34" r="3" fill="#F4F6F2"/><circle cx="50" cy="50" r="3" fill="#F4F6F2"/></svg></div>
-      <span class="bd-card-desc">8×8 board · flips · corner-aware AI</span>
-      <span class="bd-card-pill is-live">live engine</span>
-    </a>
-    <a class="bd-card is-live" href="/games/chess/" data-stage="beta">
-      <span class="bd-card-name">CHESS</span>
-      <div class="bd-card-mini"><svg viewBox="0 0 64 64" aria-hidden="true"><g fill="#0E1419"><rect x="2" y="2" width="15" height="15"/><rect x="17" y="2" width="15" height="15"/><rect x="32" y="2" width="15" height="15"/><rect x="47" y="2" width="15" height="15"/><rect x="2" y="17" width="15" height="15"/><rect x="17" y="17" width="15" height="15"/><rect x="32" y="17" width="15" height="15"/><rect x="47" y="17" width="15" height="15"/><rect x="2" y="32" width="15" height="15"/><rect x="17" y="32" width="15" height="15"/><rect x="32" y="32" width="15" height="15"/><rect x="47" y="32" width="15" height="15"/><rect x="2" y="47" width="15" height="15"/><rect x="17" y="47" width="15" height="15"/><rect x="32" y="47" width="15" height="15"/><rect x="47" y="47" width="15" height="15"/></g><g fill="#F4F6F2"><rect x="17" y="2" width="15" height="15"/><rect x="32" y="2" width="15" height="15"/><rect x="2" y="17" width="15" height="15"/><rect x="47" y="17" width="15" height="15"/><rect x="17" y="32" width="15" height="15"/><rect x="32" y="32" width="15" height="15"/><rect x="47" y="32" width="15" height="15"/><rect x="2" y="47" width="15" height="15"/><rect x="32" y="47" width="15" height="15"/><rect x="47" y="47" width="15" height="15"/></g></svg></div>
-      <span class="bd-card-desc">8×8 · full rules · αβ search</span>
-      <span class="bd-card-pill is-live">live engine</span>
-    </a>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="wrap">
+<!--stage:beta-->
+      <h1>Five board games, <em>one ladder</em></h1>
+      <p class="sub">Chess &middot; Tic-Tac-Toe &middot; Gomoku &middot; Connect 4 &middot; Othello — classic boards,<br>no download, no login. Start or join in one tap.</p>
+      <div class="cta-row">
+        <a class="btn btn-violet" href="/games/chess/">Play Chess now</a>
+        <a class="btn btn-ghost" href="#games">Browse all boards</a>
+      </div>
+<!--/stage:beta-->
+<!--stage:prod-->
+      <h1>Take the board. <em>Climb one ladder.</em></h1>
+      <p class="sub">Gomoku is live — a 15&times;15 freestyle grid against a pattern-matching engine<br>at three difficulty levels, or pass-and-play with a friend on one screen.</p>
+      <div class="cta-row">
+        <a class="btn btn-violet" href="/games/gomoku/">Play Gomoku now</a>
+        <a class="btn btn-ghost" href="#games">Browse all boards</a>
+      </div>
+<!--/stage:prod-->
+      <div class="chips">
+        <span class="chip"><span class="dot"></span>No login</span>
+        <span class="chip"><span class="dot"></span>Free &middot; no ads</span>
+        <span class="chip"><span class="dot"></span>Play vs AI or a friend</span>
+        <span class="chip"><span class="dot"></span>Six-tier ladder</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 今日三局 + 排行榜双面板 -->
+  <section class="duo wrap" aria-label="Daily boards and leaderboard">
+    <div class="panel panel-daily">
+      <div class="panel-head">
+        <span class="panel-title"><span class="cal">&#9683;</span> Today&rsquo;s boards</span>
+        <span class="panel-meta"><span class="star">&#11088; <b id="dailyDone">0</b>/<span id="dailyTotal">3</span></span></span>
+      </div>
+      <div class="daily-tiles" id="dailyTiles">
+        <a class="dtile" href="/games/chess/" data-daily="chess" data-stage="beta"><img src="/games/chess/cover.svg" alt="" aria-hidden="true">Chess</a>
+        <a class="dtile" href="/games/gomoku/" data-daily="gomoku" data-stage="live"><img src="/games/gomoku/cover.svg" alt="" aria-hidden="true">Gomoku</a>
+        <a class="dtile" href="/games/connect4/" data-daily="connect4" data-stage="beta"><img src="/games/connect4/cover.svg" alt="" aria-hidden="true">Connect 4</a>
+      </div>
+      <div class="progress"><i id="dailyBar" style="width:0%"></i></div>
+      <p class="daily-msg"><span id="dailyMsg">Play a board to tick it off today</span> &middot; list resets in <span class="cd num" id="dailyCountdown">--:--:--</span></p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">&#127942; Leaderboard</span>
+        <span class="panel-meta"><a href="/rank/" style="color:var(--violet);font-weight:700">Full board &rarr;</a></span>
+      </div>
+      <p class="daily-msg" style="margin:-6px 0 10px"><span id="lbSub">Loading top players&hellip;</span></p>
+      <div class="weekly-rows" id="lbRows"></div>
+      <a class="btn-exchange" href="/shop/" style="display:block;text-align:center">&#129689; Spend coins in the shop</a>
+    </div>
+  </section>
+
+  <!-- 六段天梯 -->
+  <section class="ladder wrap" aria-label="Rank ladder">
+    <div class="ladder-panel">
+      <div class="ladder-title">Six-tier ladder<small>Bronze to Master &middot; weekly reset</small></div>
+      <div class="tiers">
+        <div class="tier"><i style="height:16px"></i><span>Bronze</span></div>
+        <div class="tier"><i style="height:22px"></i><span>Silver</span></div>
+        <div class="tier"><i style="height:28px"></i><span>Gold</span></div>
+        <div class="tier"><i style="height:34px"></i><span>Platinum</span></div>
+        <div class="tier"><i style="height:40px"></i><span>Diamond</span></div>
+        <div class="tier master"><i style="height:48px"></i><span>Master</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 特性 -->
+  <section class="feats">
+    <div class="wrap feats-grid">
+      <div class="feat">
+        <span class="fic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span>
+        <div><b>A board a day</b><span>Three picks that rotate at midnight UTC — a reason to come back.</span></div>
+      </div>
+      <div class="feat">
+        <span class="fic"><svg viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1.6 1.6"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1.6-1.6"/></svg></span>
+        <div><b>Pass and play</b><span>Two people, one screen, no accounts. Hand the device over.</span></div>
+      </div>
+      <div class="feat">
+        <span class="fic"><svg viewBox="0 0 24 24"><path d="M13 2L5 13h6l-1 9 8-11h-6z"/></svg></span>
+        <div><b>Real engines</b><span>Pattern matching and alpha-beta search run in your browser.</span></div>
+      </div>
+      <div class="feat">
+        <span class="fic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M14.5 9.3c-.5-.8-1.4-1.3-2.5-1.3-1.7 0-3 1-3 2.2 0 2.8 6 1.4 6 4.2 0 1.2-1.3 2.2-3 2.2-1.1 0-2-.5-2.5-1.3M12 6.5V8m0 8v1.5"/></svg></span>
+        <div><b>Coins</b><span>Every finished duel pays out. Spend them in the shop.</span></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ═══════════ 页脚 ═══════════ -->
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="sf-title">Explore the Duel family</div>
+    <div class="sf-matrix">
+      <a class="sf-item current" href="https://boardduel.com"><span class="pip" style="background:#2FC4C9"></span>BoardDuel &middot; Chess &amp; Board Games</a>
+      <a class="sf-item" href="https://mathduel.games"><span class="pip" style="background:#F59E0B"></span>MathDuel &middot; Math Puzzle Games</a>
+      <a class="sf-item" href="https://memoryduel.com"><span class="pip" style="background:#4F46E5"></span>MemoryDuel &middot; Knowledge Battles</a>
+    </div>
+    <div class="sf-links">
+      <a href="/about/">About</a><a href="/contact/">Contact</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/how-to-play/gomoku/">How to play</a>
+    </div>
+    <div class="sf-copy">&copy; 2026 BoardDuel &middot; Pure static &middot; Privacy-first &middot; Free to play</div>
   </div>
-  <div class="bd-foot">
-  <span>© 2026 BoardDuel · free to play · privacy-first</span>
-  <span><a href="/">Home</a></span>
-</div>
-</main><script type="module" src="/src/pages/home.ts"></script></body></html>
+</footer>
+
+<script type="module" src="/src/pages/home.ts"></script>
+</body>
+</html>

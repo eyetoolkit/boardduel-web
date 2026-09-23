@@ -6,3 +6,5 @@ boardduel-build/
 .env.local
 *.log
 .DS_Store
+dist-beta/
+dist-beta/
