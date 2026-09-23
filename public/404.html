@@ -1,118 +1,153 @@
 <!DOCTYPE html>
-<html lang="en" data-site="board">
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title data-i18n-title="title.auto.hc_404页面未找到BoardDue_88348">404 - Page not found · Board Duel</title>
-  <meta data-i18n="meta.auto.hc_404页面未找到_23198" name="description" content="404 - Page not found">
-  <link rel="icon" type="image/svg+xml" href="/assets/img/favicon.svg">
-  <link rel="manifest" href="/manifest.zh.webmanifest">
-  <meta name="theme-color" content="#4f46e5">
-  <meta data-i18n="meta.auto.hc_404页面未找到BoardDue_13862" property="og:title" content="404 - Page not found · Board Duel">
-  <meta data-i18n="meta.auto.hc_404页面未找到_81629" property="og:description" content="404 - Page not found">
-  <meta property="og:locale" content="zh_CN">
-  <link rel="canonical" href="https://boardduel.com/">
-  
-  
-  <link rel="alternate" hreflang="zh-CN" href="https://boardduel.com/" />
-  <link rel="alternate" hreflang="en" href="https://boardduel.com/?lang=en" />
-  <link rel="alternate" hreflang="ja" href="https://boardduel.com/?lang=ja" />
-  <link rel="alternate" hreflang="es" href="https://boardduel.com/?lang=es" />
-  <link rel="alternate" hreflang="fr" href="https://boardduel.com/?lang=fr" />
-  <link rel="alternate" hreflang="de" href="https://boardduel.com/?lang=de" />
-  <link rel="alternate" hreflang="x-default" href="https://boardduel.com/" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>404 · Page not found — BoardDuel</title>
+<meta name="description" content="That page is not on the board. Head back to the homepage and pick Gomoku instead.">
+<meta name="robots" content="noindex, follow">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="canonical" href="https://boardduel.com/">
+<meta property="og:site_name" content="BoardDuel">
+<meta property="og:title" content="404 · Page not found — BoardDuel">
+<meta name="theme-color" content="#0E1419">
+
+<!-- 站内自托管字体（同源 /fonts/，与新版页面同一套 Space Grotesk） -->
+<link rel="preload" href="/fonts/space-grotesk-latin-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/space-grotesk-latin-700.woff2" as="font" type="font/woff2" crossorigin>
+
 <style>
-    :root { --p: #4f46e5; --bg: #faf9ff; --t: #1e1b4b; --m: #6b7280; --p-h: #4338ca; }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
-      background: var(--bg);
-      color: var(--t);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 20px;
-    }
-    .nf-emoji { font-size: 5rem; margin-bottom: 1rem; }
-    .nf-code {
-      font-size: clamp(4rem, 12vw, 8rem);
-      font-weight: 900;
-      line-height: 1;
-      background: linear-gradient(135deg, var(--p), #9333ea);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      margin-bottom: 0.5rem;
-    }
-    .nf-title { font-size: 1.5rem; margin: 0.5rem 0; color: var(--t); }
-    .nf-msg { color: var(--m); margin-bottom: 2rem; }
-    .nf-actions { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
-    .nf-btn {
-      padding: 0.75rem 1.5rem;
-      background: var(--p);
-      color: #fff;
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: 600;
-      transition: background 0.15s;
-    }
-    .nf-btn:hover { background: var(--p-h); }
-    .nf-btn.secondary {
-      background: transparent;
-      color: var(--p);
-      border: 1.5px solid var(--p);
-    }
-    .nf-btn.secondary:hover { background: var(--p); color: #fff; }
-  </style>
-  <link rel="stylesheet" href="/css/shared/tokens.css?v=p4fix2">
-  <link rel="stylesheet" href="/css/shared/brand-ds2.css?v=ds2-22">
-<script src="/i18n/i18n.js?v=33"></script>
+  /* === token 与 src/styles/boardduel.css 的 :root 保持一致（改皮肤时两处同步） ===
+     ink #0E1419 · paper #F4F6F2 · line #2A3741 · ember #FF6A3C · gold #F2C14E · teal #2FC4C9 */
+  @font-face{font-family:'Space Grotesk';font-style:normal;font-weight:400;font-display:swap;
+    src:url('/fonts/space-grotesk-latin-400.woff2') format('woff2')}
+  @font-face{font-family:'Space Grotesk';font-style:normal;font-weight:700;font-display:swap;
+    src:url('/fonts/space-grotesk-latin-700.woff2') format('woff2')}
+
+  :root{
+    --ink:#0E1419; --ink2:#151D24; --line:#2A3741; --paper:#F4F6F2;
+    --mute:#8A99A3; --mute2:#5C6B74; --ember:#FF6A3C; --teal:#2FC4C9; --gold:#F2C14E;
+    --ui:'Space Grotesk','PingFang SC','Microsoft YaHei',system-ui,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    background:var(--ink); color:var(--paper); font-family:var(--ui); line-height:1.55;
+    -webkit-font-smoothing:antialiased; min-height:100vh;
+    display:flex; flex-direction:column;
+  }
+
+  /* --- 顶部品牌条（沿用 .bd-nav / .bd-wrap / .bd-mark / .bd-links 的视觉） --- */
+  .bd-nav{position:sticky;top:0;z-index:50;background:rgba(14,20,25,.94);
+    border-bottom:1px solid var(--line);backdrop-filter:blur(6px)}
+  .bd-wrap{max-width:1120px;margin:0 auto;padding:14px 20px;
+    display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+  .bd-mark{font-family:var(--ui);font-weight:700;letter-spacing:.14em;font-size:15px}
+  .bd-mark span{color:var(--ember)}
+  .bd-links{display:flex;gap:6px;margin-left:auto;list-style:none;flex-wrap:wrap}
+  .bd-link{color:var(--mute);text-decoration:none;font-size:11px;letter-spacing:.12em;
+    padding:6px 10px;border-radius:8px}
+  .bd-link:hover{color:var(--paper);background:var(--ink2)}
+
+  /* --- 主体 --- */
+  .pg{display:flex;align-items:center;justify-content:center;flex:1;padding:56px 20px 40px}
+  .card{
+    width:100%; max-width:620px; background:var(--ink2); border:1px solid var(--line);
+    border-radius:18px; padding:40px 34px; text-align:center;
+  }
+  .mini{
+    width:96px;height:96px;margin:0 auto 18px;display:block;
+    background:var(--ink3,#1C262E);border:1px solid var(--line);border-radius:14px;
+  }
+  .code{
+    font-weight:700;font-size:clamp(3.4rem,11vw,5.2rem);line-height:1;letter-spacing:-.02em;
+    color:var(--ember);
+  }
+  .title{font-size:1.35rem;font-weight:700;margin:10px 0 6px}
+  .msg{color:var(--mute);font-size:15px;margin-bottom:26px}
+  .row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+  .btn{
+    display:inline-block;padding:12px 22px;border-radius:11px;text-decoration:none;
+    font-weight:700;font-size:14px;transition:transform .12s ease,background .12s ease
+  }
+  .btn:hover{transform:translateY(-1px)}
+  .btn-primary{background:var(--ember);color:#fff}
+  .btn-primary:hover{background:#e8582d}
+  .btn-ghost{border:1px solid var(--line);color:var(--paper);background:transparent}
+  .btn-ghost:hover{background:var(--ink3,#1C262E)}
+  .hint{margin-top:22px;color:var(--mute2);font-size:12.5px}
+
+  /* --- 三站矩阵页脚（与首页 .bd-foot 同源思路） --- */
+  .foot{border-top:1px solid var(--line);padding:26px 20px 34px}
+  .foot-wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:14px;align-items:center}
+  .sf-title{font-size:11px;letter-spacing:.16em;color:var(--mute2)}
+  .sf-matrix{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  .sf-item{
+    display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:10px;
+    border:1px solid var(--line);color:var(--paper);text-decoration:none;font-size:13px;font-weight:600;
+  }
+  .sf-item:hover{background:var(--ink2)}
+  .sf-links{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;font-size:12.5px}
+  .sf-links a{color:var(--mute2);text-decoration:none}
+  .sf-links a:hover{color:var(--paper)}
+  .sf-copy{color:var(--mute2);font-size:12px}
+
+  @media (max-width:520px){
+    .card{padding:30px 20px}
+    .bd-links{display:none}
+  }
+</style>
 </head>
 <body>
 
-<div id="site-header" style="min-height:65px"
-     data-brand-a="Board" data-brand-b="Duel" data-mark="duel-chess"
-     data-nav='[{"label":"Home","href":"/","i18n":"nav.home"}]'
-     data-cta-label="Home" data-cta-href="/" data-cta-i18n="nav.home"></div>
-
-  <div class="nf-emoji">♟️</div>
-  <div class="nf-code">404</div>
-  <h1 class="nf-title" data-i18n="bd_404_1">Page Not Found</h1>
-  <p class="nf-msg" data-i18n="bd_404_2">The page you visited does not exist or has been removed.</p>
-  <div class="nf-actions">
-    <a href="/" class="nf-btn" data-i18n="404.btn_home">← Back to Home</a>
-    <a href="javascript:history.back()" class="nf-btn secondary" data-i18n="404.btn_back">Go Back</a>
+<nav class="bd-nav">
+  <div class="bd-wrap">
+    <div class="bd-mark">BOARD<span>DUEL</span></div>
+    <ul class="bd-links">
+      <li><a class="bd-link" href="/">HOME</a></li>
+      <li><a class="bd-link" href="/games/gomoku/">GOMOKU</a></li>
+    </ul>
   </div>
-  <script src="/shared/site-header.js?v=ds2-11"></script>
-  <script src="/shared/sso-bridge.js?v=1" defer></script>
-<footer class="sites-footer">
-      <div class="wrap">
-        <div class="sf-title" data-i18n="home.site_network">🎯 Our Brand Network</div>
-        <div class="sf-matrix">
-          <a href="https://mathduel.games/" class="sf-item">
-            <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-calculator"></use></svg>
-            <span data-i18n="bd_404_3">MathDuel</span>
-          </a>
-          <a href="https://boardduel.com/" class="sf-item">
-            <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-chess"></use></svg>
-            <span data-i18n="bd_404_4">BoardDuel</span>
-          </a>
-          <a href="https://memoryduel.com/" class="sf-item">
-            <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-brain"></use></svg>
-            <span data-i18n="bd_404_5">MemoryDuel</span>
-          </a>
-        </div>
-        <div class="sf-links">
-          <a href="/about/" data-i18n="nav.about">About</a>
-          <a href="/privacy/" data-i18n="nav.privacy">Privacy</a>
-          <a href="/terms/" data-i18n="nav.terms">Terms</a>
-          <a href="/contact/" data-i18n="nav.contact">Contact</a>
-        </div>
-        <div class="sf-copy" data-i18n="home.footer">© 2026 BoardDuel · Free to play · Privacy-first</div>
-      </div>
-    </footer>
-  </body>
+</nav>
+
+<main class="pg">
+  <div class="card">
+    <svg class="mini" viewBox="0 0 64 64" aria-hidden="true">
+      <rect x="2" y="2" width="60" height="60" stroke="#5C6B74" stroke-width="1.5" fill="none"/>
+      <path d="M2 14H62M2 26H62M2 38H62M2 50H62M14 2V62M26 2V62M38 2V62M50 2V62" stroke="#2A3741" stroke-width="0.7"/>
+      <circle cx="32" cy="32" r="3" fill="#F4F6F2"/>
+      <circle cx="22" cy="22" r="3" fill="#0E1419"/>
+      <circle cx="42" cy="42" r="3" fill="#F4F6F2"/>
+    </svg>
+    <div class="code">404</div>
+    <h1 class="title">No move here.</h1>
+    <p class="msg">That page is not on the board — it may have moved, or it may not exist yet.</p>
+    <div class="row">
+      <a class="btn btn-primary" href="/">Back to home</a>
+      <a class="btn btn-ghost" href="/games/gomoku/">Play Gomoku</a>
+      <a class="btn btn-ghost" href="/games/gomoku/lobby/">Choose a mode</a>
+    </div>
+    <p class="hint">Looking for a friend's invite? Ask them for the fresh room link — old ones expire.</p>
+  </div>
+</main>
+
+<div class="foot">
+  <div class="foot-wrap">
+    <div class="sf-title">OUR BRAND NETWORK</div>
+    <div class="sf-matrix">
+      <a class="sf-item" href="https://mathduel.games/">♟ MathDuel</a>
+      <a class="sf-item" href="https://boardduel.com/">♞ BoardDuel</a>
+      <a class="sf-item" href="https://memoryduel.com/">♠ MemoryDuel</a>
+    </div>
+    <div class="sf-links">
+      <a href="/">Home</a>
+      <a href="/games/gomoku/">Gomoku</a>
+      <a href="/rank/">Leaderboard</a>
+      <a href="/privacy/">Privacy</a>
+      <a href="/contact/">Contact</a>
+    </div>
+    <div class="sf-copy">© 2026 BoardDuel · free to play · privacy-first</div>
+  </div>
+</div>
+
+</body>
 </html>
