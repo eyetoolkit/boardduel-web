@@ -478,6 +478,7 @@ img { max-width: 100%; display: block; }
 }
 .go-end-verdict.is-win { color: var(--gold); }
 .go-end-verdict.is-loss { color: var(--mute); }
+.go-end-verdict.is-draw { color: var(--teal); }
 .go-end-line {
   font-family: var(--disp); font-size: .9rem; color: var(--mute2);
   letter-spacing: .08em; font-variant-numeric: tabular-nums;

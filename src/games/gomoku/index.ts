@@ -114,6 +114,8 @@ type UIState = {
   myIdx: number | null;          // ranked: 0/1
   pollTimer: number | null;
   matchId: string | null;
+  /** 收到过对局的 game_over（服务端终局），用于区分“我方认输”与“对手认输” */
+  sawGameOver: boolean;
   clock: { w: number; b: number; side: 'w' | 'b' | null; base: number } | null;
 };
 
@@ -137,6 +139,7 @@ const state: UIState = {
   myIdx: null,
   pollTimer: null,
   matchId: null,
+  sawGameOver: false,
   clock: null,
 };
 
@@ -154,6 +157,40 @@ function myUuid(): string {
 }
 function myName(): string {
   return 'Player';
+}
+
+/* ─── 邀请深链 ───
+   worker 的 /b/gomoku/<CODE> 会 302 到 /games/gomoku/?c=<CODE>。
+   这里把 c 读出来直接进房间；带 vs=1 表示发起方（房主），
+   不带则视为被邀请方 —— 两者都走同一个 enterRankedRoom，
+   因为房间已经是匹配器建好的，双方只是先后连上同一间房。
+   ?c= 只在首帧消费一次，消费后立刻从地址栏抹掉，
+   以免刷新页面时重复入房或与“返回大厅”语义打架。 */
+function inviteCode(): string {
+  try {
+    const c = new URLSearchParams(location.search).get('c');
+    if (!c) return '';
+    return /^[A-Za-z0-9]{5,8}$/.test(c) ? c.toUpperCase() : '';
+  } catch (e) {
+    return '';
+  }
+}
+function inviteIsHost(): boolean {
+  try {
+    return new URLSearchParams(location.search).get('vs') === '1';
+  } catch (e) {
+    return false;
+  }
+}
+/** 清掉 ?c= / ?vs=，保留其它查询参数（如语言） */
+function clearInviteParam(): void {
+  try {
+    const u = new URL(location.href);
+    u.searchParams.delete('c');
+    u.searchParams.delete('vs');
+    const q = u.searchParams.toString();
+    history.replaceState(null, '', u.pathname + (q ? '?' + q : '') + u.hash);
+  } catch (e) { /* 无 history 也要能玩 */ }
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -610,9 +647,24 @@ function undo(): void {
 function resign(): void {
   if (state.over) return;
   if (state.mode === 'ranked') {
+    // 先置位再发：服务端回 game_over 时要靠它区分“我方认输”
+    state.sawGameOver = true;
     sendWs({ type: 'resign' });
+    // 服务端不回也要给用户一个终局画面（不置 over，允许后续重开）
+    if (state.ws && state.ws.readyState === WebSocket.OPEN) {
+      window.setTimeout(() => {
+        if (state.over) return;
+        state.over = true;
+        stopTimer(state.timer);
+        endVerdict.textContent = 'You resigned';
+        endVerdict.className = 'go-end-verdict is-loss';
+        endLine.textContent = 'by resignation';
+        showScreen('end');
+      }, 1500);
+    }
     return;
   }
+  state.sawGameOver = true;
   state.over = true;
   stopTimer(state.timer);
   const winner = state.mode === 'ai' ? 2 : (state.turn === 1 ? 2 : 1);
@@ -648,6 +700,7 @@ function newGame(): void {
   state.moves = [];
   state.ghost = -1;
   state.reviewAt = null;
+  state.sawGameOver = false;
   state.myIdx = state.mode === 'ranked' ? state.myIdx : null;
   hintCard.hidden = true;
   legendEl.hidden = true;
@@ -790,8 +843,20 @@ function sendWs(obj: Record<string, unknown>): void {
 function handleWs(msg: Record<string, unknown>): void {
   const t = String(msg.type || '');
   if (t === 'state') {
+    // state 有两种形状：{you,code,game,roomStatus,players} 与 {state:{...}}。
+    // wrapper 形不含 you，不能把老的 state.myIdx 冲成 undefined，
+    // 否则“该谁走”的判断会整体失效。
+    const inner = (msg.state && typeof msg.state === 'object')
+      ? (msg.state as Record<string, unknown>)
+      : null;
     if (typeof msg.you === 'number') state.myIdx = msg.you;
-    if (typeof msg.code === 'string') { state.roomCode = msg.code; chatRoom.textContent = String(msg.code); }
+    else if (inner && typeof inner.you === 'number') state.myIdx = inner.you;
+    const code = typeof msg.code === 'string' ? msg.code
+      : (inner && typeof inner.code === 'string' ? inner.code : '');
+    if (code && state.roomCode !== code) {
+      state.roomCode = code;
+      chatRoom.textContent = code;
+    }
     if (!state.over) newGame();
     return;
   }
@@ -817,13 +882,36 @@ function handleWs(msg: Record<string, unknown>): void {
     addChat(String(msg.name || '—'), String(msg.text || ''), !!msg.emoji);
     return;
   }
-  if (t === 'resign' || t === 'game_over') {
+  if (t === 'game_over') {
+    // 双向 game_over：既是“我认输”的回显，也是“对手认输/终局”的通知。
+    // 区分依据是本地是否已置 sawGameOver —— 自己认输时 resign() 会先置位。
     state.over = true;
     stopTimer(state.timer);
     const kind = String(msg.kind || 'resign');
-    endVerdict.textContent = kind === 'draw' ? 'Draw' : 'Opponent resigned';
+    const iLost = !!msg.you_lost || (state.sawGameOver && kind !== 'draw');
+    if (kind === 'draw') {
+      endVerdict.textContent = 'Draw';
+      endVerdict.className = 'go-end-verdict is-draw';
+      endLine.textContent = 'agreed';
+    } else if (iLost) {
+      endVerdict.textContent = 'You resigned';
+      endVerdict.className = 'go-end-verdict is-loss';
+      endLine.textContent = 'by resignation';
+    } else {
+      endVerdict.textContent = 'Opponent resigned';
+      endVerdict.className = 'go-end-verdict is-win';
+      endLine.textContent = 'by resignation';
+    }
+    showScreen('end');
+    return;
+  }
+  if (t === 'resign') {
+    // 兼容只发 resign 的旧帧：这一侧一定是“对手认输”
+    state.over = true;
+    stopTimer(state.timer);
+    endVerdict.textContent = 'Opponent resigned';
     endVerdict.className = 'go-end-verdict is-win';
-    endLine.textContent = kind === 'draw' ? 'agreed' : 'by resignation';
+    endLine.textContent = 'by resignation';
     showScreen('end');
     return;
   }
@@ -875,6 +963,7 @@ function leaveRoom(): void {
   }
   state.roomCode = null;
   state.myIdx = null;
+  state.sawGameOver = false;
   chatEl.hidden = true;
 }
 
@@ -976,4 +1065,17 @@ document.addEventListener('keydown', (e) => {
 
   resetClock();
   render();
+
+  // ── 邀请深链：?c=<CODE> 直接进房，跳过大厅 ──
+  //   必须放在 render() 之后：此时棋盘已画好，进房后 newGame() 能立刻接管。
+  const code = inviteCode();
+  if (code) {
+    const host = inviteIsHost();
+    state.mode = 'ranked';
+    clearInviteParam();
+    enterRankedRoom(code, false);
+    toast(host
+      ? 'Room ' + code + ' created — waiting for your opponent'
+      : 'Joining room ' + code);
+  }
 })();
