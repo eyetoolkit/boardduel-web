@@ -4,268 +4,81 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0E1419">
-<title>BoardDuel — Reversi (flat plate, hairline grid)</title>
-<meta name="description" content="Hairline grid on a flat plate, four dots marking the center intersections. Exact flip counts.">
+<title>Reversi — BoardDuel</title>
+<meta name="description" content="Reversi (Othello) — 8×8 board. Flip opponent discs by sandwiching. 3 AI levels.">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="canonical" href="https://boardduel.com/games/reversi/" />
-<meta property="og:type" content="website" />
-<meta property="og:site_name" content="BoardDuel" />
-<meta property="og:title" content="BoardDuel — Reversi (flat plate, hairline grid)" />
-<meta property="og:description" content="Hairline grid on a flat plate, four dots marking the center intersections. Exact flip counts." />
-<meta property="og:url" content="https://boardduel.com/games/reversi/" />
-<meta name="twitter:card" content="summary_large_image" />
-<link rel="alternate" hreflang="en" href="https://boardduel.com/games/reversi/" />
-<link rel="alternate" hreflang="x-default" href="https://boardduel.com/games/reversi/" />
+<link rel="manifest" href="/manifest.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="BoardDuel">
+<meta property="og:title" content="Reversi — BoardDuel">
+<meta property="og:description" content="Reversi (Othello) — 8×8 board. Flip opponent discs by sandwiching. 3 AI levels.">
+<meta property="og:url" content="https://boardduel.com/games/reversi/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Reversi — BoardDuel">
+<meta name="twitter:description" content="Reversi (Othello) — 8×8 board. Flip opponent discs by sandwiching. 3 AI levels.">
+<link rel="canonical" href="https://boardduel.com/games/reversi/">
+<link rel="alternate" hreflang="en" href="https://boardduel.com/games/reversi/">
+<link rel="alternate" hreflang="x-default" href="https://boardduel.com/games/reversi/">
 <link rel="stylesheet" href="/src/styles/boardduel.css">
 </head>
-<body>
-<div class="gnav"><div class="gwrap">
-  <div class="gmark">BOARD<span>DUEL</span></div>
-  <nav class="glinks">
-    <a href="/" data-pg="home">HOME</a>
-    <a href="/games/gomoku/" data-pg="gomoku">GOMOKU</a>
-    <a href="/games/tictactoe/" data-pg="ttt">TICTACTOE</a>
-    <a href="/games/connect4/" data-pg="c4">CONNECT4</a>
-    <a href="/games/reversi/" data-pg="rev">REVERSI</a>
-    <a href="/games/chess/" data-pg="chess">CHESS</a>
-  </nav>
-  <div class="gtag">all drafts · one file</div>
-</div></div>
-<div class="pg" id="pg-rev">
-
-
-<!-- MAST -->
-
-
-<!-- HERO -->
-<section class="hero" id="rev-top"><div class="wrap">
-  <div class="grid">
-    <div>
-      <div class="kick">ARENA · BOARD LANGUAGE · <b>GAME 4 OF 5</b></div>
-      <h1><span class="gold">Convert,</span> don't capture.</h1>
-      <p class="lead">You place one disc; every line between it and your color turns. Nothing is taken — it switches sides. The corners never flip back, which makes them the only squares anyone keeps forever. Like tictactoe, this page tells the truth: the live page and its engine are both HTTP 404, so every board and number here comes from a local engine built for this session.</p>
-      <div class="mig"><b>card face</b><i>→</i><b>given digit</b><i>→</i><b>cage sum</b><i>→</i><b>tower brick</b><i>→</i><b>target card</b><i>→</i><b>stone</b><i>→</i><b>mark</b><i>→</i><b>disc</b><i>→</i><b class="hot">flipped disc</b></div>
-      <div class="facts"><span><b>60</b> discs placed</span><span><b>39–25</b> the final count</span><span><b>g1</b> flips 7</span><span><b>20/20</b> deeper search wins</span></div>
+<body><main class="bd-main">
+  <section class="bd-hero">
+    <h1>Reversi</h1>
+    <p class="bd-lead">8×8 board, 4 centre discs to start. Place a disc so it traps one or more straight lines of opponent discs between your discs; they flip to your colour.</p>
+    <div class="bd-game-meta"><span><b>8×8</b> board</span>
+          <span><b>flip</b> rules</span>
+          <span><b>3</b> AI levels</span>
     </div>
-    <div>
-      <div class="board rev" role="img" aria-label="Reversi board">
-    <div class="rulerF"><b>a</b><b>b</b><b>c</b><b>d</b><b>e</b><b>f</b><b>g</b><b>h</b></div>
-    <div class="rulerR"><b>8</b><b>7</b><b>6</b><b>5</b><b>4</b><b>3</b><b>2</b><b>1</b></div>
-    <div class="cells"><div class="cell"></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"></div><div class="cell"><span class="disc them"></span></div><div class="cell"></div><div class="cell"><span class="disc you"></span></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"><span class="disc ghost"></span><i class="cap top">FLIP 7</i></div><div class="cell"></div><i class="cdotI" style="left:37.5%;top:37.5%"></i><i class="cdotI" style="left:62.5%;top:37.5%"></i><i class="cdotI" style="left:37.5%;top:62.5%"></i><i class="cdotI" style="left:62.5%;top:62.5%"></i></div>
+  </section>
+
+  <div class="bd-section-title">Pick a mode</div>
+  <div class="bd-mode-row" id="bd-modes">
+    <button type="button" class="bd-mode-card is-cur" data-mode="ai">
+      <span class="bd-mode-label">Play the engine</span>
+      <span class="bd-mode-badge">3 levels</span>
+    </button>
+    <button type="button" class="bd-mode-card" data-mode="pass">
+      <span class="bd-mode-label">Pass &amp; play</span>
+      <span class="bd-mode-badge">two players, one screen</span>
+    </button>
+    <button type="button" class="bd-mode-card is-disabled" data-mode="human" disabled>
+      <span class="bd-mode-label">Online match</span>
+      <span class="bd-mode-badge">coming soon</span>
+    </button>
   </div>
-      <div class="bcap">Real engine position · your move · dashed disc on <b>g1</b> — one drop turns <b>7</b></div>
-    </div>
+
+  <div class="bd-section-title">Engine difficulty</div>
+  <div class="bd-diff-row" id="bd-diffs">
+    <button type="button" class="bd-diff-btn" data-level="easy">EASY</button>
+    <button type="button" class="bd-diff-btn is-cur" data-level="medium">MEDIUM</button>
+    <button type="button" class="bd-diff-btn" data-level="hard">HARD</button>
   </div>
-</div></section>
 
-<!-- FACT STRIP -->
-<div class="strip"><div class="wrap">
-  <div class="f"><b class="num">8×8</b><span>cells · 64 squares</span></div>
-  <div class="f"><b class="num">60</b><span>discs in the showcase</span></div>
-  <div class="f"><b class="num">39–25</b><span>final count</span></div>
-  <div class="f"><b class="num">20/20</b><span>deeper search wins</span></div>
-  <div class="f"><b class="num">0/20</b><span>first-mover wins · equal depth</span></div>
-</div></div>
-
-<!-- BOARD LANGUAGE -->
-<section><div class="wrap">
-  <div class="kick">01 — BOARD LANGUAGE</div>
-  <h2>Six states, one flat plate.</h2>
-  <p class="lead">Fourth board, fourth silhouette. Gomoku was a framed battlefield, tictactoe an open hash, connect4 a punched cage. Reversi is the flattest of the family: a plate, a hairline grid, four intersection dots at the center. And its signature event is new — the pieces themselves turn.</p>
-  <div class="anat">
-    <div class="acard">
-      <div class="demo"><span class="disc you" style="position:relative;width:46px;height:46px"></span><span class="disc them" style="position:relative;width:46px;height:46px"></span></div>
-      <h3>Your checker / their checker</h3>
-      <p>Fill carries allegiance, four boards running: dark is you, paper is them. Same cast as the connect4 checkers. <b>Pieces never wear faction color</b> — ember and teal stay HUD furniture.</p>
+  <div class="bd-play">
+    <div class="bd-board-wrap" id="bd-board">
+      <span class="bd-mode-badge">Press New game to start</span>
     </div>
-    <div class="acard">
-      <div class="demo"><div class="flipstrip"><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them flipA"></span></div><div class="cell"><span class="disc them flipA"></span></div><div class="cell"><span class="disc ghost"></span><i class="cap top">2</i></div></div></div>
-      <h3>The flip</h3>
-      <p>One drop turns a whole line. The split gradient is a disc caught mid-turn — the seam is the moment of inversion. In motion it's a 180° turn; static, the seam alone tells the story.</p>
-    </div>
-    <div class="acard">
-      <div class="demo"><div class="flipstrip"><div class="cell"><span class="legal"></span><i class="cap top">5</i></div><div class="cell"><span class="legal"></span><i class="cap">2</i></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div></div></div>
-      <h3>Legal move + price tag</h3>
-      <p>Every legal cell gets a ring; the badge says how many discs it flips. Reversi's hint is arithmetic, not prophecy — the engine counts what a move turns, it doesn't predict the game.</p>
-    </div>
-    <div class="acard">
-      <div class="demo"><div class="ccount"><span class="cc you"><b>11</b> you</span><span class="cc them"><b>19</b> them</span></div><span class="disc you lm" style="position:relative;width:46px;height:46px"></span></div>
-      <h3>Last move + running count</h3>
-      <p>The ember dot marks the freshest drop. The HUD counts are the score — in reversi the score <b>is</b> the board, so it lives beside the turn chips, always visible.</p>
-    </div>
-    <div class="acard">
-      <div class="demo"><div class="board rev mini" role="img" aria-label="Reversi board">
-    <div class="rulerF"><b>a</b><b>b</b><b>c</b><b>d</b><b>e</b><b>f</b><b>g</b><b>h</b></div>
-    <div class="rulerR"><b>8</b><b>7</b><b>6</b><b>5</b><b>4</b><b>3</b><b>2</b><b>1</b></div>
-    <div class="cells"><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><i class="cdotI" style="left:37.5%;top:37.5%"></i><i class="cdotI" style="left:62.5%;top:37.5%"></i><i class="cdotI" style="left:37.5%;top:62.5%"></i><i class="cdotI" style="left:62.5%;top:62.5%"></i></div>
-  </div></div>
-      <h3>The pass</h3>
-      <p>A real endgame position: <b>them to move, nothing legal</b> — the turn passes. The Pass button lights only when it's true; a forced pass can swing the whole endgame, so the UI states it plainly.</p>
-    </div>
-    <div class="acard">
-      <div class="demo"><span class="badge" style="width:64px;height:64px;font-size:1.5rem">39</span></div>
-      <h3>The count badge — gold, once</h3>
-      <p>No line to draw. Gomoku rings the five, tictactoe strikes the three, connect4 links the four — reversi's win is a number, so the gold goes around the final total. Spent once, at the end.</p>
-    </div>
-  </div>
-</div></section>
-
-<!-- LOBBY -->
-<section class="alt"><div class="wrap">
-  <div class="kick">02 — SCREEN 1 · LOBBY</div>
-  <h2>Three ways in — none of them work yet.</h2>
-  <p class="lead">The live page itself is a 404, so this is the spec, drawn. The honesty is in the pills: nothing pretends to be live.</p>
-  <div class="lob">
-    <div class="lc">
-      <div class="lv"><h3>Random match</h3><span class="pill warn">page 404</span></div>
-      <p>Queue up against the next player. Reversi's matches are slow-burning — the clock work from the family drafts carries over unchanged.</p>
-      <button class="btn">Enter queue</button>
-    </div>
-    <div class="lc">
-      <div class="lv"><h3>Room code</h3><span class="pill warn">page 404</span></div>
-      <p>Share a four-letter code, play a friend. Same room plumbing as the other drafts — one implementation, five games.</p>
-      <button class="btn">Create room</button>
-    </div>
-    <div class="lc">
-      <div class="lv"><h3>Play the engine</h3><span class="pill warn">page 404</span></div>
-      <p>The difficulty ladder this session's data proves out: deeper search wins. Same names as connect4.</p>
-      <div class="lev">
-        <div><b>Counter</b><span>d2 · greedy</span></div>
-        <div><b>Attacker</b><span>d4 · positional</span></div>
-        <div><b>Punisher</b><span>d6 · deep search</span></div>
+    <div class="bd-side">
+      <div class="bd-hud">
+        <div class="bd-hud-row"><span class="bd-hud-l">Mode</span><span class="bd-hud-v" id="bd-mode-v">vs AI · medium</span></div>
+        <div class="bd-hud-row"><span class="bd-hud-l">Turn</span><span class="bd-hud-v" id="bd-turn-v">—</span></div>
+        <div class="bd-hud-row"><span class="bd-hud-l">Time</span><span class="bd-hud-v" id="bd-time-v">0:00</span></div>
+        <div class="bd-hud-row"><span class="bd-hud-l">Status</span><span class="bd-hud-v" id="bd-status-v">idle</span></div>
       </div>
-      <button class="btn primary">Play Counter</button>
-    </div>
-  </div>
-</div></section>
-
-<!-- MATCH -->
-<section><div class="wrap">
-  <div class="kick">03 — SCREEN 2 · MATCH</div>
-  <h2>Every drop shows its price.</h2>
-  <p class="lead">A real engine position — your move, 10 legal drops, and the map that counts what each one flips. This is reversi's certainty primitive: arithmetic, not prophecy.</p>
-  <div class="screen">
-    <div>
-      <div class="hud">
-        <div class="chip act"><span class="mx you"></span><div><div class="who">You · dark</div><div class="st">11 discs · to move</div></div><span class="pulse"></span></div>
-        <div class="chip"><span class="mx them"></span><div><div class="who">Ken · paper</div><div class="st">19 discs · waiting</div></div></div>
-      </div>
-      <div class="board rev" role="img" aria-label="Reversi board">
-    <div class="rulerF"><b>a</b><b>b</b><b>c</b><b>d</b><b>e</b><b>f</b><b>g</b><b>h</b></div>
-    <div class="rulerR"><b>8</b><b>7</b><b>6</b><b>5</b><b>4</b><b>3</b><b>2</b><b>1</b></div>
-    <div class="cells"><div class="cell"></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="legal"></span><i class="cap">1</i></div><div class="cell"></div><div class="cell"></div><div class="cell"><span class="legal"></span><i class="cap">3</i></div><div class="cell"><span class="legal"></span><i class="cap">4</i></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"></div><div class="cell"></div><div class="cell"><span class="legal"></span><i class="cap">1</i></div><div class="cell"><span class="legal"></span><i class="cap">2</i></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="legal"></span><i class="cap top">5</i></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="legal"></span><i class="cap">2</i></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="legal"></span><i class="cap">2</i></div><div class="cell"></div><div class="cell"></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="legal"></span><i class="cap">1</i></div><div class="cell"><span class="disc you"></span></div><div class="cell"></div><div class="cell"><span class="disc them"></span></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"><span class="legal"></span><i class="cap">2</i></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><i class="cdotI" style="left:37.5%;top:37.5%"></i><i class="cdotI" style="left:62.5%;top:37.5%"></i><i class="cdotI" style="left:37.5%;top:62.5%"></i><i class="cdotI" style="left:62.5%;top:62.5%"></i></div>
-  </div>
-      <div class="bcap">Real engine position · move 27 of your game · ring = legal, badge = discs flipped</div>
-      <div class="ctl">
-        <button class="btn"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3.5 3 7l3.5 3.5"/><path d="M3 7h6.2a3.8 3.8 0 0 1 0 7.6H6"/></svg> Undo ×1</button>
-        <button class="btn dim"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 8h11"/><path d="M9.5 4l4 4-4 4"/></svg> Pass</button>
-        <button class="btn"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 14V2.5"/><path d="M3.5 3h9l-2.4 3 2.4 3h-9"/></svg> Resign</button>
-      </div>
-    </div>
-    <div class="scr-note">
-      <div class="pt"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.2"/><circle cx="8" cy="8" r="2.2"/></svg><div><b>The price tag is the hint.</b> Cell <b>a5</b> flips 5 — the largest single capture on the board. No search, no prophecy: the count is exact the moment the position exists.</div></div>
-      <div class="pt tl"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M2.5 3.5h11v7.5h-6L4 14v-3H2.5Z"/></svg><div><b>The Pass button is honest furniture.</b> It's dim because you have 10 moves. When a position leaves you nothing, it lights — and the turn passes without a drop.</div></div>
-      <div class="pt"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.2"/><circle cx="8" cy="8" r="2.2"/></svg><div><b>Corners are the only forever.</b> A corner disc can never be flipped — the four intersection dots at the center are the board's furniture, but the corners are where games are decided.</div></div>
-      <div class="rail" style="margin-top:18px">
-        <h4>Move recorder <b>algebraic · a1–h8</b></h4>
-        <div class="mvs"><div class="mv"><em>1.</em> e6 <s>·</s> f6</div><div class="mv"><em>3.</em> g6 <s>·</s> d6</div><div class="mv"><em>5.</em> c6 <s>·</s> d7</div><div class="mv"><em>7.</em> c3 <s>·</s> h6</div><div class="mv"><em>9.</em> c5 <s>·</s> c4</div><div class="mv"><em>11.</em> d8 <s>·</s> c8</div><div class="mv"><em>13.</em> b8 <s>·</s> c7</div><div class="mv"><em>15.</em> f5 <s>·</s> g5</div><div class="mv"><em>17.</em> f4 <s>·</s> g3</div><div class="mv"><em>19.</em> b5 <s>·</s> a6</div><div class="mv"><em>21.</em> b3 <s>·</s> b6</div><div class="mv"><em>23.</em> a4 <s>·</s> b4</div><div class="mv hl"><em>25.</em> e3 <s>·</s> e8</div></div>
-      </div>
-      <div class="rail" style="margin-top:12px">
-        <h4>Capture map <b>10 legal moves</b></h4>
-        <div class="certmap">
-          <div class="cert-row win"><b>a5</b><span>flips 5 — largest capture</span></div>
-          <div class="cert-row plain"><b>b7</b><span>flips 4</span></div><div class="cert-row plain"><b>a7</b><span>flips 3</span></div><div class="cert-row plain"><b>h7</b><span>flips 2</span></div><div class="cert-row plain"><b>h5</b><span>flips 2</span></div><div class="cert-row plain"><b>g4</b><span>flips 2</span></div><div class="cert-row plain"><b>h2</b><span>flips 2</span></div><div class="cert-row plain"><b>f8</b><span>flips 1</span></div><div class="cert-row plain"><b>g7</b><span>flips 1</span></div><div class="cert-row plain"><b>d3</b><span>flips 1</span></div>
-        </div>
-        <div class="foot-note">Shows captures, not outcomes — reversi's midgame can't be solved in a browser tab. Tictactoe proved exact verdicts, connect4 column verdicts; reversi shows what's computable instantly.</div>
+      <div class="bd-control">
+        <button type="button" id="bd-new">New game</button>
+        <button type="button" id="bd-undo">Undo</button>
       </div>
     </div>
   </div>
-</div></section>
 
-<!-- SCREEN 3 END -->
-<section class="alt"><div class="wrap">
-  <div class="kick">04 — SCREEN 3 · END</div>
-  <h2>The count, then the ring.</h2>
-  <p class="lead">The same game, finished: <b>39–25</b> in 60 discs. No line to draw — reversi's win is a number, so the gold goes around the number. The drop that decided it: <b>g1</b>, 7 discs turned at once.</p>
-  <div class="screen">
-    <div>
-      <div class="board rev" role="img" aria-label="Reversi board">
-    <div class="rulerF"><b>a</b><b>b</b><b>c</b><b>d</b><b>e</b><b>f</b><b>g</b><b>h</b></div>
-    <div class="rulerR"><b>8</b><b>7</b><b>6</b><b>5</b><b>4</b><b>3</b><b>2</b><b>1</b></div>
-    <div class="cells"><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc you"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them lm"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><div class="cell"><span class="disc them"></span></div><i class="cdotI" style="left:37.5%;top:37.5%"></i><i class="cdotI" style="left:62.5%;top:37.5%"></i><i class="cdotI" style="left:37.5%;top:62.5%"></i><i class="cdotI" style="left:62.5%;top:62.5%"></i></div>
-  </div>
-      <div class="winbar">
-        <span class="tro">You win</span>
-        <span class="badge">39</span>
-        <span class="five"><b>39–25</b> · 60 discs · sweep <b>g1</b> ×7</span>
-      </div>
-    </div>
-    <div class="scr-note">
-      <div class="pt gd"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.2"/><circle cx="8" cy="8" r="2.2"/></svg><div><b>The ring, spent once.</b> Four boards, four gold moments — a ring, a strike, a connector, and now a count. The final total is the only number the game was ever about; it gets the family's scarcest color.</div></div>
-      <div class="pt"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.2"/><circle cx="8" cy="8" r="2.2"/></svg><div><b>"The sweep" is the retention hook.</b> One drop turned 7 discs — review replays to <b>g1</b> with the capture map attached. That single move is where the game stopped being close.</div></div>
-      <div class="pt tl"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M2.5 3.5h11v7.5h-6L4 14v-3H2.5Z"/></svg><div><b>Counts stay on the board.</b> The end screen doesn't summarize what the board already shows — the final position, the running counts, and the ring tell the whole story.</div></div>
-    </div>
-  </div>
-</div></section>
+  <div class="bd-how">Click any <b>valid empty square</b> (highlighted on hover) to place your disc. Valid = it traps at least one straight line of enemy discs between two of your discs. Trapped discs flip to your colour.</div>
 
-<!-- HONESTY -->
-<section><div class="wrap">
-  <div class="kick">05 — WHAT THE SERVER ACTUALLY DOES</div>
-  <h2>Three findings. Two are dead links.</h2>
-  <p class="lead">Verified against the live site today — not assumptions. This draft's data is produced by a local engine specifically because of finding #1.</p>
-  <div class="honest">
-    <div class="hc">
-      <span class="sev p0">P0 · production</span>
-      <h3>The page and the engine are both missing</h3>
-      <p><code>/games/reversi/</code> and <code>/games/reversi/ai.js</code> return <b>HTTP 404</b> — verified today. The family switcher links to a page that doesn't exist. There is nothing to patch; there is everything to build.</p>
-      <p class="fix">Ship page + engine before the nav. The page pins nothing yet, so the interface contract is still ours to write: <code>newGame · applyMove · chooseMove · SIZE</code>.</p>
-    </div>
-    <div class="hc">
-      <span class="sev p1">P1 · distribution</span>
-      <h3>One live game, four dead links</h3>
-      <p>The homepage links only tictactoe. The gomoku page 404s. Connect4's engine 404s. Reversi is absent entirely. <b>Five games in the family, one shipped.</b></p>
-      <p class="fix">Ship the finished engines first, then let the switcher follow. A five-game nav over one game is a promise the server can't keep.</p>
-    </div>
-    <div class="hc">
-      <span class="sev p2">P2 · pattern</span>
-      <h3>When it ships, skip the costume</h3>
-      <p>Both live engines fake thinking delays — <code>baseByDiff*2.2 + Math.random()*500</code> (tictactoe) and <code>*1.8 + Math.random()*600</code> (connect4). A reversi engine at these depths answers in milliseconds.</p>
-      <p class="fix">No fake wait: the board's own turn is the pacing. And the pieces are radial discs, never emoji — the pattern is documented on two live pages already.</p>
-    </div>
-  </div>
-</div></section>
-
-<!-- NOTES -->
-<section class="alt"><div class="wrap">
-  <div class="kick">06 — DESIGN NOTES</div>
-  <h2>What reversi adds to the family.</h2>
-  <div class="notes">
-    <div class="note"><i>a</i><div><b>Fill carries allegiance, four boards running.</b> Black/white stones, X/O marks, dark/paper checkers, dark/paper discs — the rule has never broken: pieces stay neutral of faction color.</div></div>
-    <div class="note"><i>b</i><div><b>Gold is the count, once.</b> No line to draw, so the family's scarcest token goes around the final total. Ring, strike, connector, count — same scarcity, new shape.</div></div>
-    <div class="note"><i>c</i><div><b>Fourth silhouette: the flat plate.</b> Framed battlefield → open hash → punched cage → plate with hairline grid and four intersection dots. The furniture changes per game; the tokens never do.</div></div>
-    <div class="note"><i>d</i><div><b>Coordinates return.</b> Gomoku reads column-row, tictactoe a 1–9 keypad, connect4 columns only. Reversi restores the full grid — <b>a1–h8</b> on both axes, the notation players already know.</div></div>
-    <div class="note"><i>e</i><div><b>Certainty = captures, not outcomes.</b> The one hint that's exact the instant a position exists. The panel says so — arithmetic is honest in a way prediction can't be.</div></div>
-    <div class="note"><i>f</i><div><b>Every number engine-verified — and one honest limit.</b> The showcase replays move-by-move against the engine's own rule set. At equal depth the first player loses <b>0/20</b>; deeper search wins <b>20/20</b>. The ladder is the product story, stated in the open.</div></div>
-  </div>
-  <div class="oq">
-    <h3>Open questions</h3>
-    <ul>
-      <li><b>Capture badges always on?</b> In casual by default, hidden in ranked rooms, or gated behind "after your first loss"? The count is free to compute.</li>
-      <li><b>Pass UX:</b> auto-pass with a toast ("no legal move — turn passes"), or an explicit button the player taps?</li>
-      <li><b>Endgame solver:</b> at ≤10 empties the exact outcome is cheap to compute — reveal "you win by 6 with perfect play" as a countdown? The capture map would graduate into a verdict map.</li>
-    </ul>
-  </div>
-</div></section>
-
-<footer><div class="wrap">
-  <p>Design draft · ARENA family · game 4 of 5. Every board and number comes from a local reversi engine built for this session (positional alpha-beta; showcase at depth 5 vs 2, replay-validated move by move). The live page and engine are HTTP 404, verified today.</p>
-  <div class="base"><span>gomoku · tictactoe · connect4 shipped as drafts</span><span>reversi · this draft</span><span>chess · next</span></div>
-</div></footer>
-
+  <div class="bd-foot">
+  <span>© 2026 BoardDuel · free to play · privacy-first</span>
+  <span><a href="/">Home</a></span>
 </div>
-
-<!-- ================= CHESS ================= -->
-
+</main>
 <script type="module" src="/src/games/reversi/index.ts"></script>
 </body>
 </html>

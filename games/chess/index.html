@@ -4,287 +4,81 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0E1419">
-<title>BoardDuel — Chess (true checker, alternation does the work)</title>
-<meta name="description" content="The grid lines retire; alternation does their work. Full piece movement, threat lists (attacked ≠ lost), three AI levels.">
+<title>Chess — BoardDuel</title>
+<meta name="description" content="Chess — 8×8, all standard pieces. Castling and pawn promotion supported. 3 AI levels.">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="canonical" href="https://boardduel.com/games/chess/" />
-<meta property="og:type" content="website" />
-<meta property="og:site_name" content="BoardDuel" />
-<meta property="og:title" content="BoardDuel — Chess (true checker, alternation does the work)" />
-<meta property="og:description" content="The grid lines retire; alternation does their work. Full piece movement, threat lists (attacked ≠ lost), three AI levels." />
-<meta property="og:url" content="https://boardduel.com/games/chess/" />
-<meta name="twitter:card" content="summary_large_image" />
-<link rel="alternate" hreflang="en" href="https://boardduel.com/games/chess/" />
-<link rel="alternate" hreflang="x-default" href="https://boardduel.com/games/chess/" />
+<link rel="manifest" href="/manifest.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="BoardDuel">
+<meta property="og:title" content="Chess — BoardDuel">
+<meta property="og:description" content="Chess — 8×8, all standard pieces. Castling and pawn promotion supported. 3 AI levels.">
+<meta property="og:url" content="https://boardduel.com/games/chess/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Chess — BoardDuel">
+<meta name="twitter:description" content="Chess — 8×8, all standard pieces. Castling and pawn promotion supported. 3 AI levels.">
+<link rel="canonical" href="https://boardduel.com/games/chess/">
+<link rel="alternate" hreflang="en" href="https://boardduel.com/games/chess/">
+<link rel="alternate" hreflang="x-default" href="https://boardduel.com/games/chess/">
 <link rel="stylesheet" href="/src/styles/boardduel.css">
 </head>
-<body>
-<div class="gnav"><div class="gwrap">
-  <div class="gmark">BOARD<span>DUEL</span></div>
-  <nav class="glinks">
-    <a href="/" data-pg="home">HOME</a>
-    <a href="/games/gomoku/" data-pg="gomoku">GOMOKU</a>
-    <a href="/games/tictactoe/" data-pg="ttt">TICTACTOE</a>
-    <a href="/games/connect4/" data-pg="c4">CONNECT4</a>
-    <a href="/games/reversi/" data-pg="rev">REVERSI</a>
-    <a href="/games/chess/" data-pg="chess">CHESS</a>
-  </nav>
-  <div class="gtag">all drafts · one file</div>
-</div></div>
-<div class="pg" id="pg-chess">
-
-
-<!-- MAST -->
-
-
-<!-- HERO -->
-<section class="hero" id="chess-top"><div class="wrap">
-  <div class="grid">
-    <div>
-      <div class="kick">ARENA · BOARD LANGUAGE · <b>GAME 5 OF 5</b></div>
-      <h1>Six shapes. <span class="gold">One king.</span></h1>
-      <p class="lead">Every piece has its own silhouette — six of them, and the tall one with the cross is the whole point. White moves first, so you're White: chess is the one game where the family's dark-is-you habit bends to the game itself. Like reversi, the live page and its engine are both HTTP 404, so every position here comes from a local build — full rules via <code>chess.js</code>, search by a negamax written for this session.</p>
-      <div class="mig"><b>card face</b><i>→</i><b>given digit</b><i>→</i><b>cage sum</b><i>→</i><b>tower brick</b><i>→</i><b>target card</b><i>→</i><b>stone</b><i>→</i><b>mark</b><i>→</i><b>disc</b><i>→</i><b>flipped disc</b><i>→</i><b class="hot">piece</b></div>
-      <div class="facts"><span><b>24</b> moves to mate</span><span><b>13</b> captures</span><span><b>Qe7#</b> the finisher</span><span><b>10/10</b> deeper search wins</span></div>
+<body><main class="bd-main">
+  <section class="bd-hero">
+    <h1>Chess</h1>
+    <p class="bd-lead">Standard 8×8 chess with all piece rules including castling (kingside/queenside) and pawn promotion. AI plays αβ search with piece-square tables.</p>
+    <div class="bd-game-meta"><span><b>8×8</b> board</span>
+          <span><b>αβ</b> AI depth=4</span>
+          <span><b>3</b> levels</span>
     </div>
-    <div>
-      <div class="board chess" role="img" aria-label="Chess board">
-    <div class="rulerF"><b>a</b><b>b</b><b>c</b><b>d</b><b>e</b><b>f</b><b>g</b><b>h</b></div>
-    <div class="rulerR"><b>8</b><b>7</b><b>6</b><b>5</b><b>4</b><b>3</b><b>2</b><b>1</b></div>
-    <div class="cells"><div class="cell light"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M11.5 8.5h4.6v3.6h2.7V8.5h2.4v3.6h2.7V8.5h4.6V17h-17z"/><path d="M14.5 17h11l2 21.5h-15z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light mateK"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M18.7 4.5h2.6v4h4v2.6h-4v4h-2.6v-4h-4V8.5h4z"/><path d="M16 14.5h8l1 5h-10z"/><path d="M14 19.5q6-3.5 12 0l2.5 19h-17z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell dark"></div><div class="cell light"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M11.5 8.5h4.6v3.6h2.7V8.5h2.4v3.6h2.7V8.5h4.6V17h-17z"/><path d="M14.5 17h11l2 21.5h-15z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell dark"></div><div class="cell dark"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell dark lm"></div><div class="cell light"></div><div class="cell dark lm"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M11.5 17.5 13 8l4.5 6L20 6.5 22.5 14 27 8l1.5 9.5z"/><path d="M13 20.5h14l2.5 18h-19z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M27 38.5V23Q27 14 20.5 12L21.5 6.5 17.5 10Q11.5 11.5 10 17L8.5 20 12.5 21.5Q13.5 27 17.5 29V38.5Z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light"></div><div class="cell light"></div><div class="cell dark"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light"></div><div class="cell light"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"></div><div class="cell dark"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell dark"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M27 38.5V23Q27 14 20.5 12L21.5 6.5 17.5 10Q11.5 11.5 10 17L8.5 20 12.5 21.5Q13.5 27 17.5 29V38.5Z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell dark"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M11.5 8.5h4.6v3.6h2.7V8.5h2.4v3.6h2.7V8.5h4.6V17h-17z"/><path d="M14.5 17h11l2 21.5h-15z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"></div><div class="cell dark"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="7" r="2.2"/><path d="M20 9.5q6.5 3.5 6.5 9 0 4-3 6.5h-7q-3-2.5-3-6.5 0-5.5 6.5-9z"/><path d="M16.5 25h7l2 13.5h-11z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"></div><div class="cell dark"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M18.7 4.5h2.6v4h4v2.6h-4v4h-2.6v-4h-4V8.5h4z"/><path d="M16 14.5h8l1 5h-10z"/><path d="M14 19.5q6-3.5 12 0l2.5 19h-17z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"></div><div class="cell dark"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M27 38.5V23Q27 14 20.5 12L21.5 6.5 17.5 10Q11.5 11.5 10 17L8.5 20 12.5 21.5Q13.5 27 17.5 29V38.5Z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"></div><svg class="strike" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-    <line class="sl" x1="56.25" y1="22.25" x2="56.25" y2="0.75"/>
-    <circle cx="56.25" cy="22.25" r="1.15"/>
-    <circle cx="56.25" cy="0.75" r="1.15"/>
-  </svg></div>
+  </section>
+
+  <div class="bd-section-title">Pick a mode</div>
+  <div class="bd-mode-row" id="bd-modes">
+    <button type="button" class="bd-mode-card is-cur" data-mode="ai">
+      <span class="bd-mode-label">Play the engine</span>
+      <span class="bd-mode-badge">3 levels</span>
+    </button>
+    <button type="button" class="bd-mode-card" data-mode="pass">
+      <span class="bd-mode-label">Pass &amp; play</span>
+      <span class="bd-mode-badge">two players, one screen</span>
+    </button>
+    <button type="button" class="bd-mode-card is-disabled" data-mode="human" disabled>
+      <span class="bd-mode-label">Online match</span>
+      <span class="bd-mode-badge">coming soon</span>
+    </button>
   </div>
-      <div class="bcap">Final position · <b>24. Qe7#</b> — the gold line runs from the queen to the cornered king on <b>e8</b></div>
-    </div>
+
+  <div class="bd-section-title">Engine difficulty</div>
+  <div class="bd-diff-row" id="bd-diffs">
+    <button type="button" class="bd-diff-btn" data-level="easy">EASY</button>
+    <button type="button" class="bd-diff-btn is-cur" data-level="medium">MEDIUM</button>
+    <button type="button" class="bd-diff-btn" data-level="hard">HARD</button>
   </div>
-</div></section>
 
-<!-- FACT STRIP -->
-<div class="strip"><div class="wrap">
-  <div class="f"><b class="num">8×8</b><span>cells · true checker</span></div>
-  <div class="f"><b class="num">24</b><span>moves to mate</span></div>
-  <div class="f"><b class="num">13</b><span>captures on the way</span></div>
-  <div class="f"><b class="num">10/10</b><span>deeper search wins</span></div>
-  <div class="f"><b class="num">2/10</b><span>first-mover wins · equal depth</span></div>
-</div></div>
-
-<!-- BOARD LANGUAGE -->
-<section><div class="wrap">
-  <div class="kick">01 — BOARD LANGUAGE</div>
-  <h2>Six shapes, and the grid disappears.</h2>
-  <p class="lead">Fifth board, fifth silhouette. Gomoku was a framed battlefield, tictactoe an open hash, connect4 a punched cage, reversi a flat plate. Chess is the true checker — light and dark squares alternate, and the alternation does the work the grid lines used to. It's also the first family game where the pieces themselves are the alphabet.</p>
-  <div class="anat">
-    <div class="acard">
-      <div class="demo"><div class="glyphrow">
-        <div class="gchip"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div>
-        <div class="gchip"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M27 38.5V23Q27 14 20.5 12L21.5 6.5 17.5 10Q11.5 11.5 10 17L8.5 20 12.5 21.5Q13.5 27 17.5 29V38.5Z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div>
-        <div class="gchip"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="7" r="2.2"/><path d="M20 9.5q6.5 3.5 6.5 9 0 4-3 6.5h-7q-3-2.5-3-6.5 0-5.5 6.5-9z"/><path d="M16.5 25h7l2 13.5h-11z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div>
-        <div class="gchip"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M11.5 8.5h4.6v3.6h2.7V8.5h2.4v3.6h2.7V8.5h4.6V17h-17z"/><path d="M14.5 17h11l2 21.5h-15z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div>
-        <div class="gchip"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M11.5 17.5 13 8l4.5 6L20 6.5 22.5 14 27 8l1.5 9.5z"/><path d="M13 20.5h14l2.5 18h-19z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div>
-        <div class="gchip dk"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M18.7 4.5h2.6v4h4v2.6h-4v4h-2.6v-4h-4V8.5h4z"/><path d="M16 14.5h8l1 5h-10z"/><path d="M14 19.5q6-3.5 12 0l2.5 19h-17z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div>
-      </div></div>
-      <h3>The six shapes</h3>
-      <p>Staunton reduced to geometry: crown, coronet, crenellation, mitre, muzzle, head-and-taper. Every other family game needed one shape; chess needs six, and each has to be readable at 40px on either square color.</p>
+  <div class="bd-play">
+    <div class="bd-board-wrap" id="bd-board">
+      <span class="bd-mode-badge">Press New game to start</span>
     </div>
-    <div class="acard">
-      <div class="demo"><div class="gpair">
-        <div class="gchip"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M18.7 4.5h2.6v4h4v2.6h-4v4h-2.6v-4h-4V8.5h4z"/><path d="M16 14.5h8l1 5h-10z"/><path d="M14 19.5q6-3.5 12 0l2.5 19h-17z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div>
-        <div class="gchip dk"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M18.7 4.5h2.6v4h4v2.6h-4v4h-2.6v-4h-4V8.5h4z"/><path d="M16 14.5h8l1 5h-10z"/><path d="M14 19.5q6-3.5 12 0l2.5 19h-17z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div>
-      </div></div>
-      <h3>Allegiance flips — on purpose</h3>
-      <p>Four boards ran <b>dark is you</b>. Chess breaks the rule because chess's own identity outranks the family habit: White moves first, so you're White and paper is you. The exception is the point — pieces never wear faction color either way.</p>
-    </div>
-    <div class="acard">
-      <div class="demo"><div class="sanrow"><code>e4</code><code>Nf3</code><code>O-O</code><code>exd8=Q+</code><code>Qe7#</code></div></div>
-      <h3>The board speaks algebra</h3>
-      <p>Coordinates return in their native dialect. Gomoku read column-row, tictactoe a keypad, reversi restored a1–h8 — chess goes full SAN: the recorder is a scoresheet, and players already read it fluently.</p>
-    </div>
-    <div class="acard">
-      <div class="demo"><div class="lmdemo">
-        <div class="sq"></div><span class="ar">→</span>
-        <div class="sq lt"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M11.5 17.5 13 8l4.5 6L20 6.5 22.5 14 27 8l1.5 9.5z"/><path d="M13 20.5h14l2.5 18h-19z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div>
-      </div></div>
-      <h3>Last move, tinted</h3>
-      <p>The two squares of the latest move take the soft tint — the from-square empty, the to-square occupied. Chess marks squares, not pieces: the tint survives captures, and nothing about the piece itself needs to change.</p>
-    </div>
-    <div class="acard">
-      <div class="demo"><div class="gpair">
-        <div class="gchip dk"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M27 38.5V23Q27 14 20.5 12L21.5 6.5 17.5 10Q11.5 11.5 10 17L8.5 20 12.5 21.5Q13.5 27 17.5 29V38.5Z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span><i class="danger"></i></div>
-        <div class="gchip"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M11.5 17.5 13 8l4.5 6L20 6.5 22.5 14 27 8l1.5 9.5z"/><path d="M13 20.5h14l2.5 18h-19z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span><i class="cap top">N</i></div>
-      </div></div>
-      <h3>Threats, not verdicts</h3>
-      <p>Ember dot: your piece is attacked. Dashed ring and badge: a capture your move can make right now. <b>Attacked ≠ lost</b> — the map lists what's in danger; whether it's truly lost depends on defenders the panel doesn't judge.</p>
-    </div>
-    <div class="acard">
-      <div class="demo"><div class="goldemo">
-        <svg viewBox="0 0 216 58" preserveAspectRatio="none" aria-hidden="true"><line x1="23" y1="29" x2="193" y2="29"/><circle cx="23" cy="29" r="3.4"/><circle cx="193" cy="29" r="3.4"/></svg>
-        <span class="pc"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M11.5 17.5 13 8l4.5 6L20 6.5 22.5 14 27 8l1.5 9.5z"/><path d="M13 20.5h14l2.5 18h-19z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span><span class="pc"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M18.7 4.5h2.6v4h4v2.6h-4v4h-2.6v-4h-4V8.5h4z"/><path d="M16 14.5h8l1 5h-10z"/><path d="M14 19.5q6-3.5 12 0l2.5 19h-17z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span>
-      </div></div>
-      <h3>The gold line — once</h3>
-      <p>Gomoku rings the five, tictactoe strikes the three, connect4 links the four, reversi counts the total. Chess draws a line: mating piece straight to the king with no way out. Spent once, at mate — nowhere before it.</p>
-    </div>
-  </div>
-</div></section>
-
-<!-- LOBBY -->
-<section class="alt"><div class="wrap">
-  <div class="kick">02 — SCREEN 1 · LOBBY</div>
-  <h2>Three ways in — none of them work yet.</h2>
-  <p class="lead">The live page is a 404 — it never even rendered a mode list, so these names are the family's, held in place honestly. The pills say what's true: nothing here pretends to be live.</p>
-  <div class="lob">
-    <div class="lc">
-      <div class="lv"><h3>Quick match</h3><span class="pill warn">page 404</span></div>
-      <p>Queue against the next player. Chess matches run long — the clock furniture from the family drafts carries over unchanged, and the scoresheet records every half-move.</p>
-      <button class="btn">Enter queue</button>
-    </div>
-    <div class="lc">
-      <div class="lv"><h3>Room code</h3><span class="pill warn">page 404</span></div>
-      <p>Share a four-letter code, play a friend. Same room plumbing as the other drafts — one implementation, five games.</p>
-      <button class="btn">Create room</button>
-    </div>
-    <div class="lc">
-      <div class="lv"><h3>Play the engine</h3><span class="pill warn">page 404</span></div>
-      <p>The depth ladder this session's tally proves out — and an honest ceiling: the deepest rung thinks in minutes per move, not milliseconds.</p>
-      <div class="lev">
-        <div><b>Counter</b><span>d2 · greedy</span></div>
-        <div><b>Attacker</b><span>d3 · the tally's winner</span></div>
-        <div><b>Punisher</b><span>d4 · browser-tab slow</span></div>
+    <div class="bd-side">
+      <div class="bd-hud">
+        <div class="bd-hud-row"><span class="bd-hud-l">Mode</span><span class="bd-hud-v" id="bd-mode-v">vs AI · medium</span></div>
+        <div class="bd-hud-row"><span class="bd-hud-l">Turn</span><span class="bd-hud-v" id="bd-turn-v">—</span></div>
+        <div class="bd-hud-row"><span class="bd-hud-l">Time</span><span class="bd-hud-v" id="bd-time-v">0:00</span></div>
+        <div class="bd-hud-row"><span class="bd-hud-l">Status</span><span class="bd-hud-v" id="bd-status-v">idle</span></div>
       </div>
-      <button class="btn primary">Play Counter</button>
-    </div>
-  </div>
-</div></section>
-
-<!-- MATCH -->
-<section><div class="wrap">
-  <div class="kick">03 — SCREEN 2 · MATCH</div>
-  <h2>Threats get named, not judged.</h2>
-  <p class="lead">A real engine position — your move, 41 legal moves. The board splits two facts apart: what you can take right now, and what of yours is hanging right now. Chess's certainty primitive is the threat list — the full tree is beyond any browser tab, so the panel names what it knows and stops there.</p>
-  <div class="screen">
-    <div>
-      <div class="hud">
-        <div class="chip act"><span class="mx you"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span><div><div class="who">You · white</div><div class="st">41 legal moves · to move</div></div><span class="pulse"></span></div>
-        <div class="chip"><span class="mx them"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span><div><div class="who">Ken · black</div><div class="st">waiting</div></div></div>
-      </div>
-      <div class="board chess" role="img" aria-label="Chess board">
-    <div class="rulerF"><b>a</b><b>b</b><b>c</b><b>d</b><b>e</b><b>f</b><b>g</b><b>h</b></div>
-    <div class="rulerR"><b>8</b><b>7</b><b>6</b><b>5</b><b>4</b><b>3</b><b>2</b><b>1</b></div>
-    <div class="cells"><div class="cell light"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M11.5 8.5h4.6v3.6h2.7V8.5h2.4v3.6h2.7V8.5h4.6V17h-17z"/><path d="M14.5 17h11l2 21.5h-15z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell dark"></div><div class="cell light ctgt"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="7" r="2.2"/><path d="M20 9.5q6.5 3.5 6.5 9 0 4-3 6.5h-7q-3-2.5-3-6.5 0-5.5 6.5-9z"/><path d="M16.5 25h7l2 13.5h-11z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span><i class="cap top">B</i></div><div class="cell dark"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M11.5 17.5 13 8l4.5 6L20 6.5 22.5 14 27 8l1.5 9.5z"/><path d="M13 20.5h14l2.5 18h-19z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M18.7 4.5h2.6v4h4v2.6h-4v4h-2.6v-4h-4V8.5h4z"/><path d="M16 14.5h8l1 5h-10z"/><path d="M14 19.5q6-3.5 12 0l2.5 19h-17z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M11.5 8.5h4.6v3.6h2.7V8.5h2.4v3.6h2.7V8.5h4.6V17h-17z"/><path d="M14.5 17h11l2 21.5h-15z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell dark"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell dark"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light ctgt"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span><i class="cap">P</i></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M27 38.5V23Q27 14 20.5 12L21.5 6.5 17.5 10Q11.5 11.5 10 17L8.5 20 12.5 21.5Q13.5 27 17.5 29V38.5Z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"></div><div class="cell dark"></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M27 38.5V23Q27 14 20.5 12L21.5 6.5 17.5 10Q11.5 11.5 10 17L8.5 20 12.5 21.5Q13.5 27 17.5 29V38.5Z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="7" r="2.2"/><path d="M20 9.5q6.5 3.5 6.5 9 0 4-3 6.5h-7q-3-2.5-3-6.5 0-5.5 6.5-9z"/><path d="M16.5 25h7l2 13.5h-11z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span><i class="danger"></i></div><div class="cell dark"></div><div class="cell light"></div><div class="cell light"></div><div class="cell dark"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light ctgt"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span><i class="cap">P</i></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M27 38.5V23Q27 14 20.5 12L21.5 6.5 17.5 10Q11.5 11.5 10 17L8.5 20 12.5 21.5Q13.5 27 17.5 29V38.5Z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"></div><div class="cell dark"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light"></div><div class="cell light"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell dark"></div><div class="cell light"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell dark"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span><i class="danger"></i></div><div class="cell light"></div><div class="cell dark"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell dark"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M11.5 8.5h4.6v3.6h2.7V8.5h2.4v3.6h2.7V8.5h4.6V17h-17z"/><path d="M14.5 17h11l2 21.5h-15z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell dark"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M11.5 8.5h4.6v3.6h2.7V8.5h2.4v3.6h2.7V8.5h4.6V17h-17z"/><path d="M14.5 17h11l2 21.5h-15z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"></div><div class="cell dark"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="7" r="2.2"/><path d="M20 9.5q6.5 3.5 6.5 9 0 4-3 6.5h-7q-3-2.5-3-6.5 0-5.5 6.5-9z"/><path d="M16.5 25h7l2 13.5h-11z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M11.5 17.5 13 8l4.5 6L20 6.5 22.5 14 27 8l1.5 9.5z"/><path d="M13 20.5h14l2.5 18h-19z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell dark"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M18.7 4.5h2.6v4h4v2.6h-4v4h-2.6v-4h-4V8.5h4z"/><path d="M16 14.5h8l1 5h-10z"/><path d="M14 19.5q6-3.5 12 0l2.5 19h-17z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"></div><div class="cell dark"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M27 38.5V23Q27 14 20.5 12L21.5 6.5 17.5 10Q11.5 11.5 10 17L8.5 20 12.5 21.5Q13.5 27 17.5 29V38.5Z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"></div></div>
-  </div>
-      <div class="bcap">Real engine position · move 14 · dashed ring + badge = capture, ember dot = attacked</div>
-      <div class="ctl">
-        <button class="btn"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3.5 3 7l3.5 3.5"/><path d="M3 7h6.2a3.8 3.8 0 0 1 0 7.6H6"/></svg> Undo ×1</button>
-        <button class="btn"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5.5h9.5"/><path d="M10 2.5l3 3-3 3"/><path d="M13 10.5H3.5"/><path d="M6 13.5l-3-3 3-3"/></svg> Flip board</button>
-        <button class="btn"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 14V2.5"/><path d="M3.5 3h9l-2.4 3 2.4 3h-9"/></svg> Resign</button>
-      </div>
-    </div>
-    <div class="scr-note">
-      <div class="pt"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.2"/><circle cx="8" cy="8" r="2.2"/></svg><div><b>Captures are exact.</b> <b>Bxc8</b> tops the list — take the bishop. Like reversi's price tags, the list is a fact of the position: it's true the moment the position exists, no search required.</div></div>
-      <div class="pt tl"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M2.5 3.5h11v7.5h-6L4 14v-3H2.5Z"/></svg><div><b>Attacked is not lost.</b> Your bishop on <b>f5</b> is attacked. Attacked ≠ lost — a defender may recapture, the attacker may not want the exchange. The ember dot names the danger; it refuses to judge it.</div></div>
-      <div class="pt gd"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M1.5 8q3.2-4.5 6.5-4.5T14.5 8Q11.3 12.5 8 12.5T1.5 8Z"/><circle cx="8" cy="8" r="1.8"/></svg><div><b>Certainty, stepped.</b> Tictactoe proved exact verdicts, connect4 verdicts within its horizon, reversi counted flips exactly. Chess's tree is ~10<sup>40</sup> positions deep, so the primitive steps down: threats, honestly labeled.</div></div>
-      <div class="rail" style="margin-top:18px">
-        <h4>Your captures <b>material 38–33</b></h4>
-        <div class="certmap">
-          <div class="cert-row win"><b>Bxc8</b><span>takes the bishop — biggest prize on the board</span></div>
-          <div class="cert-row plain"><b>Bxh7</b><span>takes the pawn</span></div><div class="cert-row plain"><b>Bxe4</b><span>takes the pawn</span></div><div class="cert-row plain"><b>Nxe4</b><span>takes the pawn</span></div>
-        </div>
-        <div class="foot-note">Shows captures, not outcomes — whether a capture is good is the search's problem, not the map's. The map is the fact layer.</div>
-      </div>
-      <div class="rail" style="margin-top:12px">
-        <h4>Under attack <b>2 of your pieces</b></h4>
-        <div class="certmap">
-          <div class="cert-row win"><b>f5</b><span>bishop — attacked</span></div><div class="cert-row plain"><b>d2</b><span>pawn — attacked</span></div>
-        </div>
-        <div class="foot-note">A piece listed here may be perfectly defended. The dot says "look"; only you decide whether to move, defend, or ignore.</div>
+      <div class="bd-control">
+        <button type="button" id="bd-new">New game</button>
+        <button type="button" id="bd-undo">Undo</button>
       </div>
     </div>
   </div>
-</div></section>
 
-<!-- SCREEN 3 END -->
-<section class="alt"><div class="wrap">
-  <div class="kick">04 — SCREEN 3 · END</div>
-  <h2>The king runs out of squares.</h2>
-  <p class="lead">The same game, one move before it ends. The finisher is already on the scoresheet — <b>24. Qe7#</b> — and the dashed queen stands on <b>e7</b>, every reply already illegal. Check needs no modal here: the line says it, the scoresheet's <code>#</code> says it, the board is the announcement.</p>
-  <div class="screen">
-    <div>
-      <div class="board chess" role="img" aria-label="Chess board">
-    <div class="rulerF"><b>a</b><b>b</b><b>c</b><b>d</b><b>e</b><b>f</b><b>g</b><b>h</b></div>
-    <div class="rulerR"><b>8</b><b>7</b><b>6</b><b>5</b><b>4</b><b>3</b><b>2</b><b>1</b></div>
-    <div class="cells"><div class="cell light"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M11.5 8.5h4.6v3.6h2.7V8.5h2.4v3.6h2.7V8.5h4.6V17h-17z"/><path d="M14.5 17h11l2 21.5h-15z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M18.7 4.5h2.6v4h4v2.6h-4v4h-2.6v-4h-4V8.5h4z"/><path d="M16 14.5h8l1 5h-10z"/><path d="M14 19.5q6-3.5 12 0l2.5 19h-17z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell dark"></div><div class="cell light lmT"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M11.5 8.5h4.6v3.6h2.7V8.5h2.4v3.6h2.7V8.5h4.6V17h-17z"/><path d="M14.5 17h11l2 21.5h-15z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell dark lmT"></div><div class="cell dark"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell dark"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M11.5 17.5 13 8l4.5 6L20 6.5 22.5 14 27 8l1.5 9.5z"/><path d="M13 20.5h14l2.5 18h-19z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"></div><div class="cell dark"><span class="pc you ghosty"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M11.5 17.5 13 8l4.5 6L20 6.5 22.5 14 27 8l1.5 9.5z"/><path d="M13 20.5h14l2.5 18h-19z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M27 38.5V23Q27 14 20.5 12L21.5 6.5 17.5 10Q11.5 11.5 10 17L8.5 20 12.5 21.5Q13.5 27 17.5 29V38.5Z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light"></div><div class="cell light"></div><div class="cell dark"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"></div><div class="cell dark"></div><div class="cell light"></div><div class="cell light"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell dark"></div><div class="cell light"></div><div class="cell dark"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"></div><div class="cell dark"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="13.5" r="6"/><path d="M17 18.5h6l3.5 18h-13z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell dark"><span class="pc them"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M27 38.5V23Q27 14 20.5 12L21.5 6.5 17.5 10Q11.5 11.5 10 17L8.5 20 12.5 21.5Q13.5 27 17.5 29V38.5Z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell dark"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M11.5 8.5h4.6v3.6h2.7V8.5h2.4v3.6h2.7V8.5h4.6V17h-17z"/><path d="M14.5 17h11l2 21.5h-15z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"></div><div class="cell dark"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="7" r="2.2"/><path d="M20 9.5q6.5 3.5 6.5 9 0 4-3 6.5h-7q-3-2.5-3-6.5 0-5.5 6.5-9z"/><path d="M16.5 25h7l2 13.5h-11z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"></div><div class="cell dark"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M18.7 4.5h2.6v4h4v2.6h-4v4h-2.6v-4h-4V8.5h4z"/><path d="M16 14.5h8l1 5h-10z"/><path d="M14 19.5q6-3.5 12 0l2.5 19h-17z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"></div><div class="cell dark"><span class="pc you"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M27 38.5V23Q27 14 20.5 12L21.5 6.5 17.5 10Q11.5 11.5 10 17L8.5 20 12.5 21.5Q13.5 27 17.5 29V38.5Z"/><rect x="10.5" y="38.5" width="19" height="3.5" rx="1"/></svg></span></div><div class="cell light"></div></div>
-  </div>
-      <div class="winbar">
-        <span class="tro">You win</span>
-        <span class="badge">#</span>
-        <span class="five"><b>1–0</b> · 24 moves · <b>Qe7#</b> · 13 captures</span>
-      </div>
-    </div>
-    <div class="scr-note">
-      <div class="pt gd"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.2"/><circle cx="8" cy="8" r="2.2"/></svg><div><b>The line, spent once.</b> Five boards, five gold moments — a ring, a strike, a connector, a count, and now a line from the mating piece to the cornered king. The family's scarcest color, saved for the one thing each game is about.</div></div>
-      <div class="pt"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M2.5 3.5h11v7.5h-6L4 14v-3H2.5Z"/></svg><div><b>The scoresheet is the memory.</b> Chess already owns a 200-year-old replay format, so the recorder adopts SAN verbatim — <b>Qe7#</b> needs no translation and no invented notation to learn.</div></div>
-      <div class="pt tl"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M1.5 8q3.2-4.5 6.5-4.5T14.5 8Q11.3 12.5 8 12.5T1.5 8Z"/><circle cx="8" cy="8" r="1.8"/></svg><div><b>Review plays forward.</b> Tap any scoresheet row to rewind the board to that moment — the same replay the draft itself used to verify all 47 plies before shipping a single number.</div></div>
-      <div class="rail" style="margin-top:18px">
-        <h4>The finish <b>SAN · scoresheet</b></h4>
-        <div class="mvs"><div class="mv"><em>19.</em> Rh5 <s>·</s> Bxc2</div><div class="mv"><em>20.</em> Qxc2 <s>·</s> Ng4</div><div class="mv"><em>21.</em> Qxc7+ <s>·</s> Ke8</div><div class="mv"><em>22.</em> Rg5 <s>·</s> Nh2</div><div class="mv"><em>23.</em> Rg8+ <s>·</s> Rxg8</div><div class="mv hl"><em>24.</em> Qe7#</div></div>
-        <div class="foot-note">Quiet moves, then the line. The gold path on the hero board is Qe7#: c7 → e7, king trapped on e8.</div>
-      </div>
-    </div>
-  </div>
-</div></section>
+  <div class="bd-how">Click your piece, then click a destination square. The gold dot marks your last move. Captures remove the enemy piece. <b>King in check</b> means you must escape; <b>checkmate</b> ends the game.</div>
 
-<!-- HONESTY -->
-<section><div class="wrap">
-  <div class="kick">05 — WHAT THE SERVER ACTUALLY DOES</div>
-  <h2>Three findings. The game is entirely missing.</h2>
-  <p class="lead">Verified against the live site today — not assumptions. Chess is the second game whose page and engine are both absent, so this draft's data is a local build end to end.</p>
-  <div class="honest">
-    <div class="hc">
-      <span class="sev p0">P0 · production</span>
-      <h3>Page and engine, both 404</h3>
-      <p><code>/games/chess/</code> and <code>/games/chess/ai.js</code> return <b>HTTP 404</b> — verified today. Same shape as reversi: nothing to patch, everything to build. The family switcher links to a page that doesn't exist.</p>
-      <p class="fix">Ship page + engine before the nav. The interface contract is still ours to write: <code>newGame · applyMove · chooseMove · undo</code>, with SAN as the wire format.</p>
-    </div>
-    <div class="hc">
-      <span class="sev p1">P1 · distribution</span>
-      <h3>One live game, four dead links</h3>
-      <p>The homepage links only tictactoe. Gomoku's page 404s, connect4's engine 404s, reversi and chess are absent entirely. <b>Five games in the family, one shipped.</b></p>
-      <p class="fix">Ship the finished engines first, then let the switcher follow. A five-game nav over one game is a promise the server can't keep.</p>
-    </div>
-    <div class="hc">
-      <span class="sev p2">P2 · honesty about our own build</span>
-      <h3>The demo engine never castled</h3>
-      <p>Material-plus-center evaluation doesn't pay for king safety, so the showcase game contains <b>no castling and no promotion</b> — the search won't spend a tempo it can't score. Real chess players will notice in one game.</p>
-      <p class="fix">A shipped engine adds a king-safety term (castling bonus, pawn shield), or forces castle-search when legal. The rules engine already handles it — the eval is what's honest about being shallow.</p>
-    </div>
-  </div>
-</div></section>
-
-<!-- NOTES -->
-<section class="alt"><div class="wrap">
-  <div class="kick">06 — DESIGN NOTES</div>
-  <h2>What chess adds to the family.</h2>
-  <div class="notes">
-    <div class="note"><i>a</i><div><b>The piece is the alphabet.</b> One stone, one mark, one disc — every earlier game spoke in a single shape. Chess needs six, each carrying its own name, value, and silhouette. The set is drawn once, geometric, readable on both square colors.</div></div>
-    <div class="note"><i>b</i><div><b>The allegiance rule bends — deliberately.</b> Dark-is-you held for four boards. Chess's first-move convention is the game's identity, so you're White and paper is you. Family rules serve the game, never the reverse.</div></div>
-    <div class="note"><i>c</i><div><b>Fifth silhouette: the true checker.</b> Framed battlefield → open hash → punched cage → flat plate → alternating squares. The grid lines retire; alternation does their work. The furniture changes per game; the tokens never do.</div></div>
-    <div class="note"><i>d</i><div><b>SAN closes the coordinates arc.</b> Column-row → keypad → columns → a1–h8 pairs → full algebraic with castling, captures, promotion and <code>#</code>. The recorder is a scoresheet players can read aloud.</div></div>
-    <div class="note"><i>e</i><div><b>Certainty steps down to threats.</b> Exact verdicts, horizon verdicts, exact counts — and now attack lists, because chess's tree dwarfs a browser. The panel says exactly what it knows: <b>attacked ≠ lost</b> is written into the copy, not just the data.</div></div>
-    <div class="note"><i>f</i><div><b>Every number replay-verified — and one honest limit.</b> All 47 plies replay through the rules engine at build time; the final board is byte-compared before a single pixel renders. deeper search wins <b>10/10</b> — every time. at equal depth the first mover wins only <b>2/10</b> — color alone decides nothing — depth, not color, decides. And the engine's games never castle: the P2 card owns that limit in public.</div></div>
-  </div>
-  <div class="oq">
-    <h3>Open questions</h3>
-    <ul>
-      <li><b>Verdict map at the endgame?</b> At ≤5 pieces, exact mates are cheap to compute in-browser — the capture map could graduate into "you win in 9 with perfect play." The family's certainty ladder, completed.</li>
-      <li><b>Mate-in-N hints:</b> the search already scores mates — surface "mate in 2" as a hint mode, or keep the game quiet and let the scoresheet tell it after?</li>
-      <li><b>Promotion UX:</b> auto-queen with an undo toast, or the classic picker? Casual speed vs. the rare underpromotion the picker makes possible.</li>
-    </ul>
-  </div>
-</div></section>
-
-
+  <div class="bd-foot">
+  <span>© 2026 BoardDuel · free to play · privacy-first</span>
+  <span><a href="/">Home</a></span>
+</div>
+</main>
 <script type="module" src="/src/games/chess/index.ts"></script>
 </body>
 </html>

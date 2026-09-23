@@ -4,283 +4,81 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0E1419">
-<title>BoardDuel — Tic-Tac-Toe (X never misses)</title>
-<meta name="description" content="Nine squares, read exactly. The strike, then the truth. Perfect play holds to a draw.">
+<title>Tic-Tac-Toe — BoardDuel</title>
+<meta name="description" content="Tic-Tac-Toe — perfect play draws. 9-square game. AI plays minimax (optimal).">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="canonical" href="https://boardduel.com/games/tictactoe/" />
-<meta property="og:type" content="website" />
-<meta property="og:site_name" content="BoardDuel" />
-<meta property="og:title" content="BoardDuel — Tic-Tac-Toe (X never misses)" />
-<meta property="og:description" content="Nine squares, read exactly. The strike, then the truth. Perfect play holds to a draw." />
-<meta property="og:url" content="https://boardduel.com/games/tictactoe/" />
-<meta name="twitter:card" content="summary_large_image" />
-<link rel="alternate" hreflang="en" href="https://boardduel.com/games/tictactoe/" />
-<link rel="alternate" hreflang="x-default" href="https://boardduel.com/games/tictactoe/" />
+<link rel="manifest" href="/manifest.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="BoardDuel">
+<meta property="og:title" content="Tic-Tac-Toe — BoardDuel">
+<meta property="og:description" content="Tic-Tac-Toe — perfect play draws. 9-square game. AI plays minimax (optimal).">
+<meta property="og:url" content="https://boardduel.com/games/tictactoe/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Tic-Tac-Toe — BoardDuel">
+<meta name="twitter:description" content="Tic-Tac-Toe — perfect play draws. 9-square game. AI plays minimax (optimal).">
+<link rel="canonical" href="https://boardduel.com/games/tictactoe/">
+<link rel="alternate" hreflang="en" href="https://boardduel.com/games/tictactoe/">
+<link rel="alternate" hreflang="x-default" href="https://boardduel.com/games/tictactoe/">
 <link rel="stylesheet" href="/src/styles/boardduel.css">
 </head>
-<body>
-<div class="gnav"><div class="gwrap">
-  <div class="gmark">BOARD<span>DUEL</span></div>
-  <nav class="glinks">
-    <a href="/" data-pg="home">HOME</a>
-    <a href="/games/gomoku/" data-pg="gomoku">GOMOKU</a>
-    <a href="/games/tictactoe/" data-pg="ttt">TICTACTOE</a>
-    <a href="/games/connect4/" data-pg="c4">CONNECT4</a>
-    <a href="/games/reversi/" data-pg="rev">REVERSI</a>
-    <a href="/games/chess/" data-pg="chess">CHESS</a>
-  </nav>
-  <div class="gtag">all drafts · one file</div>
-</div></div>
-<div class="pg" id="pg-ttt">
-
-
-<!-- MAST -->
-
-
-<!-- HERO -->
-<section class="hero" id="ttt-top"><div class="wrap"><div class="grid">
-  <div>
-    <div class="kick">BOARDDUEL — <b>TICTACTOE</b></div>
-    <h1>X never <span class="gold">misses.</span></h1>
-    <p class="lead">The hardest level runs a full minimax search — it has never lost a game and never will. So this page doesn't pretend. The board is small enough to solve, and the design says so: every empty square can be labeled with its exact fate. Against a random opponent, a corner opening wins 99.4% of the time. The fun isn't beating Punisher. It's earning the draw.</p>
-    <div class="mig" aria-label="paper carrier migration">
-      <b>card face</b><i>→</i><b>given digit</b><i>→</i><b>cage sum</b><i>→</i><b>tower brick</b><i>→</i><b>target card</b><i>→</i><b>stone</b><i>→</i><b class="hot">the mark</b>
+<body><main class="bd-main">
+  <section class="bd-hero">
+    <h1>Tic-Tac-Toe</h1>
+    <p class="bd-lead">Nine squares. Three in a row wins. Perfect play from both sides always draws.</p>
+    <div class="bd-game-meta"><span><b>3×3</b> board</span>
+          <span><b>optimal</b> AI</span>
+          <span><b>live</b> engine</span>
     </div>
-    <div class="facts">
-      <span><b>9</b> squares</span><span><b>8</b> win lines</span><span><b>minimax</b> exact</span><span><b class="num">255,168</b> games in the tree</span><span><b>3</b> modes live</span>
-    </div>
+  </section>
+
+  <div class="bd-section-title">Pick a mode</div>
+  <div class="bd-mode-row" id="bd-modes">
+    <button type="button" class="bd-mode-card is-cur" data-mode="ai">
+      <span class="bd-mode-label">Play the engine</span>
+      <span class="bd-mode-badge">3 levels</span>
+    </button>
+    <button type="button" class="bd-mode-card" data-mode="pass">
+      <span class="bd-mode-label">Pass &amp; play</span>
+      <span class="bd-mode-badge">two players, one screen</span>
+    </button>
+    <button type="button" class="bd-mode-card is-disabled" data-mode="human" disabled>
+      <span class="bd-mode-label">Online match</span>
+      <span class="bd-mode-badge">coming soon</span>
+    </button>
   </div>
-  <div>
-    <div class="board ttt" role="img" aria-label="Tic-tac-toe board"><div class="hash"><div class="cell"><span class="mark mk-x"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M24 24 76 76"/><path d="M76 24 24 76"/></svg></span></div><div class="cell"><span class="mark mk-o"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="28"/></svg></span></div><div class="cell"><span class="mark mk-g"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M24 24 76 76"/><path d="M76 24 24 76"/></svg></span><i class="cert loss">LOSS</i></div><div class="cell"><span class="mark mk-x"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M24 24 76 76"/><path d="M76 24 24 76"/></svg></span></div><div class="cell"><span class="mark mk-g"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M24 24 76 76"/><path d="M76 24 24 76"/></svg></span><i class="cert win">WIN</i></div><div class="cell"><span class="mark mk-g"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M24 24 76 76"/><path d="M76 24 24 76"/></svg></span><i class="cert loss">LOSS</i></div><div class="cell"><span class="mark mk-o"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="28"/><circle class="lm" cx="50" cy="50" r="7"/></svg></span></div><div class="cell"><span class="mark mk-g"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M24 24 76 76"/><path d="M76 24 24 76"/></svg></span><i class="cert draw">DRAW</i></div><div class="cell"><span class="mark mk-g"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M24 24 76 76"/><path d="M76 24 24 76"/></svg></span><i class="cert loss">LOSS</i></div></div></div>
-    <div class="bcap">Real engine position · X to move · dashed = <b>exact</b> minimax class, not a guess</div>
+
+  <div class="bd-section-title">Engine difficulty</div>
+  <div class="bd-diff-row" id="bd-diffs">
+    <button type="button" class="bd-diff-btn" data-level="easy">EASY</button>
+    <button type="button" class="bd-diff-btn is-cur" data-level="medium">MEDIUM</button>
+    <button type="button" class="bd-diff-btn" data-level="hard">HARD</button>
   </div>
-</div></div></section>
 
-<!-- FACT STRIP -->
-<div class="strip"><div class="wrap">
-  <div class="f"><b class="num">9 × 8</b><span>squares × win lines</span></div>
-  <div class="f"><b>exact</b><span>hints · minimax</span></div>
-  <div class="f"><b class="num">255,168</b><span>games in the tree</span></div>
-  <div class="f"><b class="num">20/20</b><span>hard-vs-hard draws</span></div>
-  <div class="f"><b class="num">0/400</b><span>easy wins vs hard</span></div>
-</div></div>
-
-<!-- BOARD LANGUAGE -->
-<section><div class="wrap">
-  <div class="kick">01 — BOARD LANGUAGE</div>
-  <h2>Six states, same vocabulary, smaller canvas.</h2>
-  <p class="lead">The gomoku pilot fixed the family rules: pieces carry the game, ember and teal stay UI, gold is spend once. Tic-tac-toe is the first test of those rules at nine squares — where shape replaces fill, and the frame disappears.</p>
-  <div class="anat">
-    <div class="acard">
-      <div class="demo"><span class="mark mk-x"><svg viewBox="0 0 100 100"><path d="M24 24 76 76"/><path d="M76 24 24 76"/></svg></span><span class="mark mk-o"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="28"/></svg></span></div>
-      <h3>Your mark / their mark</h3>
-      <p>X and O are drawn strokes, not glyphs — the live site renders text <code>✕</code> <code>◯</code>; we render pen lines with round caps. Allegiance is carried by <b>shape alone</b>. Both marks are paper; no faction color, exactly like the stones.</p>
+  <div class="bd-play">
+    <div class="bd-board-wrap" id="bd-board">
+      <span class="bd-mode-badge">Press New game to start</span>
     </div>
-    <div class="acard">
-      <div class="demo"><span class="mark mk-x"><svg viewBox="0 0 100 100"><path d="M24 24 76 76"/><path d="M76 24 24 76"/><circle class="lm" cx="50" cy="50" r="7"/></svg></span><span class="mark mk-o"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="28"/><circle class="lm" cx="50" cy="50" r="7"/></svg></span></div>
-      <h3>Last move</h3>
-      <p>The same ember dot from the pilot, seated at the mark's center. On a board this small one dot is plenty — no rings, no glow, no chrome.</p>
-    </div>
-    <div class="acard">
-      <div class="demo"><span class="mark mk-g" style="position:relative"><svg viewBox="0 0 100 100"><path d="M24 24 76 76"/><path d="M76 24 24 76"/></svg><i class="cert win" style="top:-14px;right:-30px">WIN</i></span></div>
-      <h3>Ghost + certainty chip</h3>
-      <p>Dashed stroke = the move you're considering. The chip is tictactoe's upgrade over gomoku's hint ranks: the engine scores are exact, so the ghost can honestly say <code>WIN</code>, <code>DRAW</code> or <code>LOSS</code>.</p>
-    </div>
-    <div class="acard">
-      <div class="demo"><div class="board ttt" role="img" aria-label="Tic-tac-toe board"><div class="hash"><div class="cell"><span class="mark mk-x"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M24 24 76 76"/><path d="M76 24 24 76"/></svg></span></div><div class="cell"></div><div class="cell"><span class="mark mk-x"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M24 24 76 76"/><path d="M76 24 24 76"/></svg></span></div><div class="cell"></div><div class="cell"><span class="mark mk-x"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M24 24 76 76"/><path d="M76 24 24 76"/></svg></span></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div></div><svg class="strike" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line x1="89.3" y1="10.7" x2="10.7" y2="89.3" style="--len:114"/></svg></div></div>
-      <h3>The strike</h3>
-      <p>Gold's single appearance: a pen line through the three, overshooting the marks the way a hand would. Gomoku rings the five; tictactoe strikes the three. Same scarcity, different noun.</p>
-    </div>
-    <div class="acard">
-      <div class="demo"><div class="board ttt mini"><div class="hash"><div class="cell kp"><b>1</b></div><div class="cell kp"><b>2</b></div><div class="cell kp"><b>3</b></div><div class="cell kp"><b>4</b></div><div class="cell kp"><b>5</b></div><div class="cell kp"><b>6</b></div><div class="cell kp"><b>7</b></div><div class="cell kp"><b>8</b></div><div class="cell kp"><b>9</b></div></div></div></div>
-      <h3>The nine, in keypad order</h3>
-      <p>Cells are named <code>1–9</code>, top-left to bottom-right — the layout every phone already taught our players. The recorder reads <code>1. 1 · 9</code>. At nine squares, letter-number coordinates would be noise.</p>
-    </div>
-    <div class="acard">
-      <div class="demo"><div class="board ttt" style="max-width:96px"><div class="hash"><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div></div></div></div>
-      <h3>The open hash</h3>
-      <p>Only the four inner lines exist — the slate is the frame. Gomoku framed a battlefield; tic-tac-toe floats like a margin doodle. Fewer lines, thicker weight (2px vs 1px): the board gets bolder as it gets smaller.</p>
-    </div>
-  </div>
-</div></section>
-
-<!-- SCREEN 1 LOBBY -->
-<section class="alt" id="ttt-lobby"><div class="wrap">
-  <div class="kick">02 — SCREEN 1 · LOBBY</div>
-  <h2>Three ways in. All of them real.</h2>
-  <p class="lead">The live page already ships all three paths — AI, friend rooms with join codes, and random matchmaking. The redesign keeps the structure and fixes the copy: difficulty names describe what the engine actually does.</p>
-  <div class="lob">
-    <div class="lc">
-      <div class="lv"><h3>Random match</h3><span class="pill live">live</span></div>
-      <p>Queue for a human. The waiting panel, cancel button and status line all exist today — the lobby just gives them a cleaner stage.</p>
-      <div class="lev">
-        <div><b>Board</b><span>3×3 · X first</span></div>
-        <div><b>First mark</b><span>coin flip</span></div>
-        <div><b>Rematch</b><span>loser draws first</span></div>
+    <div class="bd-side">
+      <div class="bd-hud">
+        <div class="bd-hud-row"><span class="bd-hud-l">Mode</span><span class="bd-hud-v" id="bd-mode-v">vs AI · medium</span></div>
+        <div class="bd-hud-row"><span class="bd-hud-l">Turn</span><span class="bd-hud-v" id="bd-turn-v">—</span></div>
+        <div class="bd-hud-row"><span class="bd-hud-l">Time</span><span class="bd-hud-v" id="bd-time-v">0:00</span></div>
+        <div class="bd-hud-row"><span class="bd-hud-l">Status</span><span class="bd-hud-v" id="bd-status-v">idle</span></div>
       </div>
-      <button class="btn primary">Enter queue</button>
-    </div>
-    <div class="lc">
-      <div class="lv"><h3>Room code</h3><span class="pill live">live</span></div>
-      <p>Create a room, share the short code, play a friend. Create and join buttons ship today; the draft only restyles them.</p>
-      <div class="lev">
-        <div><b>Create</b><span>get a code</span></div>
-        <div><b>Join</b><span>type a code</span></div>
-        <div><b>Spectate</b><span>shared with family</span></div>
-      </div>
-      <button class="btn">Create room</button>
-    </div>
-    <div class="lc">
-      <div class="lv"><h3>Play the engine</h3><span class="pill ember">3 levels</span></div>
-      <p>Same family names as gomoku — Counter, Attacker, Punisher — now describing a real search, not a heuristic.</p>
-      <div class="lev">
-        <div><b>Counter</b><span>blocks half the slips</span></div>
-        <div><b>Attacker</b><span>one deviation in ten</span></div>
-        <div><b>Punisher</b><span>perfect — cannot lose</span></div>
-      </div>
-      <button class="btn">Start game</button>
-    </div>
-  </div>
-</div></section>
-
-<!-- SCREEN 2 MATCH -->
-<section><div class="wrap">
-  <div class="kick">03 — SCREEN 2 · MATCH</div>
-  <h2>Nine squares, read exactly.</h2>
-  <p class="lead">Board center. Turn chips above. To the right, the component tictactoe contributes to the family: a certainty map — every empty square with its forced outcome, straight from the live minimax. The position is a real engine game; all three classes coexist.</p>
-  <div class="screen">
-    <div>
-      <div class="hud">
-        <div class="chip act"><svg class="mx" viewBox="0 0 100 100"><path d="M24 24 76 76"/><path d="M76 24 24 76"/></svg><div><div class="who">You · X</div><div class="st">your move</div></div><span class="pulse"></span></div>
-        <div class="chip"><svg class="mx" viewBox="0 0 100 100"><circle cx="50" cy="50" r="34"/></svg><div><div class="who">Ken · O</div><div class="st">waiting</div></div></div>
-      </div>
-      <div class="board ttt" role="img" aria-label="Tic-tac-toe board"><div class="hash"><div class="cell"><span class="mark mk-x"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M24 24 76 76"/><path d="M76 24 24 76"/></svg></span></div><div class="cell"><span class="mark mk-o"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="28"/></svg></span></div><div class="cell"><span class="mark mk-g"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M24 24 76 76"/><path d="M76 24 24 76"/></svg></span><i class="cert loss">LOSS</i></div><div class="cell"><span class="mark mk-x"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M24 24 76 76"/><path d="M76 24 24 76"/></svg></span></div><div class="cell"><span class="mark mk-g"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M24 24 76 76"/><path d="M76 24 24 76"/></svg></span><i class="cert win">WIN</i></div><div class="cell"><span class="mark mk-g"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M24 24 76 76"/><path d="M76 24 24 76"/></svg></span><i class="cert loss">LOSS</i></div><div class="cell"><span class="mark mk-o"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="28"/><circle class="lm" cx="50" cy="50" r="7"/></svg></span></div><div class="cell"><span class="mark mk-g"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M24 24 76 76"/><path d="M76 24 24 76"/></svg></span><i class="cert draw">DRAW</i></div><div class="cell"><span class="mark mk-g"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M24 24 76 76"/><path d="M76 24 24 76"/></svg></span><i class="cert loss">LOSS</i></div></div></div>
-      <div class="ctl">
-        <button class="btn prop"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3.5 3 7l3.5 3.5"/><path d="M3 7h6.2a3.8 3.8 0 0 1 0 7.6H6"/></svg> Undo <i>×1 FREE</i></button>
-        <button class="btn prop"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.2"/><circle cx="8" cy="8" r="2.2"/></svg> Certainty <i>LIVE</i></button>
-        <button class="btn"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 14V2.5"/><path d="M3.5 3h9l-2.4 3 2.4 3h-9"/></svg> Resign</button>
-      </div>
-      <div class="bcap">Move <b class="num">4</b> · X to move · last mark <b>O7</b> · dashed ghosts carry their exact class</div>
-    </div>
-    <div class="scr-note">
-      <div class="pt"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.2"/><circle cx="8" cy="8" r="2.2"/></svg><div><b>The certainty map is the hint system.</b> Not bars, not weights — verdicts. Play <b>5</b> and the win is forced from here. <b>8</b> hold the draw. Play <b>3 · 6 · 9</b> and you hand O the game. Scores are exactly +10 / 0 / −10; the engine needs no confidence intervals.</div></div>
-      <div class="pt tl"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M2.5 3.5h11v7.5h-6L4 14v-3H2.5Z"/></svg><div><b>Turn chips replace clocks.</b> The live game has no timer — inventing one would be fake urgency. Your chip breathes ember while it's your move; theirs sits grey. That's the only animation on this screen.</div></div>
-      <div class="pt"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3.5 3 7l3.5 3.5"/><path d="M3 7h6.2a3.8 3.8 0 0 1 0 7.6H6"/></svg><div><b>Undo stays a proposal.</b> Against the engine it's a free take-back; against a human it needs consent. Same dashed treatment as the pilot until the product call lands.</div></div>
-      <div class="rail" style="margin-top:18px">
-        <h4>Move recorder <b>X first · keypad order</b></h4>
-        <div class="mvs"><div class="mv"><em>1.</em> 1 <s>·</s> 2</div><div class="mv hl"><em>3.</em> 4 <s>·</s> 7</div></div>
-      </div>
-      <div class="rail" style="margin-top:12px">
-        <h4>Certainty map <b>minimax · exact</b></h4>
-        <div class="certmap">
-          <div class="cert-row win"><b>5</b><span>forced win — play it</span></div>
-          <div class="cert-row draw"><b>8</b><span>holds the draw</span></div>
-          <div class="cert-row loss"><b>3 · 6 · 9</b><span>throws the game</span></div>
-        </div>
-        <div class="foot-note">One position, three verdicts, zero guessing. This panel is tictactoe's gift to the family — gomoku's fuzzy weights were the prototype.</div>
+      <div class="bd-control">
+        <button type="button" id="bd-new">New game</button>
+        <button type="button" id="bd-undo">Undo</button>
       </div>
     </div>
   </div>
-</div></section>
 
-<!-- SCREEN 3 END -->
-<section class="alt"><div class="wrap">
-  <div class="kick">04 — SCREEN 3 · END</div>
-  <h2>The strike, then the truth.</h2>
-  <p class="lead">The end state does two jobs: celebrate the line, and teach the game. This finish is a real engine game — Punisher as X, Counter as O — including the move where O lost it.</p>
-  <div class="screen">
-    <div>
-      <div class="board ttt" role="img" aria-label="Tic-tac-toe board"><div class="hash"><div class="cell dimcell"><span class="mark mk-x"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M24 24 76 76"/><path d="M76 24 24 76"/></svg></span></div><div class="cell dimcell"><span class="mark mk-o"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="28"/></svg></span></div><div class="cell"><span class="mark mk-x"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M24 24 76 76"/><path d="M76 24 24 76"/></svg></span></div><div class="cell"></div><div class="cell"><span class="mark mk-x"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M24 24 76 76"/><path d="M76 24 24 76"/></svg></span></div><div class="cell"></div><div class="cell"><span class="mark mk-x"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M24 24 76 76"/><path d="M76 24 24 76"/></svg></span></div><div class="cell dimcell"><span class="mark mk-o"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="28"/></svg></span></div><div class="cell dimcell"><span class="mark mk-o"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="28"/></svg></span></div></div><svg class="strike" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line x1="89.3" y1="10.7" x2="10.7" y2="89.3" style="--len:114"/></svg></div>
-      <div class="winbar">
-        <span class="tro">You win</span>
-        <span style="font-size:.78rem;color:var(--mute)">move <b class="num">7</b> · line <b>3–5–7</b></span>
-        <span class="five">the losing move: <b>O→8</b> (move 2)</span>
-      </div>
-      <div class="ctl">
-        <button class="btn primary">Rematch</button>
-        <button class="btn">Review moves</button>
-        <button class="btn">Back to lobby</button>
-      </div>
-      <div class="drawbar" style="margin-top:12px"><b>The draw gets equal billing:</b> "1 → 5 → 2 → 3 → 7 → 4 → 6 → 8 → 9" — Punisher vs Punisher, one of <b class="num">20/20</b> draws. All nine filled, no strike, nothing dims. The bar reads: all nine filled · nobody broke through.</div>
-    </div>
-    <div class="scr-note">
-      <div class="pt gd"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.2"/><path d="M5.5 8.2l1.8 1.8 3.4-4" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b>The strike animates once.</b> A gold pen-line draws across the three in half a second — the page's single choreographed moment, skipped entirely for reduced-motion users. Non-winning marks dim a step; the strike never does.</div></div>
-      <div class="pt"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2.5 8h11M9.5 4l4 4-4 4"/></svg><div><b>"The losing move" is the retention hook.</b> The result bar names the exact mark where the game slipped — here <b>O→8</b> on move 2, when a draw was still guaranteed. Review replays to that square with the certainty map attached.</div></div>
-      <div class="pt tl"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v12M2 8h12"/></svg><div><b>Rematch inverts the first mark.</b> Loser draws first; after a draw, swap. X's tree advantage is real — the lobby shouldn't pretend a coin flip is fair twice in a row.</div></div>
-    </div>
-  </div>
-</div></section>
+  <div class="bd-how">Click any empty square to place your <b>X</b>. AI plays <b>O</b>. First to connect <b>three in a row</b> horizontally, vertically, or diagonally wins.</div>
 
-<!-- HONESTY -->
-<section><div class="wrap">
-  <div class="kick">05 — WHAT THE SERVER ACTUALLY DOES</div>
-  <h2>Verified against the live engine.</h2>
-  <p class="lead">Every claim below was checked in the shipped <code>ai.js</code> and reproduced with it. This page's honesty section is the mirror image of gomoku's: there the AI oversold itself; here it delivers.</p>
-  <div class="honest">
-    <div class="hc">
-      <span class="sev ok">verified · strength</span>
-      <h3>"Hard" here is actually hard</h3>
-      <p>Punisher runs full minimax — every reply, to the end. It cannot be beaten, and the lobby should say so out loud instead of leaving "hard" as marketing fog.</p>
-      <div class="statrow">
-        <div class="stat"><b class="num">278</b><span>hard wins / 400</span></div>
-        <div class="stat"><b class="num">0</b><span>easy wins / 400</span></div>
-        <div class="stat"><b class="num">20/20</b><span>hard-vs-hard draws</span></div>
-      </div>
-      <p class="fix">Copy it straight: "Perfect play. The fun is earning the draw." One honest sentence beats a fake rank badge.</p>
-    </div>
-    <div class="hc">
-      <span class="sev p2">P2 · theater</span>
-      <h3>The thinking pause is a costume</h3>
-      <p>The engine answers instantly. The delay players see is injected by the page — a random wait scaled by difficulty:</p>
-      <div class="code">const base = baseByDiff*2.2 <i>+ Math.random()*500</i>;</div>
-      <p class="fix">Let Punisher reply immediately — a perfect player answering without hesitation <b>is</b> the character. Keep a ≤150 ms rhythm pause on Counter and Attacker only, where the wait reads as "thinking", not as lag.</p>
-    </div>
-    <div class="hc">
-      <span class="sev p2">P2 · fairness</span>
-      <h3>X moves first, and the tree knows</h3>
-      <p>Across the full game tree, X wins 131,184 games to O's 77,904 — a 1.7× edge. Against a random O, a corner opening with perfect follow-up wins <b>99.4%</b>.</p>
-      <div class="statrow">
-        <div class="stat"><b class="num">131,184</b><span>X wins in tree</span></div>
-        <div class="stat"><b class="num">77,904</b><span>O wins in tree</span></div>
-        <div class="stat"><b class="num">46,080</b><span>draws in tree</span></div>
-      </div>
-      <p class="fix">Alternate the first mark on rematch — loser draws first, swap after a draw. One line of product logic, backed by 255,168 games of evidence.</p>
-    </div>
-  </div>
-</div></section>
-
-<!-- NOTES -->
-<section class="alt"><div class="wrap">
-  <div class="kick">06 — DESIGN NOTES</div>
-  <h2>What this game adds to the family.</h2>
-  <div class="notes">
-    <div class="note"><i>a</i><div><b>Shape carries allegiance.</b> Stones used fill (black/white); marks use form (X/O). Either way, pieces stay neutral of faction color — ember and teal remain clock-and-chip furniture. Connect4 will use the same rule: two checkers distinguished by fill, never by faction color.</div></div>
-    <div class="note"><i>b</i><div><b>Gold is still spend once.</b> Gomoku: five rings. Tictactoe: one strike, animated a single time. When Connect4 ships, gold is the four-in-a-row connector line. Same token, same scarcity.</div></div>
-    <div class="note"><i>c</i><div><b>Smaller board, bolder lines.</b> 2px inner hash, no outer frame, 9px mark strokes. Density set the weight on the 15×15; here the slate itself is the frame and the hash floats like a doodle on it.</div></div>
-    <div class="note"><i>d</i><div><b>Certainty beats probability.</b> Gomoku's hint panel showed raw weights; tictactoe's shows verdicts, because the game is solved and the engine proves it live. Same component, honest per game — and it sets the ceiling for Chess hints later.</div></div>
-    <div class="note"><i>e</i><div><b>The emoji layer goes.</b> The live page greets results with emoji and renders marks as text glyphs. The redesign draws its marks and speaks its results: "You win · the losing move was O→8". Nothing to strip out later.</div></div>
-    <div class="note"><i>f</i><div><b>Every number is real.</b> Tree counts (255,168 games), opening win rates (99.4% / 96.2% / 98.3%), the 400-game duel, 20/20 draws, the mid-position verdicts and the losing move — all produced by the shipped engine in this session. The draft doubles as its own regression test.</div></div>
-  </div>
-  <div class="oq">
-    <h3>Open questions</h3>
-    <ul>
-      <li><b>Certainty map by default?</b> Show it always in casual, hide it in ranked rooms, or gate it behind "after your first loss"? The engine cost is zero either way.</li>
-      <li><b>Undo scope:</b> free take-backs vs the engine, consent-based vs humans, or off in ranked?</li>
-      <li><b>Should Counter sandbag?</b> It never sandbags today — easy won 0 of 400 against hard, and easy still beats beginners by blocking half the time. Recommendation: keep it honest.</li>
-    </ul>
-  </div>
-</div></section>
-
-<footer><div class="wrap">
-  <p>BOARDDUEL · TicTacToe · board language v1, game 2 of 5 · ARENA tokens · English default</p>
-  <div class="base"><span>family: mathduel.com · memoryduel.com · boardduel.com</span><span>all numbers: live ai.js, this session</span></div>
-</div></footer>
-
-
+  <div class="bd-foot">
+  <span>© 2026 BoardDuel · free to play · privacy-first</span>
+  <span><a href="/">Home</a></span>
 </div>
-
-<!-- ================= CONNECT4 ================= -->
-
+</main>
 <script type="module" src="/src/games/tictactoe/index.ts"></script>
 </body>
 </html>

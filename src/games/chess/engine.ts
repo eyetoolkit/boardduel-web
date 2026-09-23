@@ -138,11 +138,13 @@ export function initialState(): GameState {
   const setup = (rank: number, pieces: Piece[]) => {
     for (let f = 0; f < 8; f++) board[rank * 8 + f] = pieces[f];
   };
-  // 白在底 (rank 1-2)，黑在顶 (rank 6-7)
-  setup(0, ['r','n','b','q','k','b','n','r']);
+  // 标准布局：白在底 (rank 0-1)，黑在顶 (rank 6-7)
+  // 白兵方向 dir=-1（rank 递减，向顶推进），起点 rank=6
+  // 黑兵方向 dir=+1（rank 递增，向底推进），起点 rank=1
+  setup(0, ['R','N','B','Q','K','B','N','R']);
   setup(1, ['P','P','P','P','P','P','P','P']);
   setup(6, ['p','p','p','p','p','p','p','p']);
-  setup(7, ['R','N','B','Q','K','B','N','R']);
+  setup(7, ['r','n','b','q','k','b','n','r']);
   return {
     board,
     turn: 'w',
@@ -253,12 +255,16 @@ export function legalMoves(s: GameState): Move[] {
     const lower = p === p.toLowerCase();
     switch (p.toLowerCase()) {
       case 'p': {
-        const dir = lower ? 1 : -1; // 黑向下（rank+），白向上（rank-）
-        const startRank = lower ? 1 : 6;
+        // 布局：白在底（rank 0-1），黑在顶（rank 6-7）
+        // 白兵从 rank 1 向 rank 7 推进 → dir=+1，升变 rank=7
+        // 黑兵从 rank 6 向 rank 0 推进 → dir=-1，升变 rank=0
+        const dir = lower ? -1 : 1;
+        const startRank = lower ? 6 : 1;
+        const promoRank = lower ? 0 : 7;
         // 单步前进
         const r1 = r + dir;
         if (r1 >= 0 && r1 < 8 && board[r1 * 8 + f] === '.') {
-          if (r1 === 0 || r1 === 7) {
+          if (r1 === promoRank) {
             // 升变 — 生成 4 种
             for (const promo of ['Q','R','B','N'] as Piece[]) {
               const mv: Move = { from: sq, to: r1 * 8 + f, piece: p, promo };
@@ -283,7 +289,7 @@ export function legalMoves(s: GameState): Move[] {
           if (ff < 0 || ff >= 8 || rr < 0 || rr >= 8) continue;
           const t = board[rr * 8 + ff];
           if (t !== '.' && pieceColor(t) === opp) {
-            if (rr === 0 || rr === 7) {
+            if (rr === promoRank) {
               for (const promo of ['Q','R','B','N'] as Piece[]) {
                 const mv: Move = { from: sq, to: rr * 8 + ff, piece: p, capture: t, promo };
                 if (tryApply(s, mv)) out.push(mv);
@@ -378,19 +384,30 @@ export function legalMoves(s: GameState): Move[] {
   return out;
 }
 
-/** 测试：模拟 m 走子后己方王不被将军 → 合法 */
+/** 测试：模拟 m 走子后**走子方**的王不被将军 → 合法
+ *  ⚠️ 必须**原地**还原（不能替换 s.board 引用），否则 legalMoves 循环里缓存的
+ *  board 引用会变成"野数组"，读到已被 applyMove 改过、却不再属于 s 的幽灵棋子。 */
 function tryApply(s: GameState, m: Move): boolean {
-  const save = cloneState(s);
+  const mover = s.turn;          // applyMove 会翻转 turn，必须先捕获
+  const saveBoard = s.board.slice();
+  const saveTurn = s.turn;
+  const saveCastling = { ...s.castling };
+  const saveEnpassant = s.enpassant;
+  const saveHalf = s.halfmove;
+  const saveFull = s.fullmove;
+  const saveHistLen = s.history.length;
+
   applyMove(s, m);
-  const ok = !inCheck(s, s.turn);
-  // 还原
-  s.board = save.board;
-  s.turn = save.turn;
-  s.castling = save.castling;
-  s.enpassant = save.enpassant;
-  s.halfmove = save.halfmove;
-  s.fullmove = save.fullmove;
-  s.history = save.history;
+  const ok = !inCheck(s, mover);
+
+  // 原地还原
+  for (let i = 0; i < 64; i++) s.board[i] = saveBoard[i];
+  s.turn = saveTurn;
+  s.castling = saveCastling;
+  s.enpassant = saveEnpassant;
+  s.halfmove = saveHalf;
+  s.fullmove = saveFull;
+  s.history.length = saveHistLen;
   return ok;
 }
 
@@ -552,14 +569,56 @@ export function selfTest(): { ok: boolean; details: string[] } {
     ok = false;
     details.push('initial position should not be in check');
   }
-  // 走 1.e4 后局面应当合法（不在将）
+  // 白王必须在底排 (rank 0)，即 e1 = sq 4 — 防止布局上下颠倒
+  if (s.board[4] !== 'K') {
+    ok = false;
+    details.push('white king should be on e1 (sq 4), got ' + s.board[4]);
+  }
+  if (s.board[60] !== 'k') {
+    ok = false;
+    details.push('black king should be on e8 (sq 60), got ' + s.board[60]);
+  }
+  // 白兵在 rank 1（sq 8..15），黑兵在 rank 6（sq 48..55）
+  if (s.board[12] !== 'P' || s.board[52] !== 'p') {
+    ok = false;
+    details.push('pawns misplaced: sq12=' + s.board[12] + ' sq52=' + s.board[52]);
+  }
+  // 白方应有 16 个合法起点走法 = 16 (兵) + 4 (马) = 20
+  const pawnMoves = moves.filter((m) => m.piece === 'P').length;
+  const knightMoves = moves.filter((m) => m.piece === 'N').length;
+  if (pawnMoves !== 16 || knightMoves !== 4) {
+    ok = false;
+    details.push('expected 16 pawn + 4 knight moves, got ' + pawnMoves + ' + ' + knightMoves);
+  }
+  // 走 1.e4 后局面应当合法（不在将）且轮到黑
   const e4 = moves.find((m) => m.from === 12 && m.to === 28);
-  if (e4) {
+  if (!e4) {
+    ok = false;
+    details.push('1.e4 (sq12->sq28) should be legal');
+  } else {
     applyMove(s, e4);
     if (inCheck(s, 'w')) {
       ok = false;
       details.push('after 1.e4 white should not be in check');
     }
+    if (s.turn !== 'b') {
+      ok = false;
+      details.push('after white move turn should be black, got ' + s.turn);
+    }
+    // 黑方同位置也应有 20 步
+    const bm = legalMoves(s);
+    if (bm.length !== 20) {
+      ok = false;
+      details.push('black reply count should be 20, got ' + bm.length);
+    }
+  }
+  // 王车易位：清空 f1/g1 后白方应能 O-O
+  const c = initialState();
+  c.board[5] = '.'; c.board[6] = '.';
+  const canCastleK = legalMoves(c).some((m) => m.castle === 'K');
+  if (!canCastleK) {
+    ok = false;
+    details.push('white should be able to castle kingside after clearing f1/g1');
   }
   return { ok, details };
 }

@@ -233,13 +233,27 @@ export function selfTest(): { ok: boolean; details: string[] } {
     ok = false;
     details.push('first move should be center (112), got ' + m1);
   }
-  // 构造 4 连检测
+  // 构造 5 连检测（必须正好 5 子才赢）
   b = emptyBoard();
-  for (let x = 0; x < 4; x++) b[idx(7 + x, 7)] = 1;
+  for (let x = 0; x < 5; x++) b[idx(7 + x, 7)] = 1;
   const r = hasFive(b);
   if (r.winner !== 1) {
     ok = false;
     details.push('5-in-row should detect winner=1, got ' + r.winner);
+  }
+  // 反面：4 连不应判胜
+  b = emptyBoard();
+  for (let x = 0; x < 4; x++) b[idx(7 + x, 7)] = 1;
+  if (hasFive(b).winner !== 0) {
+    ok = false;
+    details.push('4-in-row must NOT be a win');
+  }
+  // 斜向 5 连
+  b = emptyBoard();
+  for (let k = 0; k < 5; k++) b[idx(3 + k, 3 + k)] = 2;
+  if (hasFive(b).winner !== 2) {
+    ok = false;
+    details.push('diagonal 5-in-row should detect winner=2');
   }
   return { ok, details };
 }

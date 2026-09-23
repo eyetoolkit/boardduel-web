@@ -4,260 +4,81 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0E1419">
-<title>BoardDuel — Connect 4 (punched cage, gravity routes)</title>
-<meta name="description" content="A caged grid of holes; gravity does the routing. Connect Four with diagonal detection and three AI levels.">
+<title>Connect 4 — BoardDuel</title>
+<meta name="description" content="Connect 4 — 6×7 grid, gravity routes the disc. 3 AI levels.">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="canonical" href="https://boardduel.com/games/c4/" />
-<meta property="og:type" content="website" />
-<meta property="og:site_name" content="BoardDuel" />
-<meta property="og:title" content="BoardDuel — Connect 4 (punched cage, gravity routes)" />
-<meta property="og:description" content="A caged grid of holes; gravity does the routing. Connect Four with diagonal detection and three AI levels." />
-<meta property="og:url" content="https://boardduel.com/games/c4/" />
-<meta name="twitter:card" content="summary_large_image" />
-<link rel="alternate" hreflang="en" href="https://boardduel.com/games/c4/" />
-<link rel="alternate" hreflang="x-default" href="https://boardduel.com/games/c4/" />
+<link rel="manifest" href="/manifest.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="BoardDuel">
+<meta property="og:title" content="Connect 4 — BoardDuel">
+<meta property="og:description" content="Connect 4 — 6×7 grid, gravity routes the disc. 3 AI levels.">
+<meta property="og:url" content="https://boardduel.com/games/connect4/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Connect 4 — BoardDuel">
+<meta name="twitter:description" content="Connect 4 — 6×7 grid, gravity routes the disc. 3 AI levels.">
+<link rel="canonical" href="https://boardduel.com/games/connect4/">
+<link rel="alternate" hreflang="en" href="https://boardduel.com/games/connect4/">
+<link rel="alternate" hreflang="x-default" href="https://boardduel.com/games/connect4/">
 <link rel="stylesheet" href="/src/styles/boardduel.css">
 </head>
-<body>
-<div class="gnav"><div class="gwrap">
-  <div class="gmark">BOARD<span>DUEL</span></div>
-  <nav class="glinks">
-    <a href="/" data-pg="home">HOME</a>
-    <a href="/games/gomoku/" data-pg="gomoku">GOMOKU</a>
-    <a href="/games/tictactoe/" data-pg="ttt">TICTACTOE</a>
-    <a href="/games/connect4/" data-pg="c4">CONNECT4</a>
-    <a href="/games/reversi/" data-pg="rev">REVERSI</a>
-    <a href="/games/chess/" data-pg="chess">CHESS</a>
-  </nav>
-  <div class="gtag">all drafts · one file</div>
-</div></div>
-<div class="pg" id="pg-c4">
-
-
-<!-- MAST -->
-
-
-<!-- HERO -->
-<section class="hero" id="c4-top"><div class="wrap"><div class="grid">
-  <div>
-    <div class="kick">BOARDDUEL — <b>CONNECT4</b></div>
-    <h1>Gravity never <span class="gold">argues.</span></h1>
-    <p class="lead">You choose the column; gravity chooses the row. That single constraint is the whole game — and it was solved in 1988: with perfect play, the first player wins (center opening). So like tictactoe, this page tells the truth. The spec calls for the family's deepest search — 9-ply — but the shipped engine file 404s, so this draft's data comes from a verified local solver built to the live page's own engine interface.</p>
-    <div class="mig" aria-label="paper carrier migration">
-      <b>card face</b><i>→</i><b>given digit</b><i>→</i><b>cage sum</b><i>→</i><b>tower brick</b><i>→</i><b>target card</b><i>→</i><b>stone</b><i>→</i><b>the mark</b><i>→</i><b class="hot">the disc</b>
+<body><main class="bd-main">
+  <section class="bd-hero">
+    <h1>Connect 4</h1>
+    <p class="bd-lead">6 rows × 7 columns. Your disc drops to the lowest empty cell in any column. First to connect four in a row wins.</p>
+    <div class="bd-game-meta"><span><b>6×7</b> board</span>
+          <span><b>gravity</b> rules</span>
+          <span><b>3</b> AI levels</span>
     </div>
-    <div class="facts">
-      <span><b>7×6</b> holes</span><span><b>connect 4</b></span><span><b>9-ply</b> search</span><span><b class="num">90</b> solver games</span><span><b>3</b> modes spec</span>
-    </div>
+  </section>
+
+  <div class="bd-section-title">Pick a mode</div>
+  <div class="bd-mode-row" id="bd-modes">
+    <button type="button" class="bd-mode-card is-cur" data-mode="ai">
+      <span class="bd-mode-label">Play the engine</span>
+      <span class="bd-mode-badge">3 levels</span>
+    </button>
+    <button type="button" class="bd-mode-card" data-mode="pass">
+      <span class="bd-mode-label">Pass &amp; play</span>
+      <span class="bd-mode-badge">two players, one screen</span>
+    </button>
+    <button type="button" class="bd-mode-card is-disabled" data-mode="human" disabled>
+      <span class="bd-mode-label">Online match</span>
+      <span class="bd-mode-badge">coming soon</span>
+    </button>
   </div>
-  <div>
-    <div class="board c4" role="img" aria-label="Connect4 board"><div class="ruler"><b>A</b><b>B</b><b>C</b><b>D</b><b>E</b><b>F</b><b>G</b></div><div class="cage"><div class="gridc"><div class="hole"><span class="disc them"></span></div><div class="hole"></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"></div><div class="hole"></div><div class="hole"></div><div class="hole"><span class="disc you"></span></div><div class="hole"></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"></div><div class="hole"></div><div class="hole"></div><div class="hole"><span class="disc them"></span></div><div class="hole"></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"></div><div class="hole"><span class="disc ghost"></span><i class="cert win">WIN</i></div><div class="hole"></div><div class="hole"><span class="disc you"></span></div><div class="hole"></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"></div><div class="hole"><span class="disc them lm"></span></div><div class="hole"></div><div class="hole"><span class="disc them"></span></div><div class="hole"></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div></div></div></div>
-    <div class="bcap">Real solver position · mid-game · dashed disc in <b>column F</b> = the only forced win · drop lands by gravity</div>
+
+  <div class="bd-section-title">Engine difficulty</div>
+  <div class="bd-diff-row" id="bd-diffs">
+    <button type="button" class="bd-diff-btn" data-level="easy">EASY</button>
+    <button type="button" class="bd-diff-btn is-cur" data-level="medium">MEDIUM</button>
+    <button type="button" class="bd-diff-btn" data-level="hard">HARD</button>
   </div>
-</div></div></section>
 
-<!-- FACT STRIP -->
-<div class="strip"><div class="wrap">
-  <div class="f"><b class="num">7×6</b><span>holes · 42 cells</span></div>
-  <div class="f"><b>9-ply</b><span>search depth</span></div>
-  <div class="f"><b class="num">90</b><span>solver games</span></div>
-  <div class="f"><b class="num">89</b><span>hard wins / 90</span></div>
-  <div class="f"><b class="num">0</b><span>draws / 90</span></div>
-</div></div>
-
-<!-- BOARD LANGUAGE -->
-<section><div class="wrap">
-  <div class="kick">01 — BOARD LANGUAGE</div>
-  <h2>Six states, one cage.</h2>
-  <p class="lead">Fourth board, fourth silhouette. The pieces fill the same way as the gomoku stones — dark checker is you, paper checker is them — but the frame is new: a punched slate cage, and a column ruler instead of letter-number coordinates.</p>
-  <div class="anat">
-    <div class="acard">
-      <div class="demo"><span class="disc you"></span><span class="disc them"></span></div>
-      <h3>Your checker / their checker</h3>
-      <p>Fill carries allegiance, exactly like the stones. The live site renders emoji <code>🔴</code> <code>🟡</code>; we render radial discs. Three games in, the rule is unbroken: <b>pieces never wear faction color</b>.</p>
+  <div class="bd-play">
+    <div class="bd-board-wrap" id="bd-board">
+      <span class="bd-mode-badge">Press New game to start</span>
     </div>
-    <div class="acard">
-      <div class="demo"><span class="disc you lm"></span><span class="disc them lm"></span></div>
-      <h3>Last move</h3>
-      <p>The ember dot, seated at the disc's center — the same dot from the pilot. One disc glowing is all the "where did that land" a player needs.</p>
-    </div>
-    <div class="acard">
-      <div class="demo"><span class="disc ghost" style="position:relative"></span><i class="cert win" style="position:static;margin-left:14px">WIN</i></div>
-      <h3>Ghost + certainty chip</h3>
-      <p>Dashed disc at the column's landing row. The chip names the verdict — here <code>WIN</code>, because the search proves that column wins. <code>LOSS</code> and <code>BLOCK</code> are the other two.</p>
-    </div>
-    <div class="acard">
-      <div class="demo"><div class="board c4" role="img" aria-label="Connect4 board"><div class="ruler"><b>A</b><b>B</b><b>C</b><b>D</b><b>E</b><b>F</b><b>G</b></div><div class="cage"><div class="gridc"><div class="hole"><span class="disc them"></span></div><div class="hole"></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div></div><svg class="strike4" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line x1="68.8" y1="36.4" x2="16.9" y2="97.0" style="--len:82"/></svg></div></div></div>
-      <h3>The connector</h3>
-      <p>Gold's single appearance: a line through the four, extended past the discs like a hand-drawn strike. Gomoku rings, tictactoe strikes — here it's the connector. Same scarcity, same token.</p>
-    </div>
-    <div class="acard">
-      <div class="demo"><div class="board c4 mini"><div class="ruler"><b>A</b><b>B</b><b>C</b><b>D</b><b>E</b><b>F</b><b>G</b></div><div class="cage"><div class="gridc"><div class="hole"><b>A</b></div><div class="hole"><b>B</b></div><div class="hole"><b>C</b></div><div class="hole"><b>D</b></div><div class="hole"><b>E</b></div><div class="hole"><b>F</b></div><div class="hole"><b>G</b></div></div></div></div></div>
-      <h3>Column ruler A–G</h3>
-      <p>Coordinates collapse to one axis: you name a <b>column</b>, gravity names the row. Recorder reads <code>1. D · D</code>. No row numbers — the board makes them for you.</p>
-    </div>
-    <div class="acard">
-      <div class="demo" style="gap:14px"><div class="board c4" style="max-width:110px"><div class="cage" style="padding:8px;border:1px dashed var(--line)"><div class="gridc"><div class="hole"></div><div class="hole"></div><div class="hole"></div><div class="hole"></div><div class="hole"></div><div class="hole"></div><div></div></div></div></div><span style="color:var(--mute2);font-size:.8rem">punched</span></div>
-      <h3>The cage</h3>
-      <p>The frame is a solid slate with holes punched through it — the disc sits inside the hole. Gomoku framed a battlefield, tictactoe floated on the slate, connect4 <b>cages the air</b>. Same tokens, three silhouettes.</p>
-    </div>
-  </div>
-</div></section>
-
-<!-- SCREEN 1 LOBBY -->
-<section class="alt" id="c4-lobby"><div class="wrap">
-  <div class="kick">02 — SCREEN 1 · LOBBY</div>
-  <h2>Three ways in — if the engine ships.</h2>
-  <p class="lead">The live page wires the same three paths as tictactoe: AI, friend rooms, random matchmaking. But the AI path is currently dead — the engine file 404s. The draft keeps the structure and marks it honestly until the engine is deployed.</p>
-  <div class="lob">
-    <div class="lc">
-      <div class="lv"><h3>Random match</h3><span class="pill live">live</span></div>
-      <p>Queue for a human — matchmaking exists server-side, exactly like the other board games.</p>
-      <div class="lev"><div><b>Board</b><span>7×6 · X first</span></div><div><b>First disc</b><span>coin flip</span></div></div>
-      <button class="btn primary">Enter queue</button>
-    </div>
-    <div class="lc">
-      <div class="lv"><h3>Room code</h3><span class="pill live">live</span></div>
-      <p>Create a room, share the short code, play a friend. Create and join buttons ship today.</p>
-      <div class="lev"><div><b>Create</b><span>get a code</span></div><div><b>Join</b><span>type a code</span></div></div>
-      <button class="btn">Create room</button>
-    </div>
-    <div class="lc">
-      <div class="lv"><h3>Play the engine</h3><span class="pill warn">engine 404</span></div>
-      <p>Counter / Attacker / Punisher, like the family. <b>Currently broken in production</b> — the page imports an engine file that doesn't deploy.</p>
-      <div class="lev"><div><b>Counter</b><span>d2 · random 30%</span></div><div><b>Attacker</b><span>d4 · near-best</span></div><div><b>Punisher</b><span>d9 · full search</span></div></div>
-      <button class="btn prop"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.2"/><circle cx="8" cy="8" r="2.2"/></svg> Engine <i>DEPLOY</i></button>
-    </div>
-  </div>
-</div></section>
-
-<!-- SCREEN 2 MATCH -->
-<section><div class="wrap">
-  <div class="kick">03 — SCREEN 2 · MATCH</div>
-  <h2>One column wins. The rest lose.</h2>
-  <p class="lead">A real solver position from a Punisher-vs-Punisher game — and the moment is sharp: only <b>column F</b> wins; every other open column hands the game to the opponent. The certainty map makes that legible at a glance.</p>
-  <div class="screen">
-    <div>
-      <div class="hud">
-        <div class="chip act"><span class="mx you"></span><div><div class="who">You · X</div><div class="st">your move</div></div><span class="pulse"></span></div>
-        <div class="chip"><span class="mx them"></span><div><div class="who">Ken · O</div><div class="st">waiting</div></div></div>
+    <div class="bd-side">
+      <div class="bd-hud">
+        <div class="bd-hud-row"><span class="bd-hud-l">Mode</span><span class="bd-hud-v" id="bd-mode-v">vs AI · medium</span></div>
+        <div class="bd-hud-row"><span class="bd-hud-l">Turn</span><span class="bd-hud-v" id="bd-turn-v">—</span></div>
+        <div class="bd-hud-row"><span class="bd-hud-l">Time</span><span class="bd-hud-v" id="bd-time-v">0:00</span></div>
+        <div class="bd-hud-row"><span class="bd-hud-l">Status</span><span class="bd-hud-v" id="bd-status-v">idle</span></div>
       </div>
-      <div class="board c4" role="img" aria-label="Connect4 board"><div class="ruler"><b>A</b><b>B</b><b>C</b><b>D</b><b>E</b><b>F</b><b>G</b></div><div class="cage"><div class="gridc"><div class="hole"><span class="disc them"></span></div><div class="hole"></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"></div><div class="hole"></div><div class="hole"></div><div class="hole"><span class="disc you"></span></div><div class="hole"></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"></div><div class="hole"></div><div class="hole"></div><div class="hole"><span class="disc them"></span></div><div class="hole"></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"></div><div class="hole"><span class="disc ghost"></span><i class="cert win">WIN</i></div><div class="hole"></div><div class="hole"><span class="disc you"></span></div><div class="hole"></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"></div><div class="hole"><span class="disc them lm"></span></div><div class="hole"></div><div class="hole"><span class="disc them"></span></div><div class="hole"></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div></div></div></div>
-      <div class="ctl">
-        <button class="btn prop"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3.5 3 7l3.5 3.5"/><path d="M3 7h6.2a3.8 3.8 0 0 1 0 7.6H6"/></svg> Undo <i>×1 FREE</i></button>
-        <button class="btn prop"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.2"/><circle cx="8" cy="8" r="2.2"/></svg> Certainty <i>LIVE</i></button>
-        <button class="btn"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 14V2.5"/><path d="M3.5 3h9l-2.4 3 2.4 3h-9"/></svg> Resign</button>
-      </div>
-      <div class="bcap">Move <b class="num">26</b> · your move · column F is the only forced win</div>
-    </div>
-    <div class="scr-note">
-      <div class="pt"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.2"/><circle cx="8" cy="8" r="2.2"/></svg><div><b>The certainty map is the hint.</b> Column <b>F</b> returns a forced win (search-proven within the horizon); columns <b>E · B · G</b> are proven losses. The blocked columns are full. This is tictactoe's exact-verdict panel adapted to gravity — same component, column verdicts.</div></div>
-      <div class="pt tl"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M2.5 3.5h11v7.5h-6L4 14v-3H2.5Z"/></svg><div><b>Turn chips, no clocks.</b> Your chip breathes ember; theirs sits grey. The only motion on the board is the disc dropping — which the engine answers instantly, so a fake thinking delay would be pure costume.</div></div>
-      <div class="pt"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3.5 3 7l3.5 3.5"/><path d="M3 7h6.2a3.8 3.8 0 0 1 0 7.6H6"/></svg><div><b>Undo on a vertical game removes two plies</b> — yours and theirs — back to the same disc height. Same dashed treatment as the other drafts until the product call lands.</div></div>
-      <div class="rail" style="margin-top:18px">
-        <h4>Move recorder <b>columns only · X first</b></h4>
-        <div class="mvs"><div class="mv"><em>1.</em> D <s>·</s> D</div><div class="mv"><em>3.</em> D <s>·</s> D</div><div class="mv"><em>5.</em> C <s>·</s> E</div><div class="mv"><em>7.</em> E <s>·</s> D</div><div class="mv"><em>9.</em> C <s>·</s> D</div><div class="mv"><em>11.</em> C <s>·</s> C</div><div class="mv"><em>13.</em> C <s>·</s> C</div><div class="mv"><em>15.</em> B <s>·</s> A</div><div class="mv"><em>17.</em> F <s>·</s> A</div><div class="mv"><em>19.</em> A <s>·</s> A</div><div class="mv"><em>21.</em> A <s>·</s> A</div><div class="mv"><em>23.</em> G <s>·</s> G</div><div class="mv hl"><em>25.</em> F <s>·</s> F</div></div>
-      </div>
-      <div class="rail" style="margin-top:12px">
-        <h4>Column verdict <b>9-ply search</b></h4>
-        <div class="certmap">
-          <div class="cert-row win"><b>F</b><span>forced win — drop here</span></div>
-          <div class="cert-row loss"><b>E</b><span>hands the game to O</span></div><div class="cert-row loss"><b>B</b><span>hands the game to O</span></div><div class="cert-row loss"><b>G</b><span>hands the game to O</span></div>
-          <div class="cert-row block"><b>A</b><span>column full — nothing to play</span></div><div class="cert-row block"><b>C</b><span>column full — nothing to play</span></div><div class="cert-row block"><b>D</b><span>column full — nothing to play</span></div>
-        </div>
-        <div class="foot-note">One winning column among losing ones. The search depth is bounded, so "forced" means "within the horizon" — labelled honestly, like tictactoe's exact numbers.</div>
+      <div class="bd-control">
+        <button type="button" id="bd-new">New game</button>
+        <button type="button" id="bd-undo">Undo</button>
       </div>
     </div>
   </div>
-</div></section>
 
-<!-- SCREEN 3 END -->
-<section class="alt"><div class="wrap">
-  <div class="kick">04 — SCREEN 3 · END</div>
-  <h2>The connector, then the truth.</h2>
-  <p class="lead">A real Punisher-vs-Punisher finish in 35 drops. The line is drawn; the result bar names the drop that sealed it — and the honest truth is that O was never blundering, just outplayed.</p>
-  <div class="screen">
-    <div>
-      <div class="board c4" role="img" aria-label="Connect4 board"><div class="ruler"><b>A</b><b>B</b><b>C</b><b>D</b><b>E</b><b>F</b><b>G</b></div><div class="cage"><div class="gridc"><div class="hole"><span class="disc them"></span></div><div class="hole"></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc them"></span></div><div class="hole"><span class="disc you"></span></div><div class="hole"><span class="disc you"></span></div></div><svg class="strike4" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line x1="68.8" y1="36.4" x2="16.9" y2="97.0" style="--len:82"/></svg></div></div>
-      <div class="winbar">
-        <span class="tro">You win</span>
-        <span style="font-size:.78rem;color:var(--mute)">35 drops · line E4–D3–C2–B1</span>
-        <span class="five">decisive drop: <b>X→F (move 25)</b> · every O reply loses</span>
-      </div>
-      <div class="ctl">
-        <button class="btn primary">Rematch</button>
-        <button class="btn">Review moves</button>
-        <button class="btn">Back to lobby</button>
-      </div>
-      <div class="drawbar" style="margin-top:12px"><b>Draws are rare here.</b> Draws: <b>0</b> in 90 solver games at the top level — versus tictactoe's guaranteed draws. Best play almost always resolves; if the board ever fills, the bar reads: board full · but someone always connects first.</div>
-    </div>
-    <div class="scr-note">
-      <div class="pt gd"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.2"/><path d="M5.5 8.2l1.8 1.8 3.4-4" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b>The connector animates once.</b> A gold line draws across the four discs in half a second — the page's single choreographed moment, skipped for reduced-motion users.</div></div>
-      <div class="pt"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 8h11M9.5 4l4 4-4 4"/></svg><div><b>"The decisive drop" is the retention hook.</b> The result bar names the exact move where the game was locked — <b>X→F on move 25</b>; from that point every O reply loses within the search horizon. O wasn't blundering — it was outplayed. Review replays to that drop with the column verdict attached.</div></div>
-      <div class="pt tl"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v12M2 8h12"/></svg><div><b>Rematch: loser drops first.</b> Unlike tictactoe's coin flip, connect4's first disc carries a proven edge — the loser should open. One line of product logic, backed by 90 solver games.</div></div>
-    </div>
-  </div>
-</div></section>
+  <div class="bd-how">Click any <b>column header</b> at the top of the board to drop a disc. Gravity pulls your disc to the lowest empty row. First to connect <b>four in a row</b> horizontally, vertically, or diagonally wins.</div>
 
-<!-- HONESTY -->
-<section><div class="wrap">
-  <div class="kick">05 — WHAT THE SERVER ACTUALLY DOES</div>
-  <h2>Three findings. One is a production outage.</h2>
-  <p class="lead">Verified against the live site and the shipped page today — not assumptions. This draft's engine data is produced by a local solver specifically because finding #1 below is true.</p>
-  <div class="honest">
-    <div class="hc">
-      <span class="sev p0">P0 · production</span>
-      <h3>The engine file is missing</h3>
-      <p>The connect4 page loads, but its module imports <code>./ai.js</code> — which returns <b>HTTP 404</b>. The module throws on import, so "Play the engine" never starts for any visitor. The page already pins the interface: <code>newGame · applyMove · chooseMove · COLS</code>.</p>
-      <p class="fix">Deploy the engine — the contract is already written by the page. Until then the lobby card must say "engine offline," not hide the failure.</p>
-    </div>
-    <div class="hc">
-      <span class="sev p1">P1 · distribution</span>
-      <h3>The nav is ahead of the deploy</h3>
-      <p>The ARENA family switcher lists five games. In production the homepage links only tictactoe — and the <b>gomoku page itself is a live 404</b>. The family is a roadmap; one game is shipped.</p>
-      <p class="fix">Ship the finished engines first, then let the nav follow. A switcher pointing at dead pages is worse than no switcher.</p>
-    </div>
-    <div class="hc">
-      <span class="sev p2">P2 · theater + emoji</span>
-      <h3>Costume where confidence belongs</h3>
-      <p>The thinking delay is faked again — <code>baseByDiff*1.8 + Math.random()*600</code> (~2s on hard). And the marks are emoji (<code>🔴🟡</code>) in the enhancer. The drop animation is the real feedback.</p>
-      <p class="fix">Drop the costume: render solid discs, and let Punisher answer instantly. A perfect player replying without hesitation <b>is</b> the character.</p>
-    </div>
-  </div>
-</div></section>
-
-<!-- NOTES -->
-<section class="alt"><div class="wrap">
-  <div class="kick">06 — DESIGN NOTES</div>
-  <h2>What connect4 adds to the family.</h2>
-  <div class="notes">
-    <div class="note"><i>a</i><div><b>Fill carries allegiance again.</b> Four boards in, the rule is settled: black/white stones, X/O marks, dark/paper checkers — pieces stay neutral of faction color; ember and teal remain clock-and-chip furniture.</div></div>
-    <div class="note"><i>b</i><div><b>Gold is the connector, once.</b> Gomoku rings the five, tictactoe strikes the three, connect4 links the four. Same token, same scarcity, drawn a single time per game.</div></div>
-    <div class="note"><i>c</i><div><b>Three silhouettes, one token set.</b> Framed battlefield → open hash → punched cage. The board furniture changes per game; the colors and the rule "pieces carry the game" never do.</div></div>
-    <div class="note"><i>d</i><div><b>Coordinates collapse to a column.</b> Gravity erases the row choice, so the recorder and ruler are column-only — the most reduced notation in the family, and the right one.</div></div>
-    <div class="note"><i>e</i><div><b>Certainty scales to gravity.</b> Tictactoe proved exact verdicts; connect4 proves <em>column</em> verdicts at a bounded search depth. The panel copy says "within the horizon" so it stays honest as the horizon moves.</div></div>
-    <div class="note"><i>f</i><div><b>Every number is solver-verified.</b> The 90 games, the 89 hard wins, the 0 draws, the sharp mid position and its single winning column — produced by the bitboard solver in this session, because the live engine is absent.</div></div>
-  </div>
-  <div class="oq">
-    <h3>Open questions</h3>
-    <ul>
-      <li><b>Certainty map by default?</b> Show it always in casual, hide in ranked rooms, or gate behind "after your first loss"? The search cost is near-zero.</li>
-      <li><b>Undo scope:</b> removing two plies (yours + theirs) on a vertical game — free in casual, consent-based vs humans, or off in ranked?</li>
-      <li><b>Deploy order:</b> connect4's engine is missing and gomoku's page 404s — which ships first? Both block the family switcher from being real.</li>
-    </ul>
-  </div>
-</div></section>
-
-<footer><div class="wrap">
-  <p>BOARDDUEL · Connect4 · board language v1, game 3 of 5 · ARENA tokens · English default</p>
-  <div class="base"><span>family: mathduel.com · memoryduel.com · boardduel.com</span><span>data: local bitboard solver (live engine 404s)</span></div>
-</div></footer>
-
-
+  <div class="bd-foot">
+  <span>© 2026 BoardDuel · free to play · privacy-first</span>
+  <span><a href="/">Home</a></span>
 </div>
-
-<!-- ================= REVERSI ================= -->
-
+</main>
 <script type="module" src="/src/games/connect4/index.ts"></script>
 </body>
 </html>
