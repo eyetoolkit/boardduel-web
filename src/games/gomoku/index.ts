@@ -1010,9 +1010,11 @@ const LEVEL_LABEL: Record<GDifficulty, string> = {
   hard: 'Punisher',
 };
 
-/** 点卡片 = 选模式。引擎三档各占一张卡，所以难度直接写在卡片上。 */
+/** 点卡片 = 选模式 + 直接行动（与 lobby 模式页一致：点卡即玩，不留"没反应"的中间态）。
+ *  深链的合成点击（pickModeCard 的 card.click()，isTrusted=false）只做选中，
+ *  由 applyDeepLink 自己调 joinQueue/newGame，避免双触发。 */
 document.querySelectorAll<HTMLButtonElement>('.go-mode[data-mode]').forEach((b) => {
-  b.addEventListener('click', () => {
+  b.addEventListener('click', (ev) => {
     const m = b.dataset.mode as UIState['mode'];
     document.querySelectorAll('.go-mode').forEach((x) => x.classList.remove('is-cur'));
     b.classList.add('is-cur');
@@ -1027,6 +1029,10 @@ document.querySelectorAll<HTMLButtonElement>('.go-mode[data-mode]').forEach((b) 
     } else {
       startBtn.textContent = 'Start game';
       startNote.textContent = 'Black moves first, then white, same screen.';
+    }
+    if (ev.isTrusted) {
+      if (m === 'ranked') { void joinQueue(); return; }
+      newGame();
     }
   });
 });
