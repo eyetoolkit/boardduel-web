@@ -1,85 +1,121 @@
 /* ============================================================
- * BoardDuel · Gomoku 模式选择页 · papergames 皮肤（2026-09-24）
+ * BoardDuel · Gomoku 模式选择页 · MathDuel papergames 皮肤（2026-09-24 v2）
  * ------------------------------------------------------------
- * 版式对齐 MathDuel「24 Game lobby」：居中游戏 Hero → 左模式网格 +
- * 右信息栏 → How to play 四步 → 段位天梯 → 首页同款页脚。
- * 视觉 token 与本站首页一致（紫罗兰 #7C3AED），全部锁在 body.home-v2
- * 作用域下，5 个游戏页用的 boardduel.css 一行不受影响。
- *
- * 依赖：home-papergames.css 提供 sidebar / topbar / footer / .btn /
- *       .panel / .chip / .ladder / .wrap / .main；本文件只补 lobby 专属块。
- *
- * 注意：lobby.ts 写出来的行 class 是稳定的（.bd-stat-row / .bd-side-note /
- * .bd-code-err），这里只做浅色皮肤覆盖，不回头改 TS。
+ * 版式与视觉 1:1 对齐 MathDuel「24 Game lobby」（src/games/24-game/lobby.css）：
+ *   · 正文换 Sora（与 MathDuel 同一款 variable woff2，站内自托管）
+ *   · 浅色底纹换「数学涂鸦作业纸」（符号 SVG + 28/140px 格线，靛蓝色调）
+ *   · 强调色改 靛蓝 #3730A3/#4F46E5 + 琥珀 #F59E0B（featured 卡顶 rail、
+ *     右栏主 CTA、How-to-play 步骤号全部琥珀；hover/品牌字改靛蓝）
+ * 仅本页生效（gomoku-lobby.css 只被 /games/gomoku/lobby/ 加载），
+ * 首页与其余页面不受影响；暗色模式仍走 home-papergames.css 的暗色块。
  * ============================================================ */
 
-/* ── 游戏 Hero：居中封面 + 标题 + 一句话 + 三 chip ── */
+/* ── Sora（自托管 variable font，与 MathDuel 同一文件） ── */
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('/fonts/sora-latin.woff2') format('woff2');
+}
+
+/* ── 页面级 token / 背景覆盖（MathDuel papergames 浅色版） ──
+   与 home-papergames.css 的 body.home-v2 同特异性，本文件后加载故胜出；
+   暗色块是 html[data-theme="dark"] body.home-v2（更高特异性），暗色不受影响。 */
+body.home-v2 {
+  --ui: 'Sora', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* MathDuel 靛蓝/琥珀 token */
+  --indigo:        #3730A3;
+  --indigo-bright: #4F46E5;
+  --indigo-soft:   #EEF0FB;
+  --amber-2:       #FBBF24;
+  --amber-ink:     #1E1B39;
+  /* 作业纸背景：数学符号 SVG + 28px 细格 + 140px 粗格（与 MathDuel 逐层一致） */
+  background-color: #F4F5F9;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420' viewBox='0 0 420 420'%3E%3Cg fill='none' stroke='rgba(55,48,163,.075)' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M48 62h24M60 50v24'/%3E%3Cpath d='M188 78l26 26M214 78l-26 26'/%3E%3Cpath d='M312 58h28'/%3E%3Ccircle cx='319' cy='46' r='2.6'/%3E%3Ccircle cx='333' cy='70' r='2.6'/%3E%3Cpath d='M84 168h30M84 180h30'/%3E%3Cpath d='M244 150l10 16 18-34'/%3E%3Cpath d='M52 288v-14h6a7 7 0 0 1 0 14h-6m6 0l8 14'/%3E%3Cpath d='M170 312c8-9 20-9 26 0 6 9 18 9 26 0'/%3E%3Cpath d='M320 272l16 30h-32z'/%3E%3Cpath d='M360 386a20 16 0 1 1 14-27m0 16v11m0-11h-10'/%3E%3Cpath d='M96 380h18l-11 11 11 11H96'/%3E%3Cpath d='M236 392h26M240 384l-4 8 8 2'/%3E%3C/g%3E%3C/svg%3E"),
+    linear-gradient(rgba(55, 48, 163, .05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(55, 48, 163, .05) 1px, transparent 1px),
+    linear-gradient(rgba(55, 48, 163, .07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(55, 48, 163, .07) 1px, transparent 1px);
+  background-size: 420px 420px, 28px 28px, 28px 28px, 140px 140px, 140px 140px;
+  background-attachment: fixed;
+}
+
+/* ── chrome 品牌点改靛蓝（仅本页：logo 第二词 / Play now / 激活导航项） ── */
+body.home-v2 .logo b { color: var(--indigo); }
+body.home-v2 .btn-login { background: var(--indigo-bright); box-shadow: 0 8px 20px rgba(79, 70, 229, .28); }
+body.home-v2 .nav-item.active { background: var(--indigo-soft); color: var(--indigo); }
+
+/* ── 游戏 Hero：居中封面 + 标题 + 一句话 + 三 chip（对齐 MathDuel） ── */
 .home-v2 .g-hero { text-align: center; padding: 46px 0 8px; }
 .home-v2 .g-hero .gcover {
   width: 104px; height: 104px; border-radius: 24px; overflow: hidden;
-  box-shadow: 0 14px 30px rgba(36, 28, 77, .22); display: inline-block; background: #fff;
+  box-shadow: 0 14px 30px rgba(30, 27, 75, .22); display: inline-block; background: #fff;
 }
 .home-v2 .g-hero .gcover img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .home-v2 .g-hero h1 {
-  font-family: var(--disp); font-weight: 700;
-  font-size: clamp(29px, 4vw, 43px); line-height: 1.15; margin: 18px 0 8px;
+  font-family: var(--disp); font-weight: 800;
+  font-size: clamp(30px, 4vw, 44px); line-height: 1.15; margin: 18px 0 8px;
   text-wrap: balance;
 }
-.home-v2 .g-hero h1 em { font-style: normal; color: var(--violet); }
-.home-v2 .g-hero .sub { color: var(--mute); font-size: 1.05rem; max-width: 42em; margin: 0 auto; }
+.home-v2 .g-hero h1 em { font-style: normal; color: var(--indigo); }
+.home-v2 .g-hero .sub { color: var(--mute); font-size: 1.05rem; max-width: 34em; margin: 0 auto; }
 .home-v2 .g-hero .chips { margin-top: 18px; }
 
 /* ── 主栅格：左模式网格 + 右信息栏 ── */
 .home-v2 .lobby-grid {
   display: grid; grid-template-columns: 1.55fr 1fr; gap: 24px;
-  align-items: start; padding: 34px 0 8px;
+  align-items: start; padding: 36px 0 8px;
 }
 .home-v2 .lobby-grid > * { min-width: 0; }
 .home-v2 .sec-h {
-  font-family: var(--disp); font-weight: 700;
+  font-family: var(--disp); font-weight: 800;
   font-size: 1.22rem; margin-bottom: 14px;
 }
 .home-v2 .sec-h small {
-  display: block; font-family: var(--ui); font-weight: 400;
+  display: block; font-family: var(--ui); font-weight: 500;
   font-size: .82rem; color: var(--mute); margin-top: 2px;
 }
 
-/* ── 模式卡：白底浅边框小卡，居中 ── */
+/* ── 模式卡：白底浅边框小卡，居中（MathDuel 同款） ── */
 .home-v2 .modes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
 .home-v2 .mode {
   position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
   text-align: center; background: #fff; border: 1.5px solid var(--line); border-radius: 16px;
-  padding: 22px 14px 18px; color: var(--ink);
+  padding: 22px 12px 18px; color: var(--ink);
   transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
 }
 .home-v2 .mode:hover {
-  transform: translateY(-3px); border-color: var(--violet-bright);
-  box-shadow: 0 10px 22px rgba(36, 28, 77, .08);
+  transform: translateY(-3px); border-color: var(--indigo-bright);
+  box-shadow: 0 10px 22px rgba(30, 27, 75, .08);
 }
 .home-v2 .mode:active { transform: translateY(-1px); }
 .home-v2 .mode .mi { font-size: 2.2rem; line-height: 1; margin-bottom: 10px; }
 .home-v2 .mode .mt {
-  font-family: var(--disp); font-weight: 700;
+  font-family: var(--disp); font-weight: 800;
   font-size: 1.02rem; line-height: 1.25;
   display: flex; align-items: center; justify-content: center;
   gap: 7px; flex-wrap: wrap;
 }
 
-/* 首卡高亮（Ranked 是主推入口）：紫色顶 rail + 紫边 */
-.home-v2 .mode.feat { border-color: rgba(124, 58, 237, .5); }
+/* 首卡高亮（Ranked 是主推入口）＝ MathDuel Daily 卡的琥珀变体：
+   琥珀顶 rail + 琥珀边 */
+.home-v2 .mode.feat { border-color: rgba(245, 158, 11, .55); }
 .home-v2 .mode.feat::before {
   content: ""; position: absolute; inset: 0 0 auto 0; height: 4px;
-  border-radius: 16px 16px 0 0; background: linear-gradient(90deg, var(--violet), var(--violet-bright));
+  border-radius: 16px 16px 0 0;
+  background: linear-gradient(90deg, var(--amber), var(--amber-2));
 }
 
 /* 卡内短标记（.go-tag 在 boardduel.css 里是深色皮肤，这里换成浅底） */
 .home-v2 .mode .tag {
   font-size: .64rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
   border-radius: 999px; padding: 2px 9px; white-space: nowrap;
-  background: var(--violet-soft); color: var(--violet); border: 1px solid #D8CCF8;
+  background: var(--indigo-soft); color: var(--indigo); border: 1px solid #C7CBEE;
 }
-.home-v2 .mode .tag.is-live { background: #E7F8EF; color: #15803D; border-color: rgba(34, 197, 94, .45); }
-.home-v2 .mode .tag.is-gold { background: #FEF3E2; color: #B45309; border-color: rgba(245, 158, 11, .45); }
+.home-v2 .mode .tag.is-live { background: rgba(34, 197, 94, .12); color: #16A34A; border-color: rgba(34, 197, 94, .55); }
+.home-v2 .mode .tag.is-gold { background: rgba(245, 158, 11, .14); color: #B45309; border-color: rgba(245, 158, 11, .45); }
 .home-v2 .mode .tag.is-mute { background: var(--paper); color: var(--mute); border-color: var(--line); }
 
 /* 未上线模式：虚线灰态且不可点（<div> 承载，杜绝键盘聚焦） */
@@ -89,13 +125,26 @@
 .home-v2 .mode.soon:hover { transform: none; border-color: #C6CAE4; box-shadow: none; }
 .home-v2 .mode.soon .tag { background: #F1F2F7; color: #8A90A8; border-color: #E3E6F0; }
 
+/* SOON 徽章＝ MathDuel 靛蓝软底 */
+body.home-v2 .soon-pill {
+  background: var(--indigo-soft); color: var(--indigo); font-weight: 800;
+}
+
 /* ── 右栏：白卡信息面板 ── */
 .home-v2 .side { display: grid; gap: 18px; }
+.home-v2 .panel h3 {
+  font-family: var(--disp); font-weight: 800;
+  font-size: 1.05rem; margin-bottom: 4px;
+}
 .home-v2 .panel .pnote { font-size: .82rem; color: var(--mute); margin-bottom: 12px; }
-/* 邀请码按钮：不占满 panel 宽度，与输入框等高 */
+
+/* 邀请码按钮：琥珀主 CTA（MathDuel btn-amber 同款），与输入框等高 */
 .home-v2 .bd-code-row .btn-violet {
   flex: none; padding: 11px 20px; font-size: .92rem; border-radius: 11px;
+  background: var(--amber); color: var(--amber-ink); border-color: transparent;
+  box-shadow: 0 8px 20px rgba(245, 158, 11, .3); font-weight: 800;
 }
+.home-v2 .bd-code-row .btn-violet:hover { transform: translateY(-2px); }
 
 /* 榜单行（lobby.ts 写出的 class 保持不变，这里只换皮肤） */
 .home-v2 .bd-stat-row {
@@ -104,11 +153,14 @@
   padding: 7px 0; border-bottom: 1px dashed var(--line);
 }
 .home-v2 .bd-stat-row:last-child { border-bottom: 0; padding-bottom: 0; }
-.home-v2 .bd-stat-row b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.home-v2 .bd-stat-row b {
+  color: var(--ink); font-family: var(--disp); font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
 .home-v2 .bd-side-note { font-size: .78rem; color: var(--mute); margin-top: 10px; }
 .home-v2 .bd-code-err { font-size: .8rem; color: var(--red); margin-top: 8px; min-height: 1.2em; }
 
-/* 邀请码输入 */
+/* 邀请码输入（MathDuel .field input 同款） */
 .home-v2 .bd-code-row { display: flex; gap: 10px; margin-top: 12px; }
 .home-v2 .bd-code-row input {
   flex: 1; min-width: 0; background: var(--paper);
@@ -117,7 +169,7 @@
   font-size: 1rem; letter-spacing: .18em; text-transform: uppercase;
   padding: 11px 14px; outline: none;
 }
-.home-v2 .bd-code-row input:focus { border-color: var(--violet-bright); background: #fff; }
+.home-v2 .bd-code-row input:focus { border-color: var(--indigo-bright); background: #fff; }
 .home-v2 .bd-code-row input::placeholder { color: #A7ACBF; letter-spacing: .12em; }
 
 /* 规则速览（boardduel.css 的 .bd-rules 是深色皮肤，浅底重上色） */
@@ -125,15 +177,15 @@
 .home-v2 .bd-rules li { margin: 4px 0; }
 .home-v2 .bd-rules b { color: var(--ink); font-weight: 700; }
 
-/* ── How to play 四步 ── */
+/* ── How to play 四步（步骤号琥珀＝MathDuel） ── */
 .home-v2 .how { padding: 40px 0 8px; }
 .home-v2 .how-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
 .home-v2 .step { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
 .home-v2 .step .sn {
   width: 30px; height: 30px; border-radius: 99px;
-  background: var(--violet); color: #fff;
+  background: var(--amber); color: var(--amber-ink);
   display: grid; place-items: center;
-  font-family: var(--disp); font-weight: 700; font-size: .9rem;
+  font-family: var(--disp); font-weight: 800; font-size: .9rem;
   margin-bottom: 10px;
 }
 .home-v2 .step b { display: block; font-size: .95rem; margin-bottom: 4px; }
@@ -158,7 +210,8 @@
   .home-v2 .modes { gap: 10px; }
   .home-v2 .mode { padding: 15px 8px 13px; border-radius: 13px; }
   .home-v2 .mode .mi { font-size: 1.7rem; margin-bottom: 7px; }
-  .home-v2 .mode .mt { font-size: .92rem; }
+  .home-v2 .mode .mt { font-size: .9rem; }
+  .home-v2 .chips .chip { padding: 5px 11px; font-size: .78rem; }
   .home-v2 .how-grid { grid-template-columns: 1fr; gap: 12px; }
   .home-v2 .ladder { padding: 24px 0 8px; }
 }
@@ -168,16 +221,16 @@
  * ------------------------------------------------------------
  * token（--paper/--ink/--mute/--line/--card/--violet-soft）已由
  * home-papergames.css 的暗色块重映射，这里只覆盖本文件硬编码的
- * 浅色：#fff 卡面、两个彩色 tag、灰态卡、输入框 focus 白底。
+ * 浅色：#fff 卡面、彩色 tag、灰态卡、输入框 focus 白底。
  * ============================================================ */
 html[data-theme="dark"] body.home-v2 .g-hero .gcover { background: var(--card); box-shadow: 0 14px 30px rgba(0, 0, 0, .45); }
 html[data-theme="dark"] body.home-v2 .mode {
   background: var(--card); border-color: var(--card-line); color: var(--ink);
 }
 html[data-theme="dark"] body.home-v2 .mode:hover {
-  border-color: var(--violet-bright); box-shadow: 0 10px 22px rgba(0, 0, 0, .35);
+  border-color: var(--amber); box-shadow: 0 10px 22px rgba(0, 0, 0, .35);
 }
-html[data-theme="dark"] body.home-v2 .mode.feat { border-color: rgba(139, 92, 246, .55); }
+html[data-theme="dark"] body.home-v2 .mode.feat { border-color: rgba(245, 158, 11, .55); }
 html[data-theme="dark"] body.home-v2 .mode .tag {
   background: var(--violet-soft); color: #C4B5FD; border-color: #3B3570;
 }
@@ -196,3 +249,7 @@ html[data-theme="dark"] body.home-v2 .bd-code-row input:focus { background: #161
 html[data-theme="dark"] body.home-v2 .bd-code-row input::placeholder { color: #5B6080; }
 html[data-theme="dark"] body.home-v2 .bd-stat-row b { color: var(--ink); }
 html[data-theme="dark"] body.home-v2 .bd-rules b { color: var(--ink); }
+html[data-theme="dark"] body.home-v2 .bd-code-row .btn-violet {
+  background: var(--amber); color: var(--amber-ink); border-color: transparent;
+}
+html[data-theme="dark"] body.home-v2 .nav-item.active { background: var(--violet-soft); color: var(--violet-bright); }
