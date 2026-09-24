@@ -20,6 +20,7 @@
 <link rel="alternate" hreflang="en" href="https://boardduel.com/">
 <link rel="alternate" hreflang="x-default" href="https://boardduel.com/">
 <link rel="stylesheet" href="/src/styles/home-papergames.css">
+<script>(function(){try{var t=localStorage.getItem('bd-theme');if(t!=='dark'&&t!=='light'){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}})();</script>
 </head>
 <body class="home-v2">
 
@@ -41,6 +42,9 @@
   </div>
   <div class="sb-login">
     <a class="btn-login" href="/games/gomoku/"><span>Play now</span></a>
+    <button class="sb-theme" type="button" title="Toggle theme" aria-label="Toggle theme" aria-pressed="false">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13A8 8 0 1 1 11 4a6.5 6.5 0 0 0 9 9z"/></svg>
+    </button>
   </div>
   <nav class="sb-nav" aria-label="Site navigation">
     <a class="nav-item active" href="/">
@@ -206,6 +210,24 @@
         <div class="tier"><i style="height:34px"></i><span>Platinum</span></div>
         <div class="tier"><i style="height:40px"></i><span>Diamond</span></div>
         <div class="tier master"><i style="height:48px"></i><span>Master</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY BOARDDUEL 品牌段（对标 MathDuel 的 WHY 段） -->
+  <section class="why wrap" aria-label="Why BoardDuel">
+    <div class="why-card">
+      <div class="why-eyebrow">WHY BOARDDUEL</div>
+      <h2 class="why-title">A board game is a conversation you play out loud.</h2>
+      <p class="why-lead">
+        Every board on BoardDuel runs on a <b>real engine</b> that lives in your browser — no accounts, no ads,
+        no data mining. Open the page and you can play.
+      </p>
+      <div class="why-grid">
+        <div><b>🔒 Privacy-first</b><span>Anonymous UUID stored only in your browser. Clear cookies to reset.</span></div>
+        <div><b>♟ Real engines</b><span>Pattern matching and alpha-beta search run locally — no server round-trips.</span></div>
+        <div><b>🤝 Play a friend</b><span>Pass-and-play on one screen, or share an invite link for two-device duels.</span></div>
+        <div><b>⚡ Free forever</b><span>Static pages on Cloudflare, ~0 cost per visitor. No paywall, ever.</span></div>
       </div>
     </div>
   </section>

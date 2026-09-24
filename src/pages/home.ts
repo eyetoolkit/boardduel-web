@@ -11,6 +11,8 @@
  *   4. 抽屉 / 收窄导航
  */
 
+import { initTheme } from '../theme';
+
 const SHOW_BETA = import.meta.env.VITE_SHOW_BETA === '1';
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T | null;
 
@@ -194,4 +196,5 @@ setInterval(() => {
   paintDaily();
 }, 60_000);
 bindNav();
+initTheme();
 void loadLeaderboard();
