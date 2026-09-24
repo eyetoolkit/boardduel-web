@@ -4,14 +4,15 @@
  * 整站 papergames 浅色皮肤（首页 body.home-v2）都是浅色版，暗色层由本模块
  * 切换 html[data-theme="dark"] 触发（CSS 在 home-papergames.css 末尾定义）。
  * 本文件只负责：
- *   1. 启动时应用已保存/系统偏好的主题（无闪烁由各页 <head> 内联脚本兜底）
+ *   1. 启动时应用已保存的主题偏好（未保存过则一律浅色起步；无闪烁由各页 <head> 内联脚本兜底）
  *   2. 委托监听 .sb-theme 点击（首页与未来各 lobby 页共用）
  *   3. 持久化到 localStorage('bd-theme')，并同步切换按钮图标与 aria 状态
  *
  * 注意：游戏对局页（boardduel.css 深色对局区）本就不读 data-theme，不受影响。
  */
 
-const KEY = 'bd-theme';
+const KEY = 'bd-theme2';
+const LEGACY_KEY = 'bd-theme';
 type Theme = 'dark' | 'light';
 
 const ICON_MOON =
@@ -27,15 +28,6 @@ function getStored(): Theme | null {
     /* private mode */
   }
   return null;
-}
-
-function systemPref(): Theme {
-  try {
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
-  } catch {
-    /* no matchMedia */
-  }
-  return 'light';
 }
 
 function current(): Theme {
@@ -65,9 +57,15 @@ export function applyTheme(t: Theme): void {
   });
 }
 
-/** 启动时调用一次：应用已保存/系统偏好，并绑定委托点击监听 */
+/** 启动时调用一次：应用已保存偏好（默认浅色，不再跟随系统深色），并绑定委托点击监听 */
 export function initTheme(): void {
-  applyTheme(getStored() ?? systemPref());
+  // 旧键一次性清理：v1 曾跟随系统深色导致部分用户首屏即暗色，v2 一律浅色起步
+  try {
+    localStorage.removeItem(LEGACY_KEY);
+  } catch {
+    /* ignore */
+  }
+  applyTheme(getStored() ?? 'light');
 
   // 委托监听：.sb-theme 在重渲染后依然存在，无需重复绑定
   document.addEventListener('click', (e: MouseEvent) => {
