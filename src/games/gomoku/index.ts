@@ -218,34 +218,31 @@ function render(): void {
   let lines = '';
   for (let r = 0; r < SIZE; r++) {
     const y = PAD + r * CELL;
-    const w = r === 0 || r === SIZE - 1 ? 1.4 : (r % 5 === 0 ? 1.2 : 0.5);
-    lines += `<line x1="${PAD}" y1="${y}" x2="${SLOT - PAD}" y2="${y}" stroke="var(--go-grid, #5C6B74)" stroke-width="${w}" stroke-opacity="${r % 5 === 0 ? 1 : 0.55}"/>`;
+    const edge = r === 0 || r === SIZE - 1;
+    lines += `<line x1="${PAD}" y1="${y}" x2="${SLOT - PAD}" y2="${y}" stroke="var(--go-grid, #5C6B74)" stroke-width="${edge ? 2 : 1}" stroke-opacity="${edge ? 1 : 0.85}"/>`;
   }
   for (let c = 0; c < SIZE; c++) {
     const x = PAD + c * CELL;
-    const w = c === 0 || c === SIZE - 1 ? 1.4 : (c % 5 === 0 ? 1.2 : 0.5);
-    lines += `<line x1="${x}" y1="${PAD}" x2="${x}" y2="${SLOT - PAD}" stroke="var(--go-grid, #5C6B74)" stroke-width="${w}" stroke-opacity="${c % 5 === 0 ? 1 : 0.55}"/>`;
+    const edge = c === 0 || c === SIZE - 1;
+    lines += `<line x1="${x}" y1="${PAD}" x2="${x}" y2="${SLOT - PAD}" stroke="var(--go-grid, #5C6B74)" stroke-width="${edge ? 2 : 1}" stroke-opacity="${edge ? 1 : 0.85}"/>`;
   }
 
   // ── 星位（15×15 天元 + 四角星）──
   const stars = [[3, 3], [3, 11], [11, 3], [11, 11], [7, 7]];
   let starMarks = '';
   for (const [sx, sy] of stars) {
-    starMarks += `<circle cx="${PAD + sx * CELL}" cy="${PAD + sy * CELL}" r="2.6" fill="var(--go-grid, #5C6B74)"/>`;
+    starMarks += `<circle cx="${PAD + sx * CELL}" cy="${PAD + sy * CELL}" r="4.4" fill="var(--go-grid, #5C6B74)"/>`;
   }
 
-  // ── 坐标尺 A–O / 15→1（设计稿：退到 58% 尺寸、mute-2）──
+  // ── 坐标尺：常规棋盘只标两侧 —— 上 A–O、左 15→1（其余留白，去拥挤） ──
   let coords = '';
   for (let c = 0; c < SIZE; c++) {
     const x = PAD + c * CELL;
-    coords += `<text class="go-coord go-coord-x" x="${x}" y="${PAD - 14}" text-anchor="middle">${COLS[c]}</text>`;
-    coords += `<text class="go-coord go-coord-x" x="${x}" y="${SLOT - PAD + 22}" text-anchor="middle">${COLS[c]}</text>`;
+    coords += `<text class="go-coord" x="${x}" y="${PAD - 14}" text-anchor="middle">${COLS[c]}</text>`;
   }
   for (let r = 0; r < SIZE; r++) {
     const y = PAD + r * CELL;
-    const label = String(SIZE - r); // 自下而上 1..15
-    coords += `<text class="go-coord" x="${PAD - 16}" y="${y + 4}" text-anchor="end">${label}</text>`;
-    coords += `<text class="go-coord" x="${SLOT - PAD + 16}" y="${y + 4}" text-anchor="start">${label}</text>`;
+    coords += `<text class="go-coord" x="${PAD - 15}" y="${y + 3.5}" text-anchor="end">${String(SIZE - r)}</text>`; // 自下而上 1..15
   }
 
   // ── 棋子 + 命中区 ──
@@ -262,7 +259,9 @@ function render(): void {
       const isLast = state.lastMove === i;
       stones += `<circle class="go-stone${isLast ? ' is-last' : ''}" cx="${px}" cy="${py}" r="${STONE_R}" fill="${stoneColor(p as GPlayer)}" stroke="${stoneStroke(p as GPlayer)}" stroke-width="0.6"/>`;
       if (isLast && !isWin) {
-        stones += `<circle cx="${px}" cy="${py}" r="${STONE_R * 0.28}" fill="var(--ember, #FF6A3C)"/>`;
+        // 传统记法：最后一手在棋子上点反色圆点（黑子白点 / 白子黑点）
+        const dot = p === 1 ? '#F4F6F2' : '#1E1B39';
+        stones += `<circle cx="${px}" cy="${py}" r="${STONE_R * 0.3}" fill="${dot}" fill-opacity=".9"/>`;
       }
       if (isWin) {
         // 金色环 —— 全站唯一使用 gold 之处
@@ -399,8 +398,10 @@ function renderRecorder(): void {
   }
   recList.innerHTML = html;
   recCount.textContent = mv.length + (mv.length === 1 ? ' ply' : ' plies');
-  const lastRow = recList.lastElementChild;
-  if (lastRow && state.reviewAt === null) lastRow.scrollIntoView({ block: 'nearest' });
+  // 只滚记谱器自身（容器内 scrollTop），不用 scrollIntoView ——
+  // 部分移动端浏览器的 scrollIntoView 会连带滚动窗口，
+  // 表现为"每落一子整页往下挪一点"（用户实测 BUG）。
+  if (state.reviewAt === null) recList.scrollTop = recList.scrollHeight;
 }
 
 /* ══════════════════════════════════════════════════════════════

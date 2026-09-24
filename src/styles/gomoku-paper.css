@@ -36,10 +36,10 @@ body.bd-paper {
   --gold-soft: rgba(245, 158, 11, .14);
   /* 棋盘 SVG 变量（index.ts 引用） */
   --go-board-bg: #FFFFFF;
-  --go-grid: rgba(55, 48, 163, .30);
+  --go-grid: rgba(55, 48, 163, .55);
   --go-ghost: #8A90A8;
   --go-stone-stroke-b: #5C6B74;
-  --go-stone-stroke-w: #6B7096;
+  --go-stone-stroke-w: #565B78;
 
   /* 正文换 Sora（MathDuel 同款） */
   --ui: 'Sora', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -225,7 +225,7 @@ html[data-theme="dark"] body.bd-paper {
   --gold-soft: rgba(245, 158, 11, .16);
   /* 棋盘 SVG：暗盘浅格线，黑子靠浅描边辨识 */
   --go-board-bg: #1E2033;
-  --go-grid: rgba(232, 234, 244, .20);
+  --go-grid: rgba(232, 234, 244, .32);
   --go-ghost: #565B78;
   --go-stone-stroke-b: #9AA0BC;
   --go-stone-stroke-w: #D8DBEA;
