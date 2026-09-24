@@ -30,7 +30,7 @@
     <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
   </button>
   <a class="logo" href="/">Board<b>Duel</b></a>
-  <a class="btn-login" href="/games/gomoku/">Play now</a>
+  <a class="btn-login" href="/games/gomoku/lobby/">Play now</a>
 </div>
 <div class="overlay" id="overlay"></div>
 
@@ -41,7 +41,7 @@
     <button class="sb-collapse" id="collapse" title="Collapse navigation" aria-label="Collapse navigation">&laquo;</button>
   </div>
   <div class="sb-login">
-    <a class="btn-login" href="/games/gomoku/"><span>Play now</span></a>
+    <a class="btn-login" href="/games/gomoku/lobby/"><span>Play now</span></a>
     <button class="sb-theme" type="button" title="Toggle theme" aria-label="Toggle theme" aria-pressed="false">
       <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13A8 8 0 1 1 11 4a6.5 6.5 0 0 0 9 9z"/></svg>
     </button>
@@ -61,7 +61,7 @@
     </a>
 
     <div class="nav-group">Play</div>
-    <a class="nav-item" href="/games/gomoku/" data-stage="live">
+    <a class="nav-item" href="/games/gomoku/lobby/" data-stage="live">
       <img class="mini" src="/games/gomoku/cover.svg" alt="" aria-hidden="true"><label>Gomoku</label>
     </a>
     <a class="nav-item" href="/games/tictactoe/" data-stage="beta">
@@ -95,7 +95,7 @@
   <section class="wall" id="games" aria-label="All boards">
     <div class="wrap">
       <div class="wall-grid">
-        <a class="gcard" href="/games/gomoku/" data-stage="live">
+        <a class="gcard" href="/games/gomoku/lobby/" data-stage="live">
           <span class="gcard-art"><img src="/games/gomoku/cover.svg" alt="Gomoku" width="512" height="512"></span>
           <span class="gcard-body"><span class="gcard-name">Gomoku</span><span class="gcard-tags"><i>1v1</i><i>AI</i></span></span>
         </a>
@@ -159,7 +159,7 @@
       <h1>Take the board. <em>Climb one ladder.</em></h1>
       <p class="sub">Gomoku is live — a 15&times;15 freestyle grid against a pattern-matching engine <br>at three difficulty levels, or pass-and-play with a friend on one screen.</p>
       <div class="cta-row">
-        <a class="btn btn-violet" href="/games/gomoku/">Play Gomoku now</a>
+        <a class="btn btn-violet" href="/games/gomoku/lobby/">Play Gomoku now</a>
         <a class="btn btn-ghost" href="#games">Browse all boards</a>
       </div>
 <!--/stage:prod-->
@@ -181,7 +181,7 @@
       </div>
       <div class="daily-tiles" id="dailyTiles">
         <a class="dtile" href="/games/chess/" data-daily="chess" data-stage="beta"><img src="/games/chess/cover.svg" alt="" aria-hidden="true">Chess</a>
-        <a class="dtile" href="/games/gomoku/" data-daily="gomoku" data-stage="live"><img src="/games/gomoku/cover.svg" alt="" aria-hidden="true">Gomoku</a>
+        <a class="dtile" href="/games/gomoku/lobby/" data-daily="gomoku" data-stage="live"><img src="/games/gomoku/cover.svg" alt="" aria-hidden="true">Gomoku</a>
         <a class="dtile" href="/games/connect4/" data-daily="connect4" data-stage="beta"><img src="/games/connect4/cover.svg" alt="" aria-hidden="true">Connect 4</a>
       </div>
       <div class="progress"><i id="dailyBar" style="width:0%"></i></div>
