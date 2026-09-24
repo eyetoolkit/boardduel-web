@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#F4F5F9">
 <title>Gomoku — Choose Your Mode · BoardDuel</title>
-<meta name="description" content="Six ways to play Gomoku: a ranked match against a rated opponent, three engine temperaments, pass &amp; play on one screen, or a private room by invite code. Same 15×15 board — only the opponent changes.">
+<meta name="description" content="Play Gomoku your way: against the engine at three levels, in a private friend room by invite code, in a random online match, or pass &amp; play on one screen. Same 15×15 board — only the opponent changes.">
 <link rel="canonical" href="https://boardduel.com/games/gomoku/lobby/">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="manifest" href="/manifest.webmanifest">
@@ -16,7 +16,7 @@
 <meta property="og:url" content="https://boardduel.com/games/gomoku/lobby/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Gomoku — Choose Your Mode · BoardDuel">
-<meta name="twitter:description" content="Six ways to play Gomoku: ranked online, three engine levels, pass &amp; play, private rooms.">
+<meta name="twitter:description" content="Gomoku: engine at three levels, private friend rooms, random online match, pass &amp; play.">
 <link rel="alternate" hreflang="en" href="https://boardduel.com/games/gomoku/lobby/">
 <link rel="alternate" hreflang="x-default" href="https://boardduel.com/games/gomoku/lobby/">
 <link rel="preload" href="/fonts/space-grotesk-latin-400.woff2" as="font" type="font/woff2" crossorigin>
@@ -101,7 +101,7 @@
       <h1>Five in a row. <em>Pick your opponent.</em></h1>
       <p class="sub">Same 15&times;15 board, same freestyle rule &mdash; first to connect five wins. What changes is who sits across from you: a rated stranger, an engine with a temperament, or the person holding your phone.</p>
       <div class="chips">
-        <span class="chip"><span class="dot"></span>Solo &middot; Engine &middot; Ranked</span>
+        <span class="chip"><span class="dot"></span>AI &middot; Friend room &middot; Random</span>
         <span class="chip"><span class="dot"></span>15&times;15 freestyle</span>
         <span class="chip"><span class="dot"></span>Black moves first</span>
       </div>
@@ -115,43 +115,43 @@
         <h2 class="sec-h" id="modesTitle">Choose your mode<small>Tap a card to jump straight in.</small></h2>
         <div class="modes" id="modeGrid">
 
-          <!-- 01 · Ranked —— 真实匹配队列，结果计入排名 -->
-          <a class="mode feat" href="/games/gomoku/?mode=ranked" data-mode="ranked">
+          <!-- 01 · AI 对战 —— 三档难度，点难度即开局 -->
+          <div class="mode mode-ai" data-mode="engine">
+            <div class="mi" aria-hidden="true">🤖</div>
+            <div class="mt">Play the Engine <span class="tag is-mute">3 levels</span></div>
+            <div class="lvls">
+              <a class="lvl" href="/games/gomoku/?mode=engine&amp;level=easy">Counter</a>
+              <a class="lvl" href="/games/gomoku/?mode=engine&amp;level=medium">Attacker</a>
+              <a class="lvl" href="/games/gomoku/?mode=engine&amp;level=hard">Punisher</a>
+            </div>
+          </div>
+
+          <!-- 02 · 建房好友对战 —— 建房后拿到 6 位私密房号 -->
+          <a class="mode feat" href="/games/gomoku/?mode=friend" data-mode="friend">
+            <div class="mi" aria-hidden="true">🏠</div>
+            <div class="mt">Friend Room <span class="tag is-live">private code</span></div>
+          </a>
+
+          <!-- 03 · 随机配对 —— 真实匹配队列 -->
+          <a class="mode" href="/games/gomoku/?mode=ranked" data-mode="ranked">
             <div class="mi" aria-hidden="true">⚔️</div>
-            <div class="mt">Ranked Match <span class="tag is-live">live</span></div>
+            <div class="mt">Random Match <span class="tag is-live">live</span></div>
           </a>
 
-          <!-- 02 · Engine 1/3 —— Counter（原 easy） -->
-          <a class="mode" href="/games/gomoku/?mode=engine&amp;level=easy" data-mode="engine" data-level="easy">
-            <div class="mi" aria-hidden="true">🛡️</div>
-            <div class="mt">Engine &middot; Counter <span class="tag is-mute">level 1</span></div>
-          </a>
-
-          <!-- 03 · Engine 2/3 —— Attacker（原 medium） -->
-          <a class="mode" href="/games/gomoku/?mode=engine&amp;level=medium" data-mode="engine" data-level="medium">
-            <div class="mi" aria-hidden="true">🔥</div>
-            <div class="mt">Engine &middot; Attacker <span class="tag is-mute">level 2</span></div>
-          </a>
-
-          <!-- 04 · Engine 3/3 —— Punisher（原 hard） -->
-          <a class="mode" href="/games/gomoku/?mode=engine&amp;level=hard" data-mode="engine" data-level="hard">
-            <div class="mi" aria-hidden="true">💀</div>
-            <div class="mt">Engine &middot; Punisher <span class="tag is-gold">level 3</span></div>
-          </a>
-
-          <!-- 05 · Pass & Play —— 同屏双人 -->
+          <!-- 04 · 同屏双人 -->
           <a class="mode" href="/games/gomoku/?mode=pass" data-mode="pass">
             <div class="mi" aria-hidden="true">👥</div>
             <div class="mt">Pass &amp; Play <span class="tag is-mute">one screen</span></div>
           </a>
 
-          <!-- 06 · Tournament —— 未上线，灰态不可点 -->
-          <div class="mode soon" aria-disabled="true" data-mode="tournament">
+          <!-- 05 · 锦标赛 —— 待开发（灰态不可点） -->
+          <div class="mode soon" data-mode="tournament" aria-disabled="true">
             <div class="mi" aria-hidden="true">🏆</div>
             <div class="mt">Tournament <span class="tag">Soon</span></div>
             <span class="soon-pill">SOON</span>
+            <p class="soon-note">In development &mdash; brackets and prizes are on the way.</p>
           </div>
-        </div>
+                </div>
         <p class="bd-side-note" style="margin-top:14px">Every mode opens the same board &mdash; clocks, move recorder and engine hints included.</p>
       </section>
 
@@ -165,11 +165,13 @@
           </div>
         </section>
 
-        <section class="panel" aria-labelledby="codeTitle">
-          <h3 id="codeTitle">Have an invite code?</h3>
-          <p class="pnote">Someone sent you a code for a private game. Drop it in and you land straight in their room.</p>
+                <section class="panel" aria-labelledby="codeTitle">
+          <h3 id="codeTitle">Start a friend room</h3>
+          <p class="pnote">Private board, 6-character code. Create one, then send your friend the code or the link.</p>
+          <a class="btn btn-violet block" id="createRoom" href="/games/gomoku/?mode=friend">Create a room</a>
+          <p class="pnote" style="margin-top:14px">Have a code? Join it</p>
           <div class="bd-code-row">
-            <input id="codeInput" type="text" maxlength="8" placeholder="ABC123"
+            <input id="codeInput" type="text" maxlength="6" placeholder="K5AT6M"
                    autocomplete="off" spellcheck="false" aria-label="Invite code">
             <button class="btn btn-violet" id="codeJoin" type="button">Join</button>
           </div>

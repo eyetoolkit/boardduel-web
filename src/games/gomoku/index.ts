@@ -90,6 +90,9 @@ const chatLog = $<HTMLUListElement>('go-chat-log');
 const chatForm = $<HTMLFormElement>('go-chat-form');
 const chatInput = $<HTMLInputElement>('go-chat-input');
 const chatRoom = $<HTMLElement>('go-chat-room');
+const inviteEl = $<HTMLElement>('go-invite');
+const inviteCodeEl = $<HTMLElement>('go-invite-code');
+const inviteCopyBtn = $<HTMLButtonElement>('go-invite-copy');
 
 setupNav('gomoku');
 wireLobbyChrome();
@@ -933,6 +936,47 @@ function enterRankedRoom(code: string, isAi: boolean, aiName?: string): void {
   ws.addEventListener('error', () => { toast('Room unavailable'); });
 }
 
+/* ─── 好友房：建房 → 拿码 → 以房主身份进房 ───
+   房号必须由后端 /api/gp/room 生成：/ws 只认 KV 里已存在的房间，
+   前端自造码会被 worker 拒掉。短链 /b/gomoku/<CODE> 由 worker 302 到 ?c=<CODE>。 */
+function showInvite(code: string): void {
+  inviteCodeEl.textContent = code;
+  inviteEl.hidden = false;
+  toast('Room ' + code + ' created — waiting for your friend');
+}
+
+inviteCopyBtn.addEventListener('click', () => {
+  const code = state.roomCode || '';
+  const link = location.origin + '/b/gomoku/' + code;
+  try {
+    void navigator.clipboard.writeText(link).then(
+      () => toast('Invite link copied'),
+      () => toast('Copy failed — code ' + code),
+    );
+  } catch (e) {
+    toast('Copy failed — code ' + code);
+  }
+});
+
+async function startFriendRoom(): Promise<void> {
+  const fail = () => {
+    toast('Could not open a friend room');
+    window.setTimeout(() => location.replace(MODE_PAGE), 900);
+  };
+  try {
+    const r = await fetch(API + '/api/gp/room?name=' + encodeURIComponent(myName()) + '&game=gomoku', { credentials: 'include' });
+    const j = (await r.json()) as { ok?: boolean; code?: string };
+    const code = String((j && j.code) || '').toUpperCase();
+    if (!r.ok || !/^[A-Z2-9]{6}$/.test(code)) { fail(); return; }
+    // 复用联机全链路：合成点击只「选中」ranked 卡（不会去排随机队列），再进自己的房间
+    pickModeCard('.go-mode[data-mode="ranked"]');
+    enterRankedRoom(code, false);
+    showInvite(code);
+  } catch (e) {
+    fail();
+  }
+}
+
 function sendWs(obj: Record<string, unknown>): void {
   const ws = state.ws;
   if (!ws || ws.readyState !== WebSocket.OPEN) return;
@@ -1172,6 +1216,10 @@ function applyDeepLink(): void {
   const raw = (q.get('mode') || '').toLowerCase();
   if (!raw) return;
 
+  if (raw === 'friend') {
+    void startFriendRoom();
+    return;
+  }
   if (raw === 'ranked') {
     pickModeCard('.go-mode[data-mode="ranked"]');
     void joinQueue();

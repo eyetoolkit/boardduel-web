@@ -69,6 +69,28 @@ body.bd-paper .go-hint-legend {
   box-shadow: 0 6px 16px rgba(30, 27, 75, .12);
 }
 
+/* ── 好友房邀请条：白卡 + 琥珀房号 + 复制链接 ── */
+body.bd-paper .go-invite {
+  background: var(--ink2); border: 1px solid var(--line); border-radius: 12px;
+  padding: 12px 14px; margin-bottom: 12px;
+}
+body.bd-paper .go-invite[hidden] { display: none; }
+body.bd-paper .go-invite-h {
+  font-weight: 800; font-size: .78rem; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--mute); margin-bottom: 8px;
+}
+body.bd-paper .go-invite-row { display: flex; align-items: center; gap: 8px; }
+body.bd-paper .go-invite-code {
+  flex: 1; min-width: 0; text-align: center;
+  font-family: var(--ui); font-weight: 800; font-size: 1.12rem;
+  letter-spacing: .22em; padding: 8px 4px; border-radius: 10px;
+  background: var(--ember-soft); color: var(--ember-dim);
+  border: 1px dashed rgba(245, 158, 11, .55);
+}
+body.bd-paper .go-invite-note {
+  font-size: .74rem; color: var(--mute); margin-top: 8px; line-height: 1.45;
+}
+
 /* toast：深底 → 白底靛墨 */
 body.bd-paper .bd-toast-item {
   background: var(--ink2);

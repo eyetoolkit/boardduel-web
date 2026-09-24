@@ -118,6 +118,39 @@ body.home-v2 .nav-item.active { background: var(--indigo-soft); color: var(--ind
 .home-v2 .mode .tag.is-gold { background: rgba(245, 158, 11, .14); color: #B45309; border-color: rgba(245, 158, 11, .45); }
 .home-v2 .mode .tag.is-mute { background: var(--paper); color: var(--mute); border-color: var(--line); }
 
+/* AI 卡内三档难度：点击即开局，纯 <a>，无 JS 依赖 */
+.home-v2 .mode .lvls {
+  display: flex; gap: 6px; margin-top: 12px;
+  flex-wrap: wrap; justify-content: center;
+}
+.home-v2 .mode .lvl {
+  font-size: .74rem; font-weight: 700; letter-spacing: .02em;
+  padding: 5px 10px; border-radius: 999px; text-decoration: none;
+  background: var(--indigo-soft); color: var(--indigo); border: 1px solid #C7CBEE;
+  transition: background .14s ease, transform .14s ease;
+}
+.home-v2 .mode .lvl:hover { background: var(--indigo); color: #fff; transform: translateY(-1px); }
+
+/* 待开发说明 */
+.home-v2 .mode.soon .soon-note {
+  font-size: .72rem; color: #9BA0B8; margin-top: 8px; line-height: 1.45;
+}
+
+/* 通用按钮（右栏 Create a room，对齐 MathDuel btn-amber 观感） */
+.home-v2 .btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--disp); font-weight: 800; font-size: .92rem;
+  padding: 11px 20px; border-radius: 11px; border: 1.5px solid transparent;
+  text-decoration: none; cursor: pointer;
+  transition: transform .14s ease, box-shadow .14s ease;
+}
+.home-v2 .btn-violet {
+  background: var(--amber); color: var(--amber-ink);
+  box-shadow: 0 8px 20px rgba(245, 158, 11, .3);
+}
+.home-v2 .btn-violet:hover { transform: translateY(-2px); }
+.home-v2 .btn.block { display: flex; width: 100%; }
+
 /* 未上线模式：虚线灰态且不可点（<div> 承载，杜绝键盘聚焦） */
 .home-v2 .mode.soon { background: transparent; border-style: dashed; color: #9BA0B8; box-shadow: none; cursor: default; }
 .home-v2 .mode.soon .mi { filter: grayscale(1); opacity: .6; }
@@ -253,3 +286,11 @@ html[data-theme="dark"] body.home-v2 .bd-code-row .btn-violet {
   background: var(--amber); color: var(--amber-ink); border-color: transparent;
 }
 html[data-theme="dark"] body.home-v2 .nav-item.active { background: var(--violet-soft); color: var(--violet-bright); }
+html[data-theme="dark"] body.home-v2 .mode .lvl {
+  background: var(--violet-soft); color: #C4B5FD; border-color: #3B3570;
+}
+html[data-theme="dark"] body.home-v2 .mode .lvl:hover { background: var(--violet-bright); color: #fff; }
+html[data-theme="dark"] body.home-v2 .mode.soon .soon-note { color: #6B7096; }
+html[data-theme="dark"] body.home-v2 .btn-violet {
+  background: var(--amber); color: var(--amber-ink);
+}
