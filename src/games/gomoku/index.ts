@@ -18,6 +18,7 @@ import {
   startTimer, stopTimer, createTimer, fmtClock,
   toast,
 } from '../game-core';
+import { wireLobbyChrome } from '../../lobby-chrome';
 import {
   emptyBoard, cloneBoard, SIZE, SIZE2, bestMove, hasFive, notation, xy,
   candidateMoves,
@@ -44,6 +45,7 @@ const queueEl = $<HTMLDivElement>('go-queue');
 const queueTitle = $<HTMLElement>('go-queue-title');
 const queueSub = $<HTMLElement>('go-queue-sub');
 const startRow = $<HTMLDivElement>('go-start-row');
+const modesEl = $<HTMLDivElement>('go-modes');
 const startBtn = $<HTMLButtonElement>('go-start');
 const startNote = $<HTMLElement>('go-start-note');
 const rankLabel = $<HTMLElement>('go-rank-label');
@@ -86,6 +88,7 @@ const chatInput = $<HTMLInputElement>('go-chat-input');
 const chatRoom = $<HTMLElement>('go-chat-room');
 
 setupNav('gomoku');
+wireLobbyChrome();
 
 /* ══════════════════════════════════════════════════════════════
    状态
@@ -742,9 +745,16 @@ function newGame(): void {
 /* ══════════════════════════════════════════════════════════════
    排位匹配（/api/match/*）
    ══════════════════════════════════════════════════════════════ */
+/** Ranked 入队态：模式网格让位、队列面板放大居中（否则玩家点了 Ranked 看不出页面有任何变化） */
+function setQueuingUI(on: boolean): void {
+  document.body.classList.toggle('is-queuing', on);
+  modesEl.classList.toggle('is-queued', on);
+}
+
 async function joinQueue(): Promise<void> {
   queueEl.hidden = false;
   startRow.hidden = true;
+  setQueuingUI(true);
   queueTitle.textContent = 'Finding opponent…';
   queueSub.textContent = 'In queue for Gomoku · 15×15';
 
@@ -809,6 +819,7 @@ function cancelQueue(silent = false): void {
   }
   queueEl.hidden = true;
   startRow.hidden = false;
+  setQueuingUI(false);
   if (!silent) toast('Left the queue');
 }
 
@@ -824,6 +835,7 @@ function enterRankedRoom(code: string, isAi: boolean, aiName?: string): void {
   if (state.pollTimer) { clearTimeout(state.pollTimer); state.pollTimer = null; }
   queueEl.hidden = true;
   startRow.hidden = false;
+  setQueuingUI(false);
   state.roomCode = code;
   state.mode = 'ranked';
   chatEl.hidden = false;

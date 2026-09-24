@@ -61,22 +61,22 @@ body.bd-paper {
 
 /* 触屏确认气泡：深底 → 白底靛墨 */
 body.bd-paper .go-hint-legend {
-  background: rgba(255, 255, 255, .96);
+  background: var(--ink2);
   border-color: var(--line);
-  color: #1E1B39;
+  color: var(--paper);
   box-shadow: 0 6px 16px rgba(30, 27, 75, .12);
 }
 
 /* toast：深底 → 白底靛墨 */
 body.bd-paper .bd-toast-item {
-  background: rgba(255, 255, 255, .97);
-  color: #1E1B39;
+  background: var(--ink2);
+  color: var(--paper);
   border-color: var(--line);
   box-shadow: 0 8px 20px rgba(30, 27, 75, .14);
 }
 
 /* 实心标签：白字（--ink 被重映射成浅色）→ 琥珀/绿上用深字 */
-body.bd-paper .go-tag { color: #1E1B39; }
+body.bd-paper .go-tag { color: var(--paper); }
 
 /* 上一手阴影与获胜金环随琥珀 */
 body.bd-paper .go-stone.is-last { filter: drop-shadow(0 0 3px rgba(245, 158, 11, .55)); }
@@ -105,3 +105,143 @@ body.bd-paper .bd-hero .bd-dot { color: #3730A3; }
 
 /* focus 可见性：金色 → 靛蓝 */
 body.bd-paper button:focus-visible { outline-color: #4F46E5; }
+
+/* ════════════════════════════════════════════════════════════
+ * Ranked 入队态（body.is-queuing，index.ts setQueuingUI 切换）
+ * 模式网格让位，队列面板放大成主角 —— 否则玩家点 Ranked 后
+ * 页面看起来毫无变化，会以为「点击没生效」。
+ * ════════════════════════════════════════════════════════════ */
+body.bd-paper.is-queuing .go-modes { display: none; }
+body.bd-paper.is-queuing .go-queue { margin: 40px 0 12px; }
+body.bd-paper.is-queuing .go-queue-inner {
+  padding: 24px 26px; border-radius: 14px; border-width: 2px;
+  box-shadow: 0 12px 32px rgba(245, 158, 11, .16);
+}
+body.bd-paper.is-queuing .go-queue-spin {
+  width: 30px; height: 30px; flex: 0 0 30px;
+  border-color: var(--ember-soft); border-top-color: var(--ember);
+}
+body.bd-paper.is-queuing .go-queue-text b { font-size: 1.12rem; }
+body.bd-paper.is-queuing .go-queue-text span { font-size: .84rem; }
+
+/* ════════════════════════════════════════════════════════════
+ * 站点 chrome：topbar + 侧栏（与首页/lobby 同款交互）
+ * 颜色全部走本文件的 token，跟随下方 dark 重映射自动翻转。
+ * ════════════════════════════════════════════════════════════ */
+body.bd-paper { --sb-w: 236px; --sb-rail: 74px; }
+
+.bd-paper .topbar, .bd-paper .overlay { display: none; }
+.bd-paper .sidebar {
+  position: fixed; inset: 0 auto 0 0; width: var(--sb-w); z-index: 50;
+  background: var(--ink2); border-right: 1px solid var(--line);
+  display: flex; flex-direction: column; padding: 18px 14px;
+  transition: width .22s ease, transform .22s ease;
+}
+.bd-paper .sb-top { display: flex; align-items: center; gap: 10px; padding: 2px 6px 14px; }
+.bd-paper .logo {
+  font-family: var(--disp); font-weight: 700; font-size: 1.3rem; line-height: 1;
+  white-space: nowrap; letter-spacing: -.01em; color: var(--paper); text-decoration: none;
+}
+.bd-paper .logo b { color: #7C3AED; font-weight: 700; }
+.bd-paper .sb-collapse {
+  margin-left: auto; flex: none; width: 26px; height: 26px; border-radius: 8px;
+  border: 1px solid var(--line); background: var(--ink2); color: var(--mute);
+  font-size: .8rem; line-height: 1; display: grid; place-items: center; cursor: pointer;
+}
+.bd-paper .sb-collapse:hover { color: var(--paper); border-color: var(--ember); }
+.bd-paper .sb-login { display: flex; gap: 8px; padding: 0 2px 14px; border-bottom: 1px solid var(--line); }
+.bd-paper .btn-login {
+  flex: 1; display: inline-flex; align-items: center; justify-content: center;
+  background: var(--ember); color: #1E1B39; border: 0; border-radius: 11px;
+  font-weight: 700; font-size: .9rem; padding: 9px 0; white-space: nowrap;
+  text-decoration: none; font-family: var(--ui); cursor: pointer;
+}
+.bd-paper .btn-login:hover { background: #FBBF24; }
+.bd-paper .sb-theme {
+  flex: none; width: 38px; border: 1px solid var(--line); background: var(--ink2);
+  border-radius: 11px; display: grid; place-items: center; color: var(--mute); cursor: pointer;
+}
+.bd-paper .sb-theme:hover { color: var(--paper); border-color: var(--ember); }
+.bd-paper .sb-nav { flex: 1; overflow-y: auto; padding-top: 10px; }
+.bd-paper .sb-nav::-webkit-scrollbar { width: 0; }
+.bd-paper .nav-item {
+  display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 10px;
+  color: var(--mute); font-size: .86rem; font-weight: 500; text-decoration: none;
+}
+.bd-paper .nav-item:hover { background: var(--ink3); color: var(--paper); }
+.bd-paper .nav-item.active { background: var(--ember-soft); color: var(--paper); font-weight: 700; }
+.bd-paper .nav-item svg {
+  width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor;
+  stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
+}
+.bd-paper .nav-item .mini { width: 22px; height: 22px; flex: none; border-radius: 6px; }
+.bd-paper .nav-item label { cursor: pointer; }
+.bd-paper .nav-group { font-size: .66rem; letter-spacing: .14em; color: var(--mute2); padding: 14px 10px 4px; }
+.bd-paper .nav-foot { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--line); }
+.bd-paper .lang-pill { font-size: .68rem; font-weight: 700; border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; color: var(--mute); }
+.bd-paper .sb-copy { font-size: .68rem; color: var(--mute2); }
+
+/* 桌面：侧栏占位，主区让位 */
+.bd-paper .bd-main { margin-left: var(--sb-w); transition: margin .22s ease; }
+.bd-paper.rail .sidebar { width: var(--sb-rail); }
+.bd-paper.rail .sb-nav label, .bd-paper.rail .btn-login span { display: none; }
+.bd-paper.rail .bd-main { margin-left: var(--sb-rail); }
+
+/* 移动（<1120px）：抽屉式，顶栏出现 */
+@media (max-width: 1119.98px) {
+  .bd-paper .sidebar { transform: translateX(-100%); width: 264px; }
+  .bd-paper.nav-open .sidebar { transform: translateX(0); box-shadow: 0 10px 40px rgba(10, 10, 30, .28); }
+  .bd-paper.nav-open .overlay { display: block; position: fixed; inset: 0; background: rgba(30, 27, 75, .4); z-index: 40; }
+  .bd-paper .bd-main { margin-left: 0; }
+  .bd-paper .topbar {
+    display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+    position: sticky; top: 0; z-index: 30;
+    background: var(--ink2); border-bottom: 1px solid var(--line);
+  }
+  .bd-paper .burger {
+    width: 38px; height: 38px; border: 1px solid var(--line); background: var(--ink2);
+    border-radius: 10px; display: grid; place-items: center; color: var(--paper); cursor: pointer;
+  }
+  .bd-paper .burger svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+  .bd-paper .topbar .logo { font-size: 1.15rem; }
+  .bd-paper .topbar .btn-login { margin-left: auto; flex: none; padding: 8px 16px; }
+}
+
+/* ════════════════════════════════════════════════════════════
+ * 暗色模式（html[data-theme="dark"]，.sb-theme 切换）
+ * token 整体翻回暗色：纸面→夜底、靛墨→浅字，棋盘变暗盘，
+ * 黑子靠描边辨识。侧栏/顶栏走同一批 token，自动跟随。
+ * ════════════════════════════════════════════════════════════ */
+html[data-theme="dark"] body.bd-paper {
+  --ink: #12131F;            /* 页面底 → 夜底 */
+  --ink2: #1A1B2E;           /* 卡片底 */
+  --ink3: #222336;           /* 按钮/输入底 */
+  --line: #2D2E48;
+  --paper: #E8EAF4;          /* 文字 → 浅 */
+  --mute: #9AA0BC;
+  --mute2: #6B7090;
+  --ember-soft: rgba(245, 158, 11, .16);
+  --teal-soft: rgba(16, 163, 110, .15);
+  --gold-soft: rgba(245, 158, 11, .16);
+  /* 棋盘 SVG：暗盘浅格线，黑子靠浅描边辨识 */
+  --go-board-bg: #1E2033;
+  --go-grid: rgba(232, 234, 244, .20);
+  --go-ghost: #565B78;
+  --go-stone-stroke-b: #9AA0BC;
+  --go-stone-stroke-w: #D8DBEA;
+
+  background-color: #12131F;
+  background-image:
+    linear-gradient(rgba(232, 234, 244, .035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232, 234, 244, .035) 1px, transparent 1px),
+    linear-gradient(rgba(232, 234, 244, .05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232, 234, 244, .05) 1px, transparent 1px);
+  background-size: 28px 28px, 28px 28px, 140px 140px, 140px 140px;
+  background-attachment: fixed;
+  color: #E8EAF4;
+}
+/* 暗色下的品牌点与阴影 */
+html[data-theme="dark"] body.bd-paper .bd-hero .bd-dot { color: #8B5CF6; }
+html[data-theme="dark"] body.bd-paper .go-hint-legend { box-shadow: 0 6px 16px rgba(0, 0, 0, .45); }
+html[data-theme="dark"] body.bd-paper .bd-toast-item { box-shadow: 0 8px 20px rgba(0, 0, 0, .5); }
+html[data-theme="dark"] body.bd-paper button:focus-visible { outline-color: #A78BFA; }
