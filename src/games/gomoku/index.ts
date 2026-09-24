@@ -30,7 +30,7 @@ const MARGIN = 22;                // 外留白（容纳外框 + 阴影）
 const FRAME = 12;                 // 棋盘外框厚度
 const LABEL = 26;                 // 坐标带到棋面的距离
 const PAD = MARGIN + FRAME + LABEL;   // 60：网格起点，对称（600-2*60=480=15*32）
-const CELL = (SLOT - 2 * PAD) / SIZE; // 32
+const CELL = (SLOT - 2 * PAD) / (SIZE - 1); // 34.29：15 条线 = 14 格（线上落子），网格恰好铺满 PAD..SLOT-PAD，四边对称闭合
 const STONE_R = CELL * 0.42;
 const COLS = 'ABCDEFGHIJKLMNO';
 
@@ -323,7 +323,7 @@ function render(): void {
   </defs>`;
   // 外围实框（木盘感）+ 棋面（白盘/暗盘），坐标尺落在框带内
   const frame = `<rect x="${MARGIN}" y="${MARGIN}" width="${SLOT - 2 * MARGIN}" height="${SLOT - 2 * MARGIN}" rx="14" fill="var(--go-frame,#E9EAF4)" stroke="var(--go-frame-edge,rgba(55,48,163,.18))" stroke-width="2"/>`
-    + `<rect x="${PAD}" y="${PAD}" width="${SLOT - 2 * PAD}" height="${SLOT - 2 * PAD}" rx="6" fill="var(--go-board-bg,#151D24)"/>`;
+    + `<rect x="${PAD - 6}" y="${PAD - 6}" width="${SLOT - 2 * PAD + 12}" height="${SLOT - 2 * PAD + 12}" rx="6" fill="var(--go-board-bg,#151D24)"/>`;
 
   boardEl.innerHTML = `<svg viewBox="0 0 ${SLOT} ${SLOT}" role="img" aria-label="Gomoku board, 15 by 15">
     ${defs}${frame}
