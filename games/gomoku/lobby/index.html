@@ -23,6 +23,7 @@
 <link rel="preload" href="/fonts/inter-latin-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/src/styles/home-papergames.css">
 <link rel="stylesheet" href="/src/styles/gomoku-lobby.css">
+<script>(function(){try{var t=localStorage.getItem('bd-theme');if(t!=='dark'&&t!=='light'){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}})();</script>
 </head>
 <body class="home-v2">
 
@@ -44,6 +45,9 @@
   </div>
   <div class="sb-login">
     <a class="btn-login" href="/games/gomoku/"><span>Play now</span></a>
+    <button class="sb-theme" type="button" title="Toggle theme" aria-label="Toggle theme" aria-pressed="false">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13A8 8 0 1 1 11 4a6.5 6.5 0 0 0 9 9z"/></svg>
+    </button>
   </div>
   <nav class="sb-nav" aria-label="Site navigation">
     <a class="nav-item" href="/">

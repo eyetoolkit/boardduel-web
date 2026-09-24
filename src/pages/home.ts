@@ -11,7 +11,7 @@
  *   4. 抽屉 / 收窄导航
  */
 
-import { initTheme } from '../theme';
+import { wireLobbyChrome } from '../lobby-chrome';
 
 const SHOW_BETA = import.meta.env.VITE_SHOW_BETA === '1';
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T | null;
@@ -168,24 +168,7 @@ async function loadLeaderboard(): Promise<void> {
 
 /* ── 4. 抽屉与收窄 ─────────────────────────────────────────────────── */
 function bindNav(): void {
-  const burger = $<HTMLButtonElement>('burger');
-  const overlay = $('overlay');
-  const collapse = $<HTMLButtonElement>('collapse');
-
-  const close = () => {
-    document.body.classList.remove('nav-open');
-    burger?.setAttribute('aria-expanded', 'false');
-  };
-
-  burger?.addEventListener('click', () => {
-    const open = document.body.classList.toggle('nav-open');
-    burger.setAttribute('aria-expanded', String(open));
-  });
-  overlay?.addEventListener('click', close);
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') close();
-  });
-  collapse?.addEventListener('click', () => document.body.classList.toggle('rail'));
+  wireLobbyChrome();
 }
 
 paintCountdown();
@@ -196,5 +179,4 @@ setInterval(() => {
   paintDaily();
 }, 60_000);
 bindNav();
-initTheme();
 void loadLeaderboard();

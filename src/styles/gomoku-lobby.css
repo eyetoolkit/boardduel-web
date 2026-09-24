@@ -162,3 +162,37 @@
   .home-v2 .how-grid { grid-template-columns: 1fr; gap: 12px; }
   .home-v2 .ladder { padding: 24px 0 8px; }
 }
+
+/* ============================================================
+ * 暗色模式（html[data-theme="dark"]，由 .sb-theme 切换）
+ * ------------------------------------------------------------
+ * token（--paper/--ink/--mute/--line/--card/--violet-soft）已由
+ * home-papergames.css 的暗色块重映射，这里只覆盖本文件硬编码的
+ * 浅色：#fff 卡面、两个彩色 tag、灰态卡、输入框 focus 白底。
+ * ============================================================ */
+html[data-theme="dark"] body.home-v2 .g-hero .gcover { background: var(--card); box-shadow: 0 14px 30px rgba(0, 0, 0, .45); }
+html[data-theme="dark"] body.home-v2 .mode {
+  background: var(--card); border-color: var(--card-line); color: var(--ink);
+}
+html[data-theme="dark"] body.home-v2 .mode:hover {
+  border-color: var(--violet-bright); box-shadow: 0 10px 22px rgba(0, 0, 0, .35);
+}
+html[data-theme="dark"] body.home-v2 .mode.feat { border-color: rgba(139, 92, 246, .55); }
+html[data-theme="dark"] body.home-v2 .mode .tag {
+  background: var(--violet-soft); color: #C4B5FD; border-color: #3B3570;
+}
+html[data-theme="dark"] body.home-v2 .mode .tag.is-live { background: rgba(34, 197, 94, .14); color: #6EE7A0; border-color: rgba(34, 197, 94, .4); }
+html[data-theme="dark"] body.home-v2 .mode .tag.is-gold { background: rgba(245, 158, 11, .14); color: #FCD34D; border-color: rgba(245, 158, 11, .4); }
+html[data-theme="dark"] body.home-v2 .mode .tag.is-mute { background: var(--paper); color: var(--mute); border-color: var(--line); }
+html[data-theme="dark"] body.home-v2 .mode.soon {
+  background: transparent; border-color: #2E3052; color: #6B7096;
+}
+html[data-theme="dark"] body.home-v2 .mode.soon .mi { filter: grayscale(1); opacity: .55; }
+html[data-theme="dark"] body.home-v2 .mode.soon .mt { color: #6B7096; }
+html[data-theme="dark"] body.home-v2 .mode.soon:hover { border-color: #2E3052; box-shadow: none; }
+html[data-theme="dark"] body.home-v2 .mode.soon .tag { background: #1B1D33; color: #7A7FA0; border-color: #2E3052; }
+html[data-theme="dark"] body.home-v2 .step { background: var(--card); border-color: var(--card-line); }
+html[data-theme="dark"] body.home-v2 .bd-code-row input:focus { background: #16172B; }
+html[data-theme="dark"] body.home-v2 .bd-code-row input::placeholder { color: #5B6080; }
+html[data-theme="dark"] body.home-v2 .bd-stat-row b { color: var(--ink); }
+html[data-theme="dark"] body.home-v2 .bd-rules b { color: var(--ink); }

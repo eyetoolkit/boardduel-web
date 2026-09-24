@@ -8,6 +8,8 @@
  * 具体对局（引擎、联机、棋钟、复盘）全部留在 /games/gomoku/ 的 index.ts + engine.ts。
  */
 
+import { wireLobbyChrome } from '../../lobby-chrome';
+
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T | null =>
   document.getElementById(id) as T | null;
 
@@ -112,6 +114,7 @@ function initInvite(): void {
 /* ===================== 启动 ===================== */
 
 function boot(): void {
+  wireLobbyChrome();
   initInvite();
   void renderSide();
 }
