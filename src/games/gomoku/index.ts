@@ -207,7 +207,7 @@ function stoneColor(p: GPlayer): string {
   return p === 1 ? '#0E1419' : '#F4F6F2';
 }
 function stoneStroke(p: GPlayer): string {
-  return p === 1 ? '#5C6B74' : '#8A99A3';
+  return p === 1 ? 'var(--go-stone-stroke-b, #5C6B74)' : 'var(--go-stone-stroke-w, #8A99A3)';
 }
 
 function render(): void {
@@ -216,19 +216,19 @@ function render(): void {
   for (let r = 0; r < SIZE; r++) {
     const y = PAD + r * CELL;
     const w = r === 0 || r === SIZE - 1 ? 1.4 : (r % 5 === 0 ? 1.2 : 0.5);
-    lines += `<line x1="${PAD}" y1="${y}" x2="${SLOT - PAD}" y2="${y}" stroke="#5C6B74" stroke-width="${w}" stroke-opacity="${r % 5 === 0 ? 1 : 0.55}"/>`;
+    lines += `<line x1="${PAD}" y1="${y}" x2="${SLOT - PAD}" y2="${y}" stroke="var(--go-grid, #5C6B74)" stroke-width="${w}" stroke-opacity="${r % 5 === 0 ? 1 : 0.55}"/>`;
   }
   for (let c = 0; c < SIZE; c++) {
     const x = PAD + c * CELL;
     const w = c === 0 || c === SIZE - 1 ? 1.4 : (c % 5 === 0 ? 1.2 : 0.5);
-    lines += `<line x1="${x}" y1="${PAD}" x2="${x}" y2="${SLOT - PAD}" stroke="#5C6B74" stroke-width="${w}" stroke-opacity="${c % 5 === 0 ? 1 : 0.55}"/>`;
+    lines += `<line x1="${x}" y1="${PAD}" x2="${x}" y2="${SLOT - PAD}" stroke="var(--go-grid, #5C6B74)" stroke-width="${w}" stroke-opacity="${c % 5 === 0 ? 1 : 0.55}"/>`;
   }
 
   // ── 星位（15×15 天元 + 四角星）──
   const stars = [[3, 3], [3, 11], [11, 3], [11, 11], [7, 7]];
   let starMarks = '';
   for (const [sx, sy] of stars) {
-    starMarks += `<circle cx="${PAD + sx * CELL}" cy="${PAD + sy * CELL}" r="2.6" fill="#5C6B74"/>`;
+    starMarks += `<circle cx="${PAD + sx * CELL}" cy="${PAD + sy * CELL}" r="2.6" fill="var(--go-grid, #5C6B74)"/>`;
   }
 
   // ── 坐标尺 A–O / 15→1（设计稿：退到 58% 尺寸、mute-2）──
@@ -259,11 +259,11 @@ function render(): void {
       const isLast = state.lastMove === i;
       stones += `<circle class="go-stone${isLast ? ' is-last' : ''}" cx="${px}" cy="${py}" r="${STONE_R}" fill="${stoneColor(p as GPlayer)}" stroke="${stoneStroke(p as GPlayer)}" stroke-width="0.6"/>`;
       if (isLast && !isWin) {
-        stones += `<circle cx="${px}" cy="${py}" r="${STONE_R * 0.28}" fill="#FF6A3C"/>`;
+        stones += `<circle cx="${px}" cy="${py}" r="${STONE_R * 0.28}" fill="var(--ember, #FF6A3C)"/>`;
       }
       if (isWin) {
         // 金色环 —— 全站唯一使用 gold 之处
-        stones += `<circle class="go-win-ring" cx="${px}" cy="${py}" r="${STONE_R + 3}" fill="none" stroke="#F2C14E" stroke-width="2.4"/>`;
+        stones += `<circle class="go-win-ring" cx="${px}" cy="${py}" r="${STONE_R + 3}" fill="none" stroke="var(--gold, #F2C14E)" stroke-width="2.4"/>`;
       }
     }
   }
@@ -288,12 +288,12 @@ function render(): void {
     }
     if (mine && state.ghost >= 0 && board[state.ghost] === 0) {
       const [gx2, gy2] = cellXY(state.ghost);
-      stones += `<circle class="go-ghost" cx="${gx2}" cy="${gy2}" r="${STONE_R}" fill="none" stroke="#8A99A3" stroke-width="1.6" stroke-dasharray="4 4"/>`;
+      stones += `<circle class="go-ghost" cx="${gx2}" cy="${gy2}" r="${STONE_R}" fill="none" stroke="var(--go-ghost, #8A99A3)" stroke-width="1.6" stroke-dasharray="4 4"/>`;
     }
   }
 
   boardEl.innerHTML = `<svg viewBox="0 0 ${SLOT} ${SLOT}" role="img" aria-label="Gomoku board, 15 by 15">
-    <rect x="0" y="0" width="${SLOT}" height="${SLOT}" fill="#151D24" rx="8"/>
+    <rect x="0" y="0" width="${SLOT}" height="${SLOT}" fill="var(--go-board-bg, #151D24)" rx="8"/>
     ${lines}${starMarks}${coords}${stones}${hits}
   </svg>`;
 
@@ -634,7 +634,7 @@ function highlightHints(list: number[]): void {
     c.setAttribute('cx', String(px));
     c.setAttribute('cy', String(py));
     c.setAttribute('r', '4');
-    c.setAttribute('fill', '#FF6A3C');
+    c.setAttribute('fill', 'var(--ember, #FF6A3C)');
     svg.appendChild(c);
   }
 }

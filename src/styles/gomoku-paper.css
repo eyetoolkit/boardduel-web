@@ -1,0 +1,107 @@
+/* ============================================================
+ * BoardDuel · Gomoku 对局页 · MathDuel papergames 浅色皮肤（2026-09-24）
+ * ------------------------------------------------------------
+ * 与 gomoku-lobby.css 同一观感：Sora 正文 + 数学涂鸦作业纸底纹
+ * + 靛蓝 #3730A3/#4F46E5 + 琥珀 #F59E0B 强调。
+ *
+ * 实现方式：boardduel.css 的规则全部引用 token（--ink/--ink2/--paper/…），
+ * 这里在 body.bd-paper 作用域重映射 token，让整页规则自动翻转成浅色；
+ * 再补少量硬编码深色（toast、legend、go-tag 文字）与棋盘 SVG 变量。
+ * 仅本页生效（body.bd-paper 只挂在 /games/gomoku/ 上）。
+ * ============================================================ */
+
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('/fonts/sora-latin.woff2') format('woff2');
+}
+
+/* ── token 重映射（boardduel.css :root 的浅色版） ── */
+body.bd-paper {
+  --ink: #F4F5F9;            /* 页面底 → 纸面 */
+  --ink2: #FFFFFF;           /* 卡片底 → 白 */
+  --ink3: #F1F2F7;           /* 按钮/输入底 → 浅灰 */
+  --line: #E3E6F0;           /* 边框 → 浅 */
+  --paper: #1E1B39;          /* 文字 → 靛墨 */
+  --mute: #5B6079;
+  --mute2: #8A90A8;
+  --ember: #F59E0B;          /* 主强调 → 琥珀（MathDuel） */
+  --ember-dim: #D97706;
+  --ember-soft: rgba(245, 158, 11, .14);
+  --teal: #0E9F6E;           /* live/聊天 → 绿 */
+  --teal-soft: rgba(16, 163, 110, .12);
+  --gold: #F59E0B;           /* 获胜连线/标签 → 琥珀 */
+  --gold-soft: rgba(245, 158, 11, .14);
+  /* 棋盘 SVG 变量（index.ts 引用） */
+  --go-board-bg: #FFFFFF;
+  --go-grid: rgba(55, 48, 163, .30);
+  --go-ghost: #8A90A8;
+  --go-stone-stroke-b: #5C6B74;
+  --go-stone-stroke-w: #6B7096;
+
+  /* 正文换 Sora（MathDuel 同款） */
+  --ui: 'Sora', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* 作业纸底纹：数学符号 SVG + 28/140px 靛蓝格线（与 lobby/首页一致） */
+  background-color: #F4F5F9;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420' viewBox='0 0 420 420'%3E%3Cg fill='none' stroke='rgba(55,48,163,.075)' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M48 62h24M60 50v24'/%3E%3Cpath d='M188 78l26 26M214 78l-26 26'/%3E%3Cpath d='M312 58h28'/%3E%3Ccircle cx='319' cy='46' r='2.6'/%3E%3Ccircle cx='333' cy='70' r='2.6'/%3E%3Cpath d='M84 168h30M84 180h30'/%3E%3Cpath d='M244 150l10 16 18-34'/%3E%3Cpath d='M52 288v-14h6a7 7 0 0 1 0 14h-6m6 0l8 14'/%3E%3Cpath d='M170 312c8-9 20-9 26 0 6 9 18 9 26 0'/%3E%3Cpath d='M320 272l16 30h-32z'/%3E%3Cpath d='M360 386a20 16 0 1 1 14-27m0 16v11m0-11h-10'/%3E%3Cpath d='M96 380h18l-11 11 11 11H96'/%3E%3Cpath d='M236 392h26M240 384l-4 8 8 2'/%3E%3C/g%3E%3C/svg%3E"),
+    linear-gradient(rgba(55, 48, 163, .05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(55, 48, 163, .05) 1px, transparent 1px),
+    linear-gradient(rgba(55, 48, 163, .07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(55, 48, 163, .07) 1px, transparent 1px);
+  background-size: 420px 420px, 28px 28px, 28px 28px, 140px 140px, 140px 140px;
+  background-attachment: fixed;
+  color: #1E1B39;
+}
+
+/* ── 硬编码深色的补丁 ── */
+
+/* 触屏确认气泡：深底 → 白底靛墨 */
+body.bd-paper .go-hint-legend {
+  background: rgba(255, 255, 255, .96);
+  border-color: var(--line);
+  color: #1E1B39;
+  box-shadow: 0 6px 16px rgba(30, 27, 75, .12);
+}
+
+/* toast：深底 → 白底靛墨 */
+body.bd-paper .bd-toast-item {
+  background: rgba(255, 255, 255, .97);
+  color: #1E1B39;
+  border-color: var(--line);
+  box-shadow: 0 8px 20px rgba(30, 27, 75, .14);
+}
+
+/* 实心标签：白字（--ink 被重映射成浅色）→ 琥珀/绿上用深字 */
+body.bd-paper .go-tag { color: #1E1B39; }
+
+/* 上一手阴影与获胜金环随琥珀 */
+body.bd-paper .go-stone.is-last { filter: drop-shadow(0 0 3px rgba(245, 158, 11, .55)); }
+
+/* 主 CTA：琥珀实心（MathDuel btn-amber 同款） */
+body.bd-paper .go-btn.is-primary {
+  background: var(--gold);
+  color: #1E1B39;
+  border-color: transparent;
+  box-shadow: 0 8px 20px rgba(245, 158, 11, .3);
+}
+body.bd-paper .go-btn.is-primary:hover { background: #FBBF24; }
+
+/* Ranked 主推卡：琥珀顶 rail（与 lobby 的 .mode.feat 同款） */
+body.bd-paper .go-mode.feat { position: relative; overflow: hidden; }
+body.bd-paper .go-mode.feat::before {
+  content: ""; position: absolute; inset: 0 0 auto 0; height: 4px;
+  background: linear-gradient(90deg, #F59E0B, #FBBF24);
+}
+
+/* 品牌强调点：Gomoku 后的圆点改靛蓝（标题） */
+body.bd-paper .bd-hero .bd-dot { color: #3730A3; }
+/* hero 副标题 mute 已自动；标题 hover 无 */
+
+/* 段位行/记谱等 b 用 --paper 自动变深，无需处理 */
+
+/* focus 可见性：金色 → 靛蓝 */
+body.bd-paper button:focus-visible { outline-color: #4F46E5; }
