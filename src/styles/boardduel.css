@@ -276,8 +276,7 @@ img { max-width: 100%; display: block; }
 /* 等待中不透出 hover 幽灵色，避免"看着能下其实下不了" */
 .go-cell.is-wait.is-ghost rect { fill: transparent; }
 
-/* 上一手：ember 实心点 */
-.go-stone.is-last { filter: drop-shadow(0 0 3px rgba(255, 106, 60, .5)); }
+/* 上一手：琥珀环标记（在 index.ts 内单独绘制为独立元素，不占用 .go-stone 的落子投影 filter） */
 
 /* 获胜连线：全站唯一 gold 使用点 */
 .go-win-ring { filter: drop-shadow(0 0 6px rgba(242, 193, 78, .45)); }

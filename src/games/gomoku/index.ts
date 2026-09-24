@@ -26,8 +26,11 @@ import {
 } from './engine';
 
 const SLOT = 600;                 // SVG viewBox 边长
-const PAD = 40;                   // 留出坐标尺空间
-const CELL = (SLOT - 2 * PAD) / SIZE;
+const MARGIN = 22;                // 外留白（容纳外框 + 阴影）
+const FRAME = 12;                 // 棋盘外框厚度
+const LABEL = 26;                 // 坐标带到棋面的距离
+const PAD = MARGIN + FRAME + LABEL;   // 60：网格起点，对称（600-2*60=480=15*32）
+const CELL = (SLOT - 2 * PAD) / SIZE; // 32
 const STONE_R = CELL * 0.42;
 const COLS = 'ABCDEFGHIJKLMNO';
 
@@ -66,6 +69,7 @@ const clockOppCard = $<HTMLElement>('go-clock-opp');
 const undoBtn = $<HTMLButtonElement>('go-undo');
 const hintBtn = $<HTMLButtonElement>('go-hint');
 const resignBtn = $<HTMLButtonElement>('go-resign');
+const drawBtn = $<HTMLButtonElement>('go-draw');
 const backLobbyBtn = $<HTMLButtonElement>('go-back-lobby');
 
 const hintCard = $<HTMLDivElement>('go-hintcard');
@@ -207,7 +211,8 @@ function cellXY(i: number): [number, number] {
    渲染
    ══════════════════════════════════════════════════════════════ */
 function stoneColor(p: GPlayer): string {
-  return p === 1 ? '#0E1419' : '#F4F6F2';
+  // 立体高光渐变（参考 papergames 棋子质感）：黑子亮顶 + 深底，白子暖白渐变
+  return p === 1 ? 'url(#go-grad-b)' : 'url(#go-grad-w)';
 }
 function stoneStroke(p: GPlayer): string {
   return p === 1 ? 'var(--go-stone-stroke-b, #5C6B74)' : 'var(--go-stone-stroke-w, #8A99A3)';
@@ -234,15 +239,22 @@ function render(): void {
     starMarks += `<circle cx="${PAD + sx * CELL}" cy="${PAD + sy * CELL}" r="4.4" fill="var(--go-grid, #5C6B74)"/>`;
   }
 
-  // ── 坐标尺：常规棋盘只标两侧 —— 上 A–O、左 15→1（其余留白，去拥挤） ──
+  // ── 坐标尺：四面齐全（上/下 A–O、左/右 15→1），专业棋盘对称标注 ──
   let coords = '';
+  const yTop = PAD - 13;            // 上侧字母（外框带内）
+  const yBot = SLOT - PAD + 13;     // 下侧字母
+  const xLeft = PAD - 14;           // 左侧数字
+  const xRight = SLOT - PAD + 14;   // 右侧数字
   for (let c = 0; c < SIZE; c++) {
     const x = PAD + c * CELL;
-    coords += `<text class="go-coord" x="${x}" y="${PAD - 14}" text-anchor="middle">${COLS[c]}</text>`;
+    coords += `<text class="go-coord" x="${x}" y="${yTop}" text-anchor="middle">${COLS[c]}</text>`;
+    coords += `<text class="go-coord" x="${x}" y="${yBot}" text-anchor="middle">${COLS[c]}</text>`;
   }
   for (let r = 0; r < SIZE; r++) {
     const y = PAD + r * CELL;
-    coords += `<text class="go-coord" x="${PAD - 15}" y="${y + 3.5}" text-anchor="end">${String(SIZE - r)}</text>`; // 自下而上 1..15
+    const num = String(SIZE - r);   // 自下而上 1..15
+    coords += `<text class="go-coord" x="${xLeft}" y="${y + 3.5}" text-anchor="end">${num}</text>`;
+    coords += `<text class="go-coord" x="${xRight}" y="${y + 3.5}" text-anchor="start">${num}</text>`;
   }
 
   // ── 棋子 + 命中区 ──
@@ -262,6 +274,8 @@ function render(): void {
         // 传统记法：最后一手在棋子上点反色圆点（黑子白点 / 白子黑点）
         const dot = p === 1 ? '#F4F6F2' : '#1E1B39';
         stones += `<circle cx="${px}" cy="${py}" r="${STONE_R * 0.3}" fill="${dot}" fill-opacity=".9"/>`;
+        // 琥珀细环标“最后一手”——独立元素，不占用 .go-stone 的落子投影
+        stones += `<circle class="go-last-ring" cx="${px}" cy="${py}" r="${STONE_R + 2.5}" fill="none" stroke="var(--gold,#F2C14E)" stroke-width="2"/>`;
       }
       if (isWin) {
         // 金色环 —— 全站唯一使用 gold 之处
@@ -294,8 +308,25 @@ function render(): void {
     }
   }
 
+  // 棋子立体高光渐变（每帧重建，id 固定无副作用）
+  const defs = `<defs>
+    <radialGradient id="go-grad-b" cx="35%" cy="32%" r="78%">
+      <stop offset="0%" stop-color="#454c57"/>
+      <stop offset="55%" stop-color="#1b212a"/>
+      <stop offset="100%" stop-color="#0B0F14"/>
+    </radialGradient>
+    <radialGradient id="go-grad-w" cx="35%" cy="32%" r="78%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="60%" stop-color="#eef1f5"/>
+      <stop offset="100%" stop-color="#c7cdd6"/>
+    </radialGradient>
+  </defs>`;
+  // 外围实框（木盘感）+ 棋面（白盘/暗盘），坐标尺落在框带内
+  const frame = `<rect x="${MARGIN}" y="${MARGIN}" width="${SLOT - 2 * MARGIN}" height="${SLOT - 2 * MARGIN}" rx="14" fill="var(--go-frame,#E9EAF4)" stroke="var(--go-frame-edge,rgba(55,48,163,.18))" stroke-width="2"/>`
+    + `<rect x="${PAD}" y="${PAD}" width="${SLOT - 2 * PAD}" height="${SLOT - 2 * PAD}" rx="6" fill="var(--go-board-bg,#151D24)"/>`;
+
   boardEl.innerHTML = `<svg viewBox="0 0 ${SLOT} ${SLOT}" role="img" aria-label="Gomoku board, 15 by 15">
-    <rect x="0" y="0" width="${SLOT}" height="${SLOT}" fill="var(--go-board-bg, #151D24)" rx="8"/>
+    ${defs}${frame}
     ${lines}${starMarks}${coords}${stones}${hits}
   </svg>`;
 
@@ -669,7 +700,30 @@ function undo(): void {
   render();
 }
 
+let resignArmed = false;
+let resignTimer = 0;
 function resign(): void {
+  if (state.over) return;
+  // 二次确认：papergames 同款，避免误触直接认输
+  if (!resignArmed) {
+    resignArmed = true;
+    resignBtn.textContent = 'Confirm?';
+    resignBtn.classList.add('is-confirm');
+    resignTimer = window.setTimeout(() => {
+      resignArmed = false;
+      resignBtn.textContent = 'Resign';
+      resignBtn.classList.remove('is-confirm');
+    }, 2200);
+    return;
+  }
+  clearTimeout(resignTimer);
+  resignArmed = false;
+  resignBtn.textContent = 'Resign';
+  resignBtn.classList.remove('is-confirm');
+  doResign();
+}
+
+function doResign(): void {
   if (state.over) return;
   if (state.mode === 'ranked') {
     // 先置位再发：服务端回 game_over 时要靠它区分“我方认输”
@@ -698,6 +752,15 @@ function resign(): void {
   endLine.textContent = (state.mode === 'ai' ? 'You resigned' : (winner === 1 ? 'Black wins' : 'White wins'));
   showScreen('end');
   render();
+}
+
+/* 和棋（Draw）：同屏双人直接判和；联机发起提议；对 AI 无意义（按钮隐藏） */
+function offerDraw(): void {
+  if (state.over || state.reviewAt !== null) return;
+  if (state.mode === 'engine') return;
+  if (state.mode === 'pass') { finishDraw(); return; }
+  toast('Draw proposed — waiting for opponent');
+  try { sendWs({ type: 'draw' }); } catch (e) { /* 后端若不支持则静默 */ }
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -735,6 +798,8 @@ function newGame(): void {
   // ⚠️ 必须在这里就启动棋钟：旧实现只在 afterMove() 里启动，
   //    导致新开局后第一手落子前棋钟是静止的（实测 10:00 不动）。
   startClockTick();
+  // 对 AI 提和没有意义 —— 隐藏 Draw；其余模式（联机 / 同屏双人）显示
+  drawBtn.hidden = state.mode === 'engine';
   showScreen('match');
   render();
 
@@ -1047,6 +1112,7 @@ $('go-queue-cancel').addEventListener('click', () => cancelQueue(false));
 undoBtn.addEventListener('click', undo);
 hintBtn.addEventListener('click', showHints);
 resignBtn.addEventListener('click', resign);
+drawBtn.addEventListener('click', offerDraw);
 hintClose.addEventListener('click', () => {
   hintCard.hidden = true;
   boardEl.querySelectorAll('.go-hintdot').forEach((n) => n.remove());

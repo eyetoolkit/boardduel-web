@@ -40,6 +40,8 @@ body.bd-paper {
   --go-ghost: #8A90A8;
   --go-stone-stroke-b: #5C6B74;
   --go-stone-stroke-w: #565B78;
+  --go-frame: #E9EAF4;                       /* 外框（木盘带）浅色 */
+  --go-frame-edge: rgba(55, 48, 163, .20);   /* 外框细描边（靛蓝淡） */
 
   /* 正文换 Sora（MathDuel 同款） */
   --ui: 'Sora', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -78,8 +80,15 @@ body.bd-paper .bd-toast-item {
 /* 实心标签：白字（--ink 被重映射成浅色）→ 琥珀/绿上用深字 */
 body.bd-paper .go-tag { color: var(--paper); }
 
-/* 上一手阴影与获胜金环随琥珀 */
-body.bd-paper .go-stone.is-last { filter: drop-shadow(0 0 3px rgba(245, 158, 11, .55)); }
+/* 棋子立体落子投影（所有棋子共用）；最后一手改用独立琥珀环，不占用此 filter */
+body.bd-paper .go-stone { filter: drop-shadow(0 1.3px 1.7px rgba(30, 27, 75, .32)); }
+
+/* Resign 二次确认态：红色脉冲，提示“再点一次才生效” */
+body.bd-paper .go-btn.is-confirm {
+  background: #EF4444; color: #fff; border-color: transparent;
+  animation: go-confirm-pulse 1s ease-in-out infinite;
+}
+@keyframes go-confirm-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .72; } }
 
 /* 主 CTA：琥珀实心（MathDuel btn-amber 同款） */
 body.bd-paper .go-btn.is-primary {
@@ -229,6 +238,8 @@ html[data-theme="dark"] body.bd-paper {
   --go-ghost: #565B78;
   --go-stone-stroke-b: #9AA0BC;
   --go-stone-stroke-w: #D8DBEA;
+  --go-frame: #161827;                       /* 暗盘夜框 */
+  --go-frame-edge: rgba(232, 234, 244, .10);
 
   background-color: #12131F;
   background-image:
@@ -245,3 +256,5 @@ html[data-theme="dark"] body.bd-paper .bd-hero .bd-dot { color: #8B5CF6; }
 html[data-theme="dark"] body.bd-paper .go-hint-legend { box-shadow: 0 6px 16px rgba(0, 0, 0, .45); }
 html[data-theme="dark"] body.bd-paper .bd-toast-item { box-shadow: 0 8px 20px rgba(0, 0, 0, .5); }
 html[data-theme="dark"] body.bd-paper button:focus-visible { outline-color: #A78BFA; }
+/* 暗盘下棋子落子投影更深，保持浮起感 */
+html[data-theme="dark"] body.bd-paper .go-stone { filter: drop-shadow(0 1.3px 1.7px rgba(0, 0, 0, .55)); }
