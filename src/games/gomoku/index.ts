@@ -26,10 +26,10 @@ import {
 } from './engine';
 
 const SLOT = 600;                 // SVG viewBox 边长
-const MARGIN = 22;                // 外留白（容纳外框 + 阴影）
-const FRAME = 12;                 // 棋盘外框厚度
-const LABEL = 26;                 // 坐标带到棋面的距离
-const PAD = MARGIN + FRAME + LABEL;   // 60：网格起点，对称（600-2*60=480=15*32）
+const MARGIN = 4;                 // 外留白（仅容纳外框描边 + 阴影，尽量贴边）
+const FRAME = 6;                  // 棋盘外框厚度
+const LABEL = 14;                 // 坐标带到棋面的距离
+const PAD = MARGIN + FRAME + LABEL;   // 24：网格起点，四边对称；落子区占 SVG ~92%（贴容器）
 const CELL = (SLOT - 2 * PAD) / (SIZE - 1); // 34.29：15 条线 = 14 格（线上落子），网格恰好铺满 PAD..SLOT-PAD，四边对称闭合
 const STONE_R = CELL * 0.42;
 const COLS = 'ABCDEFGHIJKLMNO';
@@ -241,10 +241,10 @@ function render(): void {
 
   // ── 坐标尺：四面齐全（上/下 A–O、左/右 15→1），专业棋盘对称标注 ──
   let coords = '';
-  const yTop = PAD - 13;            // 上侧字母（外框带内）
-  const yBot = SLOT - PAD + 13;     // 下侧字母
-  const xLeft = PAD - 14;           // 左侧数字
-  const xRight = SLOT - PAD + 14;   // 右侧数字
+  const yTop = PAD - 8;             // 上侧字母（外框带内，贴近网格）
+  const yBot = SLOT - PAD + 8;      // 下侧字母
+  const xLeft = PAD - 9;            // 左侧数字
+  const xRight = SLOT - PAD + 9;    // 右侧数字
   for (let c = 0; c < SIZE; c++) {
     const x = PAD + c * CELL;
     coords += `<text class="go-coord" x="${x}" y="${yTop}" text-anchor="middle">${COLS[c]}</text>`;
@@ -322,8 +322,8 @@ function render(): void {
     </radialGradient>
   </defs>`;
   // 外围实框（木盘感）+ 棋面（白盘/暗盘），坐标尺落在框带内
-  const frame = `<rect x="${MARGIN}" y="${MARGIN}" width="${SLOT - 2 * MARGIN}" height="${SLOT - 2 * MARGIN}" rx="14" fill="var(--go-frame,#E9EAF4)" stroke="var(--go-frame-edge,rgba(55,48,163,.18))" stroke-width="2"/>`
-    + `<rect x="${PAD - 6}" y="${PAD - 6}" width="${SLOT - 2 * PAD + 12}" height="${SLOT - 2 * PAD + 12}" rx="6" fill="var(--go-board-bg,#151D24)"/>`;
+  const frame = `<rect x="${MARGIN}" y="${MARGIN}" width="${SLOT - 2 * MARGIN}" height="${SLOT - 2 * MARGIN}" rx="10" fill="var(--go-frame,#E9EAF4)" stroke="var(--go-frame-edge,rgba(55,48,163,.18))" stroke-width="1.5"/>`
+    + `<rect x="${PAD - 4}" y="${PAD - 4}" width="${SLOT - 2 * PAD + 8}" height="${SLOT - 2 * PAD + 8}" rx="5" fill="var(--go-board-bg,#151D24)"/>`;
 
   boardEl.innerHTML = `<svg viewBox="0 0 ${SLOT} ${SLOT}" role="img" aria-label="Gomoku board, 15 by 15">
     ${defs}${frame}
