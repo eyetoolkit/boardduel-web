@@ -757,7 +757,7 @@ function doResign(): void {
 /* 和棋（Draw）：同屏双人直接判和；联机发起提议；对 AI 无意义（按钮隐藏） */
 function offerDraw(): void {
   if (state.over || state.reviewAt !== null) return;
-  if (state.mode === 'engine') return;
+  if (state.mode === 'ai') return;
   if (state.mode === 'pass') { finishDraw(); return; }
   toast('Draw proposed — waiting for opponent');
   try { sendWs({ type: 'draw' }); } catch (e) { /* 后端若不支持则静默 */ }
@@ -799,7 +799,7 @@ function newGame(): void {
   //    导致新开局后第一手落子前棋钟是静止的（实测 10:00 不动）。
   startClockTick();
   // 对 AI 提和没有意义 —— 隐藏 Draw；其余模式（联机 / 同屏双人）显示
-  drawBtn.hidden = state.mode === 'engine';
+  drawBtn.hidden = state.mode === 'ai';
   showScreen('match');
   render();
 
