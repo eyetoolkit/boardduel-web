@@ -958,7 +958,7 @@ inviteCopyBtn.addEventListener('click', () => {
   }
 });
 
-async function startFriendRoom(): Promise<void> {
+async function startFriendRoom(opts?: { keepCard?: boolean }): Promise<void> {
   const fail = () => {
     toast('Could not open a friend room');
     window.setTimeout(() => location.replace(MODE_PAGE), 900);
@@ -968,8 +968,8 @@ async function startFriendRoom(): Promise<void> {
     const j = (await r.json()) as { ok?: boolean; code?: string };
     const code = String((j && j.code) || '').toUpperCase();
     if (!r.ok || !/^[A-Z2-9]{6}$/.test(code)) { fail(); return; }
-    // 复用联机全链路：合成点击只「选中」ranked 卡（不会去排随机队列），再进自己的房间
-    pickModeCard('.go-mode[data-mode="ranked"]');
+    // 复用联机全链路：进自己的房间（state.mode 由 enterRankedRoom 置为 ranked）
+    if (!opts?.keepCard) pickModeCard('.go-mode[data-mode="ranked"]');
     enterRankedRoom(code, false);
     showInvite(code);
   } catch (e) {
@@ -1125,9 +1125,16 @@ const LEVEL_LABEL: Record<GDifficulty, string> = {
  *  由 applyDeepLink 自己调 joinQueue/newGame，避免双触发。 */
 document.querySelectorAll<HTMLButtonElement>('.go-mode[data-mode]').forEach((b) => {
   b.addEventListener('click', (ev) => {
-    const m = b.dataset.mode as UIState['mode'];
+    const m = b.dataset.mode as UIState['mode'] | 'friend';
     document.querySelectorAll('.go-mode').forEach((x) => x.classList.remove('is-cur'));
     b.classList.add('is-cur');
+    if (m === 'friend') {
+      // 好友房：建房即进房（state.mode 由 enterRankedRoom 置为 ranked）
+      startBtn.textContent = 'Create room';
+      startNote.textContent = 'Private room, 6-character code — your friend joins with the code or link.';
+      if (ev.isTrusted) void startFriendRoom({ keepCard: true });
+      return;
+    }
     state.mode = m;
     if (b.dataset.level) state.level = b.dataset.level as GDifficulty;
     if (m === 'ranked') {
