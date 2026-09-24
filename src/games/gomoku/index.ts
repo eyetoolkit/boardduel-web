@@ -1124,6 +1124,16 @@ function applyDeepLink(): void {
 }
 
 (function init(): void {
+  // 裸访问 /games/gomoku/（不带 ?mode= / ?c=）一律回模式选择页：
+  // 模式选择已由 lobby 两段式负责，这里只保留深链战场，杜绝"又一个选择页"的干扰。
+  {
+    const q = new URLSearchParams(location.search);
+    if (!q.get('mode') && !q.get('c')) {
+      location.replace(MODE_PAGE);
+      return;
+    }
+  }
+
   // 段位显示：用账号资料（有则显示，无则用默认文案，不编造数字）
   void (async () => {
     try {
