@@ -14,8 +14,8 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string): T | null =>
   document.getElementById(id) as T | null;
 
 const GAME_URL = '/games/gomoku/';
-/** worker 的房间码：5–8 位字母数字（见 boardduel /b/<game>/<CODE> 路由与 MatchQueue CODE_LEN） */
-const INVITE_RE = /^[A-Za-z0-9]{5,8}$/;
+/** worker 的房间码：6 位字母数字（设计稿标准，worker /b/<game>/<CODE> 路由与 MatchQueue CODE_LEN） */
+const INVITE_RE = /^[A-Za-z0-9]{6}$/;
 
 const esc = (s: unknown): string =>
   String(s ?? '').replace(
@@ -92,7 +92,7 @@ function initInvite(): void {
   const go = () => {
     const code = (input?.value || '').trim().toUpperCase();
     if (!INVITE_RE.test(code)) {
-      say('Enter the 5–8 character code from the invite.');
+      say('Please enter the 6-character room code.');
       input?.focus();
       return;
     }
