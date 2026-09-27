@@ -36,6 +36,11 @@ const BETA_ONLY_INPUTS = {
   connect4Lobby: resolve(here, 'games/connect4/lobby/index.html'),
   reversiLobby: resolve(here, 'games/reversi/lobby/index.html'),
   chessLobby: resolve(here, 'games/chess/lobby/index.html'),
+  // 4 个未上线游戏的玩法页（gomoku 那篇在生产也存在，见下方 input）
+  howtoTictactoe: resolve(here, 'how-to-play/tictactoe/index.html'),
+  howtoConnect4: resolve(here, 'how-to-play/connect4/index.html'),
+  howtoReversi: resolve(here, 'how-to-play/reversi/index.html'),
+  howtoChess: resolve(here, 'how-to-play/chess/index.html'),
 };
 
 const META_PROD = {
@@ -87,6 +92,12 @@ export default defineConfig({
         main: resolve(here, 'index.html'),
         gomoku: resolve(here, 'games/gomoku/index.html'),
         gomokuLobby: resolve(here, 'games/gomoku/lobby/index.html'),
+        // 站内内容页（纸肤 + 侧栏 chrome，走 page-chrome.ts）
+        rank: resolve(here, 'rank/index.html'),
+        stats: resolve(here, 'stats/index.html'),
+        shop: resolve(here, 'shop/index.html'),
+        howto: resolve(here, 'how-to-play/index.html'),
+        howtoGomoku: resolve(here, 'how-to-play/gomoku/index.html'),
         // 未上线游戏：只在 beta 构建里产出页面（生产构建 = 无页面 + 无导航 + 不进 sitemap）
         ...(process.env.VITE_SHOW_BETA === '1' ? BETA_ONLY_INPUTS : {}),
       },

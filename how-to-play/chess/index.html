@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>How to play Chess · BoardDuel</title>
+  <meta name="description" content="Learn how to play chess — how each piece moves, castling and promotion, and the opening principles that keep your king safe.">
+  <link rel="canonical" href="https://boardduel.com/how-to-play/chess/">
+  <meta name="theme-color" content="#F4F5F9">
+  <link rel="stylesheet" href="/src/styles/arena-paper.css">
+  <link rel="stylesheet" href="/src/styles/page-paper.css">
+  <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/space-grotesk-latin-700.woff2" as="font" type="font/woff2" crossorigin>
+  <script>(function(){try{var t=localStorage.getItem('bd-theme2');if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}})();</script>
+</head>
+<body class="home-v2" data-page="howto">
+<!-- ══ 移动端顶栏（<1120px 显示） ══ -->
+<div class="topbar">
+  <button class="burger" id="burger" aria-label="Open navigation" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="logo" href="/">Board<b>Duel</b></a>
+  <a class="btn-login" href="/games/gomoku/lobby/">Play</a>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<!-- ══ 侧边导航 ══ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-top">
+    <a class="logo" href="/">Board<b>Duel</b></a>
+    <button class="sb-collapse" id="collapse" title="Collapse navigation" aria-label="Collapse navigation">&laquo;</button>
+  </div>
+  <div class="sb-login">
+    <a class="btn-login" href="/games/gomoku/lobby/"><span>Play Gomoku</span></a>
+    <button class="sb-theme" type="button" title="Toggle theme" aria-label="Toggle theme" aria-pressed="false">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13A8 8 0 1 1 11 4a6.5 6.5 0 0 0 9 9z"/></svg>
+    </button>
+  </div>
+  <nav class="sb-nav" aria-label="Site navigation">
+    <a class="nav-item" href="/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><label>Home</label>
+    </a>
+    <div class="nav-group">Play</div>
+    <a class="nav-item" href="/games/gomoku/lobby/">
+      <img class="mini" src="/games/gomoku/cover.svg" alt="" aria-hidden="true"><label>Gomoku</label>
+    </a>
+    <a class="nav-item" href="/games/tictactoe/lobby/" data-stage="beta">
+      <img class="mini" src="/games/tictactoe/cover.svg" alt="" aria-hidden="true"><label>Tic-Tac-Toe</label>
+    </a>
+    <a class="nav-item" href="/games/connect4/lobby/" data-stage="beta">
+      <img class="mini" src="/games/connect4/cover.svg" alt="" aria-hidden="true"><label>Connect 4</label>
+    </a>
+    <a class="nav-item" href="/games/reversi/lobby/" data-stage="beta">
+      <img class="mini" src="/games/reversi/cover.svg" alt="" aria-hidden="true"><label>Othello</label>
+    </a>
+    <a class="nav-item" href="/games/chess/lobby/" data-stage="beta">
+      <img class="mini" src="/games/chess/cover.svg" alt="" aria-hidden="true"><label>Chess</label>
+    </a>
+    <div class="nav-group">More</div>
+    <a class="nav-item" href="/rank/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3"/><path d="M7 5H4v2a3 3 0 0 0 3 3"/></svg><label>Leaderboard</label>
+    </a>
+    <a class="nav-item" href="/stats/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg><label>My stats</label>
+    </a>
+    <a class="nav-item" href="/shop/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16l-1 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><label>Shop</label>
+    </a>
+    <a class="nav-item active" href="/how-to-play/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2z"/><path d="M8 7h7"/><path d="M8 11h7"/></svg><label>How to play</label>
+    </a>
+  </nav>
+  <div class="nav-foot">
+    <span class="lang-pill"><b>EN</b></span>
+    <span class="sb-copy">&copy; 2026</span>
+  </div>
+</aside>
+<main class="pp-main">
+  <div class="pp-wrap">
+    <nav class="pp-crumb" aria-label="Breadcrumb"><a href="/">Home</a><span class="sep">/</span><a href="/how-to-play/">How to play</a><span class="sep">/</span><span>Chess</span></nav>
+    <h1 class="pp-h1">How to play Chess</h1>
+    <p class="pp-lead">Chess is the most studied game in the world: two armies of sixteen pieces, one board, and no hidden information. This guide covers movement, special rules and the patterns that end games.</p>
+
+    <div class="pp-note">
+      <p class="pp-p"><strong>The goal:</strong> checkmate the enemy king — attack it in a way it cannot escape. There is no clock racing you; chess is about outthinking and outmanoeuvring.</p>
+    </div>
+
+    <h2 class="pp-h2">Rules</h2>
+    <ul class="pp-ul">
+      <li>A chessboard has 64 squares in eight rows and eight files</li>
+      <li>Each side starts with 8 pawns plus king, queen, 2 rooks, 2 knights and 2 bishops</li>
+      <li>White moves first, then players alternate one move each</li>
+      <li>A piece may capture an enemy piece by moving onto its square</li>
+      <li>The queen sits on her own colour: white queen on a light square, black queen on a dark square</li>
+    </ul>
+
+    <h2 class="pp-h2">The shapes that win</h2>
+    <div class="pp-grid">
+      <div class="pp-card">
+        <h3 class="pp-h3">The L of the knight</h3>
+      <div class="pp-cells"><div class="pp-cell you" aria-hidden="true">♘</div><div class="pp-cell empty" aria-hidden="true">·</div><div class="pp-cell empty" aria-hidden="true">·</div></div>        <p class="pp-muted">Two squares one way, then one to the side — the only piece that jumps.</p>
+      </div>
+      <div class="pp-card">
+        <h3 class="pp-h3">The long lines</h3>
+      <div class="pp-cells"><div class="pp-cell you" aria-hidden="true">♖</div><div class="pp-cell empty" aria-hidden="true">·</div><div class="pp-cell empty" aria-hidden="true">·</div><div class="pp-cell you" aria-hidden="true">♕</div></div>        <p class="pp-muted">Rooks run along ranks and files; the queen does that plus diagonals.</p>
+      </div>
+      <div class="pp-card">
+        <h3 class="pp-h3">The bishop pair</h3>
+      <div class="pp-cells"><div class="pp-cell you" aria-hidden="true">♗</div><div class="pp-cell empty" aria-hidden="true">·</div><div class="pp-cell you" aria-hidden="true">♗</div></div>        <p class="pp-muted">Each bishop keeps the colour it started on for the whole game.</p>
+      </div>
+      <div class="pp-card">
+        <h3 class="pp-h3">The promotion run</h3>
+      <div class="pp-cells"><div class="pp-cell you" aria-hidden="true">♙</div><div class="pp-cell empty" aria-hidden="true">·</div><div class="pp-cell empty" aria-hidden="true">·</div><div class="pp-cell win" aria-hidden="true">♕</div></div>        <p class="pp-muted">A pawn that reaches the far rank becomes any piece — usually a queen.</p>
+      </div>
+    </div>
+
+    <h2 class="pp-h2">Strategy</h2>
+    <div class="pp-card" style="margin-top:12px">
+      <h3 class="pp-h3">1. Fight for the centre</h3>
+      <p class="pp-p">Put pawns and pieces where they control the middle four squares. Pieces placed centrally reach more of the board.</p>
+    </div>
+    <div class="pp-card" style="margin-top:12px">
+      <h3 class="pp-h3">2. Develop, then attack</h3>
+      <p class="pp-p">Bring knights and bishops off the back rank before launching anything. An attack with half your pieces at home rarely works.</p>
+    </div>
+    <div class="pp-card" style="margin-top:12px">
+      <h3 class="pp-h3">3. Castle early</h3>
+      <p class="pp-p">Castling tucks the king behind pawns and connects your rooks in a single move. Do it before the middlegame gets sharp.</p>
+    </div>
+    <div class="pp-card" style="margin-top:12px">
+      <h3 class="pp-h3">4. Do not bring the queen out too soon</h3>
+      <p class="pp-p">An early queen gets chased by minor pieces, costing you tempo while your opponent develops for free.</p>
+    </div>
+
+    <div class="pp-tip">
+      <p class="pp-p"><strong>Pro tip:</strong> before every move, check what your opponent threatens. Most games at this level are lost to a threat that was never seen, not to a clever attack.</p>
+    </div>
+
+    <h2 class="pp-h2">Playing here</h2>
+    <p class="pp-p"><strong>Modes on BoardDuel:</strong> vs AI — play a live engine at three difficulty levels; Pass &amp; play — two players, one screen; Friend room — share a six-character code and play remotely.</p>
+
+    <h2 class="pp-h2">Frequently asked</h2>
+    <details class="pp-faq">
+      <summary>Can a pawn capture straight ahead?</summary>
+      <p class="pp-p">No. Pawns move forward but capture only diagonally forward.</p>
+    </details>
+    <details class="pp-faq">
+      <summary>Can a knight be captured mid-jump?</summary>
+      <p class="pp-p">No. Only the destination square matters — the knight passes over everything in between.</p>
+    </details>
+    <details class="pp-faq">
+      <summary>What if only the two kings remain?</summary>
+      <p class="pp-p">That is a draw. Neither side can deliver checkmate with a lone king.</p>
+    </details>
+    <details class="pp-faq">
+      <summary>What is the fastest checkmate?</summary>
+      <p class="pp-p">Scholar's mate — four moves, using queen and bishop against f7 (or f2 for black). Easy to learn, and easy to defend once you have seen it.</p>
+    </details>
+
+    <div class="pp-cta-row">
+      <a class="pp-cta" href="/games/chess/lobby/" data-stage="beta">Play Chess</a>
+      <a class="pp-cta ghost" href="/how-to-play/">All guides</a>
+    </div>
+  </div>
+</main>
+<script type="module" src="/src/page-chrome.ts"></script>
+</body>
+</html>

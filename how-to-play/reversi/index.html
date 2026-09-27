@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>How to play Othello · BoardDuel</title>
+  <meta name="description" content="Learn how to play Othello (Reversi) — flipping rules, why corners decide games, and the mobility and stability habits that win.">
+  <link rel="canonical" href="https://boardduel.com/how-to-play/reversi/">
+  <meta name="theme-color" content="#F4F5F9">
+  <link rel="stylesheet" href="/src/styles/arena-paper.css">
+  <link rel="stylesheet" href="/src/styles/page-paper.css">
+  <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/space-grotesk-latin-700.woff2" as="font" type="font/woff2" crossorigin>
+  <script>(function(){try{var t=localStorage.getItem('bd-theme2');if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}})();</script>
+</head>
+<body class="home-v2" data-page="howto">
+<!-- ══ 移动端顶栏（<1120px 显示） ══ -->
+<div class="topbar">
+  <button class="burger" id="burger" aria-label="Open navigation" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="logo" href="/">Board<b>Duel</b></a>
+  <a class="btn-login" href="/games/gomoku/lobby/">Play</a>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<!-- ══ 侧边导航 ══ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-top">
+    <a class="logo" href="/">Board<b>Duel</b></a>
+    <button class="sb-collapse" id="collapse" title="Collapse navigation" aria-label="Collapse navigation">&laquo;</button>
+  </div>
+  <div class="sb-login">
+    <a class="btn-login" href="/games/gomoku/lobby/"><span>Play Gomoku</span></a>
+    <button class="sb-theme" type="button" title="Toggle theme" aria-label="Toggle theme" aria-pressed="false">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13A8 8 0 1 1 11 4a6.5 6.5 0 0 0 9 9z"/></svg>
+    </button>
+  </div>
+  <nav class="sb-nav" aria-label="Site navigation">
+    <a class="nav-item" href="/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><label>Home</label>
+    </a>
+    <div class="nav-group">Play</div>
+    <a class="nav-item" href="/games/gomoku/lobby/">
+      <img class="mini" src="/games/gomoku/cover.svg" alt="" aria-hidden="true"><label>Gomoku</label>
+    </a>
+    <a class="nav-item" href="/games/tictactoe/lobby/" data-stage="beta">
+      <img class="mini" src="/games/tictactoe/cover.svg" alt="" aria-hidden="true"><label>Tic-Tac-Toe</label>
+    </a>
+    <a class="nav-item" href="/games/connect4/lobby/" data-stage="beta">
+      <img class="mini" src="/games/connect4/cover.svg" alt="" aria-hidden="true"><label>Connect 4</label>
+    </a>
+    <a class="nav-item" href="/games/reversi/lobby/" data-stage="beta">
+      <img class="mini" src="/games/reversi/cover.svg" alt="" aria-hidden="true"><label>Othello</label>
+    </a>
+    <a class="nav-item" href="/games/chess/lobby/" data-stage="beta">
+      <img class="mini" src="/games/chess/cover.svg" alt="" aria-hidden="true"><label>Chess</label>
+    </a>
+    <div class="nav-group">More</div>
+    <a class="nav-item" href="/rank/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3"/><path d="M7 5H4v2a3 3 0 0 0 3 3"/></svg><label>Leaderboard</label>
+    </a>
+    <a class="nav-item" href="/stats/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg><label>My stats</label>
+    </a>
+    <a class="nav-item" href="/shop/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16l-1 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><label>Shop</label>
+    </a>
+    <a class="nav-item active" href="/how-to-play/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2z"/><path d="M8 7h7"/><path d="M8 11h7"/></svg><label>How to play</label>
+    </a>
+  </nav>
+  <div class="nav-foot">
+    <span class="lang-pill"><b>EN</b></span>
+    <span class="sb-copy">&copy; 2026</span>
+  </div>
+</aside>
+<main class="pp-main">
+  <div class="pp-wrap">
+    <nav class="pp-crumb" aria-label="Breadcrumb"><a href="/">Home</a><span class="sep">/</span><a href="/how-to-play/">How to play</a><span class="sep">/</span><span>Othello</span></nav>
+    <h1 class="pp-h1">How to play Othello</h1>
+    <p class="pp-lead">Othello — also called Reversi — flips the usual script: you do not build a line, you capture. Every move you make can turn a board full of your opponent's discs into yours.</p>
+
+    <div class="pp-note">
+      <p class="pp-p"><strong>The goal:</strong> finish with more of your discs on the board than your opponent. You capture by trapping a line of enemy discs between two of your own — they flip to your colour.</p>
+    </div>
+
+    <h2 class="pp-h2">Rules</h2>
+    <ul class="pp-ul">
+      <li>Played on an 8×8 board, starting with four discs in the centre</li>
+      <li>Black moves first, then players alternate</li>
+      <li>A legal move must trap at least one enemy disc between the disc you place and one of your own</li>
+      <li>Every trapped disc in every direction flips immediately</li>
+      <li>If you have no legal move, you pass; the game ends when neither player can move</li>
+    </ul>
+
+    <h2 class="pp-h2">The shapes that win</h2>
+    <div class="pp-grid">
+      <div class="pp-card">
+        <h3 class="pp-h3">The flip</h3>
+      <div class="pp-cells"><div class="pp-cell you" aria-hidden="true">●</div><div class="pp-cell opp" aria-hidden="true">○</div><div class="pp-cell you" aria-hidden="true">●</div></div>        <p class="pp-muted">A trapped line flips end to end — the core mechanic of the whole game.</p>
+      </div>
+      <div class="pp-card">
+        <h3 class="pp-h3">A corner</h3>
+      <div class="pp-cells"><div class="pp-cell you" aria-hidden="true">●</div><div class="pp-cell empty" aria-hidden="true">·</div><div class="pp-cell empty" aria-hidden="true">·</div></div>        <p class="pp-muted">A corner can never be flipped back. Taking one locks in every disc that touches it.</p>
+      </div>
+      <div class="pp-card">
+        <h3 class="pp-h3">C and X squares</h3>
+      <div class="pp-cells"><div class="pp-cell opp" aria-hidden="true">○</div><div class="pp-cell you" aria-hidden="true">●</div><div class="pp-cell opp" aria-hidden="true">○</div></div>        <p class="pp-muted">Cells touching a corner are dangerous — occupying them often hands the corner away.</p>
+      </div>
+      <div class="pp-card">
+        <h3 class="pp-h3">A wall</h3>
+      <div class="pp-cells"><div class="pp-cell you" aria-hidden="true">●</div><div class="pp-cell you" aria-hidden="true">●</div><div class="pp-cell you" aria-hidden="true">●</div></div>        <p class="pp-muted">Discs along an edge are far harder to flip than discs in open space.</p>
+      </div>
+    </div>
+
+    <h2 class="pp-h2">Strategy</h2>
+    <div class="pp-card" style="margin-top:12px">
+      <h3 class="pp-h3">1. Take corners, never gift them</h3>
+      <p class="pp-p">A corner is permanent. Avoid the C and X squares next to a corner unless taking them does not concede the corner itself.</p>
+    </div>
+    <div class="pp-card" style="margin-top:12px">
+      <h3 class="pp-h3">2. Play for mobility</h3>
+      <p class="pp-p">Count your legal moves, not your discs. A position with more options forces your opponent into bad moves later.</p>
+    </div>
+    <div class="pp-card" style="margin-top:12px">
+      <h3 class="pp-h3">3. Hold your discs back early</h3>
+      <p class="pp-p">Filling the board early gives your opponent the walls and corners. Quiet opening moves usually win the long game.</p>
+    </div>
+    <div class="pp-card" style="margin-top:12px">
+      <h3 class="pp-h3">4. Build stable edges</h3>
+      <p class="pp-p">A solid run of discs along an edge cannot be flipped from the outside. Stability is what converts a lead into a win.</p>
+    </div>
+
+    <div class="pp-tip">
+      <p class="pp-p"><strong>Pro tip:</strong> disc count lies until the very end. A player far ahead at move 20 often loses — the winner is whoever controls the corners and the edges.</p>
+    </div>
+
+    <h2 class="pp-h2">Playing here</h2>
+    <p class="pp-p"><strong>Modes on BoardDuel:</strong> vs AI — play a live engine at three difficulty levels; Pass &amp; play — two players, one screen; Friend room — share a six-character code and play remotely.</p>
+
+    <h2 class="pp-h2">Frequently asked</h2>
+    <details class="pp-faq">
+      <summary>Do I have to flip discs if I can?</summary>
+      <p class="pp-p">Yes. If your move traps enemy discs, they flip — you cannot choose to leave them.</p>
+    </details>
+    <details class="pp-faq">
+      <summary>What if I have no legal move?</summary>
+      <p class="pp-p">You pass and your opponent moves again. If neither player can move, the game ends and discs are counted.</p>
+    </details>
+    <details class="pp-faq">
+      <summary>Is Othello the same as Reversi?</summary>
+      <p class="pp-p">Reversi is the older family name; Othello is the standardised tournament version with fixed opening discs. They play the same.</p>
+    </details>
+    <details class="pp-faq">
+      <summary>Why do corners matter so much?</summary>
+      <p class="pp-p">A disc in a corner can never be surrounded, so it is permanent — and it anchors every disc along both edges meeting it.</p>
+    </details>
+
+    <div class="pp-cta-row">
+      <a class="pp-cta" href="/games/reversi/lobby/" data-stage="beta">Play Othello</a>
+      <a class="pp-cta ghost" href="/how-to-play/">All guides</a>
+    </div>
+  </div>
+</main>
+<script type="module" src="/src/page-chrome.ts"></script>
+</body>
+</html>
