@@ -111,11 +111,30 @@ function initInvite(): void {
   $('codeJoin')?.addEventListener('click', go);
 }
 
+/* ===================== AI 补位三状态说明 widget =====================
+   纯展示性：tab 切换 data-state，配合 gomoku-lobby.css 的互斥显隐规则
+   在「排队 / AI 落座 / 真人接管」之间切换。真实匹配状态由游戏页接管，
+   这里不写任何假玩家数据，只演示机制。 */
+function initWaitTabs(): void {
+  const card = document.getElementById('waitCard');
+  if (!card) return;
+  const tabs = card.querySelectorAll<HTMLButtonElement>('[data-go]');
+  tabs.forEach((b) => {
+    b.addEventListener('click', () => {
+      const go = b.dataset.go;
+      if (!go) return;
+      card.dataset.state = go;
+      tabs.forEach((x) => x.setAttribute('aria-selected', x === b ? 'true' : 'false'));
+    });
+  });
+}
+
 /* ===================== 启动 ===================== */
 
 function boot(): void {
   wireLobbyChrome();
   initInvite();
+  initWaitTabs();
   void renderSide();
 }
 
