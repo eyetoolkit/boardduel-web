@@ -6,6 +6,7 @@ import {
   setupNav,
   startTimer, stopTimer, createTimer, fmtClock,
   toast, type Mode} from '../game-core';
+import { wireLobbyChrome } from '../../lobby-chrome';
 import {
   emptyBoard, cloneBoard, legalMoves, place as revPlace, bestMove,
   type Board as RBoard, type Player as RPlayer, type Difficulty as RDifficulty,
@@ -40,11 +41,11 @@ function render(): void {
   let lines = '';
   for (let r = 1; r < 8; r++) {
     const y = PAD + r * CELL;
-    lines += `<line x1="${PAD}" y1="${y}" x2="${SLOT - PAD}" y2="${y}" stroke="#2A3741" stroke-width="0.6"/>`;
+    lines += `<line x1="${PAD}" y1="${y}" x2="${SLOT - PAD}" y2="${y}" stroke="var(--rv-grid, #2A3741)" stroke-width="0.6"/>`;
   }
   for (let c = 1; c < 8; c++) {
     const x = PAD + c * CELL;
-    lines += `<line x1="${x}" y1="${PAD}" x2="${x}" y2="${SLOT - PAD}" stroke="#2A3741" stroke-width="0.6"/>`;
+    lines += `<line x1="${x}" y1="${PAD}" x2="${x}" y2="${SLOT - PAD}" stroke="var(--rv-grid, #2A3741)" stroke-width="0.6"/>`;
   }
 
   // 合法位预览
@@ -55,7 +56,7 @@ function render(): void {
       const x = i % 8, y = Math.floor(i / 8);
       const cx = PAD + x * CELL + CELL / 2;
       const cy = PAD + y * CELL + CELL / 2;
-      previews += `<circle class="rv-stone is-hint" cx="${cx}" cy="${cy}" r="${CELL * 0.42}" fill="none" stroke="#FF6A3C" stroke-width="2"/>`;
+      previews += `<circle class="rv-stone is-hint" cx="${cx}" cy="${cy}" r="${CELL * 0.42}" fill="none" stroke="var(--rv-hint, #FF6A3C)" stroke-width="2"/>`;
     }
   }
 
@@ -68,8 +69,8 @@ function render(): void {
     const cx = PAD + x * CELL + CELL / 2;
     const cy = PAD + y * CELL + CELL / 2;
     const isLast = state.lastMove === i;
-    const fill = v === 1 ? '#0E1419' : '#F4F6F2';
-    pieces += `<circle class="rv-stone${isLast ? ' is-last' : ''}" cx="${cx}" cy="${cy}" r="${CELL * 0.42}" fill="${fill}" stroke="#5C6B74" stroke-width="0.6"/>`;
+    const fill = v === 1 ? 'var(--rv-black, #0E1419)' : 'var(--rv-white, #F4F6F2)';
+    pieces += `<circle class="rv-stone${isLast ? ' is-last' : ''}" cx="${cx}" cy="${cy}" r="${CELL * 0.42}" fill="${fill}" stroke="${v === 1 ? 'var(--rv-black-edge, #5C6B74)' : 'var(--rv-white-edge, #5C6B74)'}" stroke-width="0.6"/>`;
   }
 
   // 命中区（仅合法位）
@@ -88,8 +89,8 @@ function render(): void {
   }
 
   boardEl.innerHTML = `<svg viewBox="0 0 ${SLOT} ${SLOT}" aria-label="Reversi board">
-    <rect x="0" y="0" width="${SLOT}" height="${SLOT}" fill="#1C262E" rx="6"/>
-    <rect x="${PAD}" y="${PAD}" width="${SLOT - 2 * PAD}" height="${SLOT - 2 * PAD}" fill="none" stroke="#5C6B74" stroke-width="1.2"/>
+    <rect x="0" y="0" width="${SLOT}" height="${SLOT}" fill="var(--rv-bg, #1C262E)" rx="6"/>
+    <rect x="${PAD}" y="${PAD}" width="${SLOT - 2 * PAD}" height="${SLOT - 2 * PAD}" fill="none" stroke="var(--rv-border, #5C6B74)" stroke-width="1.2"/>
     ${lines}${previews}${pieces}${hits}
   </svg>`;
   boardEl.querySelectorAll<SVGGElement>('.rv-cell').forEach((g) => {
@@ -205,3 +206,6 @@ newBtn.addEventListener('click', newGame);
 undoBtn.addEventListener('click', undo);
 
 newGame();
+
+// 站点 chrome（侧栏抽屉 / 桌面收起 / 主题切换）
+wireLobbyChrome();

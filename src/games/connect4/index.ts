@@ -6,6 +6,7 @@ import {
   setupNav,
   startTimer, stopTimer, createTimer, fmtClock,
   toast, type Mode} from '../game-core';
+import { wireLobbyChrome } from '../../lobby-chrome';
 import {
   emptyBoard, cloneBoard, drop as c4drop, bestMove, checkWinner, ROWS, COLS,
   type Board as CBoard, type Player as CPlayer, type Difficulty as CDifficulty,
@@ -39,7 +40,7 @@ const state = {
 
 function pieceColor(p: CPlayer): string {
   // 玩家=ember，AI=teal（设计稿铸/灰对照）
-  return p === 1 ? '#FF6A3C' : '#2FC4C9';
+  return p === 1 ? 'var(--c4-p1, #FF6A3C)' : 'var(--c4-p2, #2FC4C9)';
 }
 
 function render(): void {
@@ -62,7 +63,7 @@ function render(): void {
     for (let c = 0; c < COLS; c++) {
       const cx = PAD + c * CELL + CELL / 2;
       const cy = PAD + r * CELL + CELL / 2;
-      board += `<circle cx="${cx}" cy="${cy}" r="${R}" fill="transparent" stroke="#2A3741" stroke-width="0.6"/>`;
+      board += `<circle cx="${cx}" cy="${cy}" r="${R}" fill="transparent" stroke="var(--c4-hole, #2A3741)" stroke-width="0.6"/>`;
     }
   }
   // 棋子
@@ -78,8 +79,8 @@ function render(): void {
   }
 
   boardEl.innerHTML = `<svg viewBox="0 0 ${SLOT_W} ${SLOT_H}" aria-label="Connect 4 board">
-    <rect x="0" y="0" width="${SLOT_W}" height="${SLOT_H}" fill="#151D24" rx="6"/>
-    <rect x="${PAD - 6}" y="${PAD - 6}" width="${SLOT_W - 2 * (PAD - 6)}" height="${SLOT_H - 2 * (PAD - 6)}" rx="6" fill="#1C262E" stroke="#2A3741"/>
+    <rect x="0" y="0" width="${SLOT_W}" height="${SLOT_H}" fill="var(--c4-plate, #151D24)" rx="6"/>
+    <rect x="${PAD - 6}" y="${PAD - 6}" width="${SLOT_W - 2 * (PAD - 6)}" height="${SLOT_H - 2 * (PAD - 6)}" rx="6" fill="var(--c4-bg, #1C262E)" stroke="var(--c4-edge, #2A3741)"/>
     ${header}${board}
   </svg>`;
   boardEl.querySelectorAll<SVGGElement>('.c4-cell').forEach((g) => {
@@ -178,3 +179,6 @@ newBtn.addEventListener('click', newGame);
 undoBtn.addEventListener('click', undo);
 
 newGame();
+
+// 站点 chrome（侧栏抽屉 / 桌面收起 / 主题切换）
+wireLobbyChrome();

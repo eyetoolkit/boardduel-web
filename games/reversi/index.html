@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#0E1419">
+<meta name="theme-color" content="#F4F5F9">
 <title>Reversi — BoardDuel</title>
 <meta name="description" content="Reversi (Othello) — 8×8 board. Flip opponent discs by sandwiching. 3 AI levels.">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -20,8 +20,61 @@
 <link rel="alternate" hreflang="en" href="https://boardduel.com/games/reversi/">
 <link rel="alternate" hreflang="x-default" href="https://boardduel.com/games/reversi/">
 <link rel="stylesheet" href="/src/styles/boardduel.css">
+<link rel="stylesheet" href="/src/styles/arena-paper.css">
+<link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/space-grotesk-latin-700.woff2" as="font" type="font/woff2" crossorigin>
+<script>(function(){try{var t=localStorage.getItem('bd-theme2');if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}})();</script>
 </head>
-<body class="home-v2"><main class="bd-main">
+<body class="home-v2">
+<!-- ══ 移动端顶栏（<1120px 显示） ══ -->
+<div class="topbar">
+  <button class="burger" id="burger" aria-label="Open navigation" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="logo" href="/">Board<b>Duel</b></a>
+  <a class="btn-login" href="/games/reversi/lobby/">Mode picker</a>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<!-- ══ 侧边导航（Othello 高亮） ══ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-top">
+    <a class="logo" href="/">Board<b>Duel</b></a>
+    <button class="sb-collapse" id="collapse" title="Collapse navigation" aria-label="Collapse navigation">&laquo;</button>
+  </div>
+  <div class="sb-login">
+    <a class="btn-login" href="/games/reversi/lobby/"><span>Mode picker</span></a>
+    <button class="sb-theme" type="button" title="Toggle theme" aria-label="Toggle theme" aria-pressed="false">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13A8 8 0 1 1 11 4a6.5 6.5 0 0 0 9 9z"/></svg>
+    </button>
+  </div>
+  <nav class="sb-nav" aria-label="Site navigation">
+    <a class="nav-item" href="/">
+      <svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><label>Home</label>
+    </a>
+    <div class="nav-group">Play</div>
+    <a class="nav-item" href="/games/gomoku/lobby/">
+      <img class="mini" src="/games/gomoku/cover.svg" alt="" aria-hidden="true"><label>Gomoku</label>
+    </a>
+    <a class="nav-item" href="/games/tictactoe/lobby/">
+      <img class="mini" src="/games/tictactoe/cover.svg" alt="" aria-hidden="true"><label>Tic-Tac-Toe</label>
+    </a>
+    <a class="nav-item" href="/games/connect4/lobby/">
+      <img class="mini" src="/games/connect4/cover.svg" alt="" aria-hidden="true"><label>Connect 4</label>
+    </a>
+    <a class="nav-item active" href="/games/reversi/lobby/">
+      <img class="mini" src="/games/reversi/cover.svg" alt="" aria-hidden="true"><label>Othello</label>
+    </a>
+    <a class="nav-item" href="/games/chess/lobby/">
+      <img class="mini" src="/games/chess/cover.svg" alt="" aria-hidden="true"><label>Chess</label>
+    </a>
+  </nav>
+  <div class="nav-foot">
+    <span class="lang-pill"><b>EN</b></span>
+    <span class="sb-copy">&copy; 2026</span>
+  </div>
+</aside>
+<main class="bd-main">
   <section class="bd-hero">
     <h1>Reversi</h1>
     <p class="bd-lead">8×8 board, 4 centre discs to start. Place a disc so it traps one or more straight lines of opponent discs between your discs; they flip to your colour.</p>
@@ -49,9 +102,9 @@
 
   <div class="bd-section-title">Engine difficulty</div>
   <div class="bd-diff-row" id="bd-diffs">
-    <button type="button" class="bd-diff-btn" data-level="easy">EASY</button>
-    <button type="button" class="bd-diff-btn is-cur" data-level="medium">MEDIUM</button>
-    <button type="button" class="bd-diff-btn" data-level="hard">HARD</button>
+    <button type="button" class="bd-diff-btn" data-level="easy">Easy/button>
+    <button type="button" class="bd-diff-btn is-cur" data-level="medium">Medium/button>
+    <button type="button" class="bd-diff-btn" data-level="hard">Hard/button>
   </div>
 
   <div class="bd-play">
@@ -66,7 +119,7 @@
         <div class="bd-hud-row"><span class="bd-hud-l">Status</span><span class="bd-hud-v" id="bd-status-v">idle</span></div>
       </div>
       <div class="bd-control">
-        <button type="button" id="bd-new">New game</button>
+        <button type="button" id="bd-new" class="bd-primary">New game</button>
         <button type="button" id="bd-undo">Undo</button>
       </div>
     </div>

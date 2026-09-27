@@ -1,0 +1,302 @@
+/* ============================================================
+ * BoardDuel · 游戏页共用皮肤 · MathDuel paper（2026-09-27）
+ * ------------------------------------------------------------
+ * 参照 mathduel.games 游戏页（body.arena.skin-paper）的实测 token：
+ *   纸面 #F4F5F9 · 白卡 #FFF · 边线 #E3E6F0 · 靛墨 #1E1B39
+ *   靛蓝 #3730A3/#4F46E5 · 琥珀 #F59E0B/#D97706 · 青 #0FA3A8
+ *   圆角 卡16/按钮12 · 软靛影 rgba(30,27,57,.07)
+ * 字体：Space Grotesk 700 = display · Sora = 正文（站内自托管）。
+ *
+ * 供 5 个游戏页共用：tictactoe / connect4 / reversi / chess / gomoku。
+ * boardduel.css 的规则全部引用 token，本文件在 body.home-v2 下重映射
+ * token + 补卡片投影/圆角/纸面底纹 + 站点 chrome（侧栏/顶栏）。
+ * 各棋盘的 SVG 颜色也在这里变量化，深色模式自动翻回暗盘。
+ * ============================================================ */
+
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('/fonts/sora-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/space-grotesk-latin-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/space-grotesk-latin-700.woff2') format('woff2');
+}
+
+/* ── token 重映射（boardduel.css :root 的 MathDuel paper 版） ── */
+body.home-v2 {
+  /* 面板 */
+  --ink: #F4F5F9;            /* 页面底 → 纸面 */
+  --ink2: #FFFFFF;           /* 卡片底 → 白 */
+  --ink3: #F1F2FA;           /* 按钮/输入底 → 浅灰紫 */
+  --line: #E3E6F0;
+  /* 文字 */
+  --paper: #1E1B39;          /* 文字 → 靛墨 */
+  --mute: #5B6079;
+  --mute2: #8A90A8;
+  /* 强调色 */
+  --ember: #F59E0B;
+  --ember-dim: #D97706;
+  --ember-soft: rgba(245, 158, 11, .16);
+  --teal: #0FA3A8;
+  --teal-soft: rgba(15, 163, 168, .14);
+  --gold: #F59E0B;
+  --gold-soft: rgba(245, 158, 11, .16);
+  /* 靛蓝品牌（交互强调/选中态） */
+  --indigo: #3730A3;
+  --indigo-hover: #4F46E5;
+
+  /* ── 各棋盘 SVG 变量（浅盘；深色模式在文件末尾翻回暗盘） ── */
+  /* Tic-Tac-Toe */
+  --ttt-bg: #FFFFFF;
+  --ttt-grid: rgba(55, 48, 163, .45);
+  --ttt-x: #3730A3;
+  --ttt-o: #F59E0B;
+  /* Connect 4 */
+  --c4-plate: #F1F2FA;
+  --c4-bg: #FFFFFF;
+  --c4-edge: rgba(55, 48, 163, .22);
+  --c4-hole: rgba(55, 48, 163, .20);
+  --c4-p1: #F59E0B;
+  --c4-p2: #3730A3;
+  /* Reversi */
+  --rv-bg: #FFFFFF;
+  --rv-border: rgba(55, 48, 163, .45);
+  --rv-grid: rgba(55, 48, 163, .22);
+  --rv-black: #1E1B39;
+  --rv-black-edge: rgba(30, 27, 57, .40);
+  --rv-white: #FFFFFF;
+  --rv-white-edge: rgba(55, 48, 163, .50);
+  --rv-hint: #D97706;
+  /* Chess */
+  --ch-plate: #F1F2FA;
+  --ch-light: #FFFFFF;
+  --ch-dark: #DDE3F5;
+  --ch-grid: rgba(55, 48, 163, .18);
+  --ch-w-body: #FFFFFF;
+  --ch-w-edge: #1E1B39;
+  --ch-b-body: #1E1B39;
+  --ch-b-edge: rgba(255, 255, 255, .55);
+  --ch-sel-fill: rgba(245, 158, 11, .28);
+  --ch-sel-stroke: #F59E0B;
+  --ch-last: rgba(245, 158, 11, .50);
+
+  /* 字体（MathDuel 同款分工） */
+  --disp: 'Space Grotesk', 'Sora', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --ui: 'Sora', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* 纸面底纹：极淡靛蓝 24px 方格 —— 作业纸，也呼应棋盘格 */
+  background-color: #F4F5F9;
+  background-image:
+    linear-gradient(rgba(55, 48, 163, .038) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(55, 48, 163, .038) 1px, transparent 1px);
+  background-size: 24px 24px;
+
+  color: #1E1B39;
+}
+
+/* Space Grotesk 只有 400/700，boardduel.css 里的 640/750 落 700 */
+body.home-v2 .bd-hero h1,
+body.home-v2 .go-end-verdict { font-weight: 700; }
+
+/* ════════════════════════════════════════════════════════════
+ * 卡片语言：白卡 + 软靛影（MathDuel e-2），层级 = 卡16 / 按钮12
+ * ════════════════════════════════════════════════════════════ */
+body.home-v2 .bd-board-wrap,
+body.home-v2 .bd-hud { border-radius: 14px; box-shadow: 0 2px 4px rgba(30, 27, 57, .06), 0 4px 12px rgba(30, 27, 57, .07); }
+body.home-v2 .bd-mode-card { border-radius: 16px; box-shadow: 0 2px 4px rgba(30, 27, 57, .06), 0 4px 12px rgba(30, 27, 57, .07); }
+body.home-v2 .bd-control button { border-radius: 12px; }
+
+/* hero 元信息 chips */
+body.home-v2 .bd-game-meta span { background: #FFFFFF; }
+
+/* 模式卡：选中 = 靛蓝描边 + 淡靛底 */
+body.home-v2 .bd-mode-card:hover { border-color: #C7CBEE; }
+body.home-v2 .bd-mode-card.is-cur { border-color: var(--indigo-hover); background: #EEF0FB; }
+body.home-v2 .bd-mode-badge { color: var(--mute); }
+
+/* 难度按钮：句首大写的药丸，选中 = 靛蓝实心 */
+body.home-v2 .bd-diff-btn { border-radius: 999px; background: #FFFFFF; padding: 6px 16px; }
+body.home-v2 .bd-diff-btn:hover { color: var(--paper); border-color: #C7CBEE; }
+body.home-v2 .bd-diff-btn.is-cur { background: var(--indigo); border-color: var(--indigo); color: #FFFFFF; }
+
+/* 主操作（New game 等）：琥珀实心 */
+body.home-v2 .bd-control button.bd-primary {
+  background: var(--gold); color: #1E1B39; border-color: transparent;
+  box-shadow: 0 8px 20px rgba(245, 158, 11, .28);
+}
+body.home-v2 .bd-control button.is-primary:hover { background: #FBBF24; }
+
+/* focus 可见性：靛蓝 */
+body.home-v2 button:focus-visible,
+body.home-v2 a:focus-visible { outline-color: var(--indigo-hover); }
+
+/* 对局两栏：右侧栏加宽一点，HUD 更易读 */
+@media (min-width: 1120px) {
+  body.home-v2 .bd-play { grid-template-columns: 1fr 264px; }
+}
+
+/* ════════════════════════════════════════════════════════════
+ * 站点 chrome：顶栏 + 侧栏（白卡导航）
+ * 依赖 DOM：#burger / #overlay / #collapse / #sidebar（lobby-chrome.ts）
+ * ════════════════════════════════════════════════════════════ */
+body.home-v2 { --sb-w: 236px; --sb-rail: 74px; }
+
+body.home-v2 .sidebar {
+  position: fixed; inset: 0 auto 0 0; width: var(--sb-w); z-index: 50;
+  background: #FFFFFF; border-right: 1px solid var(--line);
+  display: flex; flex-direction: column; padding: 18px 14px;
+  transition: width .22s ease, transform .22s ease;
+}
+body.home-v2 .sb-top { display: flex; align-items: center; gap: 10px; padding: 2px 6px 14px; }
+body.home-v2 .logo {
+  font-family: var(--disp); font-weight: 700; font-size: 1.3rem; line-height: 1;
+  white-space: nowrap; letter-spacing: -.01em; color: var(--paper); text-decoration: none;
+}
+body.home-v2 .logo b { color: #7C3AED; font-weight: 700; }
+body.home-v2 .sb-collapse {
+  margin-left: auto; flex: none; width: 26px; height: 26px; border-radius: 8px;
+  border: 1px solid var(--line); background: #FFFFFF; color: var(--mute);
+  font-size: .8rem; line-height: 1; display: grid; place-items: center; cursor: pointer;
+}
+body.home-v2 .sb-collapse:hover { color: var(--paper); border-color: var(--indigo-hover); }
+body.home-v2 .sb-login { display: flex; gap: 8px; padding: 0 2px 14px; border-bottom: 1px solid var(--line); }
+body.home-v2 .btn-login {
+  flex: 1; display: inline-flex; align-items: center; justify-content: center;
+  background: var(--ember); color: #1E1B39; border: 0; border-radius: 11px;
+  font-weight: 700; font-size: .9rem; padding: 9px 0; white-space: nowrap;
+  text-decoration: none; font-family: var(--ui); cursor: pointer;
+}
+body.home-v2 .btn-login:hover { background: #FBBF24; }
+body.home-v2 .sb-theme {
+  flex: none; width: 38px; border: 1px solid var(--line); background: #FFFFFF;
+  border-radius: 11px; display: grid; place-items: center; color: var(--mute); cursor: pointer;
+}
+body.home-v2 .sb-theme:hover { color: var(--paper); border-color: var(--indigo-hover); }
+body.home-v2 .sb-nav { flex: 1; overflow-y: auto; padding-top: 10px; }
+body.home-v2 .sb-nav::-webkit-scrollbar { width: 0; }
+body.home-v2 .nav-item {
+  display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 10px;
+  color: var(--mute); font-size: .86rem; font-weight: 500; text-decoration: none;
+}
+body.home-v2 .nav-item:hover { background: var(--ink3); color: var(--paper); }
+body.home-v2 .nav-item.active { background: var(--ember-soft); color: var(--paper); font-weight: 700; }
+body.home-v2 .nav-item svg {
+  width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor;
+  stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
+}
+body.home-v2 .nav-item .mini { width: 22px; height: 22px; flex: none; border-radius: 6px; }
+body.home-v2 .nav-item label { cursor: pointer; }
+body.home-v2 .nav-group { font-size: .66rem; letter-spacing: .14em; color: var(--mute2); padding: 14px 10px 4px; }
+body.home-v2 .nav-foot { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--line); }
+body.home-v2 .lang-pill { font-size: .68rem; font-weight: 700; border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; color: var(--mute); }
+body.home-v2 .sb-copy { font-size: .68rem; color: var(--mute2); }
+
+/* 桌面：侧栏占位，主区让位 */
+body.home-v2 .bd-main { margin-left: var(--sb-w); transition: margin .22s ease; }
+body.home-v2.rail .sidebar { width: var(--sb-rail); }
+body.home-v2.rail .sb-nav label, body.home-v2.rail .btn-login span { display: none; }
+body.home-v2.rail .bd-main { margin-left: var(--sb-rail); }
+
+/* 移动（<1120px）：抽屉式，顶栏出现 */
+@media (max-width: 1119.98px) {
+  body.home-v2 .sidebar { transform: translateX(-100%); width: 264px; }
+  body.home-v2.nav-open .sidebar { transform: translateX(0); box-shadow: 0 10px 40px rgba(30, 27, 75, .22); }
+  body.home-v2.nav-open .overlay { display: block; position: fixed; inset: 0; background: rgba(30, 27, 75, .38); z-index: 40; }
+  body.home-v2 .bd-main { margin-left: 0; }
+  body.home-v2 .topbar {
+    display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+    position: sticky; top: 0; z-index: 30;
+    background: rgba(255, 255, 255, .92); backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--line);
+  }
+  body.home-v2 .burger {
+    width: 38px; height: 38px; border: 1px solid var(--line); background: #FFFFFF;
+    border-radius: 10px; display: grid; place-items: center; color: var(--paper); cursor: pointer;
+  }
+  body.home-v2 .burger svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+  body.home-v2 .topbar .logo { font-size: 1.15rem; }
+  body.home-v2 .topbar .btn-login { margin-left: auto; flex: none; padding: 8px 16px; }
+}
+
+/* ════════════════════════════════════════════════════════════
+ * 暗色模式（html[data-theme="dark"]，.sb-theme 切换）
+ * 页面翻夜底，棋盘同步翻回暗盘（浅棋子靠描边辨识）
+ * ════════════════════════════════════════════════════════════ */
+html[data-theme="dark"] body.home-v2 {
+  --ink: #12131F;
+  --ink2: #1A1B2E;
+  --ink3: #222336;
+  --line: #2D2E48;
+  --paper: #E8EAF4;
+  --mute: #9AA0BC;
+  --mute2: #6B7090;
+  --ember-soft: rgba(245, 158, 11, .16);
+  --teal-soft: rgba(15, 163, 168, .15);
+  --gold-soft: rgba(245, 158, 11, .16);
+  --indigo: #A5B4FC;
+  --indigo-hover: #C7D2FE;
+
+  --ttt-bg: #1E2033;
+  --ttt-grid: rgba(232, 234, 244, .30);
+  --ttt-x: #E8EAF4;
+  --ttt-o: #F59E0B;
+
+  --c4-plate: #161827;
+  --c4-bg: #1E2033;
+  --c4-edge: rgba(232, 234, 244, .12);
+  --c4-hole: rgba(232, 234, 244, .16);
+  --c4-p1: #F59E0B;
+  --c4-p2: #2CC7CC;
+
+  --rv-bg: #1E2033;
+  --rv-border: rgba(232, 234, 244, .30);
+  --rv-grid: rgba(232, 234, 244, .12);
+  --rv-black: #0E1419;
+  --rv-black-edge: rgba(232, 234, 244, .28);
+  --rv-white: #E8EAF4;
+  --rv-white-edge: rgba(232, 234, 244, .18);
+  --rv-hint: #F59E0B;
+
+  --ch-plate: #161827;
+  --ch-light: #2A2C42;
+  --ch-dark: #1E2033;
+  --ch-grid: rgba(232, 234, 244, .12);
+  --ch-w-body: #E8EAF4;
+  --ch-w-edge: #0E1419;
+  --ch-b-body: #0E1419;
+  --ch-b-edge: #7C8B95;
+  --ch-sel-fill: rgba(245, 158, 11, .32);
+  --ch-sel-stroke: #F59E0B;
+  --ch-last: rgba(245, 158, 11, .55);
+
+  background-color: #12131F;
+  background-image:
+    linear-gradient(rgba(232, 234, 244, .035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232, 234, 244, .035) 1px, transparent 1px);
+  background-size: 24px 24px;
+  color: #E8EAF4;
+}
+html[data-theme="dark"] body.home-v2 .bd-board-wrap,
+html[data-theme="dark"] body.home-v2 .bd-hud,
+html[data-theme="dark"] body.home-v2 .bd-mode-card {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .35), 0 4px 12px rgba(0, 0, 0, .35);
+}
+html[data-theme="dark"] body.home-v2 .bd-game-meta span { background: #1A1B2E; }
+html[data-theme="dark"] body.home-v2 .bd-diff-btn { background: #1A1B2E; }
+html[data-theme="dark"] body.home-v2 .bd-diff-btn.is-cur { background: var(--indigo); color: #12131F; }
+html[data-theme="dark"] body.home-v2 .bd-mode-card.is-cur { background: #222336; }
+html[data-theme="dark"] body.home-v2 button:focus-visible,
+html[data-theme="dark"] body.home-v2 a:focus-visible { outline-color: #A78BFA; }

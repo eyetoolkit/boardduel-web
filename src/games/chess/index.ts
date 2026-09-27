@@ -7,6 +7,7 @@ import {
   startTimer, stopTimer, createTimer, fmtClock,
   toast, type Mode, type Difficulty,
 } from '../game-core';
+import { wireLobbyChrome } from '../../lobby-chrome';
 import {
   initialState, cloneState, legalMoves, applyMove, bestMove,
   type GameState as CS, type Side as CSide, type Move as CMove, type Piece as CPiece,
@@ -66,8 +67,8 @@ function pieceSvg(p: CPiece, sq: number): string {
   const cy = PAD + y * CELL + CELL / 2;
   const isWhite = p === p.toUpperCase();
   // 白子：奶白色实心 + 深色描边；黑子：墨黑实心 + 浅灰描边
-  const body = isWhite ? '#F4F6F2' : '#111A21';
-  const edge = isWhite ? '#0A0F14' : '#7C8B95';
+  const body = isWhite ? 'var(--ch-w-body, #F4F6F2)' : 'var(--ch-b-body, #111A21)';
+  const edge = isWhite ? 'var(--ch-w-edge, #0A0F14)' : 'var(--ch-b-edge, #7C8B95)';
   const glyph = PIECE_G[kind.toUpperCase()].replace(/stroke="#0A0F14"/g, `stroke="${edge}"`);
   const w = CELL * 0.74;
   const ox = cx - w / 2, oy = cy - w / 2;
@@ -80,18 +81,18 @@ function render(): void {
   let lines = '';
   for (let r = 1; r < 8; r++) {
     const y = PAD + r * CELL;
-    lines += `<line x1="${PAD}" y1="${y}" x2="${SLOT - PAD}" y2="${y}" stroke="#2A3741" stroke-width="0.6"/>`;
+    lines += `<line x1="${PAD}" y1="${y}" x2="${SLOT - PAD}" y2="${y}" stroke="var(--ch-grid, #2A3741)" stroke-width="0.6"/>`;
   }
   for (let c = 1; c < 8; c++) {
     const x = PAD + c * CELL;
-    lines += `<line x1="${x}" y1="${PAD}" x2="${x}" y2="${SLOT - PAD}" stroke="#2A3741" stroke-width="0.6"/>`;
+    lines += `<line x1="${x}" y1="${PAD}" x2="${x}" y2="${SLOT - PAD}" stroke="var(--ch-grid, #2A3741)" stroke-width="0.6"/>`;
   }
 
   // 浅色格（棋盘格交替）
   let squares = '';
   for (let r = 0; r < 8; r++) {
     for (let c = 0; c < 8; c++) {
-      const fill = (r + c) % 2 === 0 ? '#1C262E' : '#151D24';
+      const fill = (r + c) % 2 === 0 ? 'var(--ch-dark, #1C262E)' : 'var(--ch-light, #151D24)';
       squares += `<rect x="${PAD + c * CELL}" y="${PAD + r * CELL}" width="${CELL}" height="${CELL}" fill="${fill}"/>`;
     }
   }
@@ -103,7 +104,7 @@ function render(): void {
       const [x, y] = squareXY(sq);
       const cx = PAD + x * CELL + CELL / 2;
       const cy = PAD + y * CELL + CELL / 2;
-      lastMark += `<circle cx="${cx}" cy="${cy}" r="5" fill="rgba(242, 193, 78, .55)"/>`;
+      lastMark += `<circle cx="${cx}" cy="${cy}" r="5" fill="var(--ch-last, rgba(242, 193, 78, .55))"/>`;
     }
   }
 
@@ -115,8 +116,8 @@ function render(): void {
     const [sx, sy] = squareXY(state.selected);
     const cx = PAD + sx * CELL + CELL / 2;
     const cy = PAD + sy * CELL + CELL / 2;
-    selMarks += `<rect x="${PAD + sx * CELL}" y="${PAD + sy * CELL}" width="${CELL}" height="${CELL}" fill="rgba(255, 106, 60, .35)"/>`;
-    selMarks += `<circle cx="${cx}" cy="${cy}" r="6" fill="none" stroke="#FF6A3C" stroke-width="2"/>`;
+    selMarks += `<rect x="${PAD + sx * CELL}" y="${PAD + sy * CELL}" width="${CELL}" height="${CELL}" fill="var(--ch-sel-fill, rgba(255, 106, 60, .35))"/>`;
+    selMarks += `<circle cx="${cx}" cy="${cy}" r="6" fill="none" stroke="var(--ch-sel-stroke, #FF6A3C)" stroke-width="2"/>`;
     const moves = legalMoves(state.gs).filter((m) => m.from === state.selected);
     for (const m of moves) {
       const [mx, my] = squareXY(m.to);
@@ -124,8 +125,8 @@ function render(): void {
       const mcy = PAD + my * CELL + CELL / 2;
       const cap = state.gs.board[m.to] !== '.';
       selMarks += cap
-        ? `<circle cx="${mcx}" cy="${mcy}" r="${CELL / 2 - 2}" fill="none" stroke="#FF6A3C" stroke-width="2"/>`
-        : `<circle cx="${mcx}" cy="${mcy}" r="5" fill="#FF6A3C"/>`;
+        ? `<circle cx="${mcx}" cy="${mcy}" r="${CELL / 2 - 2}" fill="none" stroke="var(--ch-sel-stroke, #FF6A3C)" stroke-width="2"/>`
+        : `<circle cx="${mcx}" cy="${mcy}" r="5" fill="var(--ch-sel-stroke, #FF6A3C)"/>`;
     }
   }
 
@@ -157,7 +158,7 @@ function render(): void {
   }
 
   boardEl.innerHTML = `<svg viewBox="0 0 ${SLOT} ${SLOT}" aria-label="Chess board">
-    <rect x="0" y="0" width="${SLOT}" height="${SLOT}" fill="#151D24" rx="6"/>
+    <rect x="0" y="0" width="${SLOT}" height="${SLOT}" fill="var(--ch-plate, #151D24)" rx="6"/>
     ${squares}${lines}${lastMark}${selMarks}${pieces}${hitAreas}
   </svg>`;
   boardEl.querySelectorAll<SVGGElement>('.ch-cell').forEach((g) => {
@@ -266,3 +267,6 @@ newBtn.addEventListener('click', newGame);
 undoBtn.addEventListener('click', undo);
 
 newGame();
+
+// 站点 chrome（侧栏抽屉 / 桌面收起 / 主题切换）
+wireLobbyChrome();

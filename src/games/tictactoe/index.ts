@@ -11,6 +11,7 @@ import {
   toast, readBest, writeBest,
   type Mode, type Difficulty,
 } from '../game-core';
+import { wireLobbyChrome } from '../../lobby-chrome';
 import {
   emptyBoard, cloneBoard, bestMove, checkWinner,
   type Board as TBoard, type Player as TPlayer,
@@ -62,10 +63,10 @@ function render(): void {
     let mark = '';
     if (c === 1) {
       const a = inset, b = UNIT - inset;
-      mark = `<path d="M${x + a} ${y + a} L${x + b} ${y + b} M${x + b} ${y + a} L${x + a} ${y + b}" stroke="#F4F6F2" stroke-width="${stroke}" stroke-linecap="round" fill="none" pointer-events="none"/>`;
+      mark = `<path d="M${x + a} ${y + a} L${x + b} ${y + b} M${x + b} ${y + a} L${x + a} ${y + b}" stroke="var(--ttt-x, #F4F6F2)" stroke-width="${stroke}" stroke-linecap="round" fill="none" pointer-events="none"/>`;
     } else if (c === 2) {
       const cx = x + UNIT / 2, cy = y + UNIT / 2, r = UNIT / 2 - inset;
-      mark = `<circle cx="${cx}" cy="${cy}" r="${r}" stroke="#FF6A3C" stroke-width="${stroke}" fill="none" pointer-events="none"/>`;
+      mark = `<circle cx="${cx}" cy="${cy}" r="${r}" stroke="var(--ttt-o, #FF6A3C)" stroke-width="${stroke}" fill="none" pointer-events="none"/>`;
     }
     grid += `<g class="ttt-cell" data-i="${i}" style="cursor:${state.over || c !== 0 ? 'default' : 'pointer'}">
       <rect class="hit" x="${x}" y="${y}" width="${UNIT}" height="${UNIT}" fill="transparent"/>
@@ -73,9 +74,9 @@ function render(): void {
     </g>`;
   }
   boardEl.innerHTML = `<svg viewBox="0 0 ${SLOT} ${SLOT}" class="ttt-grid" aria-label="Tic-Tac-Toe board">
-    <rect x="0" y="0" width="${SLOT}" height="${SLOT}" fill="#1C262E" rx="10"/>
-    ${[1,2].map((r) => `<line x1="${PAD}" y1="${PAD + r * UNIT}" x2="${SLOT - PAD}" y2="${PAD + r * UNIT}" stroke="#5C6B74" stroke-width="3" stroke-linecap="round"/>`).join('')}
-    ${[1,2].map((c) => `<line x1="${PAD + c * UNIT}" y1="${PAD}" x2="${PAD + c * UNIT}" y2="${SLOT - PAD}" stroke="#5C6B74" stroke-width="3" stroke-linecap="round"/>`).join('')}
+    <rect x="0" y="0" width="${SLOT}" height="${SLOT}" fill="var(--ttt-bg, #1C262E)" rx="10"/>
+    ${[1,2].map((r) => `<line x1="${PAD}" y1="${PAD + r * UNIT}" x2="${SLOT - PAD}" y2="${PAD + r * UNIT}" stroke="var(--ttt-grid, #5C6B74)" stroke-width="3" stroke-linecap="round"/>`).join('')}
+    ${[1,2].map((c) => `<line x1="${PAD + c * UNIT}" y1="${PAD}" x2="${PAD + c * UNIT}" y2="${SLOT - PAD}" stroke="var(--ttt-grid, #5C6B74)" stroke-width="3" stroke-linecap="round"/>`).join('')}
     ${grid}
   </svg>`;
   // hook click
@@ -180,3 +181,6 @@ newBtn.addEventListener('click', newGame);
 undoBtn.addEventListener('click', undo);
 
 newGame();
+
+// 站点 chrome（侧栏抽屉 / 桌面收起 / 主题切换）
+wireLobbyChrome();
