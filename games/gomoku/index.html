@@ -23,6 +23,7 @@
 <link rel="stylesheet" href="/src/styles/gomoku-paper.css">
 <script>(function(){try{var t=localStorage.getItem('bd-theme2');if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}})();</script>
 <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/space-grotesk-latin-700.woff2" as="font" type="font/woff2" crossorigin>
 </head>
 <body class="home-v2">
 
@@ -93,11 +94,9 @@
 
   <!-- ══ SCREEN 1 · LOBBY ══ -->
   <section id="go-lobby">
-    <div class="bd-section-title">SCREEN 1 · LOBBY</div>
 
     <div class="go-modes" id="go-modes">
       <button type="button" class="go-mode feat" data-mode="ranked">
-        <span class="go-mode-ico" aria-hidden="true">⚔️</span>
         <span class="go-mode-top">
           <span class="go-mode-name">Ranked Match</span>
           <span class="go-pill is-live">live</span>
@@ -110,7 +109,6 @@
       </button>
 
       <button type="button" class="go-mode" data-mode="friend">
-        <span class="go-mode-ico" aria-hidden="true">🏠</span>
         <span class="go-mode-top">
           <span class="go-mode-name">Friend Room</span>
           <span class="go-tag is-live">private code</span>
@@ -119,7 +117,6 @@
       </button>
 
       <button type="button" class="go-mode" data-mode="ai" data-level="easy">
-        <span class="go-mode-ico" aria-hidden="true">🛡️</span>
         <span class="go-mode-top">
           <span class="go-mode-name">Engine · Counter</span>
           <span class="go-tag is-mute">level 1</span>
@@ -128,7 +125,6 @@
       </button>
 
       <button type="button" class="go-mode" data-mode="ai" data-level="medium">
-        <span class="go-mode-ico" aria-hidden="true">🔥</span>
         <span class="go-mode-top">
           <span class="go-mode-name">Engine · Attacker</span>
           <span class="go-tag is-gold">level 2</span>
@@ -137,7 +133,6 @@
       </button>
 
       <button type="button" class="go-mode" data-mode="ai" data-level="hard">
-        <span class="go-mode-ico" aria-hidden="true">💀</span>
         <span class="go-mode-top">
           <span class="go-mode-name">Engine · Punisher</span>
           <span class="go-tag is-gold">level 3</span>
@@ -146,7 +141,6 @@
       </button>
 
       <button type="button" class="go-mode" data-mode="pass">
-        <span class="go-mode-ico" aria-hidden="true">👥</span>
         <span class="go-mode-top">
           <span class="go-mode-name">Pass &amp; Play</span>
           <span class="go-tag is-mute">one screen</span>
@@ -156,7 +150,6 @@
 
       <!-- 未上线：灰态且不是交互元素，所以键盘也聚焦不到 -->
       <div class="go-mode ghost" aria-disabled="true">
-        <span class="go-mode-ico" aria-hidden="true">🏆</span>
         <span class="go-mode-top">
           <span class="go-mode-name">Tournament</span>
           <span class="go-tag">Coming soon</span>
@@ -166,7 +159,7 @@
     </div>
 
     <p class="bd-side-note">
-      <a class="go-start-note" href="/games/gomoku/lobby/">All six modes, explained →</a>
+      <a class="go-start-note" href="/games/gomoku/lobby/">Every mode, explained</a>
     </p>
 
     <!-- 排位队列面板 -->
@@ -189,7 +182,6 @@
 
   <!-- ══ SCREEN 2 · MATCH ══ -->
   <section id="go-match" hidden>
-    <div class="bd-section-title">SCREEN 2 · MATCH</div>
 
     <!-- 双棋钟 -->
     <div class="go-clocks" id="go-clocks">
@@ -273,7 +265,6 @@
 
   <!-- ══ SCREEN 3 · END ══ -->
   <section id="go-end" hidden>
-    <div class="bd-section-title">SCREEN 3 · END</div>
     <div class="go-endbar" id="go-endbar">
       <div class="go-end-main">
         <span class="go-end-verdict" id="go-end-verdict">You win</span>
