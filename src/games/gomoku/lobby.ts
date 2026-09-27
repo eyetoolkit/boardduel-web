@@ -1,11 +1,12 @@
 /**
  * BoardDuel · Gomoku 模式选择页（/games/gomoku/lobby/）
  * ------------------------------------------------------------
- * 这一页只是「入口层」，不含任何对局逻辑：
- *   · 六张模式卡是纯 `<a href="/games/gomoku/?mode=…">`，JS 关掉也能用，
- *     也便于抓取与分享（与 24 点模式页同一套做法）；
- *   · JS 只做两件小事 —— 侧栏拉真实的站内榜单与账号状态、邀请码校验后跳转。
- * 具体对局（引擎、联机、棋钟、复盘）全部留在 /games/gomoku/ 的 index.ts + engine.ts。
+ * 完全镜像 MathDuel 24-game lobby 的 JS 行为：
+ *   · 5 张可点模式卡 + 1 张 SOON 灰态，全部用纯 `<a href="?mode=...">`，
+ *     JS 关掉也能用，方便抓取与分享；
+ *   · JS 只做两件小事 —— 侧栏拉真实 /api/leaderboard、邀请码校验后跳转；
+ *   · wireLobbyChrome 处理 sidebar 缩放、顶部 chip 抽屉等通用 chrome。
+ * 与 MathDuel 的差异：gomoku 没有 daily puzzle / 没有 tag-done、没有 AI 补位 widget。
  */
 
 import { wireLobbyChrome } from '../../lobby-chrome';
@@ -14,7 +15,7 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string): T | null =>
   document.getElementById(id) as T | null;
 
 const GAME_URL = '/games/gomoku/';
-/** worker 的房间码：6 位字母数字（设计稿标准，worker /b/<game>/<CODE> 路由与 MatchQueue CODE_LEN） */
+/** worker 的房间码：6 位字母数字（与 MathDuel 24-game lobby 一致；worker /b/<game>/<CODE> 路由） */
 const INVITE_RE = /^[A-Za-z0-9]{6}$/;
 
 const esc = (s: unknown): string =>
@@ -23,10 +24,10 @@ const esc = (s: unknown): string =>
     (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string,
   );
 
-/* ===================== 侧栏 · 真实榜单 + 账号状态 ===================== */
+/* ===================== 侧栏 · 真实榜单（gomoku 用 MathDuel 的 .rank-row 视觉规范） ===================== */
 
-function statRow(label: string, value: string): string {
-  return `<div class="bd-stat-row"><span>${esc(label)}</span><b>${esc(value)}</b></div>`;
+function statRow(rank: string, label: string, pt: string, me = false): string {
+  return `<div class="rank-row${me ? ' me' : ''}"><span class="rank">${esc(rank)}</span><span class="nm">${esc(label)}</span><span class="pt num">${esc(pt)}</span></div>`;
 }
 
 async function renderSide(): Promise<void> {
@@ -44,7 +45,7 @@ async function renderSide(): Promise<void> {
     if (lbRes.ok) lb = (await lbRes.json()) as Record<string, unknown>;
     if (meRes.ok) me = (await meRes.json()) as Record<string, unknown>;
   } catch {
-    host.innerHTML = '<div class="bd-side-note">Standings need a live connection.</div>';
+    host.innerHTML = '<div class="rank-empty">The global ladder needs a live connection.</div>';
     return;
   }
 
@@ -53,30 +54,27 @@ async function renderSide(): Promise<void> {
   const loggedIn = !!(me && me.loggedIn);
   let html = '';
 
-  if (mine && (mine.rank || mine.score != null)) {
-    html += statRow('You', `#${Number(mine.rank) || '—'} · ${Number(mine.score) || 0} pts`);
-  }
   if (entries.length) {
     html += entries
-      .map((e, i) => statRow(`#${i + 1} ${String(e.nickname || 'Player')}`, `${Number(e.score) || 0} pts`))
+      .map((e, i) => statRow(String(i + 1), String(e.nickname || 'Player'), `${Number(e.score) || 0} pts`))
       .join('');
   } else {
-    html += '<div class="bd-side-note">No ranked results yet — the first win goes straight to the top.</div>';
+    html += '<div class="rank-empty">Nobody has finished a rated game yet — take the first spot.</div>';
   }
-  if (!loggedIn) {
-    html +=
-      '<div class="bd-side-note">Playing as a guest is fine. Sign in from the board if you want your rating kept.</div>';
-  } else if (me && me.nickname) {
-    html += statRow('Session', String(me.nickname));
+
+  if (mine && (mine.rank || mine.score != null)) {
+    html += statRow('you', 'You', `${Number(mine.score) || 0} pts`, true);
+  } else if (loggedIn) {
+    html += statRow('You', 'You', '0 pts', true);
   }
   host.innerHTML = html;
 }
 
-/* ===================== 邀请码 ===================== */
+/* ===================== 邀请码（与 MathDuel 24-game lobby 同结构） ===================== */
 
 function initInvite(): void {
-  const input = $<HTMLInputElement>('codeInput');
-  const err = $('codeErr');
+  const input = $<HTMLInputElement>('roomInput');
+  const err = $('roomErr');
   const say = (m: string) => {
     if (err) err.textContent = m;
   };
@@ -96,6 +94,7 @@ function initInvite(): void {
       input?.focus();
       return;
     }
+    say('');
     location.href = `${GAME_URL}?c=${encodeURIComponent(code)}`;
   };
 
@@ -108,25 +107,7 @@ function initInvite(): void {
       if (e.key === 'Enter') go();
     });
   }
-  $('codeJoin')?.addEventListener('click', go);
-}
-
-/* ===================== AI 补位三状态说明 widget =====================
-   纯展示性：tab 切换 data-state，配合 gomoku-lobby.css 的互斥显隐规则
-   在「排队 / AI 落座 / 真人接管」之间切换。真实匹配状态由游戏页接管，
-   这里不写任何假玩家数据，只演示机制。 */
-function initWaitTabs(): void {
-  const card = document.getElementById('waitCard');
-  if (!card) return;
-  const tabs = card.querySelectorAll<HTMLButtonElement>('[data-go]');
-  tabs.forEach((b) => {
-    b.addEventListener('click', () => {
-      const go = b.dataset.go;
-      if (!go) return;
-      card.dataset.state = go;
-      tabs.forEach((x) => x.setAttribute('aria-selected', x === b ? 'true' : 'false'));
-    });
-  });
+  $('joinRoom')?.addEventListener('click', go);
 }
 
 /* ===================== 启动 ===================== */
@@ -134,7 +115,6 @@ function initWaitTabs(): void {
 function boot(): void {
   wireLobbyChrome();
   initInvite();
-  initWaitTabs();
   void renderSide();
 }
 

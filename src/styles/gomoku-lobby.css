@@ -1,27 +1,34 @@
 /* ============================================================
- * BoardDuel · Gomoku 模式选择页 · violet BoardDuel 皮肤
+ * BoardDuel · Gomoku 模式选择页（/games/gomoku/lobby/）
  * ------------------------------------------------------------
- * 仅本页生效（gomoku-lobby.css 只被 /games/gomoku/lobby/ 加载）。
- * 侧栏 / 顶栏 / 页脚 / 字体（Space Grotesk + Inter 自托管）等
- * chrome 全部来自 home-papergames.css（已是 BoardDuel 品牌紫）。
- * 本文件只负责：页面紫色棋盘格底纹 + lobby 专属组件（模式卡、右栏面板、
- * How-to-play、以及设计稿里的「AI 补位」三状态说明 widget），全部用紫罗兰 token。
- * 诚信铁律：榜单/房号等数据全部由 lobby.ts 经真实接口填充，本文件不写任何假数字。
+ * 完全 1:1 镜像 MathDuel 24-game lobby 的 CSS 结构与 class 名，
+ * 仅把 MathDuel 品牌色（靛蓝 `--indigo` / 琥珀 `--amber`）映射到
+ * BoardDuel 品牌色（紫罗兰 `--violet`）。模式卡、面板、How-to-play、
+ * Ladder 都跟 MathDuel 一模一样的结构和数值——只是为了契合 gomoku
+ * 的玩法（AI 引擎 / Friend Room / Random Match / Pass & Play / Tournament）
+ * 把 5 张可点卡 + 1 张 SOON 内容替换了。
+ *
+ * Token 来源：home-papergames.css 已经定义了 `--violet / --card / --paper /
+ * --ink / --mute / --line / --r-card` 等。本文件只把 MathDuel 用的 CSS
+ * 变量名重命名成 BoardDuel 等价的（用 CSS 变量映射保持可读性）。
  * ============================================================ */
 
-/* ── 页面级：紫罗兰棋盘格底纹（与 BoardDuel 首页同一套） ──
-   与 home-papergames.css 的 body.home-v2 同特异性，本文件后加载故胜出。
-   暗色块由 html[data-theme="dark"] body.home-v2 在文件末尾重映射。 */
-body.home-v2 {
-  background-color: #F4F5F9;
-  background-image:
-    linear-gradient(45deg, rgba(124, 58, 237, .045) 25%, transparent 25%, transparent 75%, rgba(124, 58, 237, .045) 75%),
-    linear-gradient(45deg, rgba(124, 58, 237, .045) 25%, transparent 25%, transparent 75%, rgba(124, 58, 237, .045) 75%),
-    linear-gradient(rgba(55, 48, 163, .035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(55, 48, 163, .035) 1px, transparent 1px);
-  background-size: 96px 96px, 96px 96px, 24px 24px, 24px 24px;
-  background-position: 0 0, 48px 48px, 0 0, 0 0;
-  background-attachment: fixed;
+/* ── MathDuel → BoardDuel 变量映射（让原版 MathDuel CSS 类名直接生效） ──
+   MathDuel 用 --indigo / --indigo-bright / --indigo-soft / --amber 等，
+   BoardDuel 用 --violet / --violet-bright / --violet-soft / 同名 --violet。 */
+:root {
+  /* MathDuel token → BoardDuel token 桥接 */
+  --indigo: var(--violet);
+  --indigo-bright: var(--violet-bright);
+  --indigo-soft: var(--violet-soft);
+  --amber: var(--violet);
+  --amber-ink: #fff;
+  --font-display: var(--disp);
+  --font-sans: var(--ui);
+  --r-card: 18px;
+  --r-btn: 11px;
+  /* 棋盘格底纹色（MathDuel 用 #3730A3 = --indigo，BoardDuel 仍用 --violet 但降透明） */
+  --indigo-faint: rgba(124, 58, 237, .045);
 }
 
 /* ── 游戏 Hero：居中封面 + 标题 + 一句话 + 三 chip ── */
@@ -30,9 +37,9 @@ body.home-v2 {
   width: 104px; height: 104px; border-radius: 24px; overflow: hidden;
   box-shadow: 0 14px 30px rgba(36, 28, 77, .22); display: inline-block; background: #fff;
 }
-.home-v2 .g-hero .gcover img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.home-v2 .g-hero .gcover svg { display: block; width: 100%; height: 100%; }
 .home-v2 .g-hero h1 {
-  font-family: var(--disp); font-weight: 700;
+  font-family: var(--font-display); font-weight: 800;
   font-size: clamp(30px, 4vw, 44px); line-height: 1.15; margin: 18px 0 8px;
   text-wrap: balance;
 }
@@ -40,283 +47,267 @@ body.home-v2 {
 .home-v2 .g-hero .sub { color: var(--mute); font-size: 1.05rem; max-width: 34em; margin: 0 auto; }
 .home-v2 .g-hero .chips { margin-top: 18px; }
 
-/* ── 主栅格：左模式网格 + 右信息栏（与 MathDuel 24-game lobby 同一规范） ── */
+/* ── 主栅格：左模式网格 + 右信息栏（与 MathDuel 24-game lobby 同规范） ──
+   MathDuel 的特点：lobby-grid 有一个 :before 伪元素做棋盘格底纹，
+   内部 section / aside 抬高 z-index 浮在底纹之上。 */
 .home-v2 .lobby-grid {
-  display: grid; grid-template-columns: 1fr 320px; gap: 26px;
-  align-items: start; padding: 34px 0 10px;
+  display: grid; grid-template-columns: 1.55fr 1fr; gap: 24px;
+  align-items: start; padding: 36px 0 8px; position: relative;
 }
-.home-v2 .lobby-grid > * { min-width: 0; }
+.home-v2 .lobby-grid:before {
+  content: ""; position: absolute; inset: -34px 0; z-index: 0;
+  border-radius: 26px;
+  background-image:
+    linear-gradient(45deg, var(--indigo-faint) 25%, transparent 25%, transparent 75%, var(--indigo-faint) 75%),
+    linear-gradient(45deg, var(--indigo-faint) 25%, transparent 25%, transparent 75%, var(--indigo-faint) 75%);
+  background-size: 54px 54px;
+  background-position: 0 0, 27px 27px;
+  pointer-events: none;
+}
+.home-v2 .lobby-grid > section, .home-v2 .lobby-grid > aside { position: relative; z-index: 1; }
+
 .home-v2 .sec-h {
-  font-family: var(--disp); font-weight: 700;
-  font-size: 1.4rem; letter-spacing: -.01em; margin-bottom: 4px;
+  font-family: var(--font-display); font-weight: 800;
+  font-size: 1.22rem; margin-bottom: 14px;
 }
 .home-v2 .sec-h small {
-  display: block; font-family: var(--ui); font-weight: 500;
-  font-size: .88rem; color: var(--mute); margin-top: 2px;
+  display: block; font-family: var(--font-sans); font-weight: 500;
+  font-size: .82rem; color: var(--mute); margin-top: 2px;
 }
-.home-v2 .sec-h em { font-style: normal; color: var(--violet); }
-.home-v2 .modes-h { margin-bottom: 16px; }
 
-/* ── 模式卡：白底浅边框小卡，居中；统一高度 ──
-   4 张可点卡（AI / Friend / Random / SOON 灰态），结构完全一致：62×62 紫罗兰渐变方块
-   （装 38×38 inline SVG 图标）+ 标题 + badge。
-   与 MathDuel 24-game lobby 同一规范——卡片紧凑、不用 emoji（emoji 字号大且字体不一致）。 */
-.home-v2 .modes { display: grid; grid-template-columns: repeat(2, 1fr); grid-auto-rows: 1fr; gap: 14px; }
+/* ── 模式卡：与 MathDuel 24-game lobby 完全相同的结构和数值 ──
+   62×62 紫罗兰渐变方块（装 38×38 inline SVG）+ 标题 + optional tag。
+   hover 有 tilt rotate(-3deg) scale(1.06) 动画。 */
+.home-v2 .modes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
 .home-v2 .mode {
   position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
   text-align: center; background: #fff; border: 1.5px solid var(--line); border-radius: 16px;
-  padding: 20px 12px 16px; color: var(--ink);
-  min-height: 168px;
+  padding: 22px 12px 18px; color: var(--ink);
   transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
 }
 .home-v2 .mode:hover {
-  transform: translateY(-4px); border-color: #C9B8F2;
-  box-shadow: 0 12px 26px rgba(36, 28, 77, .10);
+  transform: translateY(-3px); border-color: var(--violet-bright);
+  box-shadow: 0 10px 22px rgba(36, 28, 77, .08);
 }
 .home-v2 .mode:active { transform: translateY(-1px); }
-/* 图标容器：62×62 紫罗兰渐变方块（与 MathDuel 同范式，hover 有 tilt 上浮动画） */
 .home-v2 .mode .mi {
-  width: 62px; height: 62px; margin-bottom: 11px; border-radius: 18px;
+  width: 62px; height: 62px; margin-bottom: 12px; border-radius: 18px;
   display: grid; place-items: center;
   background: linear-gradient(152deg, #7C3AED, #5B21B6);
-  box-shadow: 0 8px 18px rgba(124, 58, 237, .28), inset 0 1px rgba(255, 255, 255, .28);
+  box-shadow: 0 8px 18px rgba(124, 58, 237, .35), inset 0 1px rgba(255, 255, 255, .28);
   transition: transform .28s cubic-bezier(.34, 1.56, .64, 1), box-shadow .28s ease;
 }
-.home-v2 .mode:hover .mi { transform: translateY(-4px) rotate(-3deg) scale(1.06); box-shadow: 0 14px 26px rgba(124, 58, 237, .36), inset 0 1px rgba(255, 255, 255, .32); }
-.home-v2 .mode:active .mi { transform: translateY(-2px) rotate(-1deg) scale(1.02); }
 .home-v2 .mode .mi-ico { width: 38px; height: 38px; display: block; }
+.home-v2 .mode:hover .mi { transform: translateY(-5px) rotate(-3deg) scale(1.06); box-shadow: 0 16px 28px rgba(124, 58, 237, .45), inset 0 1px rgba(255, 255, 255, .32); }
+.home-v2 .mode:active .mi { transform: translateY(-2px) rotate(-1deg) scale(1.02); }
+@media (prefers-reduced-motion: reduce) {
+  .home-v2 .mode .mi, .home-v2 .mode:hover .mi, .home-v2 .mode:active .mi { transition: none; transform: none; }
+}
+
 .home-v2 .mode .mt {
-  font-family: var(--disp); font-weight: 700;
-  font-size: 1.02rem; line-height: 1.2;
+  font-family: var(--font-display); font-weight: 800;
+  font-size: 1.02rem; line-height: 1.25;
+  display: flex; align-items: center; justify-content: center;
+  gap: 7px; flex-wrap: wrap;
+}
+.home-v2 .mode .md {
+  margin-top: 6px; font-size: .78rem; line-height: 1.45;
+  color: var(--mute); max-width: 24em;
 }
 
-/* 唯一徽章样式：浅紫底紫字胶囊；live 变体只换点色（设计稿标准） */
-.home-v2 .mode .badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  margin-top: 9px;
-  background: #F4F1FB; color: #6D28D9;
-  font-family: var(--ui); font-weight: 700; font-size: .66rem;
-  letter-spacing: .07em; border-radius: 999px;
-  padding: 3px 10px; line-height: 1.5;
-  white-space: nowrap;
+/* SOON 灰态（与 MathDuel 同） */
+.home-v2 .mode.soon {
+  background: transparent; border-style: dashed; color: #9BA0B8; box-shadow: none; cursor: default;
 }
-.home-v2 .mode .badge i {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--violet-bright); flex: none;
-}
-.home-v2 .mode .badge.live i { background: var(--green); animation: badgePulse 1.6s ease-in-out infinite; }
-@keyframes badgePulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
-
-/* 未上线模式：虚线灰态且不可点（<div> 承载，杜绝键盘聚焦） */
-.home-v2 .mode.soon { background: transparent; border-style: dashed; color: #9BA0B8; box-shadow: none; cursor: default; }
-.home-v2 .mode.soon:hover { transform: none; border-color: var(--line); box-shadow: none; }
 .home-v2 .mode.soon .mi { filter: grayscale(1); opacity: .6; }
 .home-v2 .mode.soon .mt { color: #9BA0B8; }
-
-/* SOON 徽章（紫罗兰软底） */
-body.home-v2 .soon-pill {
+.home-v2 .mode.soon:hover { transform: none; border-color: var(--line); box-shadow: none; }
+.home-v2 .soon-pill {
   position: absolute; top: 10px; right: 10px;
-  background: #F1ECFE; color: var(--violet);
-  font-weight: 800; font-size: .6rem; letter-spacing: .09em;
-  border-radius: 999px; padding: 2px 9px;
+  background: var(--violet-soft); color: var(--violet);
+  font-weight: 800; font-size: .6rem; letter-spacing: .08em;
+  border-radius: 999px; padding: 2px 8px;
 }
 
-/* ── 右栏：白卡信息面板 ── */
-.home-v2 .side { display: flex; flex-direction: column; gap: 16px; }
-.home-v2 .panel { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 20px; }
+/* ── 右栏 panel：白卡信息面板（与 MathDuel 同） ── */
+.home-v2 .side { display: grid; gap: 18px; }
+.home-v2 .panel {
+  background: #fff; border: 1px solid var(--line);
+  border-radius: var(--r-card); padding: 20px 20px 18px;
+}
 .home-v2 .panel h3 {
-  font-family: var(--disp); font-weight: 700;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 1.05rem; margin-bottom: 4px;
 }
-.home-v2 .panel .pnote { font-size: .82rem; color: var(--mute); margin-bottom: 12px; }
-.home-v2 .link-more { display: inline-block; margin-top: 10px; font-size: .8rem; font-weight: 700; color: var(--violet); }
-.home-v2 .link-more:hover { text-decoration: underline; text-underline-offset: 3px; }
+.home-v2 .panel .pnote {
+  font-size: .82rem; color: var(--mute); margin-bottom: 12px;
+}
 
-/* 邀请码输入：label.field 包 input，6 位大写居中；具体校验/跳转由 lobby.ts 完成 */
+/* ── 榜单行：替换 MathDuel 的 .arb-row（gomoku 自己的） ──
+   保留 MathDuel 的视觉规范（rank / name / pt 三列 + me 高亮），
+   改名为 .rank-row 以避免与 MathDuel CSS 冲突（gomoku 用 /api/leaderboard）。 */
+.home-v2 .rank-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0; border-bottom: 1px dashed var(--line);
+  font-size: .9rem;
+}
+.home-v2 .rank-row:last-of-type { border-bottom: 0; }
+.home-v2 .rank-row .rank {
+  flex: none; width: 26px; height: 26px; border-radius: 8px;
+  display: grid; place-items: center;
+  font-family: var(--font-display); font-weight: 800; font-size: .8rem;
+  background: var(--violet-soft); color: var(--violet);
+}
+.home-v2 .rank-row:nth-child(1) .rank {
+  background: var(--violet); color: #fff;
+}
+.home-v2 .rank-row .nm {
+  flex: 1; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.home-v2 .rank-row .pt {
+  font-family: var(--font-display); font-weight: 700; font-size: .86rem;
+  font-variant-numeric: tabular-nums;
+}
+.home-v2 .rank-row.me { color: var(--violet); }
+.home-v2 .rank-row.me .rank { background: var(--violet-soft); }
+.home-v2 .rank-empty { font-size: .82rem; color: var(--mute); padding: 4px 0; }
+
+/* ── 邀请码输入（与 MathDuel 同结构） ── */
 .home-v2 .field { display: block; margin-bottom: 12px; }
 .home-v2 .field span {
-  display: block; font-size: .78rem; font-weight: 600;
+  display: block; font-size: .8rem; font-weight: 600;
   color: var(--mute); margin-bottom: 6px;
 }
 .home-v2 .field input {
-  width: 100%; background: var(--paper);
-  border: 1.5px solid var(--line); border-radius: 12px;
-  color: var(--ink); font-family: var(--disp); font-weight: 700;
-  font-size: 1.25rem; letter-spacing: .22em; text-transform: uppercase;
-  padding: 11px 14px; outline: none; text-align: center;
+  width: 100%; border: 1.5px solid var(--line); border-radius: 11px;
+  background: var(--paper);
+  padding: 11px 14px;
+  font-family: var(--font-display); font-weight: 700;
+  font-size: 1.05rem; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--ink);
 }
-.home-v2 .field input:focus { outline: none; border-color: var(--violet); }
-.home-v2 .field input::placeholder { color: #C4C8DC; letter-spacing: .22em; }
+.home-v2 .field input:focus { outline: none; border-color: var(--violet-bright); background: #fff; }
 
-/* 通用按钮（右栏 / AI 补位 widget 共用） */
-.home-v2 .btn {
-  display: inline-flex; align-items: center; justify-content: center;
-  font-family: var(--disp); font-weight: 700; font-size: .92rem;
-  padding: 10px 18px; border-radius: 12px; border: 1.5px solid transparent;
-  text-decoration: none; cursor: pointer;
+/* ── 通用按钮：.btn-violet（替代 MathDuel 的 .btn-amber）+ .btn-ghost ── */
+.home-v2 .panel .btn-row { display: flex; gap: 10px; }
+.home-v2 .panel .btn {
+  flex: 1; display: inline-flex; align-items: center; justify-content: center;
+  gap: 8px; border-radius: 11px;
+  font-weight: 800; font-size: .92rem; padding: 11px 0;
+  border: 1.5px solid transparent;
   transition: transform .15s ease, box-shadow .15s ease;
+  text-decoration: none; cursor: pointer;
 }
-.home-v2 .btn:hover { transform: translateY(-1px); }
-.home-v2 .btn-violet {
+.home-v2 .panel .btn:hover { transform: translateY(-2px); }
+.home-v2 .panel .btn-violet {
   background: var(--violet); color: #fff;
-  box-shadow: 0 6px 16px rgba(124, 58, 237, .28);
+  box-shadow: 0 8px 20px rgba(124, 58, 237, .36);
 }
-.home-v2 .btn-violet:hover { box-shadow: 0 9px 20px rgba(124, 58, 237, .36); }
-.home-v2 .btn-ghost { background: #fff; color: var(--violet); border-color: #D8CCF8; }
-.home-v2 .btn-ghost:hover { border-color: var(--violet-bright); background: #F8F5FE; }
-.home-v2 .btn-row { display: flex; gap: 10px; }
-.home-v2 .btn-row > * { flex: 1; }
-
-/* 邀请码错误提示 */
-.home-v2 .bd-code-err { font-size: .8rem; color: #DC2626; margin-top: 8px; min-height: 1.2em; }
-
-/* 榜单行（lobby.ts 写出的 class 保持不变，这里只上色） */
-.home-v2 .bd-stat-row {
-  display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  font-size: .86rem; color: var(--mute);
-  padding: 7px 0; border-bottom: 1px dashed var(--line);
+.home-v2 .panel .btn-violet:hover { box-shadow: 0 12px 24px rgba(124, 58, 237, .45); }
+.home-v2 .panel .btn-ghost {
+  background: #fff; color: var(--violet); border-color: #D8CCF8;
 }
-.home-v2 .bd-stat-row:last-child { border-bottom: 0; padding-bottom: 0; }
-.home-v2 .bd-stat-row b {
-  color: var(--ink); font-family: var(--disp); font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-.home-v2 .bd-side-note { font-size: .78rem; color: var(--mute); margin-top: 10px; }
+.home-v2 .panel .btn-ghost:hover { border-color: var(--violet-bright); }
+.home-v2 .panel .btn.block { display: flex; }
 
-/* ── How to play 三步（步骤号紫罗兰） ── */
+.home-v2 .err {
+  min-height: 1.2em; font-size: .8rem; color: #DC2626;
+  margin-top: 8px;
+}
+
+/* ── How to play 4 步（与 MathDuel 同列数：4 列 → 移动端 2 列 → 单列） ── */
 .home-v2 .how { padding: 40px 0 8px; }
-.home-v2 .how-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 18px; }
+.home-v2 .how-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
 .home-v2 .step {
-  background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 18px;
-  display: flex; flex-direction: column; gap: 6px;
-  font-size: .88rem; color: var(--mute);
+  background: #fff; border: 1px solid var(--line);
+  border-radius: 14px; padding: 18px;
 }
-.home-v2 .step b { color: var(--ink); font-size: .95rem; }
 .home-v2 .step .sn {
-  width: 26px; height: 26px; border-radius: 9px;
-  background: var(--violet-soft); color: var(--violet);
-  font-family: var(--disp); font-weight: 700; font-size: .82rem;
+  width: 30px; height: 30px; border-radius: 99px;
+  background: var(--violet); color: #fff;
   display: grid; place-items: center;
+  font-family: var(--font-display); font-weight: 800; font-size: .9rem;
+  margin-bottom: 10px;
+}
+.home-v2 .step b { display: block; font-size: .95rem; margin-bottom: 4px; }
+.home-v2 .step span {
+  font-size: .82rem; color: var(--mute); line-height: 1.55;
+  display: block;
 }
 
-/* ── AI 补位：Random match 的三状态说明 widget ──
-   三状态：排队等待 → AI 落座 → 真人接管。同一张卡，data-state 切换。
-   纯说明性 UI：tab 切换由 lobby.ts 驱动 data-state；无虚构玩家/分数。 */
-.home-v2 .fill { padding: 44px 0 8px; }
-.home-v2 .fill-grid { display: grid; grid-template-columns: 5fr 4fr; gap: 20px; align-items: start; margin-top: 18px; }
-.home-v2 .fill-grid > * { min-width: 0; }
-.home-v2 .wait { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 20px; }
-.home-v2 .wait-tabs { display: inline-flex; gap: 4px; background: var(--violet-soft); border-radius: 11px; padding: 4px; margin-bottom: 18px; flex-wrap: wrap; }
-.home-v2 .wait-tabs button {
-  border: 0; background: transparent; border-radius: 8px; padding: 5px 12px;
-  font-size: .78rem; font-weight: 700; color: var(--mute); font-family: var(--ui); cursor: pointer;
+/* ── Ladder 段位（Bronze / Silver / Gold / Platinum / Diamond / Master） ── */
+.home-v2 .ladder { padding: 32px 0 8px; }
+.home-v2 .ladder-panel {
+  background: #fff; border: 1px solid var(--line);
+  border-radius: var(--r-card); padding: 20px;
 }
-.home-v2 .wait-tabs button[aria-selected="true"] { background: #fff; color: var(--violet); box-shadow: 0 1px 4px rgba(36, 28, 77, .12); }
-.home-v2 .tag-ai { display: inline-block; background: var(--violet-soft); color: #6D28D9; font-size: .58rem; font-weight: 700; letter-spacing: .09em; border-radius: 999px; padding: 1px 7px; vertical-align: 1px; }
-.home-v2 .tag-human { display: inline-block; background: #DDF4E6; color: #15803D; font-size: .58rem; font-weight: 700; letter-spacing: .09em; border-radius: 999px; padding: 1px 7px; vertical-align: 1px; }
-.home-v2 .wait-head { display: flex; gap: 14px; align-items: center; }
-.home-v2 .ring { position: relative; flex: none; width: 64px; height: 64px; }
-.home-v2 .ring svg { display: block; transform: rotate(-90deg); }
-.home-v2 .ring .ring-bg { stroke: #EFEAFB; }
-.home-v2 .ring .ring-fg { stroke: var(--violet); stroke-linecap: round; }
-.home-v2 .ring > span { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--disp); font-weight: 700; font-size: 1.05rem; color: var(--violet); }
-.home-v2 .wait-head .rt { min-width: 0; }
-.home-v2 .wait-head b { display: block; font-size: 1.02rem; line-height: 1.3; }
-.home-v2 .wait-head span { font-size: .86rem; color: var(--mute); }
-.home-v2 .wbar { height: 6px; border-radius: 999px; background: #EFEAFB; margin-top: 16px; overflow: hidden; }
-.home-v2 .wbar i { display: block; height: 100%; background: var(--violet); border-radius: 999px; }
-.home-v2 .wait-act { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
-.home-v2 .wrow { display: flex; align-items: center; gap: 11px; border: 1px solid var(--line); border-radius: 13px; padding: 11px 13px; margin-top: 14px; }
-.home-v2 .wrow .av { flex: none; width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; background: var(--violet-soft); font-size: 1.05rem; }
-.home-v2 .wrow .who { flex: 1; min-width: 0; }
-.home-v2 .wrow .who b { display: block; font-size: .92rem; }
-.home-v2 .wrow .who span { font-size: .78rem; color: var(--mute); }
-.home-v2 .wrow .lv { flex: none; font-family: var(--disp); font-weight: 700; font-size: .86rem; color: var(--violet); }
-.home-v2 .notice { display: flex; gap: 10px; align-items: flex-start; border: 1px dashed #D8CCF8; background: #FBF9FE; border-radius: 12px; padding: 11px 13px; margin-top: 14px; font-size: .84rem; color: var(--mute); }
-.home-v2 .notice b { color: var(--ink); }
-/* 三状态互斥显隐 */
-.home-v2 .wait[data-state="waiting"] .st-ai,
-.home-v2 .wait[data-state="waiting"] .st-take,
-.home-v2 .wait[data-state="ai"] .st-wait,
-.home-v2 .wait[data-state="ai"] .st-take,
-.home-v2 .wait[data-state="take"] .st-wait,
-.home-v2 .wait[data-state="take"] .st-ai { display: none; }
-
-.home-v2 .fsteps { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 20px; }
-.home-v2 .fstep { display: flex; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); }
-.home-v2 .fstep:last-child { border-bottom: 0; padding-bottom: 0; }
-.home-v2 .fstep .sn { flex: none; width: 28px; height: 28px; border-radius: 9px; background: var(--violet-soft); color: var(--violet); font-family: var(--disp); font-weight: 700; font-size: .8rem; display: grid; place-items: center; }
-.home-v2 .fstep b { display: block; font-size: .92rem; }
-.home-v2 .fstep span { font-size: .82rem; color: var(--mute); display: block; }
-.home-v2 .fill-note { margin-top: 14px; font-size: .82rem; color: var(--mute); }
-.home-v2 .fill-note strong { color: var(--ink); font-weight: 700; }
-
-/* 模式页脚注 */
-.home-v2 .lobby-foot {
-  padding: 22px 0 70px; font-size: .82rem; color: var(--mute); text-align: center;
+.home-v2 .ladder-title {
+  font-family: var(--font-display); font-weight: 800;
+  font-size: 1.02rem; margin-bottom: 12px;
 }
+.home-v2 .ladder-title small {
+  display: block; font-family: var(--font-sans); font-weight: 500;
+  font-size: .82rem; color: var(--mute); margin-top: 2px;
+}
+.home-v2 .tiers {
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px;
+}
+.home-v2 .tier {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 6px; font-size: .82rem; color: var(--mute);
+}
+.home-v2 .tier i {
+  display: block; width: 14px; border-radius: 4px 4px 0 0;
+  background: linear-gradient(to top, var(--violet-soft), var(--violet));
+}
+.home-v2 .tier:nth-child(1) i { background: linear-gradient(to top, #C4A77D, #A07A4D); }   /* Bronze */
+.home-v2 .tier:nth-child(2) i { background: linear-gradient(to top, #D9D9D9, #A8A8A8); }   /* Silver */
+.home-v2 .tier:nth-child(3) i { background: linear-gradient(to top, #FCD34D, #F59E0B); }   /* Gold */
+.home-v2 .tier:nth-child(4) i { background: linear-gradient(to top, #A5F3FC, #67E8F9); }   /* Platinum */
+.home-v2 .tier:nth-child(5) i { background: linear-gradient(to top, #C4B5FD, #A78BFA); }   /* Diamond */
+.home-v2 .tier.master i { background: linear-gradient(to top, #F9A8D4, #EC4899); }          /* Master */
+.home-v2 .tier.master span { color: var(--violet); font-weight: 700; }
 
-/* ── 移动端 ── */
+/* ── 响应式 ── */
 @media (max-width: 979px) {
   .home-v2 .lobby-grid { grid-template-columns: 1fr; }
-  .home-v2 .fill-grid { grid-template-columns: 1fr; }
-  .home-v2 .side { order: 2; }
-  .home-v2 .how-grid { grid-template-columns: 1fr; }
+  .home-v2 .how-grid { grid-template-columns: repeat(2, 1fr); }
+  .home-v2 .tiers { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 639px) {
+  .home-v2 .wrap { padding: 0 14px; }
   .home-v2 .g-hero { padding-top: 26px; }
-  .home-v2 .g-hero .gcover { width: 84px; height: 84px; border-radius: 20px; }
-  .home-v2 .lobby-grid { padding-top: 24px; gap: 18px; }
-  .home-v2 .modes { gap: 10px; grid-template-columns: 1fr; }
-  .home-v2 .mode { padding: 14px 8px 13px; border-radius: 13px; min-height: 128px; }
+  .home-v2 .g-hero .gcover { width: 88px; height: 88px; }
+  .home-v2 .modes { gap: 10px; }
+  .home-v2 .mode { padding: 15px 8px 13px; border-radius: 13px; }
   .home-v2 .mode .mi { width: 54px; height: 54px; border-radius: 16px; margin-bottom: 9px; }
   .home-v2 .mode .mi-ico { width: 33px; height: 33px; }
   .home-v2 .mode .mt { font-size: .9rem; }
-  .home-v2 .mode .badge { margin-top: 7px; font-size: .62rem; padding: 2px 9px; }
-  .home-v2 .chips { gap: 7px; }
-  .home-v2 .chips .chip { padding: 4px 11px; font-size: .74rem; }
+  .home-v2 .how-grid { grid-template-columns: 1fr; gap: 12px; }
+  .home-v2 .ladder-panel { padding: 18px; }
+  .home-v2 .tiers { grid-template-columns: repeat(6, 1fr); gap: 6px; }
+  .home-v2 .chips .chip { padding: 5px 11px; font-size: .78rem; }
 }
 
 /* ============================================================
  * 暗色模式（html[data-theme="dark"]，由 .sb-theme 切换）
- * token（--paper/--ink/--mute/--line/--card/--card-line/--violet-soft/
- * --violet-bright）已由 home-papergames.css 暗色块重映射，
- * 这里只覆盖本文件硬编码的浅色：#fff 卡面、紫罗兰软底 tag、灰态卡、输入框 focus。
+ * 与 MathDuel 暗色块对应：.mi 渐变变深，box-shadow 用黑色阴影。
  * ============================================================ */
-html[data-theme="dark"] body.home-v2 {
-  background-color: #14152A;
-  background-image:
-    linear-gradient(45deg, rgba(124, 58, 237, .05) 25%, transparent 25%, transparent 75%, rgba(124, 58, 237, .05) 75%),
-    linear-gradient(45deg, rgba(124, 58, 237, .05) 25%, transparent 25%, transparent 75%, rgba(124, 58, 237, .05) 75%),
-    linear-gradient(rgba(139, 92, 246, .06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(139, 92, 246, .06) 1px, transparent 1px);
-  background-size: 96px 96px, 96px 96px, 24px 24px, 24px 24px;
-  background-position: 0 0, 48px 48px, 0 0, 0 0;
-}
-html[data-theme="dark"] body.home-v2 .g-hero .gcover { background: var(--card); box-shadow: 0 14px 30px rgba(0, 0, 0, .45); }
-html[data-theme="dark"] body.home-v2 .mode { background: var(--card); border-color: var(--card-line); color: var(--ink); }
-html[data-theme="dark"] body.home-v2 .mode:hover { border-color: var(--violet-bright); box-shadow: 0 12px 26px rgba(0, 0, 0, .4); }
+html[data-theme="dark"] body.home-v2 .mode { background: var(--card); border-color: var(--card-line); }
+html[data-theme="dark"] body.home-v2 .mode:hover { border-color: var(--violet-bright); box-shadow: 0 12px 26px rgba(0, 0, 0, .35); }
 html[data-theme="dark"] body.home-v2 .mode .mi {
   background: linear-gradient(152deg, #8B5CF6, #6D28D9);
   box-shadow: 0 8px 18px rgba(0, 0, 0, .4), inset 0 1px rgba(255, 255, 255, .18);
 }
-html[data-theme="dark"] body.home-v2 .mode .badge { background: var(--violet-soft); color: #C4B5FD; }
-html[data-theme="dark"] body.home-v2 .mode.soon { background: transparent; border-color: #2E3052; color: #6B7096; }
-html[data-theme="dark"] body.home-v2 .mode.soon:hover { border-color: #2E3052; }
-html[data-theme="dark"] body.home-v2 .mode.soon .mi { filter: grayscale(1); opacity: .55; }
-html[data-theme="dark"] body.home-v2 .mode.soon .mt { color: #6B7096; }
+html[data-theme="dark"] body.home-v2 .mode:hover .mi { box-shadow: 0 16px 28px rgba(0, 0, 0, .55), inset 0 1px rgba(255, 255, 255, .22); }
 html[data-theme="dark"] body.home-v2 .panel { background: var(--card); border-color: var(--card-line); }
-html[data-theme="dark"] body.home-v2 .field input { background: #1B1D33; border-color: var(--card-line); color: var(--ink); }
+html[data-theme="dark"] body.home-v2 .field input { background: var(--paper); border-color: var(--card-line); }
 html[data-theme="dark"] body.home-v2 .field input:focus { border-color: var(--violet-bright); background: #16172B; }
-html[data-theme="dark"] body.home-v2 .field input::placeholder { color: #5B6080; }
-html[data-theme="dark"] body.home-v2 .wait { background: var(--card); border-color: var(--card-line); }
-html[data-theme="dark"] body.home-v2 .fsteps { background: var(--card); border-color: var(--card-line); }
 html[data-theme="dark"] body.home-v2 .step { background: var(--card); border-color: var(--card-line); }
-html[data-theme="dark"] body.home-v2 .wait-tabs { background: var(--violet-soft); }
-html[data-theme="dark"] body.home-v2 .wait-tabs button[aria-selected="true"] { background: #2A2C4F; color: #C4B5FD; }
-html[data-theme="dark"] body.home-v2 .ring .ring-bg { stroke: #2E2C55; }
-html[data-theme="dark"] body.home-v2 .wbar { background: #2E2C55; }
-html[data-theme="dark"] body.home-v2 .wrow { border-color: var(--card-line); }
-html[data-theme="dark"] body.home-v2 .notice { background: #1F1E3A; border-color: #3B3570; }
-html[data-theme="dark"] body.home-v2 .btn-ghost { background: #1B1D33; color: #C4B5FD; border-color: #3B3570; }
-html[data-theme="dark"] body.home-v2 .bd-stat-row b { color: var(--ink); }
+html[data-theme="dark"] body.home-v2 .step .sn { background: var(--violet); color: #fff; }
+html[data-theme="dark"] body.home-v2 .ladder-panel { background: var(--card); border-color: var(--card-line); }
+html[data-theme="dark"] body.home-v2 .btn-ghost { background: var(--card); color: var(--violet); border-color: #3B3570; }
+html[data-theme="dark"] body.home-v2 .rank-row .rank { background: rgba(124, 58, 237, .18); color: #C4B5FD; }
+html[data-theme="dark"] body.home-v2 .rank-row.me { color: #C4B5FD; }
+html[data-theme="dark"] body.home-v2 .soon-pill { background: rgba(124, 58, 237, .18); color: #C4B5FD; }

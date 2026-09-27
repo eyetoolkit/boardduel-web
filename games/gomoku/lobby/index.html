@@ -1,56 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#241C4D">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#241C4D" />
 <title>Gomoku — Choose Your Mode · BoardDuel</title>
-<meta name="description" content="Play Gomoku your way: against a three-level engine, in a private friend room by invite code, or in a random online match with AI backfill. Same 15×15 board — only the opponent changes.">
-<link rel="canonical" href="https://boardduel.com/games/gomoku/lobby/">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="manifest" href="/manifest.webmanifest">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="BoardDuel">
-<meta property="og:title" content="Gomoku — Choose Your Mode · BoardDuel">
-<meta property="og:description" content="Gomoku: a three-level engine, private friend rooms, and random online match with AI backfill.">
-<meta property="og:url" content="https://boardduel.com/games/gomoku/lobby/">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Gomoku — Choose Your Mode · BoardDuel">
-<meta name="twitter:description" content="Gomoku: engine at three levels, private friend rooms, random online match with AI backfill.">
-<link rel="alternate" hreflang="en" href="https://boardduel.com/games/gomoku/lobby/">
-<link rel="alternate" hreflang="x-default" href="https://boardduel.com/games/gomoku/lobby/">
-<link rel="preload" href="/fonts/space-grotesk-latin-400.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/fonts/inter-latin-400.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/src/styles/home-papergames.css">
-<link rel="stylesheet" href="/src/styles/gomoku-lobby.css">
-<script>(function(){try{var t=localStorage.getItem('bd-theme2');if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}})();</script>
+<meta name="description" content="Five ways to play Gomoku: against the engine, in a private friend room, in a random online match with AI backfill, or pass &amp; play on one screen. Same 15×15 board — only the opponent changes." />
+<link rel="canonical" href="https://boardduel.com/games/gomoku/lobby/" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+<link rel="manifest" href="/manifest.webmanifest" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="BoardDuel" />
+<meta property="og:url" content="https://boardduel.com/games/gomoku/lobby/" />
+<meta property="og:image" content="https://boardduel.com/og-image.svg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Gomoku — Five ways to play on BoardDuel" />
+<meta property="og:title" content="Gomoku — Choose Your Mode · BoardDuel" />
+<meta property="og:description" content="Play Gomoku your way: against the engine, in a friend room, in a random online match with AI backfill, or pass &amp; play on one screen. Same 15×15 board." />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Gomoku — Choose Your Mode · BoardDuel" />
+<meta name="twitter:description" content="Play Gomoku: engine, friend room, random match with AI backfill, or pass &amp; play." />
+<meta name="twitter:image" content="https://boardduel.com/og-image.svg" />
+<link rel="alternate" hreflang="en" href="https://boardduel.com/games/gomoku/lobby/" />
+<link rel="alternate" hreflang="x-default" href="https://boardduel.com/games/gomoku/lobby/" />
+<link rel="preload" href="/fonts/space-grotesk-latin-400.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="/fonts/inter-latin-400.woff2" as="font" type="font/woff2" crossorigin />
+<script>(function(){try{var t=localStorage.getItem("bd-theme2");if(t==="dark"){document.documentElement.setAttribute("data-theme","dark");}}catch(e){}})();</script>
+<script type="module" crossorigin src="/src/games/gomoku/lobby.ts"></script>
+<link rel="stylesheet" crossorigin href="/src/styles/home-papergames.css">
+<link rel="stylesheet" crossorigin href="/src/styles/gomoku-lobby.css">
 </head>
 <body class="home-v2">
 
-<!-- ═══════════ 模式卡图标库（inline SVG symbols，38×38 in 62×62 紫罗兰方块） ═══════════ -->
+<!-- ═══════════ 图标库：gomoku cover + 5 个模式卡 SVG symbol（与 MathDuel 24-game lobby 同源结构） ═══════════ -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
 <defs>
-  <symbol id="mi-robot" viewBox="0 0 24 24">
-    <!-- 机器人头：圆角方框 + 两眼 + 微笑 -->
+  <symbol id="cv-gomoku" viewBox="0 0 512 512">
+    <rect width="512" height="512" fill="#241C4D"/>
+    <g fill="#FFFFFF" fill-opacity="0.16">
+      <rect x="57" y="57" width="69" height="69" rx="16"/>
+      <rect x="139" y="57" width="69" height="69" rx="16"/>
+      <rect x="221" y="57" width="69" height="69" rx="16"/>
+      <rect x="303" y="57" width="69" height="69" rx="16"/>
+      <rect x="385" y="57" width="69" height="69" rx="16"/>
+      <rect x="57" y="139" width="69" height="69" rx="16"/>
+      <rect x="139" y="139" width="69" height="69" rx="16"/>
+      <rect x="221" y="139" width="69" height="69" rx="16"/>
+      <rect x="303" y="139" width="69" height="69" rx="16"/>
+      <rect x="385" y="139" width="69" height="69" rx="16"/>
+      <rect x="57" y="221" width="69" height="69" rx="16"/>
+      <rect x="139" y="221" width="69" height="69" rx="16"/>
+      <rect x="221" y="221" width="69" height="69" rx="16"/>
+      <rect x="303" y="221" width="69" height="69" rx="16"/>
+      <rect x="385" y="221" width="69" height="69" rx="16"/>
+      <rect x="57" y="303" width="69" height="69" rx="16"/>
+      <rect x="139" y="303" width="69" height="69" rx="16"/>
+      <rect x="221" y="303" width="69" height="69" rx="16"/>
+      <rect x="303" y="303" width="69" height="69" rx="16"/>
+      <rect x="385" y="303" width="69" height="69" rx="16"/>
+      <rect x="57" y="385" width="69" height="69" rx="16"/>
+      <rect x="139" y="385" width="69" height="69" rx="16"/>
+      <rect x="221" y="385" width="69" height="69" rx="16"/>
+      <rect x="303" y="385" width="69" height="69" rx="16"/>
+      <rect x="385" y="385" width="69" height="69" rx="16"/>
+    </g>
+    <rect x="385" y="385" width="69" height="69" rx="16" fill="#F59E0B"/>
+    <g fill="#1E1B39">
+      <circle cx="92" cy="275" r="17"/>
+      <circle cx="174" cy="275" r="17"/>
+      <circle cx="256" cy="275" r="17"/>
+      <circle cx="338" cy="275" r="17"/>
+    </g>
+    <circle cx="420" cy="420" r="17" fill="#1E1B39"/>
+  </symbol>
+  <!-- 5 个模式卡图标（24×24 viewBox，纯白线 + 紫罗兰方块背景由 .mi 提供） -->
+  <symbol id="mi-engine" viewBox="0 0 24 24">
+    <!-- 机器人头：圆角方框 + 两眼 + 微笑 + 触角 -->
     <rect x="4.5" y="7" width="15" height="11" rx="3" fill="none" stroke="#fff" stroke-width="1.6"/>
     <circle cx="9" cy="12" r="1.1" fill="#fff"/>
     <circle cx="15" cy="12" r="1.1" fill="#fff"/>
     <path d="M9.5 15.4c.8.7 4.2.7 5 0" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/>
     <path d="M12 7V4.6M9.8 4.6h4.4" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>
   </symbol>
-  <symbol id="mi-house" viewBox="0 0 24 24">
-    <!-- 房子：三角屋顶 + 矩形房身 + 门 + 窗 -->
+  <symbol id="mi-friend" viewBox="0 0 24 24">
+    <!-- 房子：屋顶 + 房身 + 门 + 窗 -->
     <path d="M3.5 11.2L12 3.8l8.5 7.4V19c0 .8-.7 1.5-1.5 1.5h-13C5.2 20.5 4.5 19.8 4.5 19V11.2z" fill="#fff"/>
     <rect x="9.5" y="14" width="5" height="6.5" rx=".5" fill="#7C3AED"/>
     <rect x="6.5" y="12.5" width="2.5" height="2.5" rx=".3" fill="#7C3AED"/>
     <rect x="15" y="12.5" width="2.5" height="2.5" rx=".3" fill="#7C3AED"/>
   </symbol>
-  <symbol id="mi-bolt" viewBox="0 0 24 24">
-    <!-- 闪电 -->
+  <symbol id="mi-ranked" viewBox="0 0 24 24">
+    <!-- 闪电（Random Match） -->
     <path d="M13.6 3L5 13.6h5.2l-1.4 7.4L19 10.4h-5.2L13.6 3z" fill="#fff"/>
   </symbol>
-  <symbol id="mi-trophy" viewBox="0 0 24 24">
-    <!-- 奖杯：杯身 + 两把手 + 底座 -->
+  <symbol id="mi-pass" viewBox="0 0 24 24">
+    <!-- 同屏双人：两个圆头 + 身子 -->
+    <circle cx="8" cy="9" r="3.4" fill="#fff"/>
+    <path d="M2.6 20a5.4 5.4 0 0 1 10.8 0z" fill="#fff"/>
+    <circle cx="17" cy="10" r="2.8" fill="#F59E0B"/>
+    <path d="M13 20.4a4.6 4.6 0 0 1 9.2 0z" fill="#F59E0B"/>
+  </symbol>
+  <symbol id="mi-master" viewBox="0 0 24 24">
+    <!-- 奖杯（AI Master / Tournament SOON 共用） -->
     <path d="M7 4.5h10v7a5 5 0 0 1-10 0v-7z" fill="#fff"/>
     <path d="M7 6.5H4.5C3.7 6.5 3 7.2 3 8v1.2c0 2 1.6 3.6 3.6 3.6M17 6.5h2.5c.8 0 1.5.7 1.5 1.5v1.2c0 2-1.6 3.6-3.6 3.6" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
     <rect x="10.5" y="18" width="3" height="2.4" rx=".4" fill="#fff"/>
@@ -59,17 +112,17 @@
 </defs>
 </svg>
 
-<!-- ═══════════ 移动端顶栏（<1120px 显示） ═══════════ -->
+<!-- ═══════════ 移动端顶栏 ═══════════ -->
 <div class="topbar">
   <button class="burger" id="burger" aria-label="Open navigation" aria-expanded="false">
     <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
   </button>
   <a class="logo" href="/">Board<b>Duel</b></a>
-  <a class="btn-login" href="/games/gomoku/?mode=ai">Play now</a>
+  <a class="btn-login" href="/games/gomoku/?mode=ai" style="flex:none;padding:8px 18px">Play now</a>
 </div>
 <div class="overlay" id="overlay"></div>
 
-<!-- ═══════════ 侧边导航（Gomoku 高亮） ═══════════ -->
+<!-- ═══════════ 侧边导航（Gomoku 高亮；顶部 CTA Play now） ═══════════ -->
 <aside class="sidebar" id="sidebar">
   <div class="sb-top">
     <a class="logo" href="/">Board<b>Duel</b></a>
@@ -77,48 +130,23 @@
   </div>
   <div class="sb-login">
     <a class="btn-login" href="/games/gomoku/?mode=ai"><span>Play now</span></a>
-    <button class="sb-theme" type="button" title="Toggle theme" aria-label="Toggle theme" aria-pressed="false">
-      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13A8 8 0 1 1 11 4a6.5 6.5 0 0 0 9 9z"/></svg>
+    <button class="sb-theme" title="Toggle theme" aria-label="Toggle theme">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20 13A8 8 0 1 1 11 4a6.5 6.5 0 0 0 9 9z"/></svg>
     </button>
   </div>
   <nav class="sb-nav" aria-label="Site navigation">
-    <a class="nav-item" href="/">
-      <svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><label>Home</label>
-    </a>
-    <a class="nav-item" href="/rank/">
-      <svg viewBox="0 0 24 24"><path d="M8 21h8m-4-4v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 5M17 6h3a3 3 0 0 1-3 5"/></svg><label>Leaderboard</label>
-    </a>
-    <a class="nav-item" href="/stats/">
-      <svg viewBox="0 0 24 24"><path d="M4 20V10m5 10V4m5 16v-7m5 7V8"/></svg><label>Stats</label>
-    </a>
-    <a class="nav-item" href="/shop/">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg><label>Coin shop</label>
-    </a>
-
-    <div class="nav-group">Play</div>
-    <a class="nav-item active" href="/games/gomoku/lobby/" aria-current="page">
-      <img class="mini" src="/games/gomoku/cover.svg" alt="" aria-hidden="true"><label>Gomoku</label>
-    </a>
-    <a class="nav-item" href="/games/tictactoe/" data-stage="beta">
-      <img class="mini" src="/games/tictactoe/cover.svg" alt="" aria-hidden="true"><label>Tic-Tac-Toe</label>
-    </a>
-    <a class="nav-item" href="/games/connect4/" data-stage="beta">
-      <img class="mini" src="/games/connect4/cover.svg" alt="" aria-hidden="true"><label>Connect 4</label>
-    </a>
-    <a class="nav-item" href="/games/reversi/" data-stage="beta">
-      <img class="mini" src="/games/reversi/cover.svg" alt="" aria-hidden="true"><label>Othello</label>
-    </a>
-    <a class="nav-item" href="/games/chess/" data-stage="beta">
-      <img class="mini" src="/games/chess/cover.svg" alt="" aria-hidden="true"><label>Chess</label>
-    </a>
-
+    <a class="nav-item" href="/"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><label style="cursor:inherit">Home</label></a>
+    <span class="nav-item is-disabled" aria-disabled="true" style="opacity:.5;cursor:default" title="Coming soon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg><label style="cursor:inherit">Coin Shop 🪙</label></span>
+    <div class="nav-group">All games</div>
+    <a class="nav-item active" href="/games/gomoku/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-gomoku"/></svg><label style="cursor:inherit">Gomoku</label></a>
+    <a class="nav-item" href="/games/tictactoe/" data-stage="beta"><svg class="mini" aria-hidden="true"><use href="#cv-gomoku"/></svg><label style="cursor:inherit">Tic-Tac-Toe</label></a>
+    <a class="nav-item" href="/games/connect4/" data-stage="beta"><svg class="mini" aria-hidden="true"><use href="#cv-gomoku"/></svg><label style="cursor:inherit">Connect 4</label></a>
+    <a class="nav-item" href="/games/reversi/" data-stage="beta"><svg class="mini" aria-hidden="true"><use href="#cv-gomoku"/></svg><label style="cursor:inherit">Othello</label></a>
+    <a class="nav-item" href="/games/chess/" data-stage="beta"><svg class="mini" aria-hidden="true"><use href="#cv-gomoku"/></svg><label style="cursor:inherit">Chess</label></a>
     <div class="nav-group">Help</div>
-    <a class="nav-item" href="/how-to-play/gomoku/">
-      <svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></svg><label>How to play</label>
-    </a>
+    <a class="nav-item" href="#howTitle"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></svg><label style="cursor:inherit">How to play</label></a>
   </nav>
   <div class="nav-foot">
-    <span class="lang-pill"><b>EN</b></span>
     <span class="sb-copy">&copy; 2026</span>
   </div>
 </aside>
@@ -129,55 +157,50 @@
   <!-- 游戏 Hero -->
   <section class="g-hero">
     <div class="wrap">
-      <span class="gcover" aria-hidden="true"><img src="/games/gomoku/cover.svg" alt="" width="104" height="104"></span>
+      <span class="gcover" aria-hidden="true"><svg role="img" aria-label="Gomoku"><use href="#cv-gomoku"/></svg></span>
       <h1>Line up five. <em>Win the duel.</em></h1>
-      <p class="sub">Classic Gomoku on a standard 15&times;15 board &mdash; against a three-level engine, a live rival, or a friend in a private room.</p>
+      <p class="sub">Classic Gomoku on a standard 15&times;15 board &mdash; against a three-level engine, a live rival, a friend in a private room, or pass &amp; play on one screen.</p>
       <div class="chips">
         <span class="chip"><span class="dot"></span>15&times;15 standard board</span>
-        <span class="chip"><span class="dot"></span>AI &middot; Private room &middot; Random</span>
+        <span class="chip"><span class="dot"></span>AI &middot; Friend &middot; Random</span>
         <span class="chip"><span class="dot"></span>No login to play</span>
       </div>
     </div>
   </section>
 
-  <!-- 模式选择 + 右栏（与 MathDuel 24-game lobby 同一布局：左 4 卡，右 320px） -->
+  <!-- 模式选择 + 右栏信息 -->
   <div class="wrap lobby-grid">
     <section aria-labelledby="modesTitle">
-      <h2 class="sec-h modes-h" id="modesTitle">Choose your mode<small>Tap a card to jump straight in.</small></h2>
+      <h2 class="sec-h" id="modesTitle">Choose your mode<small>Tap a card to jump straight in.</small></h2>
       <div class="modes" id="modeGrid">
-
-        <!-- 01 · AI 对战 —— 38×38 SVG in 62×62 紫罗兰渐变方块（与 MathDuel 24-game lobby 同范式） -->
+        <!-- 01 · 引擎对战 —— 默认 easy 难度，进游戏页内可选 medium/hard -->
         <a class="mode" href="/games/gomoku/?mode=ai" data-mode="ai">
-          <div class="mi" aria-hidden="true">
-            <svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-robot"/></svg>
-          </div>
+          <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-engine"/></svg></div>
           <div class="mt">Play the Engine</div>
-          <span class="badge"><i></i>3 LEVELS</span>
         </a>
-
         <!-- 02 · 建房好友对战 —— 6 位邀请码 -->
         <a class="mode" href="/games/gomoku/?mode=friend" data-mode="friend">
-          <div class="mi" aria-hidden="true">
-            <svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-house"/></svg>
-          </div>
+          <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-friend"/></svg></div>
           <div class="mt">Friend Room</div>
-          <span class="badge"><i></i>PRIVATE CODE</span>
         </a>
-
-        <!-- 03 · 随机配对 —— 真实匹配队列 + AI 补位 -->
+        <!-- 03 · 随机匹配 —— 真实匹配队列 + AI 补位 -->
         <a class="mode" href="/games/gomoku/?mode=ranked" data-mode="ranked">
-          <div class="mi" aria-hidden="true">
-            <svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-bolt"/></svg>
-          </div>
+          <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-ranked"/></svg></div>
           <div class="mt">Random Match</div>
-          <span class="badge live"><i></i>AI BACKFILL</span>
         </a>
-
-        <!-- 04 · 锦标赛 —— 待开发（灰态不可点） -->
+        <!-- 04 · 同屏双人 —— 共享屏幕轮流下棋 -->
+        <a class="mode" href="/games/gomoku/?mode=pass" data-mode="pass">
+          <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-pass"/></svg></div>
+          <div class="mt">Pass &amp; Play</div>
+        </a>
+        <!-- 05 · 强 AI 对战 —— hard 难度 -->
+        <a class="mode" href="/games/gomoku/?mode=engine&amp;level=hard" data-mode="master">
+          <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-master"/></svg></div>
+          <div class="mt">vs AI Master</div>
+        </a>
+        <!-- 06 · 锦标赛 —— 待开发（灰态不可点） -->
         <div class="mode soon" aria-disabled="true">
-          <div class="mi" aria-hidden="true">
-            <svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-trophy"/></svg>
-          </div>
+          <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-master"/></svg></div>
           <div class="mt">Tournament</div>
           <span class="soon-pill">SOON</span>
         </div>
@@ -186,144 +209,72 @@
 
     <!-- 右栏 -->
     <aside class="side">
-      <section class="panel" aria-labelledby="roomTitle">
-        <h3 id="roomTitle">Start a friend room</h3>
-        <p class="pnote">Private room, 6-character code. Create one, then send your friend the code or the link.</p>
-        <label class="field" for="codeInput">
-          <span>Have a code? Join it</span>
-          <input id="codeInput" type="text" maxlength="6" placeholder="K7Q2R"
-                 autocomplete="off" spellcheck="false" aria-label="Invite code">
-        </label>
-        <div class="btn-row">
-          <a class="btn btn-violet" id="createRoom" href="/games/gomoku/?mode=friend">Create a room</a>
-          <button class="btn btn-ghost" id="codeJoin" type="button">Join</button>
-        </div>
-        <p class="bd-code-err" id="codeErr" role="alert"></p>
-      </section>
-
       <section class="panel" aria-labelledby="ladTitle">
         <h3 id="ladTitle">Gomoku Elo ladder</h3>
-        <p class="pnote">Weekly reset &middot; top 10% earn a badge.</p>
+        <p class="pnote">Top 10% this week &middot; weekly reset keeps it honest.</p>
         <div id="rankRows" aria-live="polite">
-          <div class="bd-side-note">Loading the standings&hellip;</div>
+          <div class="rank-empty">Loading the standings&hellip;</div>
         </div>
-        <a class="link-more" href="/rank/">Full leaderboard &rarr;</a>
+        <a class="btn btn-violet block" href="/rank/" style="margin-top:12px">Full leaderboard</a>
+      </section>
+
+      <section class="panel" aria-labelledby="roomTitle">
+        <h3 id="roomTitle">Start a friend room</h3>
+        <p class="pnote">Private room, 6-character code. Your code and link appear once the room is open.</p>
+        <label class="field" for="roomInput">
+          <span>Have a code? Join it</span>
+          <input id="roomInput" type="text" maxlength="6" placeholder="K7Q2R" autocomplete="off" spellcheck="false">
+        </label>
+        <div class="btn-row">
+          <a class="btn btn-violet" href="/games/gomoku/?mode=friend" id="createRoom">Create a room</a>
+          <button class="btn btn-ghost" id="joinRoom" type="button">Join</button>
+        </div>
+        <p class="err" id="roomErr" role="alert"></p>
       </section>
     </aside>
   </div>
 
-  <!-- AI 补位：Random match 的三状态原型（说明性 widget） -->
-  <section class="fill wrap" aria-labelledby="fillTitle">
-    <h2 class="sec-h" id="fillTitle">Nobody free? <em>AI takes the seat.</em><small>Random match never leaves you staring at an empty board.</small></h2>
-    <div class="fill-grid">
-
-      <!-- 左：等待界面原型（三状态切换） -->
-      <div class="wait" id="waitCard" data-state="waiting">
-        <div class="wait-tabs" role="tablist" aria-label="Backfill states">
-          <button type="button" role="tab" aria-selected="true" data-go="waiting">Queue</button>
-          <button type="button" role="tab" aria-selected="false" data-go="ai">AI seated</button>
-          <button type="button" role="tab" aria-selected="false" data-go="take">Takeover</button>
-        </div>
-
-        <!-- 状态 1：排队倒计时 -->
-        <div class="st-wait">
-          <div class="wait-head">
-            <span class="ring" aria-hidden="true">
-              <svg width="64" height="64" viewBox="0 0 64 64">
-                <circle class="ring-bg" cx="32" cy="32" r="28" fill="none" stroke-width="6"/>
-                <circle class="ring-fg" cx="32" cy="32" r="28" fill="none" stroke-width="6" stroke-dasharray="176" stroke-dashoffset="53"/>
-              </svg>
-              <span class="num">07</span>
-            </span>
-            <span class="rt">
-              <b>Looking for a rival&hellip;</b>
-              <span>Rated level nearby &middot; 10-second queue window.</span>
-            </span>
-          </div>
-          <div class="wbar" role="progressbar" aria-valuemin="0" aria-valuemax="10" aria-valuenow="7" aria-label="Queue window"><i style="width:70%"></i></div>
-          <div class="wait-act">
-            <a class="btn btn-violet" href="/games/gomoku/?mode=ai">Start with AI now</a>
-            <button class="btn btn-ghost" type="button">Keep waiting for a human</button>
-          </div>
-        </div>
-
-        <!-- 状态 2：AI 落座 -->
-        <div class="st-ai">
-          <div class="wait-head">
-            <span class="ring" aria-hidden="true"><svg width="64" height="64" viewBox="0 0 64 64"><circle class="ring-bg" cx="32" cy="32" r="28" fill="none" stroke-width="6"/><circle class="ring-fg" cx="32" cy="32" r="28" fill="none" stroke-width="6" stroke-dasharray="176" stroke-dashoffset="0"/></svg><span aria-hidden="true">🤖</span></span>
-            <span class="rt">
-              <b>An engine took the seat</b>
-              <span>Board started at move 0 &mdash; nothing was wasted.</span>
-            </span>
-          </div>
-          <div class="wrow">
-            <span class="av" aria-hidden="true">🤖</span>
-            <span class="who"><b>Opponent <span class="tag-ai">AI</span></b><span>Level matched to your rating.</span></span>
-            <span class="lv">normal</span>
-          </div>
-          <div class="notice"><span aria-hidden="true">🏅</span><span>This game counts at <b>half weight</b> on the ladder while it's you vs an engine.</span></div>
-          <div class="wait-act">
-            <button class="btn btn-ghost" type="button">Leave queue</button>
-          </div>
-        </div>
-
-        <!-- 状态 3：真人接管 -->
-        <div class="st-take">
-          <div class="wait-head">
-            <span class="ring" aria-hidden="true"><svg width="64" height="64" viewBox="0 0 64 64"><circle class="ring-bg" cx="32" cy="32" r="28" fill="none" stroke-width="6"/><circle class="ring-fg" cx="32" cy="32" r="28" fill="none" stroke-width="6" stroke-dasharray="176" stroke-dashoffset="0"/></svg><span aria-hidden="true">&#128257;</span></span>
-            <span class="rt">
-              <b>A human stepped in</b>
-              <span>They picked up the board right where it was.</span>
-            </span>
-          </div>
-          <div class="wrow">
-            <span class="av" aria-hidden="true">🙂</span>
-            <span class="who"><b>Opponent <span class="tag-human">HUMAN</span></b><span>Took over your board mid-game.</span></span>
-            <span class="lv">live</span>
-          </div>
-          <div class="notice"><span aria-hidden="true">🏅</span><span>From here it's a <b>fully rated</b> match &mdash; both of you move up or down together.</span></div>
-        </div>
-      </div>
-
-      <!-- 右：规则说明 -->
-      <div class="fsteps">
-        <div class="fstep"><span class="sn">0s</span><span><b>Queue opens</b><span>You're paired with real players first &mdash; same board, same clock.</span></span></div>
-        <div class="fstep"><span class="sn">10s</span><span><b>Engine backfill</b><span>Nobody joins? An engine near your rating takes the empty seat and the game starts.</span></span></div>
-        <div class="fstep"><span class="sn">any</span><span><b>Human takeover</b><span>A human can slip into that seat any time mid-game. The stones already played stay on the board.</span></span></div>
-      </div>
-    </div>
-    <p class="fill-note"><strong>Rating rule:</strong> backfilled legs count at half weight and are tagged <span class="tag-ai">AI</span> in your history; the moment a human takes over, it's a normal rated match.</p>
-  </section>
-
-  <!-- How to play -->
+  <!-- How to play 4 步（与 MathDuel 同列数：4 列） -->
   <section class="how wrap" aria-labelledby="howTitle">
     <h2 class="sec-h" id="howTitle">How to play<small>Black first &rarr; take turns &rarr; five in a row wins. That's the whole game.</small></h2>
     <div class="how-grid">
-      <div class="step"><span class="sn">1</span><b>Black moves first</b><span>Stones go on the intersections of the 15&times;15 board, one per turn.</span></div>
-      <div class="step"><span class="sn">2</span><b>Line up five</b><span>Horizontal, vertical or diagonal &mdash; the first five in a row wins on the spot.</span></div>
-      <div class="step"><span class="sn">3</span><b>Mind the rules</b><span>Freestyle five-in-a-row: the first line of five wins, in any direction.</span></div>
+      <div class="step"><span class="sn">1</span><b>Place stones</b><span>On the intersections of a 15&times;15 board &mdash; one per turn, in order.</span></div>
+      <div class="step"><span class="sn">2</span><b>Connect five</b><span>Horizontal, vertical or diagonal &mdash; the first five in a row wins.</span></div>
+      <div class="step"><span class="sn">3</span><b>Mind the rules</b><span>Freestyle by default. Switch to Renju forbidden-move rules any time before the game.</span></div>
+      <div class="step"><span class="sn">4</span><b>Climb the ladder</b><span>Every win moves your Elo across all three Duel sites. Weekly reset keeps it honest.</span></div>
     </div>
   </section>
 
-  <p class="lobby-foot">No login, no ads, no downloads &mdash; open a board and play.</p>
+  <!-- 天梯段位（与 MathDuel 同：Bronze/Silver/Gold/Platinum/Diamond/Master） -->
+  <section class="ladder wrap" aria-label="Rank ladder">
+    <div class="ladder-panel">
+      <div class="ladder-title">Gomoku Elo ladder<small>Wins here feed the global ladder · weekly reset</small></div>
+      <div class="tiers">
+        <div class="tier"><i style="height:16px"></i><span>Bronze</span></div>
+        <div class="tier"><i style="height:22px"></i><span>Silver</span></div>
+        <div class="tier"><i style="height:28px"></i><span>Gold</span></div>
+        <div class="tier"><i style="height:34px"></i><span>Platinum</span></div>
+        <div class="tier"><i style="height:40px"></i><span>Diamond</span></div>
+        <div class="tier master"><i style="height:48px"></i><span>Master</span></div>
+      </div>
+    </div>
+  </section>
 </main>
 
-<!-- ═══════════ 页脚（与首页同款·BoardDuel 品牌紫） ═══════════ -->
-<footer class="site-footer">
+<!-- ═══════════ 页脚（与首页同一套） ═══════════ -->
+<footer class="site-footer main">
   <div class="wrap">
     <div class="sf-title">Explore the Duel family</div>
     <div class="sf-matrix">
-      <a class="sf-item current" href="https://boardduel.com"><span class="pip" style="background:#7C3AED"></span>BoardDuel &middot; Board Games</a>
+      <a class="sf-item current" href="https://boardduel.com"><span class="pip" style="background:#2FC4C9"></span>BoardDuel &middot; Board &amp; Card Games</a>
       <a class="sf-item" href="https://mathduel.games"><span class="pip" style="background:#F59E0B"></span>MathDuel &middot; Math Puzzle Games</a>
       <a class="sf-item" href="https://memoryduel.com"><span class="pip" style="background:#4F46E5"></span>MemoryDuel &middot; Knowledge Battles</a>
     </div>
     <div class="sf-links">
-      <a href="/about/">About</a><a href="/contact/">Contact</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/how-to-play/gomoku/">How to play</a>
+      <a href="/about/">About</a><a href="/contact/">Contact</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/">All games</a>
     </div>
     <div class="sf-copy">&copy; 2026 BoardDuel &middot; Pure static &middot; Privacy-first &middot; Free to play</div>
   </div>
 </footer>
-
-<script type="module" src="/src/games/gomoku/lobby.ts"></script>
 </body>
 </html>
