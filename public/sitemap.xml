@@ -8,9 +8,20 @@
   <url><loc>https://boardduel.com/rank/</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://boardduel.com/shop/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://boardduel.com/stats/</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://boardduel.com/games/tictactoe/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://boardduel.com/how-to-play/</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://boardduel.com/how-to-play/gomoku/</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://boardduel.com/how-to-play/tictactoe/</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://boardduel.com/how-to-play/connect4/</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://boardduel.com/how-to-play/reversi/</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://boardduel.com/how-to-play/chess/</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
   <url><loc>https://boardduel.com/games/gomoku/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://boardduel.com/games/connect4/</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
-    <url><loc>https://boardduel.com/games/reversi/</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://boardduel.com/games/chess/</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://boardduel.com/games/tictactoe/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://boardduel.com/games/connect4/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://boardduel.com/games/reversi/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://boardduel.com/games/chess/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://boardduel.com/games/gomoku/lobby/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://boardduel.com/games/tictactoe/lobby/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://boardduel.com/games/connect4/lobby/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://boardduel.com/games/reversi/lobby/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://boardduel.com/games/chess/lobby/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
 </urlset>

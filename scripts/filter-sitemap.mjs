@@ -16,8 +16,12 @@ if (process.env.VITE_SHOW_BETA === '1') {
 }
 
 const html = await readFile(resolve(root, 'index.html'), 'utf8');
+// 首页的游戏入口一律指向 `/games/<id>/lobby/`（gomoku 也不例外），
+// 所以这里必须同时接受根目录与 lobby 两种 href，否则 live 集合恒为空、sitemap 被清空。
 const live = new Set(
-  [...html.matchAll(/href="\/games\/([a-z0-9-]+)\/"\s+data-stage="live"/g)].map((m) => m[1]),
+  [...html.matchAll(/href="\/games\/([a-z0-9-]+)\/(?:lobby\/)?"\s+data-stage="live"/g)].map(
+    (m) => m[1],
+  ),
 );
 
 const sitemapPath = resolve(root, 'dist', 'sitemap.xml');
