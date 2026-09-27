@@ -31,6 +31,11 @@ const BETA_ONLY_INPUTS = {
   connect4: resolve(here, 'games/connect4/index.html'),
   reversi: resolve(here, 'games/reversi/index.html'),
   chess: resolve(here, 'games/chess/index.html'),
+  // 4 个棋类游戏的 lobby（以 gomoku lobby 为模板，v5 1:1 镜像 MathDuel 24-game lobby）
+  tictactoeLobby: resolve(here, 'games/tictactoe/lobby/index.html'),
+  connect4Lobby: resolve(here, 'games/connect4/lobby/index.html'),
+  reversiLobby: resolve(here, 'games/reversi/lobby/index.html'),
+  chessLobby: resolve(here, 'games/chess/lobby/index.html'),
 };
 
 const META_PROD = {
