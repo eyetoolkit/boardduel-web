@@ -17,6 +17,7 @@ import {
   enterRoom, sendWs, inviteCode, clearInviteParam,
   type OnlineState, type OnlineMsg,
 } from '../online-core';
+import { modeFromUrl, syncModeCardUI } from '../shared';
 
 const SLOT = 540;
 const PAD = 16;
@@ -32,8 +33,12 @@ const undoBtn = document.getElementById('bd-undo') as HTMLButtonElement;
 
 setupNav('reversi');
 
+// F-002（2026-09-28）：URL ?mode= 初始 mode；online (?c=) 优先级最高
+const _initialMode: Mode = inviteCode() ? 'online' : modeFromUrl('ai');
+if (_initialMode !== 'online') syncModeCardUI(_initialMode);
+
 const state = {
-  mode: 'ai' as Mode,
+  mode: _initialMode as Mode,
   level: 'medium' as RDifficulty,
   board: emptyBoard() as RBoard,
   player: 1 as RPlayer,        // 1=黑(玩家), 2=白(AI)

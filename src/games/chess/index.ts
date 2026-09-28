@@ -17,6 +17,7 @@ import {
   enterRoom, sendWs, inviteCode, clearInviteParam,
   type OnlineState, type OnlineMsg,
 } from '../online-core';
+import { modeFromUrl, syncModeCardUI } from '../shared';
 
 const SLOT = 540;
 const PAD = 16;
@@ -42,8 +43,12 @@ const PIECE_G: Record<string, string> = {
   P: '<path d="M19.5 17l-3-3-3 3 3 3v8h-4l-1 8.5h14l-1-8.5h-4v-8zM10.5 38.5h19v3.5h-19z" stroke="#0A0F14" stroke-width="0.5"/>',
 };
 
+// F-002（2026-09-28）：URL ?mode= 初始 mode；online (?c=) 优先级最高
+const _initialMode: Mode = inviteCode() ? 'online' : modeFromUrl('ai');
+if (_initialMode !== 'online') syncModeCardUI(_initialMode);
+
 const state = {
-  mode: 'ai' as Mode,
+  mode: _initialMode as Mode,
   level: 'medium' as Difficulty,
   gs: initialState() as CS,
   selected: -1,
