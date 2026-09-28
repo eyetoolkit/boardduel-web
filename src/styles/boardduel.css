@@ -318,7 +318,7 @@ a.go-mode:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; 
 /* 实心标签（24 点同款），用于卡内短标记 */
 .go-tag {
   font-size: .68rem; font-weight: 700; letter-spacing: .02em; text-transform: uppercase;
-  color: var(--ink); background: var(--teal); border-radius: 999px; padding: 2px 8px;
+  color: #1E1B39; background: var(--teal); border-radius: 999px; padding: 2px 8px;
 }
 .go-tag.is-gold { background: var(--gold); }
 .go-tag.is-mute { background: var(--line); color: var(--mute); }

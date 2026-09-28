@@ -144,7 +144,7 @@ body.home-v2 {
 .home-v2 .daily-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
 .home-v2 .dtile {
   position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px;
-  background: var(--paper); border: 1.5px solid var(--line); border-radius: 12px;
+  background: #F4F5F9; border: 1.5px solid var(--line); border-radius: 12px;
   padding: 12px 6px 9px; font-size: .78rem; font-weight: 600; color: #3B3F58;
   transition: transform .15s ease, border-color .15s ease;
 }
@@ -323,12 +323,13 @@ html[data-theme="dark"] body.home-v2 {
 /* 暗色 chrome 统一移至 chrome.css */
 
 /* 面板 / 卡片 / 信息块（白底 → 暗色） */
+/* 注意：color 必须用 --paper（文字色）。此处曾误用 --ink（=背景色）导致暗色下面板文字近黑不可读（2026-09-28 截图走查修复）。 */
 html[data-theme="dark"] body.home-v2 .panel,
 html[data-theme="dark"] body.home-v2 .chip,
 html[data-theme="dark"] body.home-v2 .btn-exchange,
 html[data-theme="dark"] body.home-v2 .ladder-panel,
 html[data-theme="dark"] body.home-v2 .feat .fic,
-html[data-theme="dark"] body.home-v2 .dtile { background: #16172B; border-color: var(--line); color: var(--ink); }
+html[data-theme="dark"] body.home-v2 .dtile { background: #16172B; border-color: var(--line); color: var(--paper); }
 html[data-theme="dark"] body.home-v2 .chip { color: #C7CAE6; }
 html[data-theme="dark"] body.home-v2 .btn-exchange { color: var(--violet-bright); }
 html[data-theme="dark"] body.home-v2 .btn-exchange:hover { background: #1F2138; }
