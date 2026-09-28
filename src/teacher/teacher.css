@@ -179,3 +179,11 @@ body.home-v2 {
   .form { grid-template-columns: 1fr; }
   .sub { display: none; }
 }
+
+/* boardduel.css 的 body.home-v2 规则引用全站 token（--paper/--ui），本页不加载
+   tokens.css，未定义变量导致字体退化 Times、文字色退化。这里以同特异度、
+   后加载显式覆盖（2026-09-28 截图走查修复）。 */
+body.home-v2 {
+  font-family: 'Sora', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--ink);
+}

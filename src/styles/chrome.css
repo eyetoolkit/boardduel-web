@@ -79,6 +79,10 @@ body.home-v2 a:focus-visible { outline-color: var(--brand-bright); }
 
 /* ── 桌面 rail（收起） ── */
 body.home-v2.rail .sidebar { width: var(--sb-rail); }
+/* rail 收起时主容器同步左移（.main/.site-footer 原本留在 --sb-w，会留 162px 空隙） */
+body.home-v2.rail .main,
+body.home-v2.rail .site-footer,
+body.home-v2.rail .bd-main { margin-left: max(var(--sb-rail), (100% + var(--sb-rail) - 1120px) / 2); }
 body.home-v2.rail .sb-top .logo,
 body.home-v2.rail .btn-login span,
 body.home-v2.rail .nav-item label,
@@ -88,6 +92,11 @@ body.home-v2.rail .sb-copy { display: none; }
 body.home-v2.rail .sb-collapse { margin-left: 0; }
 body.home-v2.rail .nav-item { justify-content: center; padding: 10px 0; }
 body.home-v2.rail .btn-login { flex: none; width: 38px; padding: 9px 0; }
+
+/* ── 对局页主容器让位 ──
+   .bd-main 原为全视口居中（margin:0 auto），fixed 侧栏盖住其左侧 ~76px
+   （h1 首字母被裁）。改为在侧栏右侧区域内居中（2026-09-28 截图走查修复）。 */
+body.home-v2 .bd-main { margin-left: max(var(--sb-w), (100% + var(--sb-w) - 1120px) / 2); }
 
 /* 顶栏 / 遮罩：桌面隐藏 */
 body.home-v2 .topbar { display: none; }
@@ -121,6 +130,8 @@ body.home-v2 .overlay { display: none; }
   body.home-v2 .burger svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
   body.home-v2 .topbar .logo { font-size: 1.15rem; }
   body.home-v2 .topbar .btn-login { margin-left: auto; flex: none; padding: 8px 16px; }
+  /* 抽屉模式下侧栏不占位，.bd-main 恢复居中 */
+  body.home-v2 .bd-main { margin-left: auto; }
 }
 
 /* ── 暗色 chrome ── */
