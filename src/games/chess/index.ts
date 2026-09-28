@@ -1,6 +1,7 @@
 /**
  * BoardDuel · Chess (8×8) · 完整可玩（click-click 操作）
  * 玩家执白，AI 执黑。点击你的棋子 → 再点目的地。
+ * Online：通过 ?c=<CODE> 进入好友房，走 relay WS（发 move / 收 opponent_move）
  */
 import {
   setupNav,
@@ -12,6 +13,10 @@ import {
   initialState, cloneState, legalMoves, applyMove, bestMove,
   type GameState as CS, type Side as CSide, type Move as CMove, type Piece as CPiece,
 } from './engine';
+import {
+  enterRoom, sendWs, inviteCode, clearInviteParam,
+  type OnlineState, type OnlineMsg,
+} from '../online-core';
 
 const SLOT = 540;
 const PAD = 16;
@@ -46,15 +51,35 @@ const state = {
   over: false,
   history: [] as CS[],
   timer: createTimer(),
+  ws: null as WebSocket | null,
+  roomCode: null as string | null,
+  myIdx: null as number | null,
 };
 
 function squareXY(sq: number): [number, number] {
-  // 引擎 rank 0 = 白方底线。渲染时上下翻转，让白（玩家）在屏幕底部。
   return [sq % 8, 7 - Math.floor(sq / 8)];
 }
 
-/** 人类当前执哪一方。
- *  vs AI：永远执白；Pass & Play：每步由 gs.turn 决定，双方都能落子。 */
+/**
+ * 棋盘坐标 ↔ 代数记谱法（worker relay 契约要求 from/to 为字符串，
+ * 而本地 chess 引擎用 0–63 数字方格，故发送前转字符串、收到后转数字）。
+ * 约定：sq 0 = a1（白左下角），file = sq%8，rank = floor(sq/8)。
+ */
+function sqToAlg(sq: number): string {
+  const f = sq % 8;
+  const r = Math.floor(sq / 8);
+  return String.fromCharCode(97 + f) + (r + 1);
+}
+function algToSq(alg: string): number {
+  const f = alg.charCodeAt(0) - 97;
+  const r = parseInt(alg.charAt(1), 10) - 1;
+  return r * 8 + f;
+}
+
+/** 人类当前执哪一方。online：idx0=白, idx1=黑 */
+function myColor(): CSide {
+  return state.myIdx === 0 ? 'w' : 'b';
+}
 function humanSide(): CSide {
   return state.mode === 'ai' ? 'w' : state.gs.turn;
 }
@@ -66,7 +91,6 @@ function pieceSvg(p: CPiece, sq: number): string {
   const cx = PAD + x * CELL + CELL / 2;
   const cy = PAD + y * CELL + CELL / 2;
   const isWhite = p === p.toUpperCase();
-  // 白子：奶白色实心 + 深色描边；黑子：墨黑实心 + 浅灰描边
   const body = isWhite ? 'var(--ch-w-body, #F4F6F2)' : 'var(--ch-b-body, #111A21)';
   const edge = isWhite ? 'var(--ch-w-edge, #0A0F14)' : 'var(--ch-b-edge, #7C8B95)';
   const glyph = PIECE_G[kind.toUpperCase()].replace(/stroke="#0A0F14"/g, `stroke="${edge}"`);
@@ -78,6 +102,12 @@ function pieceSvg(p: CPiece, sq: number): string {
 }
 
 function render(): void {
+  const canInteract = !state.over && (
+    state.mode === 'ai' ? humanSide() === state.gs.turn
+      : state.mode === 'online' ? state.gs.turn === myColor()
+        : humanSide() === state.gs.turn
+  );
+
   let lines = '';
   for (let r = 1; r < 8; r++) {
     const y = PAD + r * CELL;
@@ -111,8 +141,7 @@ function render(): void {
   // 选中 + 可走目标（只在自己回合显示）
   let selMarks = '';
   let hitAreas = '';
-  const human = humanSide();
-  if (state.selected >= 0 && human === state.gs.turn && !state.over) {
+  if (canInteract && state.selected >= 0) {
     const [sx, sy] = squareXY(state.selected);
     const cx = PAD + sx * CELL + CELL / 2;
     const cy = PAD + sy * CELL + CELL / 2;
@@ -131,7 +160,7 @@ function render(): void {
   }
 
   // 命中区（轮到人类一方时才给点击区）
-  if (!state.over && human === state.gs.turn) {
+  if (canInteract) {
     const moves = legalMoves(state.gs);
     if (state.selected < 0) {
       const fromSqs = new Set(moves.map((m) => m.from));
@@ -175,6 +204,7 @@ function render(): void {
           applyMove(state.gs, m);
           state.lastMove = m;
           state.selected = -1;
+          if (state.mode === 'online') sendWs(state as OnlineState, { type: 'move', from: sqToAlg(m.from), to: sqToAlg(m.to), promotion: m.promo ?? undefined });
           afterMove();
         }
       }
@@ -188,26 +218,34 @@ function render(): void {
   }, [0, 0]);
   turnEl.textContent = state.over
     ? '— game over —'
-    : state.mode === 'pass'
-      ? (state.gs.turn === 'w' ? 'White (P1)' : 'Black (P2)')
-      : state.gs.turn === 'w' ? 'You (White)' : 'AI (Black)';
+    : state.mode === 'online'
+      ? (state.gs.turn === myColor() ? 'You (' + (state.myIdx === 0 ? 'White' : 'Black') + ')' : 'Opponent (' + (state.gs.turn === 'w' ? 'White' : 'Black') + ')')
+      : state.mode === 'pass'
+        ? (state.gs.turn === 'w' ? 'White (P1)' : 'Black (P2)')
+        : state.gs.turn === 'w' ? 'You (White)' : 'AI (Black)';
   turnEl.className = 'bd-hud-v ' + (state.over ? '' : state.mode === 'ai' && state.gs.turn === 'b' ? 'bd-turn-ai' : 'bd-turn-you');
   statusEl.textContent = state.over
     ? `W ${counts[0]} · B ${counts[1]}`
-    : state.mode === 'pass'
-      ? (state.gs.turn === 'w' ? 'white to move' : 'black to move')
-      : (state.gs.turn === 'w' ? 'your turn' : 'AI thinking');
-  modeEl.textContent = state.mode === 'ai' ? 'vs AI · ' + state.level : 'Pass & Play';
+    : state.mode === 'online'
+      ? (state.gs.turn === myColor() ? 'your turn' : 'opponent turn')
+      : state.mode === 'pass'
+        ? (state.gs.turn === 'w' ? 'white to move' : 'black to move')
+        : (state.gs.turn === 'w' ? 'your turn' : 'AI thinking');
+  modeEl.textContent = state.mode === 'ai' ? 'vs AI · ' + state.level : state.mode === 'pass' ? 'Pass & Play' : 'Online' + (state.roomCode ? ' · ' + state.roomCode : '');
 }
 
 function afterMove(): void {
-  // 检查对手无子下 → 跳过 / 终局
   const moves = legalMoves(state.gs);
   if (moves.length === 0) {
     state.over = true;
     stopTimer(state.timer);
     render();
-    toast('Stalemate or no legal moves');
+    if (state.mode === 'online') {
+      const meWon = state.gs.turn !== myColor();
+      toast(meWon ? 'Checkmate · You win' : 'Checkmate · You lose');
+    } else {
+      toast('Stalemate or no legal moves');
+    }
     return;
   }
   render();
@@ -235,6 +273,7 @@ function newGame(): void {
 }
 
 function undo(): void {
+  if (state.mode === 'online') { toast('Undo is off in online rooms'); return; }
   if (state.over || state.history.length === 0) return;
   state.gs = state.history.pop()!;
   state.lastMove = state.gs.history[state.gs.history.length - 1] || null;
@@ -246,9 +285,42 @@ function undo(): void {
   render();
 }
 
+// ─── 在线双人房 ───
+function handleWs(msg: OnlineMsg): void {
+  const t = String(msg.type || '');
+  if (t === 'opponent_move') {
+    const from = msg.from, to = msg.to;
+    if (typeof from === 'string' && typeof to === 'string') {
+      const sqFrom = algToSq(from);
+      const sqTo = algToSq(to);
+      const m: CMove = {
+        from: sqFrom,
+        to: sqTo,
+        piece: state.gs.board[sqFrom],
+        promo: msg.promotion as CPiece | undefined,
+      };
+      state.history.push(cloneState(state.gs));
+      applyMove(state.gs, m);
+      state.lastMove = m;
+      state.selected = -1;
+      afterMove();
+    }
+  } else if (t === 'start' || t === 'restart_notify') {
+    newGame();
+  } else if (t === 'opponent_leave') {
+    toast('Opponent left the room');
+  } else if (t === 'game_over') {
+    state.over = true;
+    stopTimer(state.timer);
+    render();
+  }
+}
+
+// 模式切换 → 重置
 document.querySelectorAll<HTMLButtonElement>('.bd-mode-card').forEach((b) => {
   b.addEventListener('click', () => {
     if (b.classList.contains('is-disabled')) return;
+    if (state.mode === 'online') { toast('Leave the room first to change mode'); return; }
     document.querySelectorAll('.bd-mode-card').forEach((x) => x.classList.remove('is-cur'));
     b.classList.add('is-cur');
     state.mode = b.dataset.mode as Mode;
@@ -257,16 +329,34 @@ document.querySelectorAll<HTMLButtonElement>('.bd-mode-card').forEach((b) => {
 });
 document.querySelectorAll<HTMLButtonElement>('.bd-diff-btn').forEach((b) => {
   b.addEventListener('click', () => {
+    if (state.mode === 'online') { toast('Leave the room first to change level'); return; }
     document.querySelectorAll('.bd-diff-btn').forEach((x) => x.classList.remove('is-cur'));
     b.classList.add('is-cur');
     state.level = b.dataset.level as Difficulty;
     newGame();
   });
 });
-newBtn.addEventListener('click', newGame);
+newBtn.addEventListener('click', () => {
+  if (state.mode === 'online') { sendWs(state as OnlineState, { type: 'restart' }); return; }
+  newGame();
+});
 undoBtn.addEventListener('click', undo);
 
 newGame();
 
 // 站点 chrome（侧栏抽屉 / 桌面收起 / 主题切换）
 wireLobbyChrome();
+
+// 通过 ?c=<CODE> 进入好友房
+const ic = inviteCode();
+if (ic) {
+  clearInviteParam();
+  enterRoom(state as OnlineState, ic, {
+    onConnect: () => { newGame(); toast('Connected · room ' + ic); },
+    onOpponentMove: handleWs,
+    onStart: () => newGame(),
+    onRestart: () => newGame(),
+    onOpponentLeave: () => toast('Opponent left the room'),
+    onGameOver: handleWs,
+  });
+}

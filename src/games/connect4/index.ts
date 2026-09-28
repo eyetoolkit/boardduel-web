@@ -1,6 +1,7 @@
 /**
  * BoardDuel · Connect 4 · 完整可玩
  * 6×7 棋盘，玩家执红，AI 执黄（teal）。点击列顶下落。
+ * Online：通过 ?c=<CODE> 进入好友房，走 judgment WS（发 place / 收 opponent_place + 权威 state）
  */
 import {
   setupNav,
@@ -11,6 +12,10 @@ import {
   emptyBoard, cloneBoard, drop as c4drop, bestMove, checkWinner, ROWS, COLS,
   type Board as CBoard, type Player as CPlayer, type Difficulty as CDifficulty,
 } from './engine';
+import {
+  enterRoom, sendWs, inviteCode, clearInviteParam,
+  type OnlineState, type OnlineMsg,
+} from '../online-core';
 
 const SLOT_W = 420, SLOT_H = SLOT_W * ROWS / COLS;
 const PAD = 16;
@@ -36,10 +41,20 @@ const state = {
   over: false,
   history: [] as { board: CBoard; player: CPlayer; lastMove: number }[],
   timer: createTimer(),
+  ws: null as WebSocket | null,
+  roomCode: null as string | null,
+  myIdx: null as number | null,
 };
 
+function filledCount(b: CBoard): number {
+  return b.reduce<number>((s, v) => s + (v !== 0 ? 1 : 0), 0);
+}
+function onlineMyTurn(): boolean {
+  if (state.myIdx === null) return false;
+  return filledCount(state.board) % 2 === state.myIdx;
+}
+
 function pieceColor(p: CPlayer): string {
-  // 玩家=ember，AI=teal（设计稿铸/灰对照）
   return p === 1 ? 'var(--c4-p1, #FF6A3C)' : 'var(--c4-p2, #2FC4C9)';
 }
 
@@ -48,7 +63,8 @@ function render(): void {
   let header = '';
   for (let c = 0; c < COLS; c++) {
     const cx = PAD + c * CELL + CELL / 2;
-    const hoverable = !state.over && state.board[c] === 0 && (state.mode === 'pass' || state.player === 1);
+    const hoverable = !state.over && state.board[c] === 0 &&
+      (state.mode === 'pass' || (state.mode === 'online' ? onlineMyTurn() : state.player === 1));
     if (hoverable) {
       header += `<g class="c4-cell" data-c="${c}" style="cursor:pointer">
         <rect class="hit" x="${PAD + c * CELL}" y="0" width="${CELL}" height="${SLOT_H}" fill="transparent"/>
@@ -89,17 +105,35 @@ function render(): void {
 
   turnEl.textContent = state.over
     ? '— game over —'
-    : state.mode === 'pass'
+    : state.mode === 'online'
       ? (state.player === 1 ? 'Red (P1)' : 'Teal (P2)')
-      : (state.player === 1 ? 'You (Red)' : 'AI (Teal)');
+      : state.mode === 'pass'
+        ? (state.player === 1 ? 'Red (P1)' : 'Teal (P2)')
+        : (state.player === 1 ? 'You (Red)' : 'AI (Teal)');
   turnEl.className = 'bd-hud-v ' + (state.over ? '' : state.mode === 'ai' && state.player === 2 ? 'bd-turn-ai' : 'bd-turn-you');
-  statusEl.textContent = state.over ? 'game over' : (state.player === 1 ? 'your turn' : 'AI thinking');
-  modeEl.textContent = state.mode === 'ai' ? 'vs AI · ' + state.level : 'Pass & Play';
+  statusEl.textContent = state.over
+    ? 'game over'
+    : state.mode === 'online'
+      ? (state.player === state.myIdx! + 1 ? 'your turn' : 'opponent turn')
+      : (state.player === 1 ? 'your turn' : 'AI thinking');
+  modeEl.textContent = state.mode === 'ai' ? 'vs AI · ' + state.level : state.mode === 'pass' ? 'Pass & Play' : 'Online' + (state.roomCode ? ' · ' + state.roomCode : '');
 }
 
 function onCell(col: number): void {
   if (state.over || state.board[col] !== 0) return;
   if (state.mode === 'ai' && state.player !== 1) return;
+  if (state.mode === 'online') {
+    if (!onlineMyTurn()) return;
+    const me = (state.myIdx! + 1) as CPlayer;
+    const idx = c4drop(state.board, col, me);
+    if (idx < 0) return;
+    state.history.push({ board: cloneBoard(state.board), player: state.player, lastMove: state.lastMove });
+    state.player = me;
+    state.lastMove = idx;
+    afterMove();
+    sendWs(state as OnlineState, { type: 'place', p: me, c: col });
+    return;
+  }
   state.history.push({ board: cloneBoard(state.board), player: state.player, lastMove: state.lastMove });
   const idx = c4drop(state.board, col, state.player);
   if (idx < 0) return;
@@ -113,8 +147,9 @@ function afterMove(): void {
     state.over = true;
     stopTimer(state.timer);
     render();
-    const label = r.winner === 3 ? 'Draw' : (r.winner === 1 ? 'Red wins' : 'Teal wins');
-    toast(label);
+    if (r.winner === 3) toast('Draw');
+    else if (state.mode === 'ai') toast(r.winner === 1 ? 'Red wins' : 'Teal wins');
+    else toast(r.winner === state.player ? 'You win' : 'Opponent wins');
     return;
   }
   state.player = state.player === 1 ? 2 : 1;
@@ -144,6 +179,7 @@ function newGame(): void {
 }
 
 function undo(): void {
+  if (state.mode === 'online') { toast('Undo is off in online rooms'); return; }
   if (state.over || state.history.length === 0) return;
   const last = state.history.pop()!;
   state.board = last.board;
@@ -158,9 +194,37 @@ function undo(): void {
   render();
 }
 
+// ─── 在线双人房 ───
+function handleWs(msg: OnlineMsg): void {
+  const t = String(msg.type || '');
+  if (t === 'opponent_place') {
+    const c = typeof msg.c === 'number' ? msg.c : -1;
+    const by = typeof msg.by === 'number' ? msg.by : -1;
+    if (c >= 0 && by !== state.myIdx) {
+      const idx = c4drop(state.board, c, (by + 1) as CPlayer);
+      if (idx >= 0) {
+        state.history.push({ board: cloneBoard(state.board), player: state.player, lastMove: state.lastMove });
+        state.lastMove = idx;
+        state.player = (by + 1) as CPlayer;
+        afterMove();
+      }
+    }
+  } else if (t === 'start' || t === 'restart_notify') {
+    newGame();
+  } else if (t === 'opponent_leave') {
+    toast('Opponent left the room');
+  } else if (t === 'game_over') {
+    state.over = true;
+    stopTimer(state.timer);
+    render();
+  }
+}
+
+// 模式切换 → 重置
 document.querySelectorAll<HTMLButtonElement>('.bd-mode-card').forEach((b) => {
   b.addEventListener('click', () => {
     if (b.classList.contains('is-disabled')) return;
+    if (state.mode === 'online') { toast('Leave the room first to change mode'); return; }
     document.querySelectorAll('.bd-mode-card').forEach((x) => x.classList.remove('is-cur'));
     b.classList.add('is-cur');
     state.mode = b.dataset.mode as Mode;
@@ -169,16 +233,34 @@ document.querySelectorAll<HTMLButtonElement>('.bd-mode-card').forEach((b) => {
 });
 document.querySelectorAll<HTMLButtonElement>('.bd-diff-btn').forEach((b) => {
   b.addEventListener('click', () => {
+    if (state.mode === 'online') { toast('Leave the room first to change level'); return; }
     document.querySelectorAll('.bd-diff-btn').forEach((x) => x.classList.remove('is-cur'));
     b.classList.add('is-cur');
     state.level = b.dataset.level as CDifficulty;
     newGame();
   });
 });
-newBtn.addEventListener('click', newGame);
+newBtn.addEventListener('click', () => {
+  if (state.mode === 'online') { sendWs(state as OnlineState, { type: 'restart' }); return; }
+  newGame();
+});
 undoBtn.addEventListener('click', undo);
 
 newGame();
 
 // 站点 chrome（侧栏抽屉 / 桌面收起 / 主题切换）
 wireLobbyChrome();
+
+// 通过 ?c=<CODE> 进入好友房
+const ic = inviteCode();
+if (ic) {
+  clearInviteParam();
+  enterRoom(state as OnlineState, ic, {
+    onConnect: () => { newGame(); toast('Connected · room ' + ic); },
+    onOpponentPlace: handleWs,
+    onStart: () => newGame(),
+    onRestart: () => newGame(),
+    onOpponentLeave: () => toast('Opponent left the room'),
+    onGameOver: handleWs,
+  });
+}

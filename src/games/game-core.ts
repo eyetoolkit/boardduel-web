@@ -6,7 +6,7 @@
  * - 公共 toast
  */
 
-export type Mode = 'ai' | 'pass' | 'human';
+export type Mode = 'ai' | 'pass' | 'human' | 'online';
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
 export interface GameMeta {
