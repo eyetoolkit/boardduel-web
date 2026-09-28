@@ -4,28 +4,8 @@
    不再保留：所有设计稿 demo 块（.wcard、.acard、.fam、.honest、SCREEN1/2/3 demo 等）
    ============================================================ */
 
-:root {
-  --ink: #0E1419;
-  --ink2: #151D24;
-  --ink3: #1C262E;
-  --line: #2A3741;
-  --paper: #F4F6F2;
-  --mute: #8A99A3;
-  --mute2: #5C6B74;
-  --ember: #FF6A3C;
-  --ember-dim: #C24A27;
-  --ember-soft: rgba(255, 106, 60, .14);
-  --teal: #2FC4C9;
-  /* .go-pill.is-live 一直在引用 --teal-soft，但这里原先没有定义，
-     导致 live 胶囊的底色静默失效（只有文字变青）。补上，勿删。 */
-  --teal-soft: rgba(47, 196, 201, .14);
-  --gold: #F2C14E;
-  --gold-soft: rgba(242, 193, 78, .14);
-  --sqL: #DEE4DB;
-  --sqD: #2A3741;
-  --disp: 'Bricolage Grotesque', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  --ui: 'Space Grotesk', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-}
+/* 令牌统一由 tokens.css 提供（原 :root 夜色调色板被 home-v2 皮肤全覆盖，系死代码，已删除）。
+   注意：--teal-soft 必须存在（.go-pill.is-live 引用），tokens.css 已定义。 */
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }

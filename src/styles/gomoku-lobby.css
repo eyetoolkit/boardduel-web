@@ -13,23 +13,8 @@
  * 变量名重命名成 BoardDuel 等价的（用 CSS 变量映射保持可读性）。
  * ============================================================ */
 
-/* ── MathDuel → BoardDuel 变量映射（让原版 MathDuel CSS 类名直接生效） ──
-   MathDuel 用 --indigo / --indigo-bright / --indigo-soft / --amber 等，
-   BoardDuel 用 --violet / --violet-bright / --violet-soft / 同名 --violet。 */
-:root {
-  /* MathDuel token → BoardDuel token 桥接 */
-  --indigo: var(--violet);
-  --indigo-bright: var(--violet-bright);
-  --indigo-soft: var(--violet-soft);
-  --amber: var(--violet);
-  --amber-ink: #fff;
-  --font-display: var(--disp);
-  --font-sans: var(--ui);
-  --r-card: 18px;
-  --r-btn: 11px;
-  /* 棋盘格底纹色（MathDuel 用 #3730A3 = --indigo，BoardDuel 仍用 --violet 但降透明） */
-  --indigo-faint: rgba(124, 58, 237, .045);
-}
+/* 变量桥接已上移 tokens.css（--indigo 别名 → 品牌紫；--font-display/--font-sans/--r-* 同源）。
+   旧 :root 桥接在 :root 上取不到 body.home-v2 的 --violet，本就是失效代码，已删除。 */
 
 /* ── 游戏 Hero：居中封面 + 标题 + 一句话 + 三 chip ── */
 .home-v2 .g-hero { text-align: center; padding: 46px 0 8px; }
@@ -82,7 +67,7 @@
 .home-v2 .mode {
   position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
   text-align: center; background: #fff; border: 1.5px solid var(--line); border-radius: 16px;
-  padding: 22px 12px 18px; color: var(--ink);
+  padding: 22px 12px 18px; color: var(--paper);
   transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
 }
 .home-v2 .mode:hover {
@@ -181,11 +166,11 @@
 }
 .home-v2 .field input {
   width: 100%; border: 1.5px solid var(--line); border-radius: 11px;
-  background: var(--paper);
+  background: var(--ink);
   padding: 11px 14px;
   font-family: var(--font-display); font-weight: 700;
   font-size: 1.05rem; letter-spacing: .22em; text-transform: uppercase;
-  color: var(--ink);
+  color: var(--paper);
 }
 .home-v2 .field input:focus { outline: none; border-color: var(--violet-bright); background: #fff; }
 
@@ -302,7 +287,7 @@ html[data-theme="dark"] body.home-v2 .mode .mi {
 }
 html[data-theme="dark"] body.home-v2 .mode:hover .mi { box-shadow: 0 16px 28px rgba(0, 0, 0, .55), inset 0 1px rgba(255, 255, 255, .22); }
 html[data-theme="dark"] body.home-v2 .panel { background: var(--card); border-color: var(--card-line); }
-html[data-theme="dark"] body.home-v2 .field input { background: var(--paper); border-color: var(--card-line); }
+html[data-theme="dark"] body.home-v2 .field input { background: var(--ink); border-color: var(--card-line); }
 html[data-theme="dark"] body.home-v2 .field input:focus { border-color: var(--violet-bright); background: #16172B; }
 html[data-theme="dark"] body.home-v2 .step { background: var(--card); border-color: var(--card-line); }
 html[data-theme="dark"] body.home-v2 .step .sn { background: var(--violet); color: #fff; }

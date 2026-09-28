@@ -1,0 +1,112 @@
+/* ============================================================
+ * BoardDuel · 统一设计令牌（单一真相源）
+ * ------------------------------------------------------------
+ * 由 2026-09-28 统一设计方案落地：把原先散落在
+ *   boardduel.css(:root) / arena-paper / gomoku-paper / home-papergames /
+ *   page-paper 暗色块 里的重复 token 收敛到这里。
+ *
+ * 约定（全站统一，消除 --ink/--paper 语义反转的历史坑）：
+ *   --ink  = 浅色面（页面底 / 卡片底）        —— 原 arena 的“纸面”
+ *   --paper = 深色文字                        —— 原 arena 的“靛墨”
+ *   --ink2/--ink3 = 次级面（白卡 / 浅灰紫）
+ * 各皮肤只保留“游戏专属 board 变量”（--ttt-* / --c4-* / --rv-* / --ch-* / --go-*）
+ * 与首页专属（--card / --card-line / --green / --red / --r-card）。
+ *
+ * 品牌色全站统一为紫罗兰 #7C3AED（弃用靛蓝 #3730A3）。
+ * 字体：Space Grotesk(display) + Sora(正文)，均站内自托管。
+ * ============================================================ */
+
+/* ── 字体（站内自托管，禁外链；CSP font-src 'self'） ── */
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('/fonts/sora-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/space-grotesk-latin-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/space-grotesk-latin-700.woff2') format('woff2');
+}
+
+/* ════════════════════════════════════════════════
+ * 浅色令牌
+ * ════════════════════════════════════════════════ */
+:root {
+  /* 面 */
+  --ink: #F4F5F9;            /* 页面底 → 纸面 */
+  --ink2: #FFFFFF;           /* 卡片底 → 白 */
+  --ink3: #F1F2FA;           /* 按钮/输入底 → 浅灰紫 */
+  --line: #E3E6F0;           /* 描边 */
+  /* 文字 */
+  --paper: #1E1B39;          /* 文字 → 靛墨 */
+  --mute: #5B6079;
+  --mute2: #8A90A8;
+  /* 强调（琥珀 = 主 CTA / 获胜 / 最后一手） */
+  --ember: #F59E0B;
+  --ember-dim: #D97706;
+  --ember-soft: rgba(245, 158, 11, .16);
+  /* 信息（live / 聊天 / 青） */
+  --teal: #0FA3A8;
+  --teal-soft: rgba(15, 163, 168, .14);
+  --teal-text: #0E8E92;      /* 青色作文字时的达标深档（白底 ≈ 4.6:1） */
+  /* 金（段位 / 强调点缀，与琥珀同值但语义独立） */
+  --gold: #F59E0B;
+  --gold-soft: rgba(245, 158, 11, .16);
+  /* 品牌（全站统一紫罗兰） */
+  --brand: #7C3AED;
+  --brand-bright: #8B5CF6;
+  --brand-soft: #F1ECFE;
+  --brand-ink: #2E1065;
+  --amber: #F59E0B;          /* 首页专属强调，等同 --ember */
+  /* 字体分工 */
+  --disp: 'Space Grotesk', 'Sora', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --ui: 'Sora', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* 布局 */
+  --sb-w: 236px;
+  --sb-rail: 74px;
+  /* 兼容别名：存量皮肤仍用 --indigo 命名，统一指向品牌紫（#7C3AED） */
+  --indigo: var(--brand);
+  --indigo-hover: var(--brand-bright);
+  --indigo-bright: var(--brand-bright);
+  --indigo-faint: rgba(124, 58, 237, .045);
+  --r-card: 18px;
+  --r-btn: 11px;
+  --font-display: var(--disp);
+  --font-sans: var(--ui);
+}
+
+/* ════════════════════════════════════════════════
+ * 暗色令牌（.sb-theme 切换）
+ * 夜底 + 浅字；品牌紫在暗底上提亮以保证对比度。
+ * ════════════════════════════════════════════════ */
+html[data-theme="dark"] body.home-v2 {
+  --ink: #12131F;
+  --ink2: #1A1B2E;
+  --ink3: #222336;
+  --line: #2D2E48;
+  --paper: #E8EAF4;
+  --mute: #9AA0BC;
+  --mute2: #6B7090;
+  --ember-soft: rgba(245, 158, 11, .16);
+  --teal-soft: rgba(15, 163, 168, .15);
+  --teal-text: #2CC7CC;      /* 暗底上的青色文字达标档 */
+  --gold-soft: rgba(245, 158, 11, .16);
+  --brand: #A78BFA;
+  --brand-bright: #C7D2FE;
+  --brand-soft: #20224A;
+  --amber: #F59E0B;
+  --indigo: var(--brand);
+  --indigo-hover: var(--brand-bright);
+  --indigo-bright: var(--brand-bright);
+}

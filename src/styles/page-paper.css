@@ -4,7 +4,7 @@
  * 供 /rank/ /stats/ /shop/ /how-to-play/ 这类非对局页面使用。
  * 与 arena-paper.css 同一套 token（纸面 #F4F5F9 + 靛蓝方格、
  * 白卡 + 软靛影、Space Grotesk display + Sora 正文），
- * 必须和 arena-paper.css 一起引入（字体与 chrome 在那里）。
+ * 必须和 arena-paper.css 一起引入（token 与棋盘变量在那里；chrome 在 chrome.css）。
  * ============================================================ */
 
 /* ── 主区：给侧栏让位 ── */
