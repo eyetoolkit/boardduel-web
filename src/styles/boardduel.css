@@ -61,6 +61,23 @@ img { max-width: 100%; display: block; }
   padding: 60px 0 36px;
   border-bottom: 1px solid var(--line);
 }
+/* F-001（2026-09-28）：桌面 hero 紧凑化。
+   此前 padding 60+36 + h1 上限 3.4rem 把棋盘顶出 1440×900 viewport 156px。
+   桌面端（≥1120px）压缩 hero 让 540 棋盘 + 控件首屏可见；
+   移动端保留原 padding（已通过 <1120px 的 mobile 抽屉布局独立优化）。 */
+@media (min-width: 1120px) {
+  .bd-hero { padding: 32px 0 18px; }
+  .bd-hero h1 {
+    font-size: clamp(1.6rem, 2.4vw, 2.2rem);
+    margin: 4px 0 8px;
+  }
+  .bd-hero .bd-lead { font-size: .9rem; line-height: 1.45; }
+  .bd-game-meta { margin-top: 10px; gap: 6px; }
+  .bd-game-meta span { padding: 3px 9px; font-size: .68rem; }
+  .bd-section-title { margin: 16px 0 8px; font-size: 1rem; }
+  .bd-mode-row { margin: 8px 0 4px; }
+  .bd-mode-card { padding: 9px 12px; }
+}
 .bd-hero h1 {
   font-family: var(--disp); font-weight: 640;
   font-size: clamp(2rem, 4.6vw, 3.4rem);
