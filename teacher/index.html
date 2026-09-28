@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>BoardDuel · Teacher — classroom code lab</title>
+<meta name="description" content="BoardDuel classroom lab: mint private room codes for Gomoku, Tic-Tac-Toe, Connect 4, Othello or Chess. Students join by link — no accounts, no ads. FERPA-light." />
+<meta name="robots" content="noindex" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="/fonts/space-grotesk-latin-700.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="stylesheet" href="/src/styles/boardduel.css" />
+<link rel="stylesheet" href="/src/styles/arena-paper.css" />
+<link rel="stylesheet" href="/src/teacher/teacher.css" />
+<script>(function(){try{var t=localStorage.getItem('bd-theme2');if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}})();</script>
+</head>
+<body class="home-v2">
+
+<header class="hd">
+  <a class="logo" href="/"><b>Board</b><i>Duel</i></a>
+  <span class="role"><span class="dot"></span>Teacher</span>
+  <span class="sub">Classroom code lab</span>
+  <span class="spacer"></span>
+  <a class="ghost" href="/">← Back to site</a>
+</header>
+
+<main class="shell">
+  <nav class="tabs" role="tablist">
+    <button class="tab on" data-tab="session" role="tab" aria-selected="true">Session</button>
+    <button class="tab" data-tab="board" role="tab" aria-selected="false">Projector</button>
+    <button class="tab" data-tab="guide" role="tab" aria-selected="false">Guide</button>
+  </nav>
+
+  <!-- SESSION -->
+  <section id="viewSession" class="view">
+    <div class="card">
+      <h1 class="secttl">Start a classroom session</h1>
+      <p class="note">Pick a board, choose how many pairs you need, and we mint a private room code for each. Students open the link (or type the code) and play on one board — no accounts, no ads.</p>
+      <div class="form">
+        <div class="fld">
+          <label for="fGame">GAME</label>
+          <select id="fGame">
+            <option value="gomoku">Gomoku · 五子棋</option>
+            <option value="connect4">Connect 4 · 四子棋</option>
+            <option value="tictactoe">Tic-Tac-Toe · 井字棋</option>
+            <option value="reversi">Othello · 黑白棋</option>
+            <option value="chess">Chess · 国际象棋</option>
+          </select>
+        </div>
+        <div class="fld">
+          <label for="fCount">BOARDS (pairs)</label>
+          <input id="fCount" type="number" value="8" min="1" max="16" />
+        </div>
+        <div class="fld">
+          <label for="fClock">TIMED (optional)</label>
+          <select id="fClock">
+            <option value="">Untimed</option>
+            <option value="3+0">3 min</option>
+            <option value="5+0">5 min</option>
+            <option value="10+0">10 min</option>
+          </select>
+        </div>
+      </div>
+      <div class="acts">
+        <button class="prim" id="genBtn" type="button">Mint room codes</button>
+        <span class="hint" id="genHint"></span>
+      </div>
+      <p class="form-note">Gomoku joins live 2-player rooms today. For Tic-Tac-Toe, Connect 4, Othello and Chess the code is valid and opens the board — full live 2-player for those four is on the roadmap (they currently play vs AI or pass-and-play).</p>
+    </div>
+    <div id="boards" class="boards"></div>
+  </section>
+
+  <!-- PROJECTOR -->
+  <section id="viewBoard" class="view" style="display:none">
+    <div class="proj-top">
+      <span class="ttl" id="projTitle">Classroom board</span>
+      <span class="q">Large-type · ad-free · for projector</span>
+      <span class="spacer"></span>
+      <button class="ghost" id="copyAllBtn" type="button">Copy all links</button>
+    </div>
+    <div id="projGrid" class="proj-grid"></div>
+    <p class="empty" id="projEmpty">No session yet — mint codes in the <b>Session</b> tab first.</p>
+  </section>
+
+  <!-- GUIDE -->
+  <section id="viewGuide" class="view" style="display:none">
+    <div class="card">
+      <h1 class="secttl">How students join</h1>
+      <ol class="steps">
+        <li>Open the shared link (or visit <code>/games/&lt;board&gt;/?c=CODE</code>).</li>
+        <li>Two players share one board: the first to open becomes host, the second joins the same room.</li>
+        <li>No login. Each board is a private room that expires on its own.</li>
+      </ol>
+      <div class="compliance">
+        <b>FERPA-light.</b> This lab stores no student names and no results. Room codes are created server-side and expire automatically. Upgrade to <b>Teacher Pro</b> (a future build) for live standings and per-board insights — without changing how students join.
+      </div>
+      <h2 class="secttl sm">What's real vs. planned</h2>
+      <table class="cmp">
+        <thead><tr><th>Capability</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Mint private room codes for any of the 5 boards</td><td class="ok">Live</td></tr>
+          <tr><td>Share link · copy code · projector view</td><td class="ok">Live</td></tr>
+          <tr><td>Live 2-player rooms (Gomoku)</td><td class="ok">Live</td></tr>
+          <tr><td>Live 2-player rooms (the other 4 boards)</td><td class="soon">Roadmap</td></tr>
+          <tr><td>Students join by code, no account</td><td class="ok">Live</td></tr>
+          <tr><td>Live standings &amp; per-board win/loss tracking</td><td class="soon">Planned · Teacher Pro</td></tr>
+          <tr><td>Class rosters &amp; assignment history</td><td class="soon">Planned · Teacher Pro</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script type="module" src="/src/teacher/teacher.ts"></script>
+</body>
+</html>

@@ -102,6 +102,8 @@ export default defineConfig({
         howtoConnect4: resolve(here, 'how-to-play/connect4/index.html'),
         howtoReversi: resolve(here, 'how-to-play/reversi/index.html'),
         howtoChess: resolve(here, 'how-to-play/chess/index.html'),
+        // 教师端（Path B：课堂发码实验室，复用真实 /api/gp/room 房间码，无 Supabase 后端）
+        teacher: resolve(here, 'teacher/index.html'),
         // 未上线的新棋盘：只在 beta 构建里产出页面（生产构建 = 无页面 + 无导航 + 不进 sitemap）
         ...(process.env.VITE_SHOW_BETA === '1' ? BETA_ONLY_INPUTS : {}),
       },
