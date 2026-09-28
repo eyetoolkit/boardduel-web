@@ -125,7 +125,7 @@ img { max-width: 100%; display: block; }
 .bd-mode-badge { font-size: .72rem; color: var(--mute2); letter-spacing: .04em; }
 
 .bd-diff-row {
-  display: flex; gap: 6px; margin: 4px 0 18px;
+  display: flex; gap: 6px; margin: 4px 0 18px; flex-wrap: wrap;
 }
 .bd-diff-btn {
   font-size: .68rem; letter-spacing: .14em; font-weight: 700;
@@ -190,6 +190,8 @@ img { max-width: 100%; display: block; }
 @media (max-width: 720px) {
   .bd-play { grid-template-columns: 1fr; }
   .bd-mode-row { grid-template-columns: 1fr; }
+  .bd-diff-row { flex-wrap: wrap; }
+  .bd-main { overflow-x: hidden; }
 }
 
 /* ============== 玩法说明 ============== */
@@ -428,7 +430,8 @@ a.go-mode:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; 
 @media (max-width: 560px) {
   .go-modes { grid-template-columns: 1fr; }
   .bd-main { padding: 0 16px 60px; }
-  .bd-hero { padding: 40px 0 28px; }
+  .bd-hero { padding: 22px 0 14px; }
+  .bd-hero .bd-game-meta { flex-wrap: wrap; }
 }
 
 .go-btn {
