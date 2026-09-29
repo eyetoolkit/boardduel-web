@@ -165,12 +165,11 @@
     });
   }
 
-  function init() {
-    injectCSS();
-    var hosts = document.querySelectorAll('#lang-switcher, [data-lang-switcher]');
-    if (!hosts.length) return;
-    hosts.forEach(buildHost);
-
+  // 全局事件（点击外部关闭 / Esc 关闭 / 语言变更刷新选中态）只绑定一次
+  var _lswWired = false;
+  function wireGlobalOnce() {
+    if (_lswWired) return;
+    _lswWired = true;
     document.addEventListener('click', function () {
       document.querySelectorAll('.lang-switcher.open').forEach(function (o) {
         o.classList.remove('open');
@@ -185,10 +184,39 @@
         });
       }
     });
-
     window.addEventListener('i18n:ready', updateAll);
     window.addEventListener('i18n:change', updateAll);
-    updateAll();
+  }
+
+  /** 幂等挂载：为所有尚未初始化的 host 建 DOM，返回 host 总数 */
+  function mountAll() {
+    var hosts = document.querySelectorAll('#lang-switcher, [data-lang-switcher]');
+    var mounted = 0;
+    for (var i = 0; i < hosts.length; i++) {
+      var h = hosts[i];
+      if (h._lswBuilt) continue;
+      h._lswBuilt = true;
+      buildHost(h);
+      mounted++;
+    }
+    wireGlobalOnce();
+    if (mounted) updateAll();
+    return hosts.length;
+  }
+
+  function init() {
+    injectCSS();
+    if (mountAll() > 0) return;
+    // 挂载点由 JS 后置渲染（如 mathduel 首页 chrome）：轮询等它出现
+    if (typeof MutationObserver === 'undefined') return;
+    var _t = null;
+    var _obs = new MutationObserver(function () {
+      if (_t) clearTimeout(_t);
+      _t = setTimeout(function () {
+        if (mountAll() > 0) { _obs.disconnect(); }
+      }, 60);
+    });
+    _obs.observe(document.body || document.documentElement, { childList: true, subtree: true });
   }
 
   if (document.readyState === 'loading') {

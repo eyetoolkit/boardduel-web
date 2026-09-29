@@ -146,6 +146,13 @@
     return interpolate(val, vars);
   }
 
+  /** 解析节点上的 data-i18n-vars（JSON）——所有 i18n 分支共用 */
+  function parseVars(node) {
+    var varsStr = node.getAttribute('data-i18n-vars');
+    if (!varsStr) return {};
+    try { return JSON.parse(varsStr) || {}; } catch (e) { return {}; }
+  }
+
   /**
    * 替换 DOM 中的 data-i18n / data-i18n-placeholder
    */
@@ -156,26 +163,21 @@
     for (var i = 0; i < nodes.length; i++) {
       var node = nodes[i];
       var key = node.getAttribute('data-i18n');
-      var vars = {};
-      var varsStr = node.getAttribute('data-i18n-vars');
-      if (varsStr) {
-        try { vars = JSON.parse(varsStr); } catch (e) {}
-      }
-      node.textContent = t(key, vars);
+      node.textContent = t(key, parseVars(node));
     }
     // data-i18n-placeholder → placeholder attr
     var phNodes = root.querySelectorAll('[data-i18n-placeholder]');
     for (var j = 0; j < phNodes.length; j++) {
       var phNode = phNodes[j];
       var phKey = phNode.getAttribute('data-i18n-placeholder');
-      phNode.setAttribute('placeholder', t(phKey));
+      phNode.setAttribute('placeholder', t(phKey, parseVars(phNode)));
     }
     // data-i18n-title → title attr; if it's the <title> element, also update textContent + document.title
     var ttNodes = root.querySelectorAll('[data-i18n-title]');
     for (var k = 0; k < ttNodes.length; k++) {
       var ttNode = ttNodes[k];
       var ttKey = ttNode.getAttribute('data-i18n-title');
-      var ttVal = t(ttKey);
+      var ttVal = t(ttKey, parseVars(ttNode));
       ttNode.setAttribute('title', ttVal);
       if (ttNode.tagName && ttNode.tagName.toUpperCase() === 'TITLE') {
         ttNode.textContent = ttVal;
@@ -187,14 +189,14 @@
     for (var m = 0; m < alNodes.length; m++) {
       var alNode = alNodes[m];
       var alKey = alNode.getAttribute('data-i18n-aria-label');
-      alNode.setAttribute('aria-label', t(alKey));
+      alNode.setAttribute('aria-label', t(alKey, parseVars(alNode)));
     }
     // data-i18n-html → innerHTML (for HTML fragments like <span style="color">...)
     var htmlNodes = root.querySelectorAll('[data-i18n-html]');
     for (var n = 0; n < htmlNodes.length; n++) {
       var htmlNode = htmlNodes[n];
       var htmlKey = htmlNode.getAttribute('data-i18n-html');
-      var htmlVal = t(htmlKey);
+      var htmlVal = t(htmlKey, parseVars(htmlNode));
       if (htmlVal && htmlVal !== htmlKey) {
         htmlNode.innerHTML = htmlVal;
       }
@@ -204,7 +206,14 @@
     for (var a = 0; a < altNodes.length; a++) {
       var altNode = altNodes[a];
       var altKey = altNode.getAttribute('data-i18n-alt');
-      altNode.setAttribute('alt', t(altKey));
+      altNode.setAttribute('alt', t(altKey, parseVars(altNode)));
+    }
+    // data-i18n-content → content attr（用于 meta[name=description] / og:title / og:description）
+    var ctNodes = root.querySelectorAll('[data-i18n-content]');
+    for (var c = 0; c < ctNodes.length; c++) {
+      var ctNode = ctNodes[c];
+      var ctKey = ctNode.getAttribute('data-i18n-content');
+      ctNode.setAttribute('content', t(ctKey, parseVars(ctNode)));
     }
     // <title data-i18n="key"> → document.title
     var titleNode = root.querySelector('title[data-i18n]');
@@ -517,6 +526,16 @@ var LITERALS = {"玩家": "account.default_player", "昵称必须是字符串": 
   loadDict(initLang, true).then(function () {
     currentLang = initLang;
     document.documentElement.setAttribute('lang', initLang);
+    // URL 显性指定语言（?lang=xx 或 /xx/ 路径前缀，典型场景：兄弟站 / 分享链接接力）时
+    // 也要持久化 —— 否则用户点进下一个不带 ?lang 的页面会掉回默认语言。
+    try {
+      var _q = new URLSearchParams(window.location.search).get('lang');
+      var _pm = (window.location.pathname || '').match(/^\/(zh|en|ja|es|fr|de)(\/|$)/);
+      if ((_q || _pm) && SUPPORTED.indexOf(initLang) >= 0) {
+        localStorage.setItem(STORAGE_KEY, initLang);
+        localStorage.setItem(GENERIC_KEY, initLang);
+      }
+    } catch (e) {}
     // 等 DOMContentLoaded 再 apply
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', function () { applyToDOM(); });
