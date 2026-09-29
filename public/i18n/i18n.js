@@ -1,6 +1,8 @@
 /**
- * mathduel i18n runtime
- * 轻量级多语言运行时，支持：
+ * tri-sites SHARED i18n runtime  (single source of truth)
+ * 位置：@tri-sites/design-system/src/i18n/runtime/i18n.js
+ * 由 scripts/sync-i18n.mjs 推送到各站 public/i18n/，禁止在各站手动改副本。
+ * 支持：
  * - 嵌套键查找（dot notation）
  * - 占位符替换 {name}
  * - 多个 fallback 语言
@@ -20,54 +22,68 @@
 (function () {
   'use strict';
 
-  // ─── 配置 ───
+  // ─── 配置（单一真相源；站点可在 <head> 注入 window.__I18N_CONFIG__ 覆盖，无需改本文件）───
+  // 示例（开启多语言时由各站自行注入，本共享文件不写死语言集）：
+  //   <script>window.__I18N_CONFIG__={supported:['en','zh','ja','es','fr','de'],defaultLang:'en',dictVersion:'33'}</script>
+  var CFG = (typeof window !== 'undefined' && window.__I18N_CONFIG__) || {};
   var SITE_ID = (document.documentElement.getAttribute('data-site') || 'board');
   var STORAGE_KEY = SITE_ID + 'duel_lang';   // 每站独立: boardduel_lang / mathduel_lang / memoryduel_lang
   var GENERIC_KEY = 'lang';                  // 跨站同步通用键
-  var SUPPORTED = ["en"]; // TEMP: multilingual disabled
-  var DEFAULT_LANG = 'en';
-  var BASE_URL = '/i18n/';
-  var DICT_VERSION = '27';  // 字典更新时需同步 +1（2026-09-09 R-2 硬编码中文 i18n 批量补齐 bump 至 22）
+  // 默认仅英文（多语言关闭）。各站通过 __I18N_CONFIG__.supported 开启，不在此硬编码。
+  var SUPPORTED = (Array.isArray(CFG.supported) && CFG.supported.length)
+    ? CFG.supported
+    : ["en"];
+  var DEFAULT_LANG = CFG.defaultLang || 'en';
+  var BASE_URL = CFG.baseUrl || '/i18n/';
+  var DICT_VERSION = CFG.dictVersion || '27';  // 字典更新时由站点 bump（cache-buster）
+  // 升级路径：构建期把字典注入 window.__I18N_DICTS__ 即可跳过网络 fetch（详见 sync 脚本说明）
+  var PRELOADED = (typeof window !== 'undefined' && window.__I18N_DICTS__) || null;
 
   // 缓存已加载字典
   var dicts = {};
   var currentLang = null;
 
   /**
-   * 检测初始语言（优先级：URL > localStorage > navigator > 默认）
+   * 检测初始语言（优先级：?lang > /xx/ 路径前缀 > localStorage > 默认）。
+   * 所有候选都必须被 SUPPORTED 接受，否则跳过 —— 防止「路径写了 /de/ 但 de 未开启」时误切。
    */
   function detectInitialLang() {
-    // 1. URL 参数 ?lang=en
+    var candidates = [];
+    // 1. URL 参数 ?lang=xx
     try {
-      var params = new URLSearchParams(window.location.search);
-      var fromUrl = params.get('lang');
-      if (fromUrl && SUPPORTED.indexOf(fromUrl) >= 0) return fromUrl;
+      var fromUrl = new URLSearchParams(window.location.search).get('lang');
+      if (fromUrl) candidates.push(fromUrl);
     } catch (e) {}
-
-    // 2. URL 路径前缀 /en/ /zh/ /ja/
+    // 2. URL 路径前缀 /xx/（路径优先于 localStorage，契合 SEO hreflang 声明）
     try {
       var m = window.location.pathname.match(/^\/(zh|en|ja|es|fr|de)(\/|$)/);
-      if (m) return m[1];
+      if (m) candidates.push(m[1]);
     } catch (e) {}
-
     // 3. localStorage — 本网站点键优先, 其次跨站通用键
     try {
       var stored = localStorage.getItem(STORAGE_KEY);
-      if (stored && SUPPORTED.indexOf(stored) >= 0) return stored;
+      if (stored) candidates.push(stored);
       var generic = localStorage.getItem(GENERIC_KEY);
-      if (generic && SUPPORTED.indexOf(generic) >= 0) return generic;
+      if (generic) candidates.push(generic);
     } catch (e) {}
-
-    // 4. 默认语言(en) — 不做浏览器语言自动识别, 保证首访统一英文
-    //    (如需按浏览器语言自动切换: 在此处读取 navigator.language 并 return 对应语言)
+    // 取第一个被 SUPPORTED 接受的语言
+    for (var i = 0; i < candidates.length; i++) {
+      if (SUPPORTED.indexOf(candidates[i]) >= 0) return candidates[i];
+    }
     return DEFAULT_LANG;
   }
 
   /**
-   * 异步加载字典
+   * 异步加载字典（双模式）：
+   *  - 优先用站点构建期注入的 window.__I18N_DICTS__[lang]（跳过网络 fetch）
+   *  - 否则按 BASE_URL + lang + '?v=' + DICT_VERSION 运行时拉取
    */
   function loadDict(lang, force) {
     if (dicts[lang] && !force) return Promise.resolve(dicts[lang]);
+    if (PRELOADED && PRELOADED[lang]) {
+      dicts[lang] = PRELOADED[lang];
+      return Promise.resolve(dicts[lang]);
+    }
     return fetch(BASE_URL + lang + '.json?v=' + DICT_VERSION, { credentials: 'same-origin' })
       .then(function (r) {
         if (!r.ok) throw new Error('Failed to load ' + lang);

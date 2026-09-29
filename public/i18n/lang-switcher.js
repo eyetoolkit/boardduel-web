@@ -7,27 +7,48 @@
 (function () {
   'use strict';
 
-  var LABELS = { zh: '中文', en: 'English', es: 'Español', fr: 'Français', de: 'Deutsch', ja: '日本語' };
-  var FLAGS  = { zh: '🇨🇳', en: '🇺🇸', es: '🇪🇸', fr: '🇫🇷', de: '🇩🇪', ja: '🇯🇵' };
+  var ALL_LANGS = [
+    { code: 'zh', label: '中文', flag: '🇨🇳' },
+    { code: 'en', label: 'English', flag: '🇺🇸' },
+    { code: 'es', label: 'Español', flag: '🇪🇸' },
+    { code: 'fr', label: 'Français', flag: '🇫🇷' },
+    { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
+    { code: 'ja', label: '日本語', flag: '🇯🇵' },
+  ];
+  // 仅渲染运行时实际支持的语言（多语言关闭时只显示 en），避免列出不可点的语言
+  function getSupportedLangs() {
+    try {
+      if (window.i18n && typeof window.i18n.getSupported === 'function') {
+        var s = window.i18n.getSupported();
+        if (s && s.length) {
+          var filtered = ALL_LANGS.filter(function (l) { return s.indexOf(l.code) >= 0; });
+          if (filtered.length) return filtered;
+        }
+      }
+    } catch (e) {}
+    return ALL_LANGS; // 回退：全列
+  }
+  var LABELS = {};
+  ALL_LANGS.forEach(function (l) { LABELS[l.code] = l.label; });
 
   // 1. 注入 HTML + CSS
   function injectHTML() {
     var host = document.getElementById('lang-switcher');
     if (!host) return;
 
+    var items = '';
+    getSupportedLangs().forEach(function (l) {
+      items += '<li><a href="#" data-lang="' + l.code + '">' + l.flag + ' ' + l.label + '</a></li>';
+    });
+
     host.innerHTML = ''
       + '<button class="lang-current" id="lang-current-btn" aria-label="Switch language">'
       +   '<span class="lang-icon">🌐</span>'
-      +   '<span class="lang-label" id="lang-current-label">中文</span>'
+      +   '<span class="lang-label" id="lang-current-label">English</span>'
       +   '<span class="lang-arrow">▾</span>'
       + '</button>'
       + '<ul class="lang-dropdown" id="lang-dropdown">'
-      +   '<li><a href="#" data-lang="zh">🇨🇳 中文</a></li>'
-      +   '<li><a href="#" data-lang="en">🇺🇸 English</a></li>'
-      +   '<li><a href="#" data-lang="es">🇪🇸 Español</a></li>'
-      +   '<li><a href="#" data-lang="fr">🇫🇷 Français</a></li>'
-      +   '<li><a href="#" data-lang="de">🇩🇪 Deutsch</a></li>'
-      +   '<li><a href="#" data-lang="ja">🇯🇵 日本語</a></li>'
+      +   items
       + '</ul>';
 
     // 注入样式（仅一次）
@@ -68,7 +89,7 @@
     var dropdown = document.getElementById('lang-dropdown');
 
     function updateLabel() {
-      var lang = (window.i18n && window.i18n.getLang()) || 'zh';
+      var lang = (window.i18n && window.i18n.getLang()) || 'en';
       label.textContent = LABELS[lang] || lang;
       var links = dropdown.querySelectorAll('a[data-lang]');
       for (var i = 0; i < links.length; i++) {
