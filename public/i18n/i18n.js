@@ -288,6 +288,8 @@
       } catch (e) {}
       // 应用到 DOM
       applyToDOM();
+      // 给跨站链接补 ?lang=xx，让兄弟站落地即命中该语言
+      decorateCrossSiteLinks(lang);
       // 触发自定义事件（让其他模块监听语言变化）
       window.dispatchEvent(new CustomEvent('i18n:change', { detail: { lang: lang } }));
       // URL 同步（如果不是 options.skipUrl）
@@ -404,6 +406,33 @@
     EQUATION_INVALID:         'error.equation_invalid'
   };
 
+  // ─── 跨站语言传递 ───
+  // localStorage 受同源策略限制，三站（不同域名）无法共享语言偏好。
+  // 因此给「指向兄弟站的链接」补上 ?lang=xx —— 用户跳转过去时立即命中该语言。
+  // 命中 ?lang 后 i18n 会把它写进 localStorage，后续该站全站跟随。
+  var SIBLING_HOSTS = Array.isArray(CFG.siblingHosts)
+    ? CFG.siblingHosts
+    : ['mathduel.games', 'boardduel.com', 'memoryduel.com'];
+  function decorateCrossSiteLinks(lang) {
+    try {
+      if (!lang) return;
+      var here = (location.hostname || '').replace(/^www\./, '');
+      var links = document.querySelectorAll('a[href]');
+      for (var i = 0; i < links.length; i++) {
+        var a = links[i];
+        var href = a.getAttribute('href');
+        if (!href || href.charAt(0) === '#') continue;
+        var u;
+        try { u = new URL(a.href, location.href); } catch (e) { continue; }
+        var host = u.hostname.replace(/^www\./, '');
+        if (host === here || SIBLING_HOSTS.indexOf(host) < 0) continue;
+        if (u.searchParams.get('lang') === lang) continue;
+        u.searchParams.set('lang', lang);
+        a.setAttribute('href', u.toString());
+      }
+    } catch (e) {}
+  }
+
   // ─── 暴露 API ───
   window.i18n = {
     t: t,
@@ -412,6 +441,7 @@
     getSupported: function () { return SUPPORTED.slice(); },
     applyToDOM: applyToDOM,
     navigateWithLang: navigateWithLang,
+    decorateCrossSiteLinks: decorateCrossSiteLinks,
     loadDict: loadDict,
     renderError: renderError,
     ERROR_CODE_MAP: ERROR_CODE_MAP
@@ -434,7 +464,10 @@
     var _obs = new MutationObserver(function () {
       if (_i18nApplying) return;            // ignore mutations we caused
       if (_t) clearTimeout(_t);
-      _t = setTimeout(function () { applyI18nSafe(document); applyLiterals(document); }, 60);
+      _t = setTimeout(function () {
+        applyI18nSafe(document); applyLiterals(document);
+        try { decorateCrossSiteLinks(currentLang); } catch (e) {}
+      }, 60);
     });
     _obs.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
   }
@@ -492,6 +525,8 @@ var LITERALS = {"玩家": "account.default_player", "昵称必须是字符串": 
       applyToDOM();
     }
     applyLiterals();
+    // 首屏就绪后也装饰一次（未切换过语言也要带上当前语言）
+    decorateCrossSiteLinks(initLang);
     // 标记就绪
     document.documentElement.setAttribute('data-i18n-ready', 'true');
     setupI18nObserver();
