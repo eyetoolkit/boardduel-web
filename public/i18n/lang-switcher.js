@@ -1,8 +1,14 @@
 /* ═══════════════════════════════════════════════════════════════
-   lang-switcher.js - 注入 + 行为
-   用法：
-     <div id="lang-switcher"></div>          ← 放在 <body> 顶部
-     <script src="/i18n/lang-switcher.js?v=3"></script>  ← 引入
+   lang-switcher.js — 语言切换器（注入 + 行为）v2
+   用法（支持多挂载）：
+     <div id="lang-switcher"></div>          ← 放在导航/顶栏内（内嵌模式）
+     <div data-lang-switcher></div>          ← 第二个挂载（如同id，侧栏等）
+     <script src="/i18n/lang-switcher.js?v=35" defer></script>
+
+   模式自适应：
+     - 挂载点位于 nav/header/.topbar/.sidebar 内 → 内嵌图标按钮（38px，菜单向下）
+     - 其它位置（如 body 末尾）→ 右下角浮动圆球（46px，菜单向上）
+   样式使用命名空间 --lsw-* 变量，不依赖站点语义变量（各站 --ink/--paper 含义相反）。
    ═══════════════════════════════════════════════════════════════ */
 (function () {
   'use strict';
@@ -31,102 +37,158 @@
   var LABELS = {};
   ALL_LANGS.forEach(function (l) { LABELS[l.code] = l.label; });
 
-  // 1. 注入 HTML + CSS
-  function injectHTML() {
-    var host = document.getElementById('lang-switcher');
-    if (!host) return;
+  var GLOBE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true">'
+    + '<circle cx="12" cy="12" r="9"/>'
+    + '<path d="M3 12h18M12 3a15.5 15.5 0 0 1 0 18M12 3a15.5 15.5 0 0 0 0 18"/>'
+    + '</svg>';
+
+  var CSS = ''
+    + '.lang-switcher{position:relative;display:inline-flex;flex:none;font-family:inherit}'
+    + '.lang-switcher .lsw-btn{width:38px;height:38px;padding:0;display:grid;place-items:center;'
+    +   'background:var(--lsw-bg,#fff);border:1px solid var(--lsw-line,rgba(25,20,45,.16));'
+    +   'border-radius:10px;color:var(--lsw-fg,#3b3552);cursor:pointer;'
+    +   'transition:border-color .15s,color .15s,box-shadow .15s;font:inherit}'
+    + '.lang-switcher .lsw-btn:hover{border-color:var(--lsw-fg,#3b3552);color:var(--lsw-fg,#3b3552)}'
+    + '.lang-switcher .lsw-btn svg{width:18px;height:18px;fill:none;stroke:currentColor;'
+    +   'stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}'
+    + '.lang-switcher .lsw-menu{position:absolute;top:calc(100% + 8px);right:0;min-width:184px;'
+    +   'max-width:calc(100vw - 24px);margin:0;padding:6px;list-style:none;'
+    +   'background:var(--lsw-bg,#fff);border:1px solid var(--lsw-line,rgba(25,20,45,.16));'
+    +   'border-radius:14px;box-shadow:0 14px 36px var(--lsw-shadow,rgba(25,20,45,.18));'
+    +   'display:none;z-index:9600}'
+    + '.lang-switcher.open .lsw-menu{display:block}'
+    + '.lang-switcher .lsw-opt{display:flex;align-items:center;gap:10px;width:100%;'
+    +   'padding:9px 11px;border:0;border-radius:9px;background:none;font:inherit;'
+    +   'font-size:.88rem;color:var(--lsw-fg,#3b3552);cursor:pointer;text-align:left}'
+    + '.lang-switcher .lsw-opt:hover{background:var(--lsw-hover,rgba(25,20,45,.06))}'
+    + '.lang-switcher .lsw-flag{font-size:1rem;line-height:1}'
+    + '.lang-switcher .lsw-check{margin-left:auto;font-weight:800;opacity:0;transition:opacity .1s}'
+    + '.lang-switcher .lsw-opt[aria-selected="true"]{font-weight:700}'
+    + '.lang-switcher .lsw-opt[aria-selected="true"] .lsw-check{opacity:1}'
+    /* 浮动模式（挂载点不在导航内时）：右下角圆球，菜单向上 */
+    + '.lang-switcher--float{position:fixed;bottom:18px;right:18px;z-index:9500}'
+    + '.lang-switcher--float .lsw-btn{width:46px;height:46px;border-radius:50%;'
+    +   'box-shadow:0 6px 20px rgba(25,20,45,.22)}'
+    + '.lang-switcher--float .lsw-menu{top:auto;bottom:calc(100% + 10px)}'
+    /* 暗色（boardduel 等站 html[data-theme=dark]） */
+    + 'html[data-theme="dark"] .lang-switcher{--lsw-bg:#20233a;--lsw-fg:#e8e9f3;'
+    +   '--lsw-line:rgba(255,255,255,.16);--lsw-hover:rgba(255,255,255,.08);'
+    +   '--lsw-shadow:0 14px 36px rgba(0,0,0,.55)}';
+
+  function injectCSS() {
+    if (document.getElementById('lang-switcher-style')) return;
+    var style = document.createElement('style');
+    style.id = 'lang-switcher-style';
+    style.textContent = CSS;
+    document.head.appendChild(style);
+  }
+
+  function currentLang() {
+    return (window.i18n && window.i18n.getLang && window.i18n.getLang()) || 'en';
+  }
+
+  function buildHost(host) {
+    if (host.getAttribute('data-lsw-ready') === '1') return; // 幂等
+    host.classList.add('lang-switcher');
+    // 内嵌 vs 浮动：挂在导航内 → 内嵌；否则 → 浮动圆球
+    var inNav = host.closest('nav,header,.topbar,.nav-in,.nav-inner,.sidebar,.site-header');
+    if (!inNav) host.classList.add('lang-switcher--float');
 
     var items = '';
     getSupportedLangs().forEach(function (l) {
-      items += '<li><a href="#" data-lang="' + l.code + '">' + l.flag + ' ' + l.label + '</a></li>';
+      items += '<li role="none"><button type="button" class="lsw-opt" role="option"'
+        + ' data-lang="' + l.code + '" aria-selected="false">'
+        + '<span class="lsw-flag" aria-hidden="true">' + l.flag + '</span>'
+        + '<span class="lsw-name">' + l.label + '</span>'
+        + '<span class="lsw-check" aria-hidden="true">✓</span>'
+        + '</button></li>';
     });
-
     host.innerHTML = ''
-      + '<button class="lang-current" id="lang-current-btn" aria-label="Switch language">'
-      +   '<span class="lang-icon">🌐</span>'
-      +   '<span class="lang-label" id="lang-current-label">English</span>'
-      +   '<span class="lang-arrow">▾</span>'
+      + '<button type="button" class="lsw-btn" aria-haspopup="listbox"'
+      +   ' aria-expanded="false" aria-label="Switch language">'
+      +   GLOBE_SVG
       + '</button>'
-      + '<ul class="lang-dropdown" id="lang-dropdown">'
+      + '<ul class="lsw-menu" role="listbox" aria-label="Language">'
       +   items
       + '</ul>';
+    host.setAttribute('data-lsw-ready', '1');
 
-    // 注入样式（仅一次）
-    if (!document.getElementById('lang-switcher-style')) {
-      var style = document.createElement('style');
-      style.id = 'lang-switcher-style';
-      style.textContent = ''
-        + '.lang-switcher{position:fixed;top:.75rem;right:.75rem;z-index:10000;'
-        + '  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}'
-        + '.lang-switcher .lang-current{'
-        + '  background:rgba(255,255,255,.95);border:1px solid var(--border,#e5e7eb);'
-        + '  border-radius:8px;padding:.4rem .75rem;cursor:pointer;'
-        + '  display:flex;align-items:center;gap:.35rem;font-size:.85rem;'
-        + '  color:var(--text,#111827);box-shadow:0 2px 6px rgba(0,0,0,.08);'
-        + '  transition:all .15s}'
-        + '.lang-switcher .lang-current:hover{background:#fff;box-shadow:0 4px 10px rgba(0,0,0,.12)}'
-        + '.lang-switcher .lang-dropdown{position:absolute;top:calc(100% + 4px);right:0;'
-        + '  background:#fff;border:1px solid var(--border,#e5e7eb);border-radius:8px;'
-        + '  box-shadow:0 4px 12px rgba(0,0,0,.1);list-style:none;margin:0;padding:.25rem 0;'
-        + '  min-width:160px;display:none;overflow:hidden}'
-        + '.lang-switcher.open .lang-dropdown{display:block}'
-        + '.lang-switcher .lang-dropdown li a{'
-        + '  display:block;padding:.5rem .9rem;color:var(--text,#111827);'
-        + '  text-decoration:none;font-size:.85rem;transition:background .1s}'
-        + '.lang-switcher .lang-dropdown li a:hover{background:var(--bg,#f9fafb)}'
-        + '.lang-switcher .lang-dropdown li a.active{background:var(--primary,#1e40af);color:#fff}';
-      document.head.appendChild(style);
+    var btn = host.querySelector('.lsw-btn');
+    var menu = host.querySelector('.lsw-menu');
+
+    function close() {
+      host.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
     }
-  }
-
-  function init() {
-    injectHTML();
-
-    var sw = document.getElementById('lang-switcher');
-    if (!sw) return;
-    var btn = document.getElementById('lang-current-btn');
-    var label = document.getElementById('lang-current-label');
-    var dropdown = document.getElementById('lang-dropdown');
-
-    function updateLabel() {
-      var lang = (window.i18n && window.i18n.getLang()) || 'en';
-      label.textContent = LABELS[lang] || lang;
-      var links = dropdown.querySelectorAll('a[data-lang]');
-      for (var i = 0; i < links.length; i++) {
-        if (links[i].getAttribute('data-lang') === lang) {
-          links[i].classList.add('active');
-        } else {
-          links[i].classList.remove('active');
-        }
-      }
-    }
-
     btn.addEventListener('click', function (e) {
       e.stopPropagation();
-      sw.classList.toggle('open');
+      var willOpen = !host.classList.contains('open');
+      // 关闭其它实例，保证同屏只开一个菜单
+      document.querySelectorAll('.lang-switcher.open').forEach(function (o) {
+        if (o !== host) {
+          o.classList.remove('open');
+          var b = o.querySelector('.lsw-btn');
+          if (b) b.setAttribute('aria-expanded', 'false');
+        }
+      });
+      host.classList.toggle('open', willOpen);
+      btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
     });
-    document.addEventListener('click', function () {
-      sw.classList.remove('open');
-    });
-
-    var links = dropdown.querySelectorAll('a[data-lang]');
-    for (var i = 0; i < links.length; i++) {
-      links[i].addEventListener('click', function (e) {
+    host.querySelectorAll('.lsw-opt').forEach(function (opt) {
+      opt.addEventListener('click', function (e) {
         e.preventDefault();
-        var lang = this.getAttribute('data-lang');
+        var lang = opt.getAttribute('data-lang');
         if (window.i18n && window.i18n.setLang) {
           window.i18n.setLang(lang).then(function () {
-            updateLabel();
-            sw.classList.remove('open');
+            updateAll();
+            close();
             window.dispatchEvent(new CustomEvent('language-changed', { detail: { lang: lang } }));
           });
         }
       });
-    }
+    });
+    host._lswClose = close;
+  }
 
-    window.addEventListener('i18n:ready', updateLabel);
-    window.addEventListener('i18n:change', updateLabel);
-    updateLabel();
+  function updateAll() {
+    var lang = currentLang();
+    document.querySelectorAll('.lang-switcher').forEach(function (host) {
+      var btn = host.querySelector('.lsw-btn');
+      if (btn) {
+        btn.setAttribute('title', LABELS[lang] || lang);
+        btn.setAttribute('aria-label', 'Switch language (current: ' + (LABELS[lang] || lang) + ')');
+      }
+      host.querySelectorAll('.lsw-opt').forEach(function (opt) {
+        var isCur = opt.getAttribute('data-lang') === lang;
+        opt.setAttribute('aria-selected', isCur ? 'true' : 'false');
+      });
+    });
+  }
+
+  function init() {
+    injectCSS();
+    var hosts = document.querySelectorAll('#lang-switcher, [data-lang-switcher]');
+    if (!hosts.length) return;
+    hosts.forEach(buildHost);
+
+    document.addEventListener('click', function () {
+      document.querySelectorAll('.lang-switcher.open').forEach(function (o) {
+        o.classList.remove('open');
+        var b = o.querySelector('.lsw-btn');
+        if (b) b.setAttribute('aria-expanded', 'false');
+      });
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.lang-switcher.open').forEach(function (o) {
+          if (o._lswClose) o._lswClose();
+        });
+      }
+    });
+
+    window.addEventListener('i18n:ready', updateAll);
+    window.addEventListener('i18n:change', updateAll);
+    updateAll();
   }
 
   if (document.readyState === 'loading') {
