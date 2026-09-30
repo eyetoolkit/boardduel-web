@@ -20,27 +20,27 @@
 
 <header class="hd">
   <a class="logo" href="/"><b>Board</b><i>Duel</i></a>
-  <span class="role"><span class="dot"></span>Teacher</span>
-  <span class="sub">Classroom code lab</span>
+  <span class="role"><span class="dot"></span><span data-i18n="bn.bn_teacher_role">Teacher</span></span>
+  <span class="sub" data-i18n="bn.bn_teacher_sub">Classroom code lab</span>
   <span class="spacer"></span>
-  <a class="ghost" href="/">← Back to site</a>
+  <a class="ghost" href="/" data-i18n="bn.bn_crank_link">← Back to site</a>
 </header>
 
 <main class="shell">
   <nav class="tabs" role="tablist">
-    <button class="tab on" data-tab="session" role="tab" aria-selected="true">Session</button>
-    <button class="tab" data-tab="board" role="tab" aria-selected="false">Projector</button>
-    <button class="tab" data-tab="guide" role="tab" aria-selected="false">Guide</button>
+    <button class="tab on" data-tab="session" role="tab" aria-selected="true" data-i18n="bn.bn_teacher_session">Session</button>
+    <button class="tab" data-tab="board" role="tab" aria-selected="false" data-i18n="bn.bn_teacher_projector">Projector</button>
+    <button class="tab" data-tab="guide" role="tab" aria-selected="false" data-i18n="bn.bn_teacher_guide">Guide</button>
   </nav>
 
   <!-- SESSION -->
   <section id="viewSession" class="view">
     <div class="card">
-      <h1 class="secttl">Start a classroom session</h1>
-      <p class="note">Pick a board, choose how many pairs you need, and we mint a private room code for each. Students open the link (or type the code) and play on one board — no accounts, no ads.</p>
+      <h1 class="secttl" data-i18n="bn.bn_teacher_title">Start a classroom session</h1>
+      <p class="note" data-i18n="bn.bn_teacher_note">Pick a board, choose how many pairs you need, and we mint a private room code for each. Students open the link (or type the code) and play on one board — no accounts, no ads.</p>
       <div class="form">
         <div class="fld">
-          <label for="fGame">GAME</label>
+          <label for="fGame" data-i18n="bn.bn_teacher_game">GAME</label>
           <select id="fGame">
             <option value="gomoku">Gomoku · 五子棋</option>
             <option value="connect4">Connect 4 · 四子棋</option>
@@ -50,11 +50,11 @@
           </select>
         </div>
         <div class="fld">
-          <label for="fCount">BOARDS (pairs)</label>
+          <label for="fCount" data-i18n="bn.bn_teacher_boards">BOARDS (pairs)</label>
           <input id="fCount" type="number" value="8" min="1" max="16" />
         </div>
         <div class="fld">
-          <label for="fClock">TIMED (optional)</label>
+          <label for="fClock" data-i18n="bn.bn_teacher_timed">TIMED (optional)</label>
           <select id="fClock">
             <option value="">Untimed</option>
             <option value="3+0">3 min</option>
@@ -75,38 +75,38 @@
   <!-- PROJECTOR -->
   <section id="viewBoard" class="view" style="display:none">
     <div class="proj-top">
-      <span class="ttl" id="projTitle">Classroom board</span>
-      <span class="q">Large-type · ad-free · for projector</span>
+      <span class="ttl" id="projTitle" data-i18n="bn.bn_teacher_proj_title">Classroom board</span>
+      <span class="q" data-i18n="bn.bn_teacher_proj_sub">Large-type · ad-free · for projector</span>
       <span class="spacer"></span>
-      <button class="ghost" id="copyAllBtn" type="button">Copy all links</button>
+      <button class="ghost" id="copyAllBtn" type="button" data-i18n="bn.bn_teacher_copy_all">Copy all links</button>
     </div>
     <div id="projGrid" class="proj-grid"></div>
-    <p class="empty" id="projEmpty">No session yet — mint codes in the <b>Session</b> tab first.</p>
+    <p class="empty" id="projEmpty" data-i18n="bn.bn_teacher_proj_empty">No session yet — mint codes in the <b>Session</b> tab first.</p>
   </section>
 
   <!-- GUIDE -->
   <section id="viewGuide" class="view" style="display:none">
     <div class="card">
-      <h1 class="secttl">How students join</h1>
+      <h1 class="secttl" data-i18n="bn.bn_teacher_guide_h1">How students join</h1>
       <ol class="steps">
-        <li>Open the shared link (or visit <code>/games/&lt;board&gt;/?c=CODE</code>).</li>
-        <li>Two players share one board: the first to open becomes host, the second joins the same room.</li>
-        <li>No login. Each board is a private room that expires on its own.</li>
+        <li data-i18n="bn.bn_teacher_guide_li1">Open the shared link (or visit <code>/games/&lt;board&gt;/?c=CODE</code>).</li>
+        <li data-i18n="bn.bn_teacher_guide_li2">Two players share one board: the first to open becomes host, the second joins the same room.</li>
+        <li data-i18n="bn.bn_teacher_guide_li3">No login. Each board is a private room that expires on its own.</li>
       </ol>
       <div class="compliance">
-        <b>FERPA-light.</b> This lab stores no student names and no results. Room codes are created server-side and expire automatically. Upgrade to <b>Teacher Pro</b> (a future build) for live standings and per-board insights — without changing how students join.
+        <span data-i18n="bn.bn_teacher_compliance"><b>FERPA-light.</b> This lab stores no student names and no results. Room codes are created server-side and expire automatically. Upgrade to <b>Teacher Pro</b> (a future build) for live standings and per-board insights — without changing how students join.</span>
       </div>
-      <h2 class="secttl sm">What's real vs. planned</h2>
+      <h2 class="secttl sm" data-i18n="bn.bn_teacher_whats_real">What's real vs. planned</h2>
       <table class="cmp">
-        <thead><tr><th>Capability</th><th>Status</th></tr></thead>
+        <thead><tr><th data-i18n="bn.bn_teacher_capability">Capability</th><th data-i18n="bn.bn_teacher_status">Status</th></tr></thead>
         <tbody>
-          <tr><td>Mint private room codes for any of the 5 boards</td><td class="ok">Live</td></tr>
-          <tr><td>Share link · copy code · projector view</td><td class="ok">Live</td></tr>
-          <tr><td>Live 2-player rooms (Gomoku)</td><td class="ok">Live</td></tr>
-          <tr><td>Live 2-player rooms (the other 4 boards)</td><td class="soon">Roadmap</td></tr>
-          <tr><td>Students join by code, no account</td><td class="ok">Live</td></tr>
-          <tr><td>Live standings &amp; per-board win/loss tracking</td><td class="soon">Planned · Teacher Pro</td></tr>
-          <tr><td>Class rosters &amp; assignment history</td><td class="soon">Planned · Teacher Pro</td></tr>
+          <tr><td>Mint private room codes for any of the 5 boards</td><td class="ok" data-i18n="bn.bn_teacher_live">Live</td></tr>
+          <tr><td data-i18n="bn.bn_teacher_cap_share">Share link · copy code · projector view</td><td class="ok" data-i18n="bn.bn_teacher_live">Live</td></tr>
+          <tr><td data-i18n="bn.bn_teacher_cap_live2_g">Live 2-player rooms (Gomoku)</td><td class="ok" data-i18n="bn.bn_teacher_live">Live</td></tr>
+          <tr><td data-i18n="bn.bn_teacher_cap_live2_4">Live 2-player rooms (the other 4 boards)</td><td class="soon" data-i18n="bn.bn_teacher_roadmap">Roadmap</td></tr>
+          <tr><td data-i18n="bn.bn_teacher_cap_join">Students join by code, no account</td><td class="ok" data-i18n="bn.bn_teacher_live">Live</td></tr>
+          <tr><td data-i18n="bn.bn_teacher_cap_stats">Live standings &amp; per-board win/loss tracking</td><td class="soon" data-i18n="bn.bn_teacher_planned">Planned · Teacher Pro</td></tr>
+          <tr><td data-i18n="bn.bn_teacher_cap_roster">Class rosters &amp; assignment history</td><td class="soon" data-i18n="bn.bn_teacher_planned">Planned · Teacher Pro</td></tr>
         </tbody>
       </table>
     </div>

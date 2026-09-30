@@ -82,24 +82,24 @@
 </aside>
 <main class="pp-main">
   <div class="pp-wrap">
-    <nav class="pp-crumb" aria-label="Breadcrumb"><a href="/">Home</a><span class="sep">/</span><span>Leaderboard</span></nav>
-    <h1 class="pp-h1">Leaderboard</h1>
-    <p class="pp-lead">Ranked by points — finish a match for +10, and win streaks add a bonus. The tier ladder below tracks Elo per game.</p>
+    <nav class="pp-crumb" aria-label="Breadcrumb"><a href="/">Home</a><span class="sep">/</span><span data-i18n="bn.bn_leaderboard">Leaderboard</span></nav>
+    <h1 class="pp-h1" data-i18n="bn.bn_leaderboard">Leaderboard</h1>
+    <p class="pp-lead" data-i18n="bn.bn_rank_lead">Ranked by points — finish a match for +10, and win streaks add a bonus. The tier ladder below tracks Elo per game.</p>
 
     <div class="pp-me" id="pp-me">
-      <div class="pos">Loading…</div>
+      <div class="pos" data-i18n="bn.bn_loading">Loading…</div>
     </div>
 
-    <h2 class="pp-h2">Global standings</h2>
+    <h2 class="pp-h2" data-i18n="bn.bn_rank_global_h2">Global standings</h2>
     <div class="pp-list" id="pp-board">
-      <div class="pp-state">Loading…</div>
+      <div class="pp-state" data-i18n="bn.bn_loading">Loading…</div>
     </div>
 
-    <h2 class="pp-h2">Tier ladder (Elo)</h2>
+    <h2 class="pp-h2" data-i18n="bn.bn_rank_tier_h2">Tier ladder (Elo)</h2>
     <div class="pp-filters">
-      <label class="pp-muted" for="pp-tier-game">Game</label>
+      <label class="pp-muted" for="pp-tier-game" data-i18n="bn.bn_rank_game_label">Game</label>
       <select class="pp-select" id="pp-tier-game">
-        <option value="all">All games</option>
+        <option value="all" data-i18n="bn.bn_rank_filter_all">All games</option>
         <option value="gomoku">Gomoku</option>
         <option value="tictactoe">Tic-Tac-Toe</option>
         <option value="connect4">Connect 4</option>
@@ -108,12 +108,12 @@
       </select>
     </div>
     <div class="pp-list" id="pp-tiers">
-      <div class="pp-state">Loading…</div>
+      <div class="pp-state" data-i18n="bn.bn_loading">Loading…</div>
     </div>
 
     <div class="pp-cta-row">
-      <a class="pp-cta" href="/games/gomoku/lobby/">Play a match</a>
-      <a class="pp-cta ghost" href="/stats/">My stats</a>
+      <a class="pp-cta" href="/games/gomoku/lobby/" data-i18n="bn.bn_play_match">Play a match</a>
+      <a class="pp-cta ghost" href="/stats/" data-i18n="bn.bn_rank_my_stats">My stats</a>
     </div>
   </div>
 </main>
