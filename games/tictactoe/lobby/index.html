@@ -133,11 +133,11 @@
     <div class="wrap">
       <span class="gcover" aria-hidden="true"><svg role="img" aria-label="Tic-Tac-Toe"><use href="#cv-tictactoe"/></svg></span>
       <h1 data-i18n-html="bl.bl_ttt_hero_h1">Three in a row. <em>Take the board.</em></h1>
-      <p class="sub">Classic Tic-Tac-Toe on a 3&times;3 grid &mdash; against a three-level engine, or pass &amp; play on one screen with a friend.</p>
+      <p class="sub" data-i18n="bm.bm_ttt_hero_sub">Classic Tic-Tac-Toe on a 3&times;3 grid &mdash; against a three-level engine, or pass &amp; play on one screen with a friend.</p>
       <div class="chips">
-        <span class="chip"><span class="dot"></span>3&times;3 grid</span>
-        <span class="chip"><span class="dot"></span>AI &middot; Pass &amp; Play</span>
-        <span class="chip"><span class="dot"></span>No login to play</span>
+        <span class="chip"><span class="dot"></span><span data-i18n="bm.bm_ttt_chip1">3&times;3 grid</span></span>
+        <span class="chip"><span class="dot"></span><span data-i18n="bm.bm_chip_pass_play">AI &middot; Pass &amp; Play</span></span>
+        <span class="chip"><span class="dot"></span><span data-i18n="bm.bm_chip_no_login">No login to play</span></span>
       </div>
     </div>
   </section>
@@ -149,27 +149,27 @@
       <div class="modes" id="modeGrid">
         <a class="mode" href="/games/tictactoe/?mode=ai" data-mode="ai">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-engine"/></svg></div>
-          <div class="mt" data-i18n="games.solo">Play the Engine</div>
+          <div class="mt" data-i18n="bm.bm_mt_engine">Play the Engine</div>
         </a>
         <a class="mode" href="/games/tictactoe/?mode=ai" data-mode="friend">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-friend"/></svg></div>
-          <div class="mt" data-i18n="games.friend">Friend Room</div>
+          <div class="mt" data-i18n="bm.bm_mt_friend">Friend Room</div>
         </a>
         <a class="mode" href="/games/tictactoe/?mode=pass" data-mode="random">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-random"/></svg></div>
-          <div class="mt" data-i18n="games.random">Random Match</div>
+          <div class="mt" data-i18n="bm.bm_mt_random">Random Match</div>
         </a>
         <a class="mode" href="/games/tictactoe/?mode=pass" data-mode="pass">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-pass"/></svg></div>
-          <div class="mt">Pass &amp; Play</div>
+          <div class="mt" data-i18n="bm.bm_mt_pass">Pass &amp; Play</div>
         </a>
         <a class="mode" href="/games/tictactoe/?mode=ai" data-mode="master">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-master"/></svg></div>
-          <div class="mt">vs AI Master</div>
+          <div class="mt" data-i18n="bm.bm_mt_ai_master">vs AI Master</div>
         </a>
         <div class="mode soon" aria-disabled="true">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-master"/></svg></div>
-          <div class="mt" data-i18n="games.tournament">Tournament</div>
+          <div class="mt" data-i18n="bm.bm_mt_tournament">Tournament</div>
           <span class="soon-pill" data-i18n="bl.bl_soon_pill">SOON</span>
         </div>
       </div>
@@ -178,7 +178,7 @@
     <!-- 右栏 -->
     <aside class="side">
       <section class="panel" aria-labelledby="ladTitle">
-        <h3 id="ladTitle" data-i18n="bl.bl_ttt_lad_title">Tic-Tac-Toe Elo ladder</h3>
+        <h3 id="ladTitle" data-i18n="bm.bm_ttt_ladder_title">Tic-Tac-Toe Elo ladder</h3>
         <p class="pnote">Top 10% this week &middot; weekly reset keeps it honest.</p>
         <div id="rankRows" aria-live="polite">
           <div class="rank-empty">Loading the standings&hellip;</div>
@@ -204,12 +204,12 @@
 
   <!-- How to play 4 步 -->
   <section class="how wrap" aria-labelledby="howTitle">
-    <h2 class="sec-h" id="howTitle">How to play<small>Three in a row &mdash; horizontally, vertically or diagonally. That's the whole game.</small></h2>
+    <h2 class="sec-h" id="howTitle" data-i18n-html="bm.bm_how_h2">How to play<small data-i18n="bm.bm_ttt_how_small">Three in a row &mdash; horizontally, vertically or diagonally. That's the whole game.</small></h2>
     <div class="how-grid">
-      <div class="step"><span class="sn">1</span><b>Pick your mark</b><span>You play X, the engine (or your friend) plays O. Black moves first in every match.</span></div>
-      <div class="step"><span class="sn">2</span><b>Place one per turn</b><span>Click an empty cell. Each move locks immediately; no take-backs, no time bank.</span></div>
-      <div class="step"><span class="sn">3</span><b>Block and strike</b><span>If you only chase your own line, you lose to a fork on the next turn. Think one move ahead.</span></div>
-      <div class="step"><span class="sn">4</span><b data-i18n="bl.bl_ttt_step4_t">Climb the ladder</b><span data-i18n="bl.bl_ttt_step4_b">Every win moves your Elo across all three Duel sites. Weekly reset keeps it honest.</span></div>
+      <div class="step"><span class="sn">1</span><b data-i18n="bm.bm_ttt_step1_t">Pick your mark</b><span data-i18n="bm.bm_ttt_step1_b">You play X, the engine (or your friend) plays O. Black moves first in every match.</span></div>
+      <div class="step"><span class="sn">2</span><b data-i18n="bm.bm_ttt_step2_t">Place one per turn</b><span data-i18n="bm.bm_ttt_step2_b">Click an empty cell. Each move locks immediately; no take-backs, no time bank.</span></div>
+      <div class="step"><span class="sn">3</span><b data-i18n="bm.bm_ttt_step3_t">Block and strike</b><span data-i18n="bm.bm_ttt_step3_b">If you only chase your own line, you lose to a fork on the next turn. Think one move ahead.</span></div>
+      <div class="step"><span class="sn">4</span><b data-i18n="bm.bm_step4_climb">Climb the ladder</b><span data-i18n="bm.bm_step4_body">Every win moves your Elo across all three Duel sites. Weekly reset keeps it honest.</span></div>
     </div>
   </section>
 
