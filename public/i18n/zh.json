@@ -1699,7 +1699,8 @@
     "soon_label": "打磨中",
     "soon_pill": "即将推出",
     "footer_explore": "探索 Duel 家族",
-    "footer_copy": "© 2026 BoardDuel · 纯静态 · 隐私优先 · 免费游玩"
+    "footer_copy": "© 2026 BoardDuel · 纯静态 · 隐私优先 · 免费游玩",
+    "nav_teacher": "教师端"
   },
   "bl": {
     "bl_modes_h2": "选择玩法",

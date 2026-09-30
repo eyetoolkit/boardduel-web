@@ -1750,7 +1750,8 @@
     "soon_label": "開発中",
     "soon_pill": "近日",
     "footer_explore": "Duel ファミリーを見る",
-    "footer_copy": "© 2026 BoardDuel · 完全静的 · プライバシー最優先 · 無料"
+    "footer_copy": "© 2026 BoardDuel · 完全静的 · プライバシー最優先 · 無料",
+    "nav_teacher": "教師用"
   },
   "bl": {
     "bl_modes_h2": "モードを選ぶ",

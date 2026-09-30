@@ -1727,7 +1727,8 @@
     "soon_label": "En atelier",
     "soon_pill": "BIENTÔT",
     "footer_explore": "Explore la famille Duel",
-    "footer_copy": "© 2026 BoardDuel · 100% statique · Confidentialité d'abord · Gratuit"
+    "footer_copy": "© 2026 BoardDuel · 100% statique · Confidentialité d'abord · Gratuit",
+    "nav_teacher": "Enseignants"
   },
   "bl": {
     "bl_modes_h2": "Choisissez un mode",

@@ -1651,7 +1651,8 @@
     "soon_label": "In the workshop",
     "soon_pill": "SOON",
     "footer_explore": "Explore the Duel family",
-    "footer_copy": "© 2026 BoardDuel · Pure static · Privacy-first · Free to play"
+    "footer_copy": "© 2026 BoardDuel · Pure static · Privacy-first · Free to play",
+    "nav_teacher": "Teacher"
   },
   "bl": {
     "bl_modes_h2": "Choose your mode",
