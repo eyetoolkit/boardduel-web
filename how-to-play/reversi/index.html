@@ -84,87 +84,87 @@
   <div class="pp-wrap">
     <nav class="pp-crumb" aria-label="Breadcrumb"><a href="/">Home</a><span class="sep">/</span><a href="/how-to-play/">How to play</a><span class="sep">/</span><span>Othello</span></nav>
     <h1 class="pp-h1">How to play Othello</h1>
-    <p class="pp-lead">Othello — also called Reversi — flips the usual script: you do not build a line, you capture. Every move you make can turn a board full of your opponent's discs into yours.</p>
+    <p class="pp-lead" data-i18n="bh.bh_reversi_lead">Othello — also called Reversi — flips the usual script: you do not build a line, you capture. Every move you make can turn a board full of your opponent's discs into yours.</p>
 
     <div class="pp-note">
-      <p class="pp-p"><strong>The goal:</strong> finish with more of your discs on the board than your opponent. You capture by trapping a line of enemy discs between two of your own — they flip to your colour.</p>
+      <p class="pp-p"><strong data-i18n="bh.bh_h2p_strong_goal">The goal:</strong> <span data-i18n="bh.bh_reversi_goal_p">finish with more of your discs on the board than your opponent. You capture by trapping a line of enemy discs between two of your own — they flip to your colour.</span></p>
     </div>
 
-    <h2 class="pp-h2">Rules</h2>
+    <h2 class="pp-h2" data-i18n="bh.bh_h2p_rules">Rules</h2>
     <ul class="pp-ul">
-      <li>Played on an 8×8 board, starting with four discs in the centre</li>
-      <li>Black moves first, then players alternate</li>
-      <li>A legal move must trap at least one enemy disc between the disc you place and one of your own</li>
-      <li>Every trapped disc in every direction flips immediately</li>
-      <li>If you have no legal move, you pass; the game ends when neither player can move</li>
+      <li data-i18n="bh.bh_reversi_rule1">Played on an 8×8 board, starting with four discs in the centre</li>
+      <li data-i18n="bh.bh_reversi_rule2">Black moves first, then players alternate</li>
+      <li data-i18n="bh.bh_reversi_rule3">A legal move must trap at least one enemy disc between the disc you place and one of your own</li>
+      <li data-i18n="bh.bh_reversi_rule4">Every trapped disc in every direction flips immediately</li>
+      <li data-i18n="bh.bh_reversi_rule5">If you have no legal move, you pass; the game ends when neither player can move</li>
     </ul>
 
-    <h2 class="pp-h2">The shapes that win</h2>
+    <h2 class="pp-h2" data-i18n="bh.bh_h2p_shapes">The shapes that win</h2>
     <div class="pp-grid">
       <div class="pp-card">
-        <h3 class="pp-h3">The flip</h3>
+        <h3 class="pp-h3" data-i18n="bh.bh_reversi_shape1_t">The flip</h3>
       <div class="pp-cells"><div class="pp-cell you" aria-hidden="true">●</div><div class="pp-cell opp" aria-hidden="true">○</div><div class="pp-cell you" aria-hidden="true">●</div></div>        <p class="pp-muted">A trapped line flips end to end — the core mechanic of the whole game.</p>
       </div>
       <div class="pp-card">
-        <h3 class="pp-h3">A corner</h3>
+        <h3 class="pp-h3" data-i18n="bh.bh_reversi_shape2_t">A corner</h3>
       <div class="pp-cells"><div class="pp-cell you" aria-hidden="true">●</div><div class="pp-cell empty" aria-hidden="true">·</div><div class="pp-cell empty" aria-hidden="true">·</div></div>        <p class="pp-muted">A corner can never be flipped back. Taking one locks in every disc that touches it.</p>
       </div>
       <div class="pp-card">
-        <h3 class="pp-h3">C and X squares</h3>
+        <h3 class="pp-h3" data-i18n="bh.bh_reversi_shape3_t">C and X squares</h3>
       <div class="pp-cells"><div class="pp-cell opp" aria-hidden="true">○</div><div class="pp-cell you" aria-hidden="true">●</div><div class="pp-cell opp" aria-hidden="true">○</div></div>        <p class="pp-muted">Cells touching a corner are dangerous — occupying them often hands the corner away.</p>
       </div>
       <div class="pp-card">
-        <h3 class="pp-h3">A wall</h3>
+        <h3 class="pp-h3" data-i18n="bh.bh_reversi_shape4_t">A wall</h3>
       <div class="pp-cells"><div class="pp-cell you" aria-hidden="true">●</div><div class="pp-cell you" aria-hidden="true">●</div><div class="pp-cell you" aria-hidden="true">●</div></div>        <p class="pp-muted">Discs along an edge are far harder to flip than discs in open space.</p>
       </div>
     </div>
 
-    <h2 class="pp-h2">Strategy</h2>
+    <h2 class="pp-h2" data-i18n="bh.bh_h2p_strategy">Strategy</h2>
     <div class="pp-card" style="margin-top:12px">
-      <h3 class="pp-h3">1. Take corners, never gift them</h3>
-      <p class="pp-p">A corner is permanent. Avoid the C and X squares next to a corner unless taking them does not concede the corner itself.</p>
+      <h3 class="pp-h3" data-i18n="bh.bh_reversi_strat1_t">1. Take corners, never gift them</h3>
+      <p class="pp-p" data-i18n="bh.bh_reversi_strat1_b">A corner is permanent. Avoid the C and X squares next to a corner unless taking them does not concede the corner itself.</p>
     </div>
     <div class="pp-card" style="margin-top:12px">
-      <h3 class="pp-h3">2. Play for mobility</h3>
-      <p class="pp-p">Count your legal moves, not your discs. A position with more options forces your opponent into bad moves later.</p>
+      <h3 class="pp-h3" data-i18n="bh.bh_reversi_strat2_t">2. Play for mobility</h3>
+      <p class="pp-p" data-i18n="bh.bh_reversi_strat2_b">Count your legal moves, not your discs. A position with more options forces your opponent into bad moves later.</p>
     </div>
     <div class="pp-card" style="margin-top:12px">
-      <h3 class="pp-h3">3. Hold your discs back early</h3>
-      <p class="pp-p">Filling the board early gives your opponent the walls and corners. Quiet opening moves usually win the long game.</p>
+      <h3 class="pp-h3" data-i18n="bh.bh_reversi_strat3_t">3. Hold your discs back early</h3>
+      <p class="pp-p" data-i18n="bh.bh_reversi_strat3_b">Filling the board early gives your opponent the walls and corners. Quiet opening moves usually win the long game.</p>
     </div>
     <div class="pp-card" style="margin-top:12px">
-      <h3 class="pp-h3">4. Build stable edges</h3>
-      <p class="pp-p">A solid run of discs along an edge cannot be flipped from the outside. Stability is what converts a lead into a win.</p>
+      <h3 class="pp-h3" data-i18n="bh.bh_reversi_strat4_t">4. Build stable edges</h3>
+      <p class="pp-p" data-i18n="bh.bh_reversi_strat4_b">A solid run of discs along an edge cannot be flipped from the outside. Stability is what converts a lead into a win.</p>
     </div>
 
     <div class="pp-tip">
-      <p class="pp-p"><strong>Pro tip:</strong> disc count lies until the very end. A player far ahead at move 20 often loses — the winner is whoever controls the corners and the edges.</p>
+      <p class="pp-p"><strong data-i18n="bh.bh_h2p_protip">Pro tip:</strong> <span data-i18n="bh.bh_reversi_protip">disc count lies until the very end. A player far ahead at move 20 often loses — the winner is whoever controls the corners and the edges.</span></p>
     </div>
 
-    <h2 class="pp-h2">Playing here</h2>
-    <p class="pp-p"><strong>Modes on BoardDuel:</strong> vs AI — play a live engine at three difficulty levels; Pass &amp; play — two players, one screen; Friend room — share a six-character code and play remotely.</p>
+    <h2 class="pp-h2" data-i18n="bh.bh_h2p_playing">Playing here</h2>
+    <p class="pp-p"><strong data-i18n="bh.bh_h2p_modes_label">Modes on BoardDuel:</strong> <span data-i18n="bh.bh_reversi_modes_b">vs AI — play a live engine at three difficulty levels; Pass &amp; play — two players, one screen; Friend room — share a six-character code and play remotely.</span></p>
 
-    <h2 class="pp-h2">Frequently asked</h2>
+    <h2 class="pp-h2" data-i18n="bh.bh_h2p_faq">Frequently asked</h2>
     <details class="pp-faq">
-      <summary>Do I have to flip discs if I can?</summary>
-      <p class="pp-p">Yes. If your move traps enemy discs, they flip — you cannot choose to leave them.</p>
+      <summary data-i18n="bh.bh_reversi_q1_t">Do I have to flip discs if I can?</summary>
+      <p class="pp-p" data-i18n="bh.bh_reversi_q1_b">Yes. If your move traps enemy discs, they flip — you cannot choose to leave them.</p>
     </details>
     <details class="pp-faq">
-      <summary>What if I have no legal move?</summary>
-      <p class="pp-p">You pass and your opponent moves again. If neither player can move, the game ends and discs are counted.</p>
+      <summary data-i18n="bh.bh_reversi_q2_t">What if I have no legal move?</summary>
+      <p class="pp-p" data-i18n="bh.bh_reversi_q2_b">You pass and your opponent moves again. If neither player can move, the game ends and discs are counted.</p>
     </details>
     <details class="pp-faq">
-      <summary>Is Othello the same as Reversi?</summary>
-      <p class="pp-p">Reversi is the older family name; Othello is the standardised tournament version with fixed opening discs. They play the same.</p>
+      <summary data-i18n="bh.bh_reversi_q3_t">Is Othello the same as Reversi?</summary>
+      <p class="pp-p" data-i18n="bh.bh_reversi_q3_b">Reversi is the older family name; Othello is the standardised tournament version with fixed opening discs. They play the same.</p>
     </details>
     <details class="pp-faq">
-      <summary>Why do corners matter so much?</summary>
-      <p class="pp-p">A disc in a corner can never be surrounded, so it is permanent — and it anchors every disc along both edges meeting it.</p>
+      <summary data-i18n="bh.bh_reversi_q4_t">Why do corners matter so much?</summary>
+      <p class="pp-p" data-i18n="bh.bh_reversi_q4_b">A disc in a corner can never be surrounded, so it is permanent — and it anchors every disc along both edges meeting it.</p>
     </details>
 
     <div class="pp-cta-row">
-      <a class="pp-cta" href="/games/reversi/lobby/" data-stage="live">Play Othello</a>
-      <a class="pp-cta ghost" href="/how-to-play/">All guides</a>
+      <a class="pp-cta" href="/games/reversi/lobby/" data-stage="live" data-i18n="bh.bh_reversi_play">Play Othello</a>
+      <a class="pp-cta ghost" href="/how-to-play/" data-i18n="bh.bh_h2p_all_guides">All guides</a>
     </div>
   </div>
 </main>
