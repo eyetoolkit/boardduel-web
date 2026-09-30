@@ -2003,7 +2003,8 @@
     "bn_teacher_tip": "ヒント：16 人のクラスには 8 盤を発行。各コードは同じ盤で動作 — 部屋ではなくトピックでペアを。",
     "bn_proj_results": "勝者を表示",
     "bn_teacher_cap_prog": "リアルタイム盤面進行（待機 / 対局中 / 終了）",
-    "bn_teacher_cap_winner": "投影での勝者表示——デフォルトはオフ、教師が制御"
+    "bn_teacher_cap_winner": "投影での勝者表示——デフォルトはオフ、教師が制御",
+    "bn_teacher_export_csv": "📊 CSVエクスポート"
   },
   "bm": {
     "bm_chip_pass_play": "AI · 同画面プレイ",

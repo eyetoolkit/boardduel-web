@@ -1952,7 +1952,8 @@
     "bn_teacher_tip": "提示：16 人的课堂建议生成 8 块棋盘。每个码都跑在同一块棋盘上——按主题分组，不按房间分组。",
     "bn_proj_results": "显示胜方",
     "bn_teacher_cap_prog": "实时盘位进度（等待 / 对局中 / 已结束）",
-    "bn_teacher_cap_winner": "投影显示胜方——默认关闭，由教师控制"
+    "bn_teacher_cap_winner": "投影显示胜方——默认关闭，由教师控制",
+    "bn_teacher_export_csv": "📊 导出 CSV"
   },
   "bm": {
     "bm_chip_pass_play": "AI · 双人同屏",

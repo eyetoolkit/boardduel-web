@@ -1904,7 +1904,8 @@
     "bn_teacher_tip": "Tip: mint 8 boards for a class of 16. Each code works on the same board — pair students by topic, not by room.",
     "bn_proj_results": "Show winners",
     "bn_teacher_cap_prog": "Live board progress (waiting / playing / finished)",
-    "bn_teacher_cap_winner": "Winner reveal on the projector — off by default, teacher controlled"
+    "bn_teacher_cap_winner": "Winner reveal on the projector — off by default, teacher controlled",
+    "bn_teacher_export_csv": "📊 Export CSV"
   },
   "bm": {
     "bm_chip_pass_play": "AI · Pass & Play",

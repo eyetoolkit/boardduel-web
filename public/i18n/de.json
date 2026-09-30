@@ -1981,7 +1981,8 @@
     "bn_teacher_tip": "Tipp: 8 Bretter für eine Klasse mit 16 prägen. Jeder Code läuft auf demselben Brett — nach Thema paaren, nicht nach Raum.",
     "bn_proj_results": "Sieger anzeigen",
     "bn_teacher_cap_prog": "Live-Brettfortschritt (wartend / spielend / beendet)",
-    "bn_teacher_cap_winner": "Siegeranzeige am Projektor — standardmäßig aus, vom Lehrer gesteuert"
+    "bn_teacher_cap_winner": "Siegeranzeige am Projektor — standardmäßig aus, vom Lehrer gesteuert",
+    "bn_teacher_export_csv": "📊 CSV exportieren"
   },
   "bm": {
     "bm_chip_pass_play": "KI · Zu zweit auf einem Bildschirm",

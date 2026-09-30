@@ -1980,7 +1980,8 @@
     "bn_teacher_tip": "Astuce : générez 8 plateaux pour une classe de 16. Chaque code fonctionne sur le même plateau — jumelez par thème, pas par salle.",
     "bn_proj_results": "Afficher les vainqueurs",
     "bn_teacher_cap_prog": "Progression des plateaux en direct (en attente / en cours / terminé)",
-    "bn_teacher_cap_winner": "Révéler les vainqueurs au projecteur — désactivé par défaut, contrôlé par l’enseignant"
+    "bn_teacher_cap_winner": "Révéler les vainqueurs au projecteur — désactivé par défaut, contrôlé par l’enseignant",
+    "bn_teacher_export_csv": "📊 Exporter CSV"
   },
   "bm": {
     "bm_chip_pass_play": "IA · Deux sur un écran",

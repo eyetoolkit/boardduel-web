@@ -232,6 +232,37 @@ function toast(msg: string): void {
   toastTimer = window.setTimeout(() => t.classList.remove('show'), 1800);
 }
 
+/* ─── CSV export (P1-2 教师复访触发器) ───
+ * 列：board_index, room_code, join_url, status, winner_seat, ts
+ * 胜方只存座位号（0/1/draw），不含真实姓名；隐私设计见 data-retention.md
+ */
+function exportCsv(): void {
+  const s = load();
+  if (!s || s.boards.length === 0) {
+    toast('No boards to export');
+    return;
+  }
+  const rows: string[][] = [
+    ['board_index', 'room_code', 'game', 'join_url', 'status', 'winner_seat', 'exported_at_iso'],
+  ];
+  const nowIso = new Date().toISOString();
+  s.boards.forEach((b, i) => {
+    const st = liveState.get(b.code);
+    const status = st ? String(st.status) : 'unknown';
+    const winner = st && st.winner != null ? String(st.winner) : '';
+    rows.push([String(i + 1), b.code, b.game || s.game, b.link, status, winner, nowIso]);
+  });
+  const csv = rows.map((r) => r.map((x) => '"' + String(x).replace(/"/g, '""') + '"').join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' }); // BOM for Excel
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `boardduel-${s.game}-${Date.now()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('📊 CSV exported');
+}
+
 function setTab(name: string): void {
   document.querySelectorAll<HTMLElement>('.tab').forEach((t) => {
     const on = t.dataset.tab === name;
@@ -288,6 +319,8 @@ function init(): void {
     }
     await copy(s.boards.map((b) => b.link).join('\n'));
   });
+  // CSV 导出（房间状态 + 胜方座位号）—— 教师复访触发器
+  $('exportCsvBtn').addEventListener('click', () => exportCsv());
   const saved = load();
   if (saved && saved.boards.length) {
     renderBoards(saved);

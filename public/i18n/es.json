@@ -1981,7 +1981,8 @@
     "bn_teacher_tip": "Consejo: genera 8 tableros para una clase de 16. Cada código funciona en el mismo tablero — empareja por tema, no por sala.",
     "bn_proj_results": "Mostrar ganadores",
     "bn_teacher_cap_prog": "Progreso de tablero en vivo (esperando / jugando / terminado)",
-    "bn_teacher_cap_winner": "Mostrar ganadores en el proyector: desactivado por defecto, controlado por el docente"
+    "bn_teacher_cap_winner": "Mostrar ganadores en el proyector: desactivado por defecto, controlado por el docente",
+    "bn_teacher_export_csv": "📊 Exportar CSV"
   },
   "bm": {
     "bm_chip_pass_play": "IA · Dos en una pantalla",
