@@ -1935,7 +1935,7 @@
     "bn_teacher_guide_li1": "打开分享链接（或访问 <code>/games/&lt;board&gt;/?c=CODE</code>）。",
     "bn_teacher_guide_li2": "两个学生共用一块棋盘：先打开的成为房主，后到的进入同一房间。",
     "bn_teacher_guide_li3": "无需登录。每块棋盘都是独立私密房间。",
-    "bn_teacher_compliance": "FERPA 友好。本实验不存学生姓名、不存对局结果。房间码服务端生成并自动过期。未来升级 <b>Teacher Pro</b>，可加实时排行榜与每局详情——不影响学生加入方式。",
+    "bn_teacher_compliance": "<b>FERPA-light。</b>本页不存储学生姓名——只存匿名的盘位进度（等待 / 对局中 / 已结束）。胜方展示默认关闭、由教师控制。房间码由服务端创建并自动过期。班级名册与作业历史仍为计划功能（Teacher Pro）。",
     "bn_teacher_whats_real": "已上线 vs 规划中",
     "bn_teacher_capability": "能力",
     "bn_teacher_status": "状态",
@@ -1947,10 +1947,12 @@
     "bn_teacher_cap_live2_g": "两人同房对战（五子棋）",
     "bn_teacher_cap_live2_4": "两人同房对战（其余 4 棋盘）",
     "bn_teacher_cap_join": "学生用码加入，无需账号",
-    "bn_teacher_cap_stats": "实时排名与每局胜负追踪",
     "bn_teacher_cap_dual": "课堂双局对抗",
     "bn_teacher_cap_export": "导出班级名册到 CSV（Pro）",
-    "bn_teacher_tip": "提示：16 人的课堂建议生成 8 块棋盘。每个码都跑在同一块棋盘上——按主题分组，不按房间分组。"
+    "bn_teacher_tip": "提示：16 人的课堂建议生成 8 块棋盘。每个码都跑在同一块棋盘上——按主题分组，不按房间分组。",
+    "bn_proj_results": "显示胜方",
+    "bn_teacher_cap_prog": "实时盘位进度（等待 / 对局中 / 已结束）",
+    "bn_teacher_cap_winner": "投影显示胜方——默认关闭，由教师控制"
   },
   "bm": {
     "bm_chip_pass_play": "AI · 双人同屏",

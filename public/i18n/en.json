@@ -1887,7 +1887,7 @@
     "bn_teacher_guide_li1": "Open the shared link (or visit <code>/games/&lt;board&gt;/?c=CODE</code>).",
     "bn_teacher_guide_li2": "Two players share one board: the first to open becomes host, the second joins the same room.",
     "bn_teacher_guide_li3": "No login. Each board is a private room that expires on its own.",
-    "bn_teacher_compliance": "FERPA-light. This lab stores no student names and no results. Room codes are created server-side and expire automatically. Upgrade to <b>Teacher Pro</b> (a future build) for live standings and per-board insights — without changing how students join.",
+    "bn_teacher_compliance": "<b>FERPA-light.</b> This lab stores no student names — only anonymous board progress (waiting / playing / finished). Winner reveal is off by default and teacher controlled. Room codes are created server-side and expire automatically. Class rosters & assignment history remain planned (Teacher Pro).",
     "bn_teacher_whats_real": "What’s real vs. planned",
     "bn_teacher_capability": "Capability",
     "bn_teacher_status": "Status",
@@ -1899,10 +1899,12 @@
     "bn_teacher_cap_live2_g": "Live 2-player rooms (Gomoku)",
     "bn_teacher_cap_live2_4": "Live 2-player rooms (the other 4 boards)",
     "bn_teacher_cap_join": "Students join by code, no account",
-    "bn_teacher_cap_stats": "Live standings & per-board win/loss tracking",
     "bn_teacher_cap_dual": "Dual-room matches for head-to-head classrooms",
     "bn_teacher_cap_export": "Export class roster to CSV (Pro)",
-    "bn_teacher_tip": "Tip: mint 8 boards for a class of 16. Each code works on the same board — pair students by topic, not by room."
+    "bn_teacher_tip": "Tip: mint 8 boards for a class of 16. Each code works on the same board — pair students by topic, not by room.",
+    "bn_proj_results": "Show winners",
+    "bn_teacher_cap_prog": "Live board progress (waiting / playing / finished)",
+    "bn_teacher_cap_winner": "Winner reveal on the projector — off by default, teacher controlled"
   },
   "bm": {
     "bm_chip_pass_play": "AI · Pass & Play",

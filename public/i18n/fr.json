@@ -1963,7 +1963,7 @@
     "bn_teacher_guide_li1": "Ouvrez le lien partagé (ou allez sur <code>/games/&lt;board&gt;/?c=CODE</code>).",
     "bn_teacher_guide_li2": "Deux joueurs partagent un plateau : le premier ouvert devient hôte, le second rejoint la même salle.",
     "bn_teacher_guide_li3": "Pas de login. Chaque plateau est une salle privée qui expire seule.",
-    "bn_teacher_compliance": "Conforme FERPA allégé. Ce labo ne stocke ni noms d'élèves ni résultats. Les codes de salle sont émis par le serveur et expirent automatiquement. Une mise à niveau vers <b>Teacher Pro</b> (version future) ajoutera classement en temps réel et analyse par plateau — le mode de participation reste identique.",
+    "bn_teacher_compliance": "<b>FERPA-light.</b> Cet atelier ne stocke aucun nom d’élève — uniquement la progression anonyme des plateaux (en attente / en cours / terminé). L’affichage des vainqueurs est désactivé par défaut et contrôlé par l’enseignant. Les codes de salle sont créés côté serveur et expirent automatiquement. Les listes de classe et l’historique des devoirs restent prévus (Teacher Pro).",
     "bn_teacher_whats_real": "En ligne vs planifié",
     "bn_teacher_capability": "Capacité",
     "bn_teacher_status": "Statut",
@@ -1975,10 +1975,12 @@
     "bn_teacher_cap_live2_g": "Salles 2 joueurs en direct (Gomoku)",
     "bn_teacher_cap_live2_4": "Salles 2 joueurs en direct (les 4 autres)",
     "bn_teacher_cap_join": "Les élèves rejoignent par code, sans compte",
-    "bn_teacher_cap_stats": "Standings en direct et suivi par plateau",
     "bn_teacher_cap_dual": "Matches double-salle pour classes en face-à-face",
     "bn_teacher_cap_export": "Exporter la liste de classe en CSV (Pro)",
-    "bn_teacher_tip": "Astuce : générez 8 plateaux pour une classe de 16. Chaque code fonctionne sur le même plateau — jumelez par thème, pas par salle."
+    "bn_teacher_tip": "Astuce : générez 8 plateaux pour une classe de 16. Chaque code fonctionne sur le même plateau — jumelez par thème, pas par salle.",
+    "bn_proj_results": "Afficher les vainqueurs",
+    "bn_teacher_cap_prog": "Progression des plateaux en direct (en attente / en cours / terminé)",
+    "bn_teacher_cap_winner": "Révéler les vainqueurs au projecteur — désactivé par défaut, contrôlé par l’enseignant"
   },
   "bm": {
     "bm_chip_pass_play": "IA · Deux sur un écran",

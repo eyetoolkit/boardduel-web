@@ -11,6 +11,17 @@ const GAME_TITLE: Record<string, string> = {
 const LS_KEY = 'bd-teacher-session';
 const MAX_BOARDS = 16;
 
+/* ── 教师端实时进度（2026-09-30）──
+   服务端：对局开始/终局由 GameRoom DO 把 {status, winner} 回写 KV room:<code>，
+   本页每 5s 轮询 GET /api/gp/room/<code>?fresh=1（绕 worker 实例内存缓存）。
+   隐私设计：胜方只存座位号（0/1/'draw'），投影默认只显示进度（✓），
+   「Show winners」勾选后才显示 🏆P1/P2/🤝 —— 防攀比压力开关。 */
+interface BoardMeta { status?: unknown; winner?: unknown }
+const liveState = new Map<string, { status: string; winner: string | null }>();
+const cellByCode = new Map<string, HTMLElement>();
+let pollTimer: number | undefined;
+let pollBusy = false;
+
 function $(id: string): HTMLElement {
   const el = document.getElementById(id);
   if (!el) throw new Error('missing #' + id);
@@ -99,6 +110,7 @@ function renderProjector(s: Session | null): void {
   const empty = $('projEmpty');
   const title = $('projTitle');
   gridEl.innerHTML = '';
+  cellByCode.clear();
   if (!s || s.boards.length === 0) {
     empty.style.display = '';
     gridEl.style.display = 'none';
@@ -113,6 +125,9 @@ function renderProjector(s: Session | null): void {
     const n = document.createElement('div');
     n.className = 'pnum';
     n.textContent = '#' + (i + 1);
+    const stat = document.createElement('div');
+    stat.className = 'pstat';
+    stat.textContent = '○';
     const c = document.createElement('div');
     c.className = 'pcode';
     c.textContent = b.code;
@@ -120,10 +135,73 @@ function renderProjector(s: Session | null): void {
     l.className = 'plink';
     l.textContent = b.link;
     cell.appendChild(n);
+    cell.appendChild(stat);
     cell.appendChild(c);
     cell.appendChild(l);
     gridEl.appendChild(cell);
+    cellByCode.set(b.code, cell);
   });
+  renderLive();
+}
+
+/* 状态角标（语言中立符号）：○ 等待 · ▶ 对局中 · ✓ 结束 · 🏆P1/P2/🤝 胜方(仅勾选后) · ✕ 房间过期 */
+function chipText(b: Board): string {
+  const st = liveState.get(b.code);
+  if (!st) return '○';
+  if (st.status === 'playing') return '▶';
+  if (st.status === 'finished') {
+    if (($('showResults') as HTMLInputElement).checked) {
+      if (st.winner === '0') return '🏆 P1';
+      if (st.winner === '1') return '🏆 P2';
+      return '🤝';
+    }
+    return '✓';
+  }
+  if (st.status === 'expired') return '✕';
+  return '○';
+}
+
+function renderLive(): void {
+  const s = load();
+  if (!s || s.boards.length === 0) return;
+  let done = 0;
+  s.boards.forEach((b) => {
+    const cell = cellByCode.get(b.code);
+    const st = liveState.get(b.code);
+    if (cell) {
+      const chip = cell.querySelector<HTMLElement>('.pstat');
+      if (chip) chip.textContent = chipText(b);
+    }
+    if (st && st.status === 'finished') done++;
+  });
+  ($('projProgress') as HTMLElement).textContent = `✓ ${done}/${s.boards.length}`;
+}
+
+async function pollLive(): Promise<void> {
+  if (pollBusy) return;
+  const s = load();
+  if (!s || s.boards.length === 0) return;
+  const view = document.getElementById('viewBoard');
+  if (!view || view.style.display === 'none') return; // 仅投影 tab 可见时轮询
+  pollBusy = true;
+  try {
+    await Promise.all(s.boards.map(async (b) => {
+      try {
+        const r = await fetch(`/api/gp/room/${b.code}?fresh=1`);
+        if (r.status === 404) { liveState.set(b.code, { status: 'expired', winner: null }); return; }
+        if (!r.ok) return; // 429/5xx：保留上次状态
+        const m = (await r.json()) as BoardMeta;
+        const w = m.winner;
+        liveState.set(b.code, {
+          status: typeof m.status === 'string' ? m.status : 'waiting',
+          winner: w === 0 || w === 1 || w === 'draw' ? String(w) : null,
+        });
+      } catch { /* 网络抖动：保留上次状态 */ }
+    }));
+  } finally {
+    pollBusy = false;
+  }
+  renderLive();
 }
 
 async function copy(text: string): Promise<void> {
@@ -184,6 +262,7 @@ async function buildSession(): Promise<void> {
       await new Promise((r) => setTimeout(r, 120)); // respect RL_LIMIT_GP = 20 / window
     }
     const sess: Session = { game, clock, boards };
+    liveState.clear();
     save(sess);
     renderBoards(sess);
     renderProjector(sess);
@@ -215,6 +294,11 @@ function init(): void {
     renderProjector(saved);
     ($('genHint') as HTMLElement).textContent = `Restored ${saved.boards.length} boards from last session`;
   }
+  // 隐私开关：勾选才显示胜方；切换即时重绘角标
+  $('showResults').addEventListener('change', () => renderLive());
+  // 每 5s 轮询盘位进度（仅投影 tab 可见时真正发请求）
+  pollTimer = window.setInterval(() => void pollLive(), 5000);
+  void pollLive();
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

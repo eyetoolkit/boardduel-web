@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:36,fallback:"en"};</script>
-  <script src="/i18n/i18n.js?v=36"></script>
+  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:37,fallback:"en"};</script>
+  <script src="/i18n/i18n.js?v=37"></script>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>BoardDuel · Teacher — classroom code lab</title>
@@ -76,9 +76,14 @@
   <section id="viewBoard" class="view" style="display:none">
     <div class="proj-top">
       <span class="ttl" id="projTitle" data-i18n="bn.bn_teacher_proj_title">Classroom board</span>
+      <span class="q" id="projProgress" aria-live="polite"></span>
       <span class="q" data-i18n="bn.bn_teacher_proj_sub">Large-type · ad-free · for projector</span>
       <span class="spacer"></span>
       <button class="ghost" id="copyAllBtn" type="button" data-i18n="bn.bn_teacher_copy_all">Copy all links</button>
+      <label class="proj-priv" title="Winners are hidden by default — reveal only when you choose. Individual results stay private.">
+        <input type="checkbox" id="showResults" />
+        <span data-i18n="bn.bn_proj_results">Show winners</span>
+      </label>
     </div>
     <div id="projGrid" class="proj-grid"></div>
     <p class="empty" id="projEmpty" data-i18n="bn.bn_teacher_proj_empty">No session yet — mint codes in the <b>Session</b> tab first.</p>
@@ -105,7 +110,8 @@
           <tr><td data-i18n="bn.bn_teacher_cap_live2_g">Live 2-player rooms (Gomoku)</td><td class="ok" data-i18n="bn.bn_teacher_live">Live</td></tr>
           <tr><td data-i18n="bn.bn_teacher_cap_live2_4">Live 2-player rooms (the other 4 boards)</td><td class="soon" data-i18n="bn.bn_teacher_roadmap">Roadmap</td></tr>
           <tr><td data-i18n="bn.bn_teacher_cap_join">Students join by code, no account</td><td class="ok" data-i18n="bn.bn_teacher_live">Live</td></tr>
-          <tr><td data-i18n="bn.bn_teacher_cap_stats">Live standings &amp; per-board win/loss tracking</td><td class="soon" data-i18n="bn.bn_teacher_planned">Planned · Teacher Pro</td></tr>
+          <tr><td data-i18n="bn.bn_teacher_cap_prog">Live board progress (waiting / playing / finished)</td><td class="ok" data-i18n="bn.bn_teacher_live">Live</td></tr>
+          <tr><td data-i18n="bn.bn_teacher_cap_winner">Winner reveal on the projector — off by default, teacher controlled</td><td class="ok" data-i18n="bn.bn_teacher_live">Live</td></tr>
           <tr><td data-i18n="bn.bn_teacher_cap_roster">Class rosters &amp; assignment history</td><td class="soon" data-i18n="bn.bn_teacher_planned">Planned · Teacher Pro</td></tr>
         </tbody>
       </table>
@@ -116,6 +122,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script type="module" src="/src/teacher/teacher.ts"></script>
-<script src="/i18n/lang-switcher.js?v=36" defer></script>
+<script src="/i18n/lang-switcher.js?v=37" defer></script>
 </body>
 </html>

@@ -1986,7 +1986,7 @@
     "bn_teacher_guide_li1": "共有リンクを開く（または <code>/games/&lt;board&gt;/?c=CODE</code> にアクセス）。",
     "bn_teacher_guide_li2": "2 人で 1 つの盤を共有：先に開いた方がホスト、後から開く人が同室に参加。",
     "bn_teacher_guide_li3": "ログイン不要。各盤は個別のプライベートルームで自動失効。",
-    "bn_teacher_compliance": "FERPA 軽量。本ラボは生徒氏名も対局結果も保存しません。ルームコードはサーバ発行で自動失効。<b>Teacher Pro</b>（将来のビルド）にアップグレードすれば、リアルタイム順位や盤ごとの分析が追加されます — 参加方法は同じです。",
+    "bn_teacher_compliance": "<b>FERPA-light。</b>このページは生徒の名前を保存しません。保存するのは匿名の盤面進行（待機 / 対局中 / 終了）だけです。勝者の表示はデフォルトでオフ、教師が制御します。ルームコードはサーバー側で作成され、自動的に失効します。名簿と課題履歴は今後の機能（Teacher Pro）です。",
     "bn_teacher_whats_real": "実装済み vs 計画中",
     "bn_teacher_capability": "機能",
     "bn_teacher_status": "状態",
@@ -1998,10 +1998,12 @@
     "bn_teacher_cap_live2_g": "2 人同室対戦（五目並べ）",
     "bn_teacher_cap_live2_4": "2 人同室対戦（残り 4 つの盤）",
     "bn_teacher_cap_join": "コードで参加、アカウント不要",
-    "bn_teacher_cap_stats": "リアルタイム順位と盤ごとの勝敗追跡",
     "bn_teacher_cap_dual": "双盤の対戦教室",
     "bn_teacher_cap_export": "クラス名簿を CSV にエクスポート（Pro）",
-    "bn_teacher_tip": "ヒント：16 人のクラスには 8 盤を発行。各コードは同じ盤で動作 — 部屋ではなくトピックでペアを。"
+    "bn_teacher_tip": "ヒント：16 人のクラスには 8 盤を発行。各コードは同じ盤で動作 — 部屋ではなくトピックでペアを。",
+    "bn_proj_results": "勝者を表示",
+    "bn_teacher_cap_prog": "リアルタイム盤面進行（待機 / 対局中 / 終了）",
+    "bn_teacher_cap_winner": "投影での勝者表示——デフォルトはオフ、教師が制御"
   },
   "bm": {
     "bm_chip_pass_play": "AI · 同画面プレイ",

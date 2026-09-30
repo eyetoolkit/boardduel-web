@@ -1964,7 +1964,7 @@
     "bn_teacher_guide_li1": "Öffne den geteilten Link (oder besuche <code>/games/&lt;board&gt;/?c=CODE</code>).",
     "bn_teacher_guide_li2": "Zwei Spieler teilen ein Brett: der Erste wird Host, der Zweite tritt derselben Runde bei.",
     "bn_teacher_guide_li3": "Kein Login. Jedes Brett ist ein privater Raum, der eigenständig abläuft.",
-    "bn_teacher_compliance": "FERPA-konform leichtgewichtig. Dieses Labor speichert weder Schülernamen noch Ergebnisse. Raum-Codes werden vom Server vergeben und laufen automatisch ab. Ein Upgrade auf <b>Teacher Pro</b> (zukünftige Version) fügt Echtzeit-Wertung und Brett-für-Brett-Analyse hinzu — die Beitrittsweise bleibt gleich.",
+    "bn_teacher_compliance": "<b>FERPA-light.</b> Dieses Labor speichert keine Schülernamen — nur anonymen Brettfortschritt (wartend / spielend / beendet). Die Siegeranzeige ist standardmäßig aus und wird vom Lehrer gesteuert. Raumcodes werden serverseitig erstellt und laufen automatisch ab. Klassenlisten & Aufgabenverlauf bleiben geplant (Teacher Pro).",
     "bn_teacher_whats_real": "Verfügbar vs geplant",
     "bn_teacher_capability": "Funktion",
     "bn_teacher_status": "Status",
@@ -1976,10 +1976,12 @@
     "bn_teacher_cap_live2_g": "Live 2-Spieler-Räume (Gomoku)",
     "bn_teacher_cap_live2_4": "Live 2-Spieler-Räume (die 4 anderen)",
     "bn_teacher_cap_join": "Beitritt per Code, kein Konto",
-    "bn_teacher_cap_stats": "Live-Ranglisten und Brett-Bilanzen",
     "bn_teacher_cap_dual": "Doppelraum-Matches für Klassenzimmer-Duelle",
     "bn_teacher_cap_export": "Klassenliste als CSV (Pro)",
-    "bn_teacher_tip": "Tipp: 8 Bretter für eine Klasse mit 16 prägen. Jeder Code läuft auf demselben Brett — nach Thema paaren, nicht nach Raum."
+    "bn_teacher_tip": "Tipp: 8 Bretter für eine Klasse mit 16 prägen. Jeder Code läuft auf demselben Brett — nach Thema paaren, nicht nach Raum.",
+    "bn_proj_results": "Sieger anzeigen",
+    "bn_teacher_cap_prog": "Live-Brettfortschritt (wartend / spielend / beendet)",
+    "bn_teacher_cap_winner": "Siegeranzeige am Projektor — standardmäßig aus, vom Lehrer gesteuert"
   },
   "bm": {
     "bm_chip_pass_play": "KI · Zu zweit auf einem Bildschirm",

@@ -1964,7 +1964,7 @@
     "bn_teacher_guide_li1": "Abre el enlace compartido (o visita <code>/games/&lt;board&gt;/?c=CODE</code>).",
     "bn_teacher_guide_li2": "Dos jugadores comparten un tablero: el primero en abrir es anfitrión, el segundo se une a la misma sala.",
     "bn_teacher_guide_li3": "Sin login. Cada tablero es una sala privada que expira sola.",
-    "bn_teacher_compliance": "Cumple FERPA ligero. Este laboratorio no guarda nombres de estudiantes ni resultados. Los códigos de sala son emitidos por el servidor y caducan automáticamente. Una actualización a <b>Teacher Pro</b> (versión futura) añadirá clasificación en tiempo real y análisis por tablero — el modo de participación sigue siendo el mismo.",
+    "bn_teacher_compliance": "<b>FERPA-light.</b> Este laboratorio no guarda nombres de estudiantes: solo progreso anónimo de tablero (esperando / jugando / terminado). Mostrar ganadores está desactivado por defecto y lo controla el docente. Los códigos de sala se crean en el servidor y caducan solos. Las listas de clase y el historial de tareas siguen planeados (Teacher Pro).",
     "bn_teacher_whats_real": "Implementado vs planificado",
     "bn_teacher_capability": "Capacidad",
     "bn_teacher_status": "Estado",
@@ -1976,10 +1976,12 @@
     "bn_teacher_cap_live2_g": "Salas 2 jugadores en vivo (Gomoku)",
     "bn_teacher_cap_live2_4": "Salas 2 jugadores en vivo (los otros 4 tableros)",
     "bn_teacher_cap_join": "Los estudiantes entran por código, sin cuenta",
-    "bn_teacher_cap_stats": "Rankings en vivo y seguimiento por tablero",
     "bn_teacher_cap_dual": "Partidas duales para aulas head-to-head",
     "bn_teacher_cap_export": "Exportar lista de clase a CSV (Pro)",
-    "bn_teacher_tip": "Consejo: genera 8 tableros para una clase de 16. Cada código funciona en el mismo tablero — empareja por tema, no por sala."
+    "bn_teacher_tip": "Consejo: genera 8 tableros para una clase de 16. Cada código funciona en el mismo tablero — empareja por tema, no por sala.",
+    "bn_proj_results": "Mostrar ganadores",
+    "bn_teacher_cap_prog": "Progreso de tablero en vivo (esperando / jugando / terminado)",
+    "bn_teacher_cap_winner": "Mostrar ganadores en el proyector: desactivado por defecto, controlado por el docente"
   },
   "bm": {
     "bm_chip_pass_play": "IA · Dos en una pantalla",

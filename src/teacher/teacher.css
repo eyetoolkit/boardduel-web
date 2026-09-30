@@ -152,6 +152,17 @@ body.home-v2 {
   color: var(--violet); margin-bottom: 8px;
 }
 .plink { font-size: 10px; color: var(--muted); word-break: break-all; }
+.pstat { font-size: 20px; line-height: 1.2; margin-bottom: 6px; min-height: 24px; }
+.pstat.is-live { color: var(--violet); }
+.pstat.is-done { color: var(--ok, #0c8a52); }
+.proj-priv {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 13px; color: var(--ink); cursor: pointer; user-select: none;
+  border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px;
+  background: var(--card);
+}
+.proj-priv:hover { border-color: var(--violet); }
+.proj-priv input { accent-color: var(--violet); width: 15px; height: 15px; cursor: pointer; }
 .empty { color: var(--muted); font-size: 14px; padding: 40px 0; text-align: center; }
 
 /* guide */
