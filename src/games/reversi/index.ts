@@ -129,7 +129,7 @@ function render(): void {
   statusEl.textContent = state.over ? `B ${counts[0]} · W ${counts[1]}` : state.mode === 'online'
     ? (state.player === state.myIdx! + 1 ? 'your turn' : 'opponent turn')
     : state.mode === 'pass' ? `${state.player === 1 ? 'Black' : 'White'} turn` : (state.player === 1 ? 'your turn' : 'AI thinking');
-  modeEl.textContent = state.mode === 'ai' ? 'vs AI · ' + state.level : state.mode === 'pass' ? 'Pass & Play' : 'Online' + (state.roomCode ? ' · ' + state.roomCode : '');
+  modeEl.textContent = state.mode === 'ai' ? window.t('bi.vs_ai_prefix') + state.level : state.mode === 'pass' ? window.t('bi.pass_play') : window.t('bi.online') + (state.roomCode ? ' · ' + state.roomCode : '');
 }
 
 function onCell(i: number): void {

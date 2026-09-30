@@ -116,18 +116,18 @@ function render(): void {
     const draw = state.board.every((v) => v !== 0);
     const xc = state.board.reduce((s: number, v) => s + (v === 1 ? 1 : 0), 0);
     const oc = state.board.reduce((s: number, v) => s + (v === 2 ? 1 : 0), 0);
-    turnEl.textContent = draw ? '— draw —' : (xc > oc ? 'X wins' : 'O wins');
+    turnEl.textContent = draw ? window.t('bi.draw_sep') : (xc > oc ? window.t('bi.x_wins') : window.t('bi.o_wins'));
   } else if (state.mode === 'online') {
     const xTurn = filledCount(state.board) % 2 === 0;
     turnEl.textContent = xTurn ? 'X' : 'O';
   } else {
-    turnEl.textContent = state.mode === 'pass'
+    turnEl.textContent = state.mode === ('pass' as Mode)
       ? (state.player === 1 ? 'X' : 'O')
       : (state.player === 1 ? 'You (X)' : 'AI (O)');
   }
   turnEl.className = 'bd-hud-v ' + (state.over ? '' : state.mode === 'ai' && state.player === 2 ? 'bd-turn-ai' : 'bd-turn-you');
   statusEl.textContent = statusLabel();
-  modeEl.textContent = (state.mode === 'ai' ? 'vs AI · ' + state.level : state.mode === 'pass' ? 'Pass & Play' : 'Online' + (state.roomCode ? ' · ' + state.roomCode : '')) as string;
+  modeEl.textContent = (state.mode === 'ai' ? window.t('bi.vs_ai_prefix') + state.level : state.mode === 'pass' ? window.t('bi.pass_play') : window.t('bi.online') + (state.roomCode ? ' · ' + state.roomCode : '')) as string;
 }
 
 function onCell(i: number): void {

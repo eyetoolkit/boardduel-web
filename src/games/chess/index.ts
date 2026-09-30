@@ -236,7 +236,7 @@ function render(): void {
       : state.mode === 'pass'
         ? (state.gs.turn === 'w' ? 'white to move' : 'black to move')
         : (state.gs.turn === 'w' ? 'your turn' : 'AI thinking');
-  modeEl.textContent = state.mode === 'ai' ? 'vs AI · ' + state.level : state.mode === 'pass' ? 'Pass & Play' : 'Online' + (state.roomCode ? ' · ' + state.roomCode : '');
+  modeEl.textContent = state.mode === 'ai' ? window.t('bi.vs_ai_prefix') + state.level : state.mode === 'pass' ? window.t('bi.pass_play') : window.t('bi.online') + (state.roomCode ? ' · ' + state.roomCode : '');
 }
 
 function afterMove(): void {

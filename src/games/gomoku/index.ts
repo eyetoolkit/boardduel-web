@@ -390,7 +390,7 @@ function renderHud(): void {
       ? (state.turn === 1 ? 'Black · P1' : 'White · P2')
       : (state.turn === 1 ? 'Black' : 'White');
 
-  turnEl.textContent = state.over ? '— game over —' : label;
+  turnEl.textContent = state.over ? window.t('bi.game_over') : label;
   turnEl.className = state.over ? '' : (isMyTurn() ? 'go-turn-you' : 'go-turn-opp');
   moveNoEl.textContent = String(state.moves.length + 1);
   lastEl.textContent = state.lastMove >= 0 ? notation(state.lastMove) : '—';
@@ -402,14 +402,14 @@ function renderHud(): void {
 
   // 棋钟
   if (state.mode === 'ranked') {
-    clockMeWho.textContent = 'YOU · ' + (state.myIdx === 0 ? 'BLACK' : 'WHITE');
-    clockOppWho.textContent = 'OPPONENT · ' + (state.myIdx === 0 ? 'WHITE' : 'BLACK');
+    clockMeWho.textContent = (state.myIdx === 0 ? window.t('bj.you_black') : window.t('bj.you_white'));
+    clockOppWho.textContent = (state.myIdx === 0 ? window.t('bj.opp_white') : window.t('bj.opp_black'));
   } else if (state.mode === 'ai') {
-    clockMeWho.textContent = 'YOU · BLACK';
-    clockOppWho.textContent = 'ENGINE · WHITE';
+    clockMeWho.textContent = window.t('bj.you_black');
+    clockOppWho.textContent = window.t('bj.engine_white');
   } else {
-    clockMeWho.textContent = 'BLACK · P1';
-    clockOppWho.textContent = 'WHITE · P2';
+    clockMeWho.textContent = window.t('bj.black_p1');
+    clockOppWho.textContent = window.t('bj.white_p2');
   }
   const myTurn = isMyTurn();
   clockMeCard.classList.toggle('is-active', !state.over && myTurn);
@@ -431,7 +431,7 @@ function renderRecorder(): void {
     </li>`;
   }
   recList.innerHTML = html;
-  recCount.textContent = mv.length + (mv.length === 1 ? ' ply' : ' plies');
+  recCount.textContent = mv.length + (mv.length === 1 ? window.t('bj.ply_one') : window.t('bj.ply_many'));
   // 只滚记谱器自身（容器内 scrollTop），不用 scrollIntoView ——
   // 部分移动端浏览器的 scrollIntoView 会连带滚动窗口，
   // 表现为"每落一子整页往下挪一点"（用户实测 BUG）。
@@ -553,9 +553,9 @@ function finish(winner: GPlayer, line: number[] | null): void {
 function finishDraw(): void {
   state.over = true;
   stopTimer(state.timer);
-  endVerdict.textContent = 'Draw';
+  endVerdict.textContent = window.t('bi.draw');
   endVerdict.className = 'go-end-verdict';
-  endLine.textContent = 'board full';
+  endLine.textContent = window.t('bi.board_full');
   showScreen('end');
   toast('Draw — board full');
 }
@@ -710,18 +710,18 @@ function resign(): void {
   // 二次确认：papergames 同款，避免误触直接认输
   if (!resignArmed) {
     resignArmed = true;
-    resignBtn.textContent = 'Confirm?';
+    resignBtn.textContent = window.t('bj.confirm_resign');
     resignBtn.classList.add('is-confirm');
     resignTimer = window.setTimeout(() => {
       resignArmed = false;
-      resignBtn.textContent = 'Resign';
+      resignBtn.textContent = window.t('bj.resign');
       resignBtn.classList.remove('is-confirm');
     }, 2200);
     return;
   }
   clearTimeout(resignTimer);
   resignArmed = false;
-  resignBtn.textContent = 'Resign';
+  resignBtn.textContent = window.t('bj.resign');
   resignBtn.classList.remove('is-confirm');
   doResign();
 }
@@ -738,9 +738,9 @@ function doResign(): void {
         if (state.over) return;
         state.over = true;
         stopTimer(state.timer);
-        endVerdict.textContent = 'You resigned';
+        endVerdict.textContent = window.t('bj.you_resigned');
         endVerdict.className = 'go-end-verdict is-loss';
-        endLine.textContent = 'by resignation';
+        endLine.textContent = window.t('bj.by_resignation');
         showScreen('end');
       }, 1500);
     }
@@ -750,9 +750,9 @@ function doResign(): void {
   state.over = true;
   stopTimer(state.timer);
   const winner = state.mode === 'ai' ? 2 : (state.turn === 1 ? 2 : 1);
-  endVerdict.textContent = 'Resigned';
+  endVerdict.textContent = window.t('bj.resigned');
   endVerdict.className = 'go-end-verdict is-loss';
-  endLine.textContent = (state.mode === 'ai' ? 'You resigned' : (winner === 1 ? 'Black wins' : 'White wins'));
+  endLine.textContent = (state.mode === 'ai' ? window.t('bj.you_resigned') : (winner === 1 ? window.t('bi.black_wins') : window.t('bi.white_wins')));
   showScreen('end');
   render();
 }
@@ -824,8 +824,8 @@ async function joinQueue(): Promise<void> {
   queueEl.hidden = false;
   startRow.hidden = true;
   setQueuingUI(true);
-  queueTitle.textContent = 'Finding opponent…';
-  queueSub.textContent = 'In queue for Gomoku · 15×15';
+  queueTitle.textContent = window.t('bj.finding_opponent');
+  queueSub.textContent = window.t('bj.in_queue');
 
   try {
     const r = await fetch(API + '/api/match/join', {
@@ -868,7 +868,7 @@ function pollQueue(): void {
       }
       if (j.status === 'closed') { cancelQueue(true); toast('Queue closed'); return; }
       const secs = Math.round((Date.now() - started) / 1000);
-      queueSub.textContent = 'Waiting… ' + secs + 's · AI fills in if nobody arrives';
+      queueSub.textContent = window.t('bj.waiting') + secs + window.t('bj.waiting_ai_fallback');
     } catch (e) { /* 轮询容错，下一拍重试 */ }
     state.pollTimer = window.setTimeout(tick, 1200);
   };
@@ -922,7 +922,7 @@ function enterRankedRoom(code: string, isAi: boolean, aiName?: string): void {
   state.ws = ws;
 
   ws.addEventListener('open', () => {
-    chatRoom.textContent = code + ' · live';
+    chatRoom.textContent = code + window.t('bj.chat_live');
   });
   ws.addEventListener('message', (ev) => {
     let msg: Record<string, unknown>;
@@ -930,7 +930,7 @@ function enterRankedRoom(code: string, isAi: boolean, aiName?: string): void {
     handleWs(msg);
   });
   ws.addEventListener('close', () => {
-    chatRoom.textContent = code + ' · offline';
+    chatRoom.textContent = code + window.t('bj.chat_offline');
     if (state.screen === 'match' && !state.over) toast('Connection lost');
   });
   ws.addEventListener('error', () => { toast('Room unavailable'); });
@@ -1033,17 +1033,17 @@ function handleWs(msg: Record<string, unknown>): void {
     const kind = String(msg.kind || 'resign');
     const iLost = !!msg.you_lost || (state.sawGameOver && kind !== 'draw');
     if (kind === 'draw') {
-      endVerdict.textContent = 'Draw';
+      endVerdict.textContent = window.t('bi.draw');
       endVerdict.className = 'go-end-verdict is-draw';
-      endLine.textContent = 'agreed';
+      endLine.textContent = window.t('bj.draw_agreed');
     } else if (iLost) {
-      endVerdict.textContent = 'You resigned';
+      endVerdict.textContent = window.t('bj.you_resigned');
       endVerdict.className = 'go-end-verdict is-loss';
-      endLine.textContent = 'by resignation';
+      endLine.textContent = window.t('bj.by_resignation');
     } else {
-      endVerdict.textContent = 'Opponent resigned';
+      endVerdict.textContent = window.t('bj.opp_resigned');
       endVerdict.className = 'go-end-verdict is-win';
-      endLine.textContent = 'by resignation';
+      endLine.textContent = window.t('bj.by_resignation');
     }
     showScreen('end');
     return;
@@ -1052,9 +1052,9 @@ function handleWs(msg: Record<string, unknown>): void {
     // 兼容只发 resign 的旧帧：这一侧一定是“对手认输”
     state.over = true;
     stopTimer(state.timer);
-    endVerdict.textContent = 'Opponent resigned';
+    endVerdict.textContent = window.t('bj.opp_resigned');
     endVerdict.className = 'go-end-verdict is-win';
-    endLine.textContent = 'by resignation';
+    endLine.textContent = window.t('bj.by_resignation');
     showScreen('end');
     return;
   }
@@ -1130,22 +1130,22 @@ document.querySelectorAll<HTMLButtonElement>('.go-mode[data-mode]').forEach((b) 
     b.classList.add('is-cur');
     if (m === 'friend') {
       // 好友房：建房即进房（state.mode 由 enterRankedRoom 置为 ranked）
-      startBtn.textContent = 'Create room';
-      startNote.textContent = 'Private room, 6-character code — your friend joins with the code or link.';
+      startBtn.textContent = window.t('bj.create_room');
+      startNote.textContent = window.t('bj.create_room_desc');
       if (ev.isTrusted) void startFriendRoom({ keepCard: true });
       return;
     }
     state.mode = m;
     if (b.dataset.level) state.level = b.dataset.level as GDifficulty;
     if (m === 'ranked') {
-      startBtn.textContent = 'Enter queue';
-      startNote.textContent = 'A real opponent, roughly your level.';
+      startBtn.textContent = window.t('bj.enter_queue');
+      startNote.textContent = window.t('bj.enter_queue_desc');
     } else if (m === 'ai') {
-      startBtn.textContent = 'Start game';
-      startNote.textContent = `Black moves first — you are Black, engine plays ${LEVEL_LABEL[state.level]}.`;
+      startBtn.textContent = window.t('bj.start_game');
+      startNote.textContent = window.t('bj.start_ai_desc', { level: LEVEL_LABEL[state.level] });
     } else {
-      startBtn.textContent = 'Start game';
-      startNote.textContent = 'Black moves first, then white, same screen.';
+      startBtn.textContent = window.t('bj.start_game');
+      startNote.textContent = window.t('bj.start_pass_desc');
     }
     if (ev.isTrusted) {
       if (m === 'ranked') { void joinQueue(); return; }
@@ -1263,10 +1263,10 @@ function applyDeepLink(): void {
       const j = await r.json();
       if (j && j.loggedIn && j.nickname) {
         rankLabel.textContent = String(j.nickname);
-        rankWait.textContent = 'rating kept';
+        rankWait.textContent = window.t('bj.rating_kept');
       } else {
-        rankLabel.textContent = 'Guest';
-        rankWait.textContent = 'unrated';
+        rankLabel.textContent = window.t('bj.guest');
+        rankWait.textContent = window.t('bj.unrated');
       }
     } catch (e) { /* 离线也要能玩 */ }
   })();
@@ -1275,7 +1275,7 @@ function applyDeepLink(): void {
   state.mode = 'ai';
   state.level = 'medium';
   document.querySelector('.go-mode[data-level="medium"]')?.classList.add('is-cur');
-  if (myUuid()) rankWait.textContent = 'ranked queue live';
+  if (myUuid()) rankWait.textContent = window.t('bj.ranked_queue_live');
 
   resetClock();
   render();
