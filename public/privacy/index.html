@@ -94,6 +94,20 @@
       <h2 data-i18n="privacy.section6_title">6. Children's Privacy</h2>
       <p data-i18n="privacy.section6_desc">This site is for all ages. Since we do not collect personal identity information, it does not involve collection of children's personal data.</p>
 
+      <h2>6a. COPPA 2025 Update (US users)</h2>
+      <p><strong>Effective September 30, 2026.</strong> This section supplements the policy above to satisfy the U.S. Children's Online Privacy Protection Act (COPPA) Final Amendments published 2025-01-16, with compliance deadline 2026-04-22.</p>
+      <ul>
+        <li><strong>Persistent identifier disclosure</strong> — when cloud ELO sync is enabled, the browser auto-generates a UUID via <code>crypto.randomUUID()</code>. This UUID is stored in Cloudflare KV with a 90-day TTL and is used solely for cross-lesson ELO tracking. No IP address, device fingerprint, or Advertising ID is collected.</li>
+        <li><strong>Categories of third parties</strong> — Cloudflare, Inc. (Workers Paid, KV, D1, R2, Durable Objects); GitHub, Inc. (source code); Agent Mail (智邮) for the contact email alias. No advertising networks, data brokers, social platforms, or analytics beyond Cloudflare Workers Logs.</li>
+        <li><strong>Purpose limitation</strong> — UUID and game data are used solely for: (1) cross-lesson ELO tracking, (2) anti-cheat, (3) engine improvement, (4) session replay. Never for behavioral profiling, advertising, re-marketing, or cross-site identification.</li>
+        <li><strong>Biometric identifiers</strong> — we do not collect facial recognition, voiceprints, fingerprints, retina scans, or any biometric data. The 2025 amendment's expanded definition does not apply to our service.</li>
+        <li><strong>DSAR contact</strong> — <a href="mailto:mathduel@agent.qq.com">mathduel@agent.qq.com</a> (also the COPPA § 312.6 designated contact). Requests are processed within 48 hours.</li>
+      </ul>
+      <p>Full written policies: <a href="https://raw.githubusercontent.com/eyetoolkit/tri-sites/main/compliance/data-retention.md">Written Data Retention Policy</a> · <a href="https://raw.githubusercontent.com/eyetoolkit/tri-sites/main/compliance/information-security.md">Written Information Security Program</a></p>
+
+      <h2>6b. 中文摘要 (COPPA 2025 补充)</h2>
+      <p>我们遵守美国《儿童在线隐私保护法》（COPPA）2025 年 1 月 16 日最终修正案（含 2026-04-22 合规截止日）。由于我们不收集儿童个人身份信息（仅收集浏览器自动生成的匿名 UUID 与游戏结果数据），COPPA 大部分要求不适用。例外要求（书面留存政策、书面信息安全计划、持久标识符披露）已通过本文档及上方链接的 compliance/ 文档满足。如需删除数据或行使权利，请联系 mathduel@agent.qq.com。</p>
+
       <h2 data-i18n="privacy.section7_title">7. Policy Changes</h2>
       <p data-i18n="privacy.section7_desc">We may update this policy from time to time. Significant changes will be prominently announced. Continuing to use means you agree to the updated policy.</p>
 
