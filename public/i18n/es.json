@@ -137,7 +137,7 @@
     "login_btn": "Iniciar sesión",
     "google_login": "Iniciar sesión con Google",
     "github_login": "Iniciar sesión con GitHub",
-    "forgot_intro": "Enter your registered Correo y we will send a Contraseña reset link.",
+    "forgot_intro": "Introduce tu correo electrónico registrado y te enviaremos un enlace para restablecer la contraseña.",
     "forgot_email_label": "Registered Correo",
     "send_reset_link": "Enviar enlace de restablecimiento",
     "reset_intro": "Introduce una nueva contraseña para completar el restablecimiento.",
@@ -732,7 +732,7 @@
     "you_b": "Eres ⚫, mueves primero",
     "you_w": "Eres ⚪",
     "what_is": "¿Qué es Gomoku?",
-    "what_is_desc": "Gomoku (Five in a Row) is a classic two-player strategy game Popular across East Asia. Black y white alternate placing stones on a 15×15 board; the first to line up five horizontally, vertically or diagonally wins. The rules are simple but the strategy runs deep — a minute to learn, a lifetime to master.",
+    "what_is_desc": "Gomoku (Cinco en línea) es un juego de estrategia clásico para dos jugadores, popular en el este de Asia. Los jugadores blanco y negro colocan piedras por turnos en las intersecciones; el primero en alinear cinco piedras horizontal, vertical o diagonalmente gana.",
     "rules_quick": "Reglas rápidas",
     "rule1": "Tablero de 15×15, Negras mueven primero",
     "rule2": "Coloca piedras en intersecciones — las piedras nunca se mueven",
@@ -1093,7 +1093,7 @@
       "hc_404页面未找到_23198": "404 - Página no encontrada",
       "hc_404页面未找到BoardDue_13862": "404 - Página no encontrada · Duelo de Tablero",
       "hc_404页面未找到_81629": "404 - Página no encontrada",
-      "hc_BoardDuel棋盘对决6款经典_71581": "Duelo de Tablero — 6 Juegos de Tablero Clásicos. Ajedrez, Gomoku, Othello, Cuatro en Línea, Damas, Tres en Raya…Partida IA supported(Multiple IA levels), Real-time Batalla Online, Friend Match, Independent Account System, Global Leaderboard. Sin anuncios. Sin seguimiento. Sin descargas. Juega en el navegador.",
+      "hc_BoardDuel棋盘对决6款经典_71581": "Duelo de Tablero — 6 Juegos de Tablero Clásicos. Ajedrez, Gomoku, Othello, Conecta 4, Cuatro en Línea, Tres en Raya. IA multinivel y cuenta en línea.",
       "hc_棋类对战棋盘游戏五子棋井字棋_77205": "juegos de tablero,ajedrez online,gomoku,cuatro en línea,reversi,duelo de tablero,damas,partida IA",
       "hc_BoardDuel棋盘对决在线棋类_70737": "Duelo de Tablero · Plataforma de Juegos de Tablero Online",
       "hc_6款经典棋类游戏AI人机对战实时_64490": "6 juegos de tablero clásicos. IA y online en tiempo real. Sin anuncios, sin seguimiento, juega en el navegador.",
@@ -1302,7 +1302,7 @@
   "bd_games_bulls_17": "Crear sala",
   "bd_games_bulls_18": "Unirse",
   "bd_games_bulls_19": "Player identity is shared con the main site mathduel.games",
-  "bd_games_bulls_20": "🤖 vs Computer (single player) <span class=\"ai-sub\">Jugar against the PC when no Partida is found</span>",
+  "bd_games_bulls_20": "🤝 vs Computadora (un jugador) <span class=\"ai-sub\">Juega contra la PC cuando nadie esté en línea</span>",
   "bd_games_bulls_21": "Dificultad",
   "bd_games_bulls_22": "Principiante",
   "bd_games_bulls_23": "Normal",
@@ -1439,7 +1439,7 @@
   "bd_games_mathlink15_17": "Crear sala",
   "bd_games_mathlink15_18": "Unirse",
   "bd_games_mathlink15_19": "Player identity is shared con the main site mathduel.games",
-  "bd_games_mathlink15_20": "🤖 vs Computer (single player) <span class=\"ai-sub\">Jugar a Ronda against the PC when no Partida is found</span>",
+  "bd_games_mathlink15_20": "🤝 vs Computadora (un jugador) <span class=\"ai-sub\">Juega una ronda contra la PC</span>",
   "bd_games_mathlink15_21": "Dificultad",
   "bd_games_mathlink15_22": "Principiante",
   "bd_games_mathlink15_23": "Normal",
@@ -1554,7 +1554,7 @@
     "network_error_retry": "Network Error, please Reintentar",
     "fill_email_password": "Please enter Correo y Contraseña",
     "invalid_credentials": "Incorrect Correo or Contraseña",
-    "email_not_verified": "Correo not activated, please verify your Correo first",
+    "email_not_verified": "Correo electrónico no activado, primero verifica tu correo",
     "login_failed": "Iniciar sesión Fallido",
     "bind_failed": "Binding Fallido",
     "missing_reset_token": "Falta el token de restablecimiento",
@@ -1628,7 +1628,7 @@
     "started": "Juego iniciado"
   },
   "bulls": {
-    "ai_status_you": "AI Duelo · Dificultad: Normal · You guess first",
+    "ai_status_you": "Duelo IA · Dificultad: Normal · Tú adivinas primero",
     "ai_status": "AI Duelo · Dificultad: Normal"
   },
   "ml15": {
@@ -1636,9 +1636,9 @@
     "cpu": "● IA de la computadora"
   },
   "coach": {
-    "new_black": "🆕 Nuevo juego: you Jugar ⚫ y move first.",
-    "new_x": "🆕 Nuevo juego: you Jugar ✕ y move first.",
-    "new_red": "🆕 Nuevo juego: you Jugar 🔴 y move first.",
+    "new_black": "🆕 Nuevo juego: juegas ⚫ y mueves primero.",
+    "new_x": "🆕 Nuevo juego: juegas ✕ y mueves primero.",
+    "new_red": "🆕 Nuevo juego: juegas 🔴 y mueves primero.",
     "new_white": "🆕 Nuevo juego: White Movimientos first."
   },
   "rank": {
@@ -1963,7 +1963,7 @@
     "bn_teacher_guide_li1": "Abre el enlace compartido (o visita <code>/games/&lt;board&gt;/?c=CODE</code>).",
     "bn_teacher_guide_li2": "Dos jugadores comparten un tablero: el primero en abrir es anfitrión, el segundo se une a la misma sala.",
     "bn_teacher_guide_li3": "Sin login. Cada tablero es una sala privada que expira sola.",
-    "bn_teacher_compliance": "FERPA-light. Este laboratorio no guarda nombres de estudiantes ni resultados. Los códigos se crean en el servidor y expiran solos. Mejora a <b>Teacher Pro</b> (futura build) para standings en vivo y análisis por tablero — sin cambiar cómo se unen los estudiantes.",
+    "bn_teacher_compliance": "Cumple FERPA ligero. Este laboratorio no guarda nombres de estudiantes ni resultados. Los códigos de sala son emitidos por el servidor y caducan automáticamente. Una actualización a <b>Teacher Pro</b> (versión futura) añadirá clasificación en tiempo real y análisis por tablero — el modo de participación sigue siendo el mismo.",
     "bn_teacher_whats_real": "Implementado vs planificado",
     "bn_teacher_capability": "Capacidad",
     "bn_teacher_status": "Estado",
@@ -2010,7 +2010,7 @@
     "bm_chess_step3_b": "Enroca pronto. Mantén uno o dos peones delante del rey — no lo dejes desnudo en el centro.",
     "bm_chess_play": "Jugar ajedrez",
     "bm_c4_hero_h1": "Suelta siete. Conecta cuatro.",
-    "bm_c4_hero_sub": "Connect 4 clásico en tablero 7×6 — contra una IA de tres niveles o pass & play en una pantalla con un amigo.",
+    "bm_c4_hero_sub": "Conecta 4 clásico en tablero 7×6 — contra una IA de tres niveles o pass & play entre amigos.",
     "bm_c4_chip1": "Tablero 7×6",
     "bm_c4_how_small": "Suelta una ficha, fuerza una línea. Centro primero, apila — cuatro en línea gana.",
     "bm_c4_ladder_title": "Escalera Elo Connect 4",
