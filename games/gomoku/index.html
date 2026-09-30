@@ -182,16 +182,16 @@
       <div class="go-queue-inner">
         <div class="go-queue-spin" aria-hidden="true"></div>
         <div class="go-queue-text">
-          <b id="go-queue-title">Finding opponent…</b>
-          <span id="go-queue-sub">In queue for Gomoku · 15×15</span>
+          <b id="go-queue-title" data-i18n="bg.bg_gomoku_q1">Finding opponent…</b>
+          <span id="go-queue-sub" data-i18n="bg.bg_gomoku_q2">In queue for Gomoku · 15×15</span>
         </div>
-        <button type="button" id="go-queue-cancel" class="go-btn">Cancel</button>
+        <button type="button" id="go-queue-cancel" class="go-btn" data-i18n="bg.bg_gomoku_cancel">Cancel</button>
       </div>
     </div>
 
     <div class="go-start-row" id="go-start-row">
-      <button type="button" class="go-btn is-primary" id="go-start">Start game</button>
-      <span class="go-start-note" id="go-start-note">Black moves first.</span>
+      <button type="button" class="go-btn is-primary" id="go-start" data-i18n="bg.bg_gomoku_start">Start game</button>
+      <span class="go-start-note" id="go-start-note" data-i18n="bg.bg_gomoku_black_first">Black moves first.</span>
     </div>
   </section>
 
@@ -201,11 +201,11 @@
     <!-- 双棋钟 -->
     <div class="go-clocks" id="go-clocks">
       <div class="go-clock is-active" id="go-clock-me">
-        <span class="go-clock-who" id="go-clock-me-who">YOU · BLACK</span>
+        <span class="go-clock-who" id="go-clock-me-who" data-i18n="bg.bg_gomoku_you_black">YOU · BLACK</span>
         <span class="go-clock-time" id="go-clock-me-time">10:00</span>
       </div>
       <div class="go-clock" id="go-clock-opp">
-        <span class="go-clock-who" id="go-clock-opp-who">ENGINE · WHITE</span>
+        <span class="go-clock-who" id="go-clock-opp-who" data-i18n="bg.bg_gomoku_engine_white">ENGINE · WHITE</span>
         <span class="go-clock-time" id="go-clock-opp-time">10:00</span>
       </div>
     </div>
@@ -218,41 +218,41 @@
 
       <aside class="bd-side">
         <div class="go-status-card">
-          <div class="go-status-row"><span>Turn</span><b id="go-turn" class="go-turn-you">You · Black</b></div>
-          <div class="go-status-row"><span>Move</span><b id="go-moveno">1</b></div>
-          <div class="go-status-row"><span>Last</span><b id="go-last">—</b></div>
-          <div class="go-status-row"><span>Mode</span><b id="go-mode-v">vs engine · Attacker</b></div>
+          <div class="go-status-row"><span data-i18n="bg.bg_gomoku_turn">Turn</span><b id="go-turn" class="go-turn-you" data-i18n="bg.bg_gomoku_you_black_lc">You · Black</b></div>
+          <div class="go-status-row"><span data-i18n="bg.bg_gomoku_move">Move</span><b id="go-moveno">1</b></div>
+          <div class="go-status-row"><span data-i18n="bg.bg_gomoku_last">Last</span><b id="go-last">—</b></div>
+          <div class="go-status-row"><span data-i18n="bg.bg_gomoku_mode">Mode</span><b id="go-mode-v">vs engine · Attacker</b></div>
         </div>
 
         <div class="go-controls">
-          <button type="button" class="go-btn" id="go-undo">Undo</button>
-          <button type="button" class="go-btn" id="go-hint">Hint</button>
-          <button type="button" class="go-btn" id="go-draw">Draw</button>
-          <button type="button" class="go-btn is-danger" id="go-resign">Resign</button>
+          <button type="button" class="go-btn" id="go-undo" data-i18n="bg.bg_gomoku_undo">Undo</button>
+          <button type="button" class="go-btn" id="go-hint" data-i18n="bg.bg_gomoku_hint">Hint</button>
+          <button type="button" class="go-btn" id="go-draw" data-i18n="bg.bg_gomoku_draw">Draw</button>
+          <button type="button" class="go-btn is-danger" id="go-resign" data-i18n="bg.bg_gomoku_resign">Resign</button>
         </div>
 
         <!-- 提示板：原始引擎权重 -->
         <div class="go-hintcard" id="go-hintcard" hidden>
           <div class="go-hintcard-h">
-            <span>Engine ranks</span>
-            <button type="button" id="go-hint-close" aria-label="Close hint board">×</button>
+            <span data-i18n="bg.bg_gomoku_engine_ranks">Engine ranks</span>
+            <button type="button" id="go-hint-close" data-i18n-aria-label="bg.bg_gomoku_close_hint" aria-label="Close hint board">×</button>
           </div>
           <ol class="go-hint-list" id="go-hint-list"></ol>
-          <p class="go-hint-note">attack + 0.95 × defence, before search</p>
+          <p class="go-hint-note" data-i18n="bg.bg_gomoku_attack">attack + 0.95 × defence, before search</p>
         </div>
 
         <!-- 记谱器 -->
         <div class="go-recorder">
           <div class="go-recorder-h">
-            <span>Move recorder</span>
-            <span id="go-rec-count">0 plies</span>
+            <span data-i18n="bg.bg_gomoku_move_recorder">Move recorder</span>
+            <span id="go-rec-count" data-i18n="bg.bg_gomoku_plies">0 plies</span>
           </div>
           <ol class="go-recorder-list" id="go-recorder-list"></ol>
         </div>
 
         <!-- 好友房邀请（建房后显示：房号 + 邀请链接） -->
         <div class="go-invite" id="go-invite" hidden>
-          <div class="go-invite-h">Invite a friend</div>
+          <div class="go-invite-h" data-i18n="bg.bg_gomoku_invite">Invite a friend</div>
           <div class="go-invite-row">
             <code class="go-invite-code" id="go-invite-code">------</code>
             <button type="button" class="go-btn" id="go-invite-copy">Copy link</button>
