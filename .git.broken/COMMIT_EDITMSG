@@ -1,0 +1,11 @@
+fix(boardduel): F-003 difficulty chip </button> leak + F-004 mobile overflow
+
+- F-003: esbuild HTML minify dropped the '<' of </button> for the 4 game pages'
+  difficulty buttons (data-level + raw text), rendering 'Easy/button>' as
+  literal text. Wrap each label in <span> (same structure as the surviving
+  mode cards) so esbuild no longer mangles it. Verified: 4 games desktop +
+  mobile show diffs=[Easy,Medium,Hard], body leak=false.
+- F-004: the 45px mobile horizontal overflow was largely caused by the leaked
+  '/button>' text widening the buttons; also add flex-wrap to .bd-diff-row and
+  overflow-x:hidden + hero compact on <=560px as belt-and-suspenders.
+  Verified: 390px viewport overflowX=0 on all 4 games.

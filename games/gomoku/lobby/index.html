@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:35,fallback:"en"};</script>
+  <script src="/i18n/i18n.js?v=35"></script>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#241C4D" />
@@ -161,12 +163,12 @@
   <section class="g-hero">
     <div class="wrap">
       <span class="gcover" aria-hidden="true"><svg role="img" aria-label="Gomoku"><use href="#cv-gomoku"/></svg></span>
-      <h1>Line up five. <em>Win the duel.</em></h1>
+      <h1 data-i18n-html="bl.bl_gomoku_hero_h1">Line up five. <em>Win the duel.</em></h1>
       <p class="sub">Classic Gomoku on a standard 15&times;15 board &mdash; against a three-level engine, a live rival, a friend in a private room, or pass &amp; play on one screen.</p>
       <div class="chips">
         <span class="chip"><span class="dot"></span>15&times;15 standard board</span>
         <span class="chip"><span class="dot"></span>AI &middot; Friend &middot; Random</span>
-        <span class="chip"><span class="dot"></span>No login to play</span>
+        <span class="chip"><span class="dot"></span><span data-i18n="bl.bl_gomoku_chip2">No login to play</span></span>
       </div>
     </div>
   </section>
@@ -174,22 +176,22 @@
   <!-- 模式选择 + 右栏信息 -->
   <div class="wrap lobby-grid">
     <section aria-labelledby="modesTitle">
-      <h2 class="sec-h" id="modesTitle">Choose your mode<small>Tap a card to jump straight in.</small></h2>
+      <h2 class="sec-h" id="modesTitle" data-i18n-html="bl.bl_modes_h2">Choose your mode<small data-i18n="bl.bl_modes_h2_small">Tap a card to jump straight in.</small></h2>
       <div class="modes" id="modeGrid">
         <!-- 01 · 引擎对战 —— 默认 easy 难度，进游戏页内可选 medium/hard -->
         <a class="mode" href="/games/gomoku/?mode=ai" data-mode="ai">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-engine"/></svg></div>
-          <div class="mt">Play the Engine</div>
+          <div class="mt" data-i18n="games.solo">Play the Engine</div>
         </a>
         <!-- 02 · 建房好友对战 —— 6 位邀请码 -->
         <a class="mode" href="/games/gomoku/?mode=friend" data-mode="friend">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-friend"/></svg></div>
-          <div class="mt">Friend Room</div>
+          <div class="mt" data-i18n="games.friend">Friend Room</div>
         </a>
         <!-- 03 · 随机匹配 —— 真实匹配队列 + AI 补位 -->
         <a class="mode" href="/games/gomoku/?mode=ranked" data-mode="ranked">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-ranked"/></svg></div>
-          <div class="mt">Random Match</div>
+          <div class="mt" data-i18n="games.random">Random Match</div>
         </a>
         <!-- 04 · 同屏双人 —— 共享屏幕轮流下棋 -->
         <a class="mode" href="/games/gomoku/?mode=pass" data-mode="pass">
@@ -204,8 +206,8 @@
         <!-- 06 · 锦标赛 —— 待开发（灰态不可点） -->
         <div class="mode soon" aria-disabled="true">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-master"/></svg></div>
-          <div class="mt">Tournament</div>
-          <span class="soon-pill">SOON</span>
+          <div class="mt" data-i18n="games.tournament">Tournament</div>
+          <span class="soon-pill" data-i18n="bl.bl_soon_pill">SOON</span>
         </div>
       </div>
     </section>
@@ -213,24 +215,24 @@
     <!-- 右栏 -->
     <aside class="side">
       <section class="panel" aria-labelledby="ladTitle">
-        <h3 id="ladTitle">Gomoku Elo ladder</h3>
+        <h3 id="ladTitle" data-i18n="bl.bl_gomoku_lad_title">Gomoku Elo ladder</h3>
         <p class="pnote">Top 10% this week &middot; weekly reset keeps it honest.</p>
         <div id="rankRows" aria-live="polite">
           <div class="rank-empty">Loading the standings&hellip;</div>
         </div>
-        <a class="btn btn-violet block" href="/rank/" style="margin-top:12px">Full leaderboard</a>
+        <a class="btn btn-violet block" href="/rank/" style="margin-top:12px" data-i18n="bl.bl_panel_rank_btn">Full leaderboard</a>
       </section>
 
       <section class="panel" aria-labelledby="roomTitle">
-        <h3 id="roomTitle">Start a friend room</h3>
-        <p class="pnote">Private room, 6-character code. Your code and link appear once the room is open.</p>
+        <h3 id="roomTitle" data-i18n="bl.bl_panel_room_title">Start a friend room</h3>
+        <p class="pnote" data-i18n="bl.bl_panel_room_note">Private room, 6-character code. Your code and link appear once the room is open.</p>
         <label class="field" for="roomInput">
-          <span>Have a code? Join it</span>
+          <span data-i18n="bl.bl_panel_room_label">Have a code? Join it</span>
           <input id="roomInput" type="text" maxlength="6" placeholder="K7Q2R" autocomplete="off" spellcheck="false">
         </label>
         <div class="btn-row">
-          <a class="btn btn-violet" href="/games/gomoku/?mode=friend" id="createRoom">Create a room</a>
-          <button class="btn btn-ghost" id="joinRoom" type="button">Join</button>
+          <a class="btn btn-violet" href="/games/gomoku/?mode=friend" id="createRoom" data-i18n="bl.bl_panel_room_create">Create a room</a>
+          <button class="btn btn-ghost" id="joinRoom" type="button" data-i18n="bl.bl_panel_room_join">Join</button>
         </div>
         <p class="err" id="roomErr" role="alert"></p>
       </section>
@@ -243,8 +245,8 @@
     <div class="how-grid">
       <div class="step"><span class="sn">1</span><b>Place stones</b><span>On the intersections of a 15&times;15 board &mdash; one per turn, in order.</span></div>
       <div class="step"><span class="sn">2</span><b>Connect five</b><span>Horizontal, vertical or diagonal &mdash; the first five in a row wins.</span></div>
-      <div class="step"><span class="sn">3</span><b>Mind the rules</b><span>Freestyle by default. Switch to Renju forbidden-move rules any time before the game.</span></div>
-      <div class="step"><span class="sn">4</span><b>Climb the ladder</b><span>Every win moves your Elo across all three Duel sites. Weekly reset keeps it honest.</span></div>
+      <div class="step"><span class="sn">3</span><b data-i18n="bl.bl_gomoku_step3_t">Mind the rules</b><span data-i18n="bl.bl_gomoku_step3_b">Freestyle by default. Switch to Renju forbidden-move rules any time before the game.</span></div>
+      <div class="step"><span class="sn">4</span><b data-i18n="bl.bl_gomoku_step4_t">Climb the ladder</b><span data-i18n="bl.bl_gomoku_step4_b">Every win moves your Elo across all three Duel sites. Weekly reset keeps it honest.</span></div>
     </div>
   </section>
 
@@ -279,5 +281,6 @@
     <div class="sf-copy">&copy; 2026 BoardDuel &middot; Pure static &middot; Privacy-first &middot; Free to play</div>
   </div>
 </footer>
+<script src="/i18n/lang-switcher.js?v=35" defer></script>
 </body>
 </html>

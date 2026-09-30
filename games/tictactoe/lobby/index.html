@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:35,fallback:"en"};</script>
+  <script src="/i18n/i18n.js?v=35"></script>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#241C4D" />
@@ -130,7 +132,7 @@
   <section class="g-hero">
     <div class="wrap">
       <span class="gcover" aria-hidden="true"><svg role="img" aria-label="Tic-Tac-Toe"><use href="#cv-tictactoe"/></svg></span>
-      <h1>Three in a row. <em>Take the board.</em></h1>
+      <h1 data-i18n-html="bl.bl_ttt_hero_h1">Three in a row. <em>Take the board.</em></h1>
       <p class="sub">Classic Tic-Tac-Toe on a 3&times;3 grid &mdash; against a three-level engine, or pass &amp; play on one screen with a friend.</p>
       <div class="chips">
         <span class="chip"><span class="dot"></span>3&times;3 grid</span>
@@ -143,19 +145,19 @@
   <!-- 模式选择 + 右栏信息 -->
   <div class="wrap lobby-grid">
     <section aria-labelledby="modesTitle">
-      <h2 class="sec-h" id="modesTitle">Choose your mode<small>Tap a card to jump straight in.</small></h2>
+      <h2 class="sec-h" id="modesTitle" data-i18n-html="bl.bl_modes_h2">Choose your mode<small data-i18n="bl.bl_modes_h2_small">Tap a card to jump straight in.</small></h2>
       <div class="modes" id="modeGrid">
         <a class="mode" href="/games/tictactoe/?mode=ai" data-mode="ai">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-engine"/></svg></div>
-          <div class="mt">Play the Engine</div>
+          <div class="mt" data-i18n="games.solo">Play the Engine</div>
         </a>
         <a class="mode" href="/games/tictactoe/?mode=ai" data-mode="friend">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-friend"/></svg></div>
-          <div class="mt">Friend Room</div>
+          <div class="mt" data-i18n="games.friend">Friend Room</div>
         </a>
         <a class="mode" href="/games/tictactoe/?mode=pass" data-mode="random">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-random"/></svg></div>
-          <div class="mt">Random Match</div>
+          <div class="mt" data-i18n="games.random">Random Match</div>
         </a>
         <a class="mode" href="/games/tictactoe/?mode=pass" data-mode="pass">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-pass"/></svg></div>
@@ -167,8 +169,8 @@
         </a>
         <div class="mode soon" aria-disabled="true">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-master"/></svg></div>
-          <div class="mt">Tournament</div>
-          <span class="soon-pill">SOON</span>
+          <div class="mt" data-i18n="games.tournament">Tournament</div>
+          <span class="soon-pill" data-i18n="bl.bl_soon_pill">SOON</span>
         </div>
       </div>
     </section>
@@ -176,24 +178,24 @@
     <!-- 右栏 -->
     <aside class="side">
       <section class="panel" aria-labelledby="ladTitle">
-        <h3 id="ladTitle">Tic-Tac-Toe Elo ladder</h3>
+        <h3 id="ladTitle" data-i18n="bl.bl_ttt_lad_title">Tic-Tac-Toe Elo ladder</h3>
         <p class="pnote">Top 10% this week &middot; weekly reset keeps it honest.</p>
         <div id="rankRows" aria-live="polite">
           <div class="rank-empty">Loading the standings&hellip;</div>
         </div>
-        <a class="btn btn-violet block" href="/rank/" style="margin-top:12px">Full leaderboard</a>
+        <a class="btn btn-violet block" href="/rank/" style="margin-top:12px" data-i18n="bl.bl_panel_rank_btn">Full leaderboard</a>
       </section>
 
       <section class="panel" aria-labelledby="roomTitle">
-        <h3 id="roomTitle">Start a friend room</h3>
-        <p class="pnote">Private room, 6-character code. Your code and link appear once the room is open.</p>
+        <h3 id="roomTitle" data-i18n="bl.bl_panel_room_title">Start a friend room</h3>
+        <p class="pnote" data-i18n="bl.bl_panel_room_note">Private room, 6-character code. Your code and link appear once the room is open.</p>
         <label class="field" for="roomInput">
-          <span>Have a code? Join it</span>
+          <span data-i18n="bl.bl_panel_room_label">Have a code? Join it</span>
           <input id="roomInput" type="text" maxlength="6" placeholder="K7Q2R" autocomplete="off" spellcheck="false">
         </label>
         <div class="btn-row">
-          <a class="btn btn-violet" href="/games/tictactoe/?mode=ai" id="createRoom">Create a room</a>
-          <button class="btn btn-ghost" id="joinRoom" type="button">Join</button>
+          <a class="btn btn-violet" href="/games/tictactoe/?mode=ai" id="createRoom" data-i18n="bl.bl_panel_room_create">Create a room</a>
+          <button class="btn btn-ghost" id="joinRoom" type="button" data-i18n="bl.bl_panel_room_join">Join</button>
         </div>
         <p class="err" id="roomErr" role="alert"></p>
       </section>
@@ -207,7 +209,7 @@
       <div class="step"><span class="sn">1</span><b>Pick your mark</b><span>You play X, the engine (or your friend) plays O. Black moves first in every match.</span></div>
       <div class="step"><span class="sn">2</span><b>Place one per turn</b><span>Click an empty cell. Each move locks immediately; no take-backs, no time bank.</span></div>
       <div class="step"><span class="sn">3</span><b>Block and strike</b><span>If you only chase your own line, you lose to a fork on the next turn. Think one move ahead.</span></div>
-      <div class="step"><span class="sn">4</span><b>Climb the ladder</b><span>Every win moves your Elo across all three Duel sites. Weekly reset keeps it honest.</span></div>
+      <div class="step"><span class="sn">4</span><b data-i18n="bl.bl_ttt_step4_t">Climb the ladder</b><span data-i18n="bl.bl_ttt_step4_b">Every win moves your Elo across all three Duel sites. Weekly reset keeps it honest.</span></div>
     </div>
   </section>
 
@@ -242,5 +244,6 @@
     <div class="sf-copy">&copy; 2026 BoardDuel &middot; Pure static &middot; Privacy-first &middot; Free to play</div>
   </div>
 </footer>
+<script src="/i18n/lang-switcher.js?v=35" defer></script>
 </body>
 </html>
