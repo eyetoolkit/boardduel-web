@@ -2004,7 +2004,10 @@
     "bn_proj_results": "勝者を表示",
     "bn_teacher_cap_prog": "リアルタイム盤面進行（待機 / 対局中 / 終了）",
     "bn_teacher_cap_winner": "投影での勝者表示——デフォルトはオフ、教師が制御",
-    "bn_teacher_export_csv": "📊 CSVエクスポート"
+    "bn_teacher_export_csv": "📊 CSVエクスポート",
+    "bn_teacher_cross_ttl": "他の Duel シリーズも試す",
+    "bn_teacher_cross_md": "24 点 · 数独 4×4-9×9 · 方程式ピラミッド · 数字ピラミッド · 適応型週次インサイト",
+    "bn_teacher_cross_mem": "語彙 / 歴史 / 科学など 12 カテゴリの 1v1 知識デュエル"
   },
   "bm": {
     "bm_chip_pass_play": "AI · 同画面プレイ",

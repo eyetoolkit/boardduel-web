@@ -1982,7 +1982,10 @@
     "bn_proj_results": "Sieger anzeigen",
     "bn_teacher_cap_prog": "Live-Brettfortschritt (wartend / spielend / beendet)",
     "bn_teacher_cap_winner": "Siegeranzeige am Projektor — standardmäßig aus, vom Lehrer gesteuert",
-    "bn_teacher_export_csv": "📊 CSV exportieren"
+    "bn_teacher_export_csv": "📊 CSV exportieren",
+    "bn_teacher_cross_ttl": "Probiere weitere Duel-Seiten",
+    "bn_teacher_cross_md": "24-Punkt · Sudoku 4×4-9×9 · Gleichungs-Pyramide · Zahlen-Pyramide · adaptive Wochenberichte",
+    "bn_teacher_cross_mem": "1v1 Wissensduelle für Vokabeln / Geschichte / Naturwissenschaften"
   },
   "bm": {
     "bm_chip_pass_play": "KI · Zu zweit auf einem Bildschirm",

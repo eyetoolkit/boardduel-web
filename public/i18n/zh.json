@@ -1953,7 +1953,10 @@
     "bn_proj_results": "显示胜方",
     "bn_teacher_cap_prog": "实时盘位进度（等待 / 对局中 / 已结束）",
     "bn_teacher_cap_winner": "投影显示胜方——默认关闭，由教师控制",
-    "bn_teacher_export_csv": "📊 导出 CSV"
+    "bn_teacher_export_csv": "📊 导出 CSV",
+    "bn_teacher_cross_ttl": "试试其他 Duel 系列站点",
+    "bn_teacher_cross_md": "24 点 · 数独 4×4-9×9 · 方程金字塔 · 数字金字塔 · 自适应周报",
+    "bn_teacher_cross_mem": "1v1 知识对抗，覆盖词汇 / 历史 / 科学等 12 类目"
   },
   "bm": {
     "bm_chip_pass_play": "AI · 双人同屏",

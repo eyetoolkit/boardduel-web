@@ -1982,7 +1982,10 @@
     "bn_proj_results": "Mostrar ganadores",
     "bn_teacher_cap_prog": "Progreso de tablero en vivo (esperando / jugando / terminado)",
     "bn_teacher_cap_winner": "Mostrar ganadores en el proyector: desactivado por defecto, controlado por el docente",
-    "bn_teacher_export_csv": "📊 Exportar CSV"
+    "bn_teacher_export_csv": "📊 Exportar CSV",
+    "bn_teacher_cross_ttl": "Prueba las otras webs de la familia Duel",
+    "bn_teacher_cross_md": "24 puntos · Sudoku 4×4-9×9 · Pirámide de ecuaciones · Pirámide numérica · informes semanales",
+    "bn_teacher_cross_mem": "Duelos 1v1 de conocimiento en vocabulario / historia / ciencia"
   },
   "bm": {
     "bm_chip_pass_play": "IA · Dos en una pantalla",

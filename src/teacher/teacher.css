@@ -199,3 +199,12 @@ html body.home-v2 {
   font-family: 'Sora', system-ui, -apple-system, 'Segoe UI', sans-serif;
   color: var(--ink);
 }
+
+/* ── 跨站跳转卡（2026-09-30 三站联动） ── */
+.bd-cross{margin-top:32px;padding-top:24px;border-top:1px solid var(--line)}
+.bd-cross h3{font-size:15px;margin:0 0 12px;color:var(--muted);font-weight:600}
+.bd-cross-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.bd-xcard{display:flex;flex-direction:column;gap:4px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--paper);color:var(--ink);text-decoration:none;transition:.15s}
+.bd-xcard:hover{border-color:var(--brand,#7C3AED);box-shadow:0 4px 16px rgba(124,58,237,.12);transform:translateY(-1px)}
+.bd-xcard strong{font-family:'Space Grotesk',system-ui,sans-serif;font-size:14px}
+.bd-xcard span{font-size:12px;color:var(--muted);line-height:1.45}

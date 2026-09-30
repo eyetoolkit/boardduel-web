@@ -1905,7 +1905,10 @@
     "bn_proj_results": "Show winners",
     "bn_teacher_cap_prog": "Live board progress (waiting / playing / finished)",
     "bn_teacher_cap_winner": "Winner reveal on the projector — off by default, teacher controlled",
-    "bn_teacher_export_csv": "📊 Export CSV"
+    "bn_teacher_export_csv": "📊 Export CSV",
+    "bn_teacher_cross_ttl": "Try the other Duel family sites",
+    "bn_teacher_cross_md": "24-point · Sudoku 4×4-9×9 · Equation pyramid · Number pyramid · adaptive weekly insights",
+    "bn_teacher_cross_mem": "1v1 knowledge duels for vocabulary / history / science classrooms"
   },
   "bm": {
     "bm_chip_pass_play": "AI · Pass & Play",

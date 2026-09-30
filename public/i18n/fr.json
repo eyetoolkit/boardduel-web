@@ -1981,7 +1981,10 @@
     "bn_proj_results": "Afficher les vainqueurs",
     "bn_teacher_cap_prog": "Progression des plateaux en direct (en attente / en cours / terminé)",
     "bn_teacher_cap_winner": "Révéler les vainqueurs au projecteur — désactivé par défaut, contrôlé par l’enseignant",
-    "bn_teacher_export_csv": "📊 Exporter CSV"
+    "bn_teacher_export_csv": "📊 Exporter CSV",
+    "bn_teacher_cross_ttl": "Découvrez les autres sites Duel",
+    "bn_teacher_cross_md": "24 points · Sudoku 4×4-9×9 · Pyramide d'équations · Pyramide numérique · rapports hebdo adaptatifs",
+    "bn_teacher_cross_mem": "Duels 1v1 de connaissances en vocabulaire / histoire / sciences"
   },
   "bm": {
     "bm_chip_pass_play": "IA · Deux sur un écran",
