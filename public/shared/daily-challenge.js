@@ -14,7 +14,7 @@
 'use strict';
 
 const WS_BASE = (typeof window !== 'undefined' && window.MATHDUEL_WS_BASE)
-  || (typeof location !== 'undefined' ? location.protocol + '//' + location.host : 'https://mathduel.games');
+  || (typeof location !== 'undefined' ? location.protocol + '//' + location.host : 'https://numeriduel.com');
 const HTTP_BASE = WS_BASE.replace(/^wss?:/, '');
 
 /* ─── 本地时区日期键 ─── */

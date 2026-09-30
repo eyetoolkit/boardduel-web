@@ -71,7 +71,7 @@
     };
     var SISTER_SITES = [
       { id: "board", name: "Board Duel", href: "https://boardduel.com/" },
-      { id: "math", name: "Math Duel", href: "https://mathduel.games/" },
+      { id: "math", name: "Math Duel", href: "https://numeriduel.com/" },
       { id: "memory", name: "Memory Duel", href: "https://memoryduel.com/" }
     ];
 

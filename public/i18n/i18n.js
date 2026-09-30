@@ -421,7 +421,7 @@
   // 命中 ?lang 后 i18n 会把它写进 localStorage，后续该站全站跟随。
   var SIBLING_HOSTS = Array.isArray(CFG.siblingHosts)
     ? CFG.siblingHosts
-    : ['mathduel.games', 'boardduel.com', 'memoryduel.com'];
+    : ['numeriduel.com', 'mathduel.games', 'boardduel.com', 'memoryduel.com'];
   function decorateCrossSiteLinks(lang) {
     try {
       if (!lang) return;

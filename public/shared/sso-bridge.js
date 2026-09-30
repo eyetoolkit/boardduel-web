@@ -3,7 +3,7 @@
    ────────────────────────────────────────────────────────────────
    背景：auth 模块的 /api/auth/sso/issue + /api/auth/sso/consume 早已实现（5 分钟 TTL、一次性），
    但前端把 token 存在 localStorage 里，而 localStorage 是**按源隔离**的
-   ⇒ mathduel.games 写的 token，boardduel.com 永远读不到；也没有任何 ?sso= 读取或链接携带
+   ⇒ numeriduel.com 写的 token，boardduel.com 永远读不到；也没有任何 ?sso= 读取或链接携带
    ⇒ 三站实际上各自登录（SSO 形同虚设）。
 
    本脚本补上唯一可靠的跨域通道：**URL 重定向传递**
@@ -15,7 +15,7 @@
 (function () {
   'use strict';
 
-  var SISTER_HOSTS = ['mathduel.games', 'boardduel.com', 'memoryduel.com'];
+  var SISTER_HOSTS = ['numeriduel.com', 'mathduel.games', 'boardduel.com', 'memoryduel.com'];
   var LEGACY_KEY = 'sso_token_v1';
   var RELOAD_FLAG = 'sso_reloaded_v1';
 

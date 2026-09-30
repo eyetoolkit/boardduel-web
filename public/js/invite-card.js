@@ -60,7 +60,7 @@
     }).join('');
 
     var urls = code.urls || [];
-    var invUrl = urls[0] || (code.code ? 'https://mathduel.games/?ref=' + code.code : '');
+    var invUrl = urls[0] || (code.code ? 'https://numeriduel.com/?ref=' + code.code : '');
 
     var recHtml = '';
     var records = (stats.invitee_records || []).slice(0, 5);

@@ -201,7 +201,7 @@ function renderCard(canvas, card) {
   ctx.font = '800 28px "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
-  ctx.fillText('数学对决 · mathduel.games', cardX + 140, cardY + 56);
+  ctx.fillText('数学对决 · numeriduel.com', cardX + 140, cardY + 56);
 
   // 游戏名(右上小标签)
   const gameNames = { '24-game': '24 点', pyramid: '金字塔', sudoku: '数独' };
@@ -281,7 +281,7 @@ function renderCard(canvas, card) {
   ctx.fillStyle = COLORS.textLight;
   ctx.textBaseline = 'bottom';
   ctx.textAlign = 'center';
-  const urlText = card.url || 'mathduel.games';
+  const urlText = card.url || 'numeriduel.com';
   ctx.fillText(urlText, W/2, H - 32);
 
   return canvas;
@@ -394,7 +394,7 @@ function toSVG(card) {
   <rect x="80" y="70" width="1040" height="490" rx="32" fill="#FFFFFF"/>
   <rect x="120" y="110" width="80" height="80" rx="18" fill="url(#card)"/>
   <text x="160" y="160" font-size="44" text-anchor="middle" fill="white">${icon}</text>
-  <text x="220" y="158" font-size="28" font-weight="800" fill="${COLORS.text}">数学对决 · mathduel.games</text>
+  <text x="220" y="158" font-size="28" font-weight="800" fill="${COLORS.text}">数学对决 · numeriduel.com</text>
   <text x="1080" y="156" font-size="22" font-weight="600" fill="${COLORS.primary}" text-anchor="end">${name}</text>
   ${card.cta ? (() => {
     // 中英文混合宽度估算: 中文 32px/字, 英文/标点 16px/字
@@ -415,7 +415,7 @@ function toSVG(card) {
   <text x="600" y="335" font-size="56" font-weight="900" fill="${COLORS.text}" text-anchor="middle">${escapeXml(card.title || '')}</text>
   <text x="600" y="400" font-size="28" font-weight="500" fill="${COLORS.textLight}" text-anchor="middle">${escapeXml(card.subtitle || '')}</text>
   <text x="960" y="520" font-size="24" font-weight="500" fill="${COLORS.textLight}">${escapeXml(metaText)}</text>
-  <text x="600" y="595" font-size="20" font-weight="500" fill="${COLORS.textLight}" text-anchor="middle">${escapeXml(card.url || 'mathduel.games')}</text>
+  <text x="600" y="595" font-size="20" font-weight="500" fill="${COLORS.textLight}" text-anchor="middle">${escapeXml(card.url || 'numeriduel.com')}</text>
 </svg>`;
 }
 

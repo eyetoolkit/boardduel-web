@@ -29,7 +29,7 @@
       ]
     },
     math: {
-      name: 'Math Duel', nameKey: 'site.name', emoji: '🔢', host: 'mathduel.games',
+      name: 'Math Duel', nameKey: 'site.name', emoji: '🔢', host: 'numeriduel.com',
       games: [
         { icon: '24',  name: '24 Game',        key: 'nav.24game',   href: '/games/24-game/' },
         { icon: '24⁺', name: '24 Easy',        key: 'nav.24easy',   href: '/games/24-game-easy/' },
