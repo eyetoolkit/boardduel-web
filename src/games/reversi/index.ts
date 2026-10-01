@@ -18,6 +18,8 @@ import {
   type OnlineState, type OnlineMsg,
 } from '../online-core';
 import { modeFromUrl, syncModeCardUI } from '../shared';
+// M2（2026-10-01）：教师端房间码归因
+import { isClassroom, urlRoomCode, reportRound, ensureStudentCode } from '../../shared/teacher-track';
 
 const SLOT = 540;
 const PAD = 16;
@@ -164,6 +166,17 @@ function afterMove(): void {
       if (counts[0] === counts[1]) toast('Draw');
       else if (state.mode === 'ai') toast(counts[0] > counts[1] ? 'Black wins' : 'White wins');
       else { const wSide = counts[0] > counts[1] ? 1 : 2; toast(wSide === state.myIdx! + 1 ? 'You win' : 'Opponent wins'); }
+      // M2（2026-10-01）：classroom 终局上报
+      if (state.mode === 'online' && isClassroom() && state.roomCode) {
+        const dur = state.timer ? Date.now() - state.timer.startedAt : 0;
+        const youWin = counts[0] === counts[1] ? false : (counts[0] > counts[1] ? state.myIdx === 0 : state.myIdx === 1);
+        reportRound(state.roomCode, {
+          round: 1,
+          solved: youWin,
+          duration_ms: dur,
+          outcome: counts[0] === counts[1] ? 'draw' : (youWin ? 'win' : 'loss'),
+        });
+      }
       return;
     }
     // 当前轮无子下，让对手继续
@@ -290,13 +303,19 @@ wireLobbyChrome();
 const ic = inviteCode();
 if (ic) {
   clearInviteParam();
-  enterRoom(state as OnlineState, ic, {
-    onConnect: () => { newGame(); toast('Connected · room ' + ic); maybeAutoPass(); },
-    onOpponentPlace: handleWs,
-    onPassNotify: handleWs,
-    onStart: () => newGame(),
-    onRestart: () => newGame(),
-    onOpponentLeave: () => toast('Opponent left the room'),
-    onGameOver: handleWs,
+  // M2（2026-10-01）：classroom 邀请链接先弹代号
+  const classroomHook = isClassroom() && urlRoomCode() === ic
+    ? ensureStudentCode(ic)
+    : Promise.resolve(null);
+  (classroomHook || Promise.resolve()).then(() => {
+    enterRoom(state as OnlineState, ic, {
+      onConnect: () => { newGame(); toast('Connected · room ' + ic); maybeAutoPass(); },
+      onOpponentPlace: handleWs,
+      onPassNotify: handleWs,
+      onStart: () => newGame(),
+      onRestart: () => newGame(),
+      onOpponentLeave: () => toast('Opponent left the room'),
+      onGameOver: handleWs,
+    });
   });
 }

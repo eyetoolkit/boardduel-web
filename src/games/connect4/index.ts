@@ -17,6 +17,8 @@ import {
   type OnlineState, type OnlineMsg,
 } from '../online-core';
 import { modeFromUrl, syncModeCardUI } from '../shared';
+// M2（2026-10-01）：教师端房间码归因
+import { isClassroom, urlRoomCode, reportRound, ensureStudentCode } from '../../shared/teacher-track';
 
 const SLOT_W = 420, SLOT_H = SLOT_W * ROWS / COLS;
 const PAD = 16;
@@ -155,6 +157,17 @@ function afterMove(): void {
     if (r.winner === 3) toast('Draw');
     else if (state.mode === 'ai') toast(r.winner === 1 ? 'Red wins' : 'Teal wins');
     else toast(r.winner === state.player ? 'You win' : 'Opponent wins');
+    // M2（2026-10-01）：classroom 在线终局上报
+    if (state.mode === 'online' && isClassroom() && state.roomCode) {
+      const dur = state.timer ? Date.now() - state.timer.startedAt : 0;
+      const youWin = r.winner === 3 ? false : (r.winner === state.player);
+      reportRound(state.roomCode, {
+        round: 1,
+        solved: youWin,
+        duration_ms: dur,
+        outcome: r.winner === 3 ? 'draw' : (youWin ? 'win' : 'loss'),
+      });
+    }
     return;
   }
   state.player = state.player === 1 ? 2 : 1;
@@ -260,12 +273,18 @@ wireLobbyChrome();
 const ic = inviteCode();
 if (ic) {
   clearInviteParam();
-  enterRoom(state as OnlineState, ic, {
-    onConnect: () => { newGame(); toast('Connected · room ' + ic); },
-    onOpponentPlace: handleWs,
-    onStart: () => newGame(),
-    onRestart: () => newGame(),
-    onOpponentLeave: () => toast('Opponent left the room'),
-    onGameOver: handleWs,
+  // M2（2026-10-01）：classroom 邀请链接先弹代号
+  const classroomHook = isClassroom() && urlRoomCode() === ic
+    ? ensureStudentCode(ic)
+    : Promise.resolve(null);
+  (classroomHook || Promise.resolve()).then(() => {
+    enterRoom(state as OnlineState, ic, {
+      onConnect: () => { newGame(); toast('Connected · room ' + ic); },
+      onOpponentPlace: handleWs,
+      onStart: () => newGame(),
+      onRestart: () => newGame(),
+      onOpponentLeave: () => toast('Opponent left the room'),
+      onGameOver: handleWs,
+    });
   });
 }

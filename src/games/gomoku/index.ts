@@ -24,6 +24,8 @@ import {
   candidateMoves,
   type Board as GBoard, type Player as GPlayer, type Difficulty as GDifficulty,
 } from './engine';
+// M2（2026-10-01）：教师端房间码归因（?tid=1 + ?c= 同时存在 → classroom）
+import { isClassroom, reportRound, ensureStudentCode, urlRoomCode } from '../../shared/teacher-track';
 
 const SLOT = 600;                 // SVG viewBox 边长
 const MARGIN = 4;                 // 外留白（仅容纳外框描边 + 阴影，尽量贴边）
@@ -541,6 +543,17 @@ function finish(winner: GPlayer, line: number[] | null): void {
   else {
     const mySide: GPlayer = state.myIdx === 0 ? 1 : 2;
     verdict = winner === mySide ? 'You win' : 'You lose';
+  }
+
+  // M2（2026-10-01）：仅 classroom 邀请房间上报 track（不污染 PvP）
+  if (state.mode === 'ranked' && isClassroom() && state.roomCode) {
+    const dur = state.timer ? Date.now() - state.timer.startedAt : 0;
+    reportRound(state.roomCode, {
+      round: 1,
+      solved: verdict.includes('win') && !verdict.includes('lose'),
+      duration_ms: dur,
+      outcome: verdict.includes('win') && !verdict.includes('lose') ? 'win' : 'loss',
+    });
   }
 
   endVerdict.textContent = verdict;
@@ -1288,10 +1301,16 @@ function applyDeepLink(): void {
     const host = inviteIsHost();
     state.mode = 'ranked';
     clearInviteParam();
-    enterRankedRoom(code, false);
-    toast(host
-      ? 'Room ' + code + ' created — waiting for your opponent'
-      : 'Joining room ' + code);
+    // M2（2026-10-01）：classroom 邀请链接（?tid=1）先弹代号输入，落 localStorage 后 reportRound 自动取
+    const classroomHook = isClassroom() && urlRoomCode() === code
+      ? ensureStudentCode(code)
+      : Promise.resolve(null);
+    (classroomHook || Promise.resolve()).then(() => {
+      enterRankedRoom(code, false);
+      toast(host
+        ? 'Room ' + code + ' created — waiting for your opponent'
+        : 'Joining room ' + code);
+    });
   } else {
     applyDeepLink();
   }

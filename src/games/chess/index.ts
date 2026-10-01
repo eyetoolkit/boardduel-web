@@ -18,6 +18,8 @@ import {
   type OnlineState, type OnlineMsg,
 } from '../online-core';
 import { modeFromUrl, syncModeCardUI } from '../shared';
+// M2（2026-10-01）：教师端房间码归因 — 复制自 mathduel-web，仅 ?c= 与 ?room= 兼容差异
+import { isClassroom, urlRoomCode, reportRound, ensureStudentCode } from '../../shared/teacher-track';
 
 const SLOT = 540;
 const PAD = 16;
@@ -248,6 +250,16 @@ function afterMove(): void {
     if (state.mode === 'online') {
       const meWon = state.gs.turn !== myColor();
       toast(meWon ? 'Checkmate · You win' : 'Checkmate · You lose');
+      // M2（2026-10-01）：棋局结束上报教室作业进度（只在 classroom 房间）
+      if (isClassroom() && state.roomCode) {
+        const dur = state.timer ? Date.now() - state.timer.startedAt : 0;
+        reportRound(state.roomCode, {
+          round: 1,
+          solved: !!meWon,
+          duration_ms: dur,
+          outcome: meWon ? 'win' : 'loss',
+        });
+      }
     } else {
       toast('Stalemate or no legal moves');
     }
@@ -352,16 +364,22 @@ newGame();
 // 站点 chrome（侧栏抽屉 / 桌面收起 / 主题切换）
 wireLobbyChrome();
 
-// 通过 ?c=<CODE> 进入好友房
+// 通过 ?c=<CODE> 进入好友房（PvP 或 teacher-tid=1 课堂邀请）
 const ic = inviteCode();
 if (ic) {
   clearInviteParam();
-  enterRoom(state as OnlineState, ic, {
-    onConnect: () => { newGame(); toast('Connected · room ' + ic); },
-    onOpponentMove: handleWs,
-    onStart: () => newGame(),
-    onRestart: () => newGame(),
-    onOpponentLeave: () => toast('Opponent left the room'),
-    onGameOver: handleWs,
+  // M2（2026-10-01）：课堂邀请链接（带 tid=1）先弹代号输入，校核后再进房
+  const classroomHook = isClassroom() && urlRoomCode() === ic
+    ? ensureStudentCode(ic).then(() => { /* 代号落 localStorage，reportRound 自动取 */ })
+    : null;
+  (classroomHook || Promise.resolve()).then(() => {
+    enterRoom(state as OnlineState, ic, {
+      onConnect: () => { newGame(); toast('Connected · room ' + ic); },
+      onOpponentMove: handleWs,
+      onStart: () => newGame(),
+      onRestart: () => newGame(),
+      onOpponentLeave: () => toast('Opponent left the room'),
+      onGameOver: handleWs,
+    });
   });
 }

@@ -22,6 +22,8 @@ import {
   type OnlineState, type OnlineMsg,
 } from '../online-core';
 import { modeFromUrl, syncModeCardUI } from '../shared';
+// M2（2026-10-01）：教师端房间码归因
+import { isClassroom, urlRoomCode, reportRound, ensureStudentCode } from '../../shared/teacher-track';
 
 const SLOT = 540;       // SVG 棋盘 viewBox 边长（与 chess/gomoku 统一）
 const PAD = 24;
@@ -166,6 +168,16 @@ function afterMove(): void {
     } else {
       const meWon = winner === state.myIdx! + 1;
       toast(meWon ? 'You win' : 'Opponent wins');
+      // M2（2026-10-01）：classroom 在线终局上报
+      if (state.mode === 'online' && isClassroom() && state.roomCode) {
+        const dur = state.timer ? Date.now() - state.timer.startedAt : 0;
+        reportRound(state.roomCode, {
+          round: 1,
+          solved: meWon,
+          duration_ms: dur,
+          outcome: meWon ? 'win' : 'loss',
+        });
+      }
     }
     return;
   }
@@ -262,12 +274,18 @@ wireLobbyChrome();
 const ic = inviteCode();
 if (ic) {
   clearInviteParam();
-  enterRoom(state as OnlineState, ic, {
-    onConnect: () => { newGame(); toast('Connected · room ' + ic); },
-    onOpponentMove: handleWs,
-    onStart: () => newGame(),
-    onRestart: () => newGame(),
-    onOpponentLeave: () => toast('Opponent left the room'),
-    onGameOver: handleWs,
+  // M2（2026-10-01）：classroom 邀请链接先弹代号
+  const classroomHook = isClassroom() && urlRoomCode() === ic
+    ? ensureStudentCode(ic)
+    : Promise.resolve(null);
+  (classroomHook || Promise.resolve()).then(() => {
+    enterRoom(state as OnlineState, ic, {
+      onConnect: () => { newGame(); toast('Connected · room ' + ic); },
+      onOpponentMove: handleWs,
+      onStart: () => newGame(),
+      onRestart: () => newGame(),
+      onOpponentLeave: () => toast('Opponent left the room'),
+      onGameOver: handleWs,
+    });
   });
 }
