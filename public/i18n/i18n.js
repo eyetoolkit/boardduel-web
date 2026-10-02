@@ -66,6 +66,13 @@
       var generic = localStorage.getItem(GENERIC_KEY);
       if (generic) candidates.push(generic);
     } catch (e) {}
+    // 4. 浏览器语言兜底（2026-10-03：中文手机默认看到英文界面 —— 用户一直
+    //    在英文界面下用站点，结算页 "Rematch" 因此认不出是"再来一局"）。
+    //    只在用户从未显式选择过语言时生效，不覆盖 ?lang / 路径 / localStorage。
+    try {
+      var nav = (navigator.language || navigator.userLanguage || '').slice(0, 2).toLowerCase();
+      if (nav) candidates.push(nav);
+    } catch (e) {}
     // 取第一个被 SUPPORTED 接受的语言
     for (var i = 0; i < candidates.length; i++) {
       if (SUPPORTED.indexOf(candidates[i]) >= 0) return candidates[i];
