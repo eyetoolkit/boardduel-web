@@ -81,6 +81,7 @@ const levelClose = $<HTMLButtonElement>('go-level-close');
 const replayBtn = $<HTMLButtonElement>('go-replay');
 const soundBtn = $<HTMLButtonElement>('go-sound');
 
+const leaveCard = $<HTMLDivElement>('go-leavecard');
 const rpBar = $<HTMLDivElement>('go-replaybar');
 const rpPlay = $<HTMLButtonElement>('go-rp-play');
 const rpRange = $<HTMLInputElement>('go-rp-range');
@@ -928,6 +929,61 @@ function startReplay(): void {
 }
 
 /* ══════════════════════════════════════════════════════════════
+   退出二次确认（2026-10-03）
+   ------------------------------------------------------------
+   手机从屏幕边缘侧滑 = 浏览器"后退"，会直接把整页退回上一页、对局丢失；
+   Android 实体/手势返回键同理。这里用历史栈把它拦下来：
+     进入对局 → pushState 压一个占位条目；
+     用户侧滑 → popstate 触发 → 立刻 pushState 把条目补回去（URL 不变、页面不退）
+                → 弹确认框；
+     点"继续下"→ 只关框，盘面原样；
+     点"离开"  → 放行（真正 back 一次）+ 回大厅。
+   终局（end）与大厅不拦：那时没有"未下完的棋"可丢。
+   ══════════════════════════════════════════════════════════════ */
+let backGuard = false;      // 占位条目是否已压
+let backLeaving = false;    // 用户已确认离开 → 放行这一次的 popstate
+
+function armBackGuard(): void {
+  if (backGuard) return;
+  try { history.pushState({ bdMatch: 1 }, ''); backGuard = true; } catch (e) { /* history 不可用则放弃拦截 */ }
+}
+
+window.addEventListener('popstate', () => {
+  if (backLeaving) return;                 // 已确认 → 放行，让浏览器真退
+  if (state.screen !== 'match') return;    // 大厅 / 终局：不需要拦
+  // 把被 pop 掉的占位条目补回来，页面留在原地
+  try { history.pushState({ bdMatch: 1 }, ''); backGuard = true; } catch (e) { /* noop */ }
+  leaveCard.hidden = false;
+});
+
+function stayInGame(): void {
+  leaveCard.hidden = true;
+}
+
+/**
+ * 统一的"退出对局回大厅"出口：底栏返回键、终局页返回键、Esc、
+ * 以及退出确认框的"离开"都走这里 —— 顺手把占位历史条目消费掉，
+ * 否则占位条目一直留着，下次进对局 armBackGuard 会误以为已武装而失效。
+ */
+function exitMatchToLobby(): void {
+  leaveCard.hidden = true;
+  resetReplayUI();
+  leaveRoom();
+  showScreen('lobby');
+  if (backGuard) {
+    backLeaving = true;      // 让这一次 popstate 放行，别再弹确认
+    backGuard = false;
+    try { history.back(); } catch (e) { /* noop */ }
+    // 兜底：若 back() 没有触发 popstate（没有上一页），别让守卫永久卡在"放行"态
+    setTimeout(() => { backLeaving = false; }, 500);
+  }
+}
+
+$('go-leave-close').addEventListener('click', stayInGame);
+$('go-leave-stay').addEventListener('click', stayInGame);
+$('go-leave-yes').addEventListener('click', exitMatchToLobby);
+
+/* ══════════════════════════════════════════════════════════════
    屏幕切换
    ══════════════════════════════════════════════════════════════ */
 function showScreen(s: UIState['screen']): void {
@@ -937,6 +993,8 @@ function showScreen(s: UIState['screen']): void {
   endEl.hidden = s !== 'end';
   // 移动端沉浸对局：match/end 两屏锁定视口（CSS 只在 <900px 生效，桌面不受影响）
   document.body.classList.toggle('bd-in-match', s !== 'lobby');
+  // 进对局才武装"侧滑退出"守卫；回大厅/终局时不拦（没有未下完的棋可丢）
+  if (s === 'match') armBackGuard();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -1404,7 +1462,7 @@ hintClose.addEventListener('click', () => {
   hintCard.hidden = true;
   boardEl.querySelectorAll('.go-hintdot').forEach((n) => n.remove());
 });
-backLobbyBtn.addEventListener('click', () => { resetReplayUI(); leaveRoom(); showScreen('lobby'); });
+backLobbyBtn.addEventListener('click', exitMatchToLobby);
 
 rematchBtn.addEventListener('click', () => {
   if (state.mode === 'ranked') { sendWs({ type: 'restart' }); state.over = false; newGame(); return; }
@@ -1412,7 +1470,7 @@ rematchBtn.addEventListener('click', () => {
 });
 /* "Review moves" = 进入完整棋谱回放（从头自动播放，可暂停/拖动/逐手） */
 reviewBtn.addEventListener('click', enterReplay);
-endLobbyBtn.addEventListener('click', () => { resetReplayUI(); leaveRoom(); showScreen('lobby'); });
+endLobbyBtn.addEventListener('click', exitMatchToLobby);
 
 chatForm.addEventListener('submit', (e) => {
   e.preventDefault();
@@ -1431,8 +1489,7 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') { exitReplay(); return; }
   }
   if (e.key === 'Escape' && state.screen === 'match') {
-    if (state.mode === 'ranked') { leaveRoom(); }
-    showScreen('lobby');
+    exitMatchToLobby();
   }
 });
 

@@ -468,3 +468,13 @@ body.home-v2.bd-replay .go-controls { display: none; }
   body.home-v2.bd-in-match.bd-replay .go-invite { display: none; }
   body.home-v2.bd-in-match #go-back-lobby { order: 5; }
 }
+
+/* ════════════════════════════════════════════════════════════
+ * 退出确认框（#go-leavecard，2026-10-03）
+ * 复用 .go-levelcard 的全屏遮罩 + 面板，只补正文与按钮行。
+ * ════════════════════════════════════════════════════════════ */
+body.home-v2 .go-leave-note {
+  margin: 10px 0 0; font-size: .84rem; line-height: 1.55; color: var(--mute2);
+}
+body.home-v2 .go-leave-acts { display: flex; gap: 8px; margin-top: 14px; }
+body.home-v2 .go-leave-acts .go-btn { flex: 1; min-height: 42px; }

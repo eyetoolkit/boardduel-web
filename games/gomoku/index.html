@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:41,fallback:"en"};</script>
-  <script src="/i18n/i18n.js?v=41"></script>
+  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:42,fallback:"en"};</script>
+  <script src="/i18n/i18n.js?v=42"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#F4F5F9">
@@ -277,6 +277,21 @@
               <button type="button" class="go-level-opt" data-level="easy"><b>Counter</b><span>level 1</span></button>
               <button type="button" class="go-level-opt" data-level="medium"><b>Attacker</b><span>level 2</span></button>
               <button type="button" class="go-level-opt" data-level="hard"><b>Punisher</b><span>level 3</span></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 退出确认（手机侧滑 / 返回键触发，2026-10-03） -->
+        <div class="go-levelcard go-leavecard" id="go-leavecard" hidden>
+          <div class="go-level-panel">
+            <div class="go-hintcard-h">
+              <span data-i18n="bg.bg_gomoku_leave_title">Leave the game?</span>
+              <button type="button" id="go-leave-close" data-i18n-aria-label="bg.bg_gomoku_rp_exit" aria-label="Cancel">×</button>
+            </div>
+            <p class="go-leave-note" data-i18n="bg.bg_gomoku_leave_note">This game is still in progress — leaving now loses it.</p>
+            <div class="go-leave-acts">
+              <button type="button" class="go-btn is-primary" id="go-leave-stay" data-i18n="bg.bg_gomoku_stay">Keep playing</button>
+              <button type="button" class="go-btn is-danger" id="go-leave-yes" data-i18n="bg.bg_gomoku_leave">Leave</button>
             </div>
           </div>
         </div>
