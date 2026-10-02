@@ -73,6 +73,9 @@ const hintBtn = $<HTMLButtonElement>('go-hint');
 const resignBtn = $<HTMLButtonElement>('go-resign');
 const drawBtn = $<HTMLButtonElement>('go-draw');
 const backLobbyBtn = $<HTMLButtonElement>('go-back-lobby');
+const levelBtn = $<HTMLButtonElement>('go-level');
+const levelCard = $<HTMLDivElement>('go-levelcard');
+const levelClose = $<HTMLButtonElement>('go-level-close');
 
 const hintCard = $<HTMLDivElement>('go-hintcard');
 const hintList = $<HTMLOListElement>('go-hint-list');
@@ -819,6 +822,9 @@ function newGame(): void {
   startClockTick();
   // 对 AI 提和没有意义 —— 隐藏 Draw；其余模式（联机 / 同屏双人）显示
   drawBtn.hidden = state.mode === 'ai';
+  // 难度键只属于 AI 对局（ranked / pass 换档无意义），离场时顺带收起浮层
+  levelBtn.hidden = state.mode !== 'ai';
+  if (state.mode !== 'ai') levelCard.hidden = true;
   showScreen('match');
   render();
 
@@ -1144,6 +1150,27 @@ const LEVEL_LABEL: Record<GDifficulty, string> = {
   medium: 'Attacker',
   hard: 'Punisher',
 };
+
+/* ─── 难度选择（仅 AI 模式）：切换即用新难度重开一局 ─── */
+levelBtn.addEventListener('click', () => {
+  levelCard.hidden = false;
+  levelCard.querySelectorAll('.go-level-opt').forEach((b) => {
+    b.classList.toggle('is-cur', (b as HTMLElement).dataset.level === state.level);
+  });
+});
+levelClose.addEventListener('click', () => { levelCard.hidden = true; });
+// 点遮罩空白处同样关闭（点面板本身不关）
+levelCard.addEventListener('click', (e) => { if (e.target === levelCard) levelCard.hidden = true; });
+document.querySelectorAll<HTMLButtonElement>('.go-level-opt').forEach((b) => {
+  b.addEventListener('click', () => {
+    const lv = b.dataset.level as GDifficulty;
+    levelCard.hidden = true;
+    if (state.mode !== 'ai' || lv === state.level) return;
+    state.level = lv;
+    toast(window.t('bg.bg_gomoku_level_switched', { level: LEVEL_LABEL[lv] }));
+    newGame();
+  });
+});
 
 /** 点卡片 = 选模式 + 直接行动（与 lobby 模式页一致：点卡即玩，不留"没反应"的中间态）。
  *  深链的合成点击（pickModeCard 的 card.click()，isTrusted=false）只做选中，
