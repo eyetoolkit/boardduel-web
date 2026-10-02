@@ -2075,6 +2075,8 @@
     "bg_gomoku_sound_on": "声音开",
     "bg_gomoku_sound_off": "声音关",
     "bg_gomoku_replay": "回放",
+    "bg_gomoku_review": "回看棋谱",
+    "bg_gomoku_back_lobby": "回大厅",
     "bg_gomoku_no_moves": "还没有可回放的棋步",
     "bg_gomoku_rp_first": "第一手",
     "bg_gomoku_rp_prev": "上一手",

@@ -2027,6 +2027,8 @@
     "bg_gomoku_sound_on": "Sound on",
     "bg_gomoku_sound_off": "Sound off",
     "bg_gomoku_replay": "Replay",
+    "bg_gomoku_review": "Review moves",
+    "bg_gomoku_back_lobby": "Back to lobby",
     "bg_gomoku_no_moves": "No moves to replay yet",
     "bg_gomoku_rp_first": "First move",
     "bg_gomoku_rp_prev": "Previous move",

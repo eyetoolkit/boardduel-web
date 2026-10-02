@@ -2103,6 +2103,8 @@
     "bg_gomoku_sound_on": "Son activé",
     "bg_gomoku_sound_off": "Son désactivé",
     "bg_gomoku_replay": "Replay",
+    "bg_gomoku_review": "Revoir les coups",
+    "bg_gomoku_back_lobby": "Retour au lobby",
     "bg_gomoku_no_moves": "Aucun coup à rejouer",
     "bg_gomoku_rp_first": "Premier coup",
     "bg_gomoku_rp_prev": "Coup précédent",

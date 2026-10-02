@@ -2104,6 +2104,8 @@
     "bg_gomoku_sound_on": "Sonido activado",
     "bg_gomoku_sound_off": "Sonido desactivado",
     "bg_gomoku_replay": "Repetición",
+    "bg_gomoku_review": "Revisar jugadas",
+    "bg_gomoku_back_lobby": "Volver al lobby",
     "bg_gomoku_no_moves": "Aún no hay jugadas para repetir",
     "bg_gomoku_rp_first": "Primera jugada",
     "bg_gomoku_rp_prev": "Jugada anterior",

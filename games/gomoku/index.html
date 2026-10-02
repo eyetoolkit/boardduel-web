@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:43,fallback:"en"};</script>
+  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:44,fallback:"en"};</script>
   <script src="/i18n/i18n.js?v=43"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -254,7 +254,7 @@
           </form>
         </div>
 
-        <button type="button" class="go-btn" id="go-back-lobby">Back to lobby</button>
+        <button type="button" class="go-btn" id="go-back-lobby" data-i18n="bg.bg_gomoku_back_lobby">Back to lobby</button>
       </aside>
     </div>
   </section>
@@ -267,9 +267,11 @@
         <span class="go-end-line" id="go-end-line">—</span>
       </div>
       <div class="go-end-acts">
-        <button type="button" class="go-btn is-primary" id="go-rematch">Rematch</button>
-        <button type="button" class="go-btn" id="go-review">Review moves</button>
-        <button type="button" class="go-btn" id="go-end-lobby">Back to lobby</button>
+        <!-- Rematch 就是"再来一局"：复用全站通用 key（六语齐全），
+             2026-10-03 用户反馈看不出 Rematch = 再来一局，接 i18n 后中文界面直接显示「再来一局」 -->
+        <button type="button" class="go-btn is-primary" id="go-rematch" data-i18n="common.play_again">Play Again</button>
+        <button type="button" class="go-btn" id="go-review" data-i18n="bg.bg_gomoku_review">Review moves</button>
+        <button type="button" class="go-btn" id="go-end-lobby" data-i18n="bg.bg_gomoku_back_lobby">Back to lobby</button>
       </div>
     </div>
   </section>

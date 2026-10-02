@@ -2104,6 +2104,8 @@
     "bg_gomoku_sound_on": "Ton an",
     "bg_gomoku_sound_off": "Ton aus",
     "bg_gomoku_replay": "Wiedergabe",
+    "bg_gomoku_review": "Züge ansehen",
+    "bg_gomoku_back_lobby": "Zurück zur Lobby",
     "bg_gomoku_no_moves": "Noch keine Züge zum Abspielen",
     "bg_gomoku_rp_first": "Erster Zug",
     "bg_gomoku_rp_prev": "Vorheriger Zug",
