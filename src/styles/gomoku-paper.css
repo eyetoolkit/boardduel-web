@@ -168,11 +168,15 @@ body.home-v2 .go-invite-note {
 }
 
 /* ════════════════════════════════════════════════════════════
- * Ranked 入队态（body.is-queuing，index.ts setQueuingUI 切换）
- * 模式网格让位，队列面板放大成主角。
+ * Ranked 排队遮罩（#go-queue 移到对局页，2026-10-03）
+ * 全屏遮罩 + 居中面板，压在空棋盘上等匹配；旧内嵌大厅已删。
  * ════════════════════════════════════════════════════════════ */
-body.home-v2.is-queuing .go-modes { display: none; }
-body.home-v2.is-queuing .go-queue { margin: 40px 0 12px; }
+body.home-v2 #go-queue {
+  position: fixed; inset: 0; z-index: 88; margin: 0;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; background: rgba(18, 19, 31, .45);
+}
+body.home-v2 #go-queue[hidden] { display: none; }
 body.home-v2.is-queuing .go-queue-inner {
   padding: 24px 26px; border-width: 2px; border-color: var(--ember);
   box-shadow: 0 12px 32px rgba(245, 158, 11, .16);

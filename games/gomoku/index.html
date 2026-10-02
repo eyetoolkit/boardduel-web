@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:42,fallback:"en"};</script>
-  <script src="/i18n/i18n.js?v=42"></script>
+  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:43,fallback:"en"};</script>
+  <script src="/i18n/i18n.js?v=43"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#F4F5F9">
@@ -107,77 +107,12 @@
     </div>
   </header>
 
-  <!-- ══ SCREEN 1 · LOBBY ══ -->
-  <section id="go-lobby">
+  <!-- ══ SCREEN 2 · MATCH ══
+       旧内嵌 lobby 屏已删除（2026-10-03）：模式选择统一走 /games/gomoku/lobby/，
+       游戏页只保留深链入局（?mode= / ?c=）；排位排队面板移到对局页做全屏遮罩。 -->
+  <section id="go-match" hidden>
 
-    <div class="go-modes" id="go-modes">
-      <button type="button" class="go-mode feat" data-mode="ranked">
-        <span class="go-mode-top">
-          <span class="go-mode-name">Ranked Match</span>
-          <span class="go-pill is-live">live</span>
-        </span>
-        <span class="go-mode-desc">The measured one. A real opponent at roughly your level — the result moves your rating.</span>
-        <span class="go-mode-meta" id="go-rank-line">
-          <span id="go-rank-label">Stone II · 1,240</span>
-          <span class="go-mode-wait" id="go-rank-wait">avg wait 18s</span>
-        </span>
-      </button>
-
-      <button type="button" class="go-mode" data-mode="friend">
-        <span class="go-mode-top">
-          <span class="go-mode-name">Friend Room</span>
-          <span class="go-tag is-live">private code</span>
-        </span>
-        <span class="go-mode-desc">The cozy one. Create a room, send the 6-character code, duel your friend.</span>
-      </button>
-
-      <button type="button" class="go-mode" data-mode="ai" data-level="easy">
-        <span class="go-mode-top">
-          <span class="go-mode-name">Engine · Counter</span>
-          <span class="go-tag is-mute">level 1</span>
-        </span>
-        <span class="go-mode-desc">The reader. Counts your pairs and trios before it moves.</span>
-      </button>
-
-      <button type="button" class="go-mode" data-mode="ai" data-level="medium">
-        <span class="go-mode-top">
-          <span class="go-mode-name">Engine · Attacker</span>
-          <span class="go-tag is-gold">level 2</span>
-        </span>
-        <span class="go-mode-desc">The pusher. Opens its own threats first — defend, then punish.</span>
-      </button>
-
-      <button type="button" class="go-mode" data-mode="ai" data-level="hard">
-        <span class="go-mode-top">
-          <span class="go-mode-name">Engine · Punisher</span>
-          <span class="go-tag is-gold">level 3</span>
-        </span>
-        <span class="go-mode-desc">The executioner. Sharpest weights, no sympathy for a loose stone.</span>
-      </button>
-
-      <button type="button" class="go-mode" data-mode="pass">
-        <span class="go-mode-top">
-          <span class="go-mode-name">Pass &amp; Play</span>
-          <span class="go-tag is-mute">one screen</span>
-        </span>
-        <span class="go-mode-desc">The social one. Two humans, one device — no queue, no code.</span>
-      </button>
-
-      <!-- 未上线：灰态且不是交互元素，所以键盘也聚焦不到 -->
-      <div class="go-mode ghost" aria-disabled="true">
-        <span class="go-mode-top">
-          <span class="go-mode-name">Tournament</span>
-          <span class="go-tag">Coming soon</span>
-        </span>
-        <span class="go-mode-desc">The big one. Bracket play and a season board — still being built.</span>
-      </div>
-    </div>
-
-    <p class="bd-side-note">
-      <a class="go-start-note" href="/games/gomoku/lobby/">Every mode, explained</a>
-    </p>
-
-    <!-- 排位队列面板 -->
+    <!-- 排位队列遮罩（匹配中压在空棋盘上；取消即回 /games/gomoku/lobby/） -->
     <div class="go-queue" id="go-queue" hidden>
       <div class="go-queue-inner">
         <div class="go-queue-spin" aria-hidden="true"></div>
@@ -188,15 +123,6 @@
         <button type="button" id="go-queue-cancel" class="go-btn" data-i18n="bg.bg_gomoku_cancel">Cancel</button>
       </div>
     </div>
-
-    <div class="go-start-row" id="go-start-row">
-      <button type="button" class="go-btn is-primary" id="go-start" data-i18n="bg.bg_gomoku_start">Start game</button>
-      <span class="go-start-note" id="go-start-note" data-i18n="bg.bg_gomoku_black_first">Black moves first.</span>
-    </div>
-  </section>
-
-  <!-- ══ SCREEN 2 · MATCH ══ -->
-  <section id="go-match" hidden>
 
     <!-- 双棋钟（带头像：我 · 黑 在左，对手 · 白 在右，对齐主流 APP 布局） -->
     <div class="go-clocks" id="go-clocks">

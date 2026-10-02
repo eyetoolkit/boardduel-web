@@ -41,7 +41,6 @@ const COLS = 'ABCDEFGHIJKLMNO';
 /* ─── DOM ─── */
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
-const lobbyEl = $('go-lobby');
 const matchEl = $('go-match');
 const endEl = $('go-end');
 
@@ -51,12 +50,6 @@ const legendEl = $<HTMLDivElement>('go-legend');
 const queueEl = $<HTMLDivElement>('go-queue');
 const queueTitle = $<HTMLElement>('go-queue-title');
 const queueSub = $<HTMLElement>('go-queue-sub');
-const startRow = $<HTMLDivElement>('go-start-row');
-const modesEl = $<HTMLDivElement>('go-modes');
-const startBtn = $<HTMLButtonElement>('go-start');
-const startNote = $<HTMLElement>('go-start-note');
-const rankLabel = $<HTMLElement>('go-rank-label');
-const rankWait = $<HTMLElement>('go-rank-wait');
 
 const turnEl = $<HTMLElement>('go-turn');
 const moveNoEl = $<HTMLElement>('go-moveno');
@@ -175,11 +168,6 @@ const API = (() => {
   return '';
 })();
 
-/** 我的 UUID（沿用站点通用 pid cookie / Account 模块） */
-function myUuid(): string {
-  const m = document.cookie.match(/(?:^|;\s*)pid=([^;\s]+)/);
-  return m ? decodeURIComponent(m[1]) : '';
-}
 function myName(): string {
   return 'Player';
 }
@@ -626,8 +614,21 @@ function finish(winner: GPlayer, line: number[] | null): void {
   endVerdict.className = 'go-end-verdict ' + (verdict.includes('win') && !verdict.includes('lose') ? 'is-win' : 'is-loss');
   endLine.textContent = lineText || '—';
   playSfx(verdict.includes('win') && !verdict.includes('lose') ? 'win' : 'lose');
-  showScreen('end');
+  // 不再瞬间跳结算：先看 1.5s 胜局盘面（获胜连线高亮），再自动进结算页
+  scheduleEndScreen();
   toast(verdict + (lineText ? ' · ' + lineText : ''));
+}
+
+/** 终局后先停在棋盘上 1.5s，让玩家看清最后一手和获胜连线，再进结算页
+ *  （此前 AI 落完最后一子瞬间跳结算，最后一手根本看不到 —— 用户反馈）。
+ *  期间若玩家主动离开对局/进入回放，则不再跳。 */
+let endScreenTimer = 0;
+function scheduleEndScreen(): void {
+  if (endScreenTimer) window.clearTimeout(endScreenTimer);
+  endScreenTimer = window.setTimeout(() => {
+    endScreenTimer = 0;
+    if (state.over && state.screen === 'match' && state.reviewAt === null) showScreen('end');
+  }, 1500);
 }
 
 function finishDraw(): void {
@@ -636,7 +637,7 @@ function finishDraw(): void {
   endVerdict.textContent = window.t('bi.draw');
   endVerdict.className = 'go-end-verdict';
   endLine.textContent = window.t('bi.board_full');
-  showScreen('end');
+  scheduleEndScreen();
   toast('Draw — board full');
 }
 
@@ -942,6 +943,7 @@ function startReplay(): void {
    ══════════════════════════════════════════════════════════════ */
 let backGuard = false;      // 占位条目是否已压
 let backLeaving = false;    // 用户已确认离开 → 放行这一次的 popstate
+let pendingLobbyNav = false; // 放行后要把当前条目替换成模式大厅页
 
 function armBackGuard(): void {
   if (backGuard) return;
@@ -949,8 +951,17 @@ function armBackGuard(): void {
 }
 
 window.addEventListener('popstate', () => {
-  if (backLeaving) return;                 // 已确认 → 放行，让浏览器真退
-  if (state.screen !== 'match') return;    // 大厅 / 终局：不需要拦
+  if (backLeaving) {
+    // 已确认离开：这次 popstate 消费掉占位条目，URL 回到对局页本身；
+    // 顺势把对局页这条历史也替换成模式大厅页 —— 回大厅后按"后退"不会再掉回对局。
+    backLeaving = false;
+    if (pendingLobbyNav) {
+      pendingLobbyNav = false;
+      location.replace(MODE_PAGE);
+    }
+    return;
+  }
+  if (state.screen !== 'match') return;    // 终局 / 排队外：不需要拦
   // 把被 pop 掉的占位条目补回来，页面留在原地
   try { history.pushState({ bdMatch: 1 }, ''); backGuard = true; } catch (e) { /* noop */ }
   leaveCard.hidden = false;
@@ -962,20 +973,25 @@ function stayInGame(): void {
 
 /**
  * 统一的"退出对局回大厅"出口：底栏返回键、终局页返回键、Esc、
- * 以及退出确认框的"离开"都走这里 —— 顺手把占位历史条目消费掉，
- * 否则占位条目一直留着，下次进对局 armBackGuard 会误以为已武装而失效。
+ * 以及退出确认框的"离开"都走这里。旧内嵌大厅已删除 —— 回大厅 = 真跳转模式页；
+ * 占位历史条目顺势消费并把当前条目替换成大厅页，后退不会掉回对局。
  */
 function exitMatchToLobby(): void {
   leaveCard.hidden = true;
   resetReplayUI();
+  abortQueue(true);
   leaveRoom();
-  showScreen('lobby');
   if (backGuard) {
-    backLeaving = true;      // 让这一次 popstate 放行，别再弹确认
+    backLeaving = true;      // 让这一次 popstate 放行
     backGuard = false;
-    try { history.back(); } catch (e) { /* noop */ }
-    // 兜底：若 back() 没有触发 popstate（没有上一页），别让守卫永久卡在"放行"态
-    setTimeout(() => { backLeaving = false; }, 500);
+    pendingLobbyNav = true;  // popstate 放行后 replace 成模式大厅页
+    try { history.back(); } catch (e) { location.replace(MODE_PAGE); }
+    // 兜底：若 back() 没有触发 popstate（没有上一页），600ms 后直接走
+    setTimeout(() => {
+      if (pendingLobbyNav) { pendingLobbyNav = false; backLeaving = false; location.replace(MODE_PAGE); }
+    }, 600);
+  } else {
+    location.replace(MODE_PAGE);
   }
 }
 
@@ -988,7 +1004,7 @@ $('go-leave-yes').addEventListener('click', exitMatchToLobby);
    ══════════════════════════════════════════════════════════════ */
 function showScreen(s: UIState['screen']): void {
   state.screen = s;
-  lobbyEl.hidden = s !== 'lobby';
+  // 旧内嵌 lobby 屏已删除：'lobby' 只作为"不在对局"的状态值保留，无对应 DOM
   matchEl.hidden = s !== 'match';
   endEl.hidden = s !== 'end';
   // 移动端沉浸对局：match/end 两屏锁定视口（CSS 只在 <900px 生效，桌面不受影响）
@@ -1039,16 +1055,17 @@ function newGame(): void {
 /* ══════════════════════════════════════════════════════════════
    排位匹配（/api/match/*）
    ══════════════════════════════════════════════════════════════ */
-/** Ranked 入队态：模式网格让位、队列面板放大居中（否则玩家点了 Ranked 看不出页面有任何变化） */
+/** Ranked 入队态：body.is-queuing（队列面板现在是对局页上的全屏遮罩） */
 function setQueuingUI(on: boolean): void {
   document.body.classList.toggle('is-queuing', on);
-  modesEl.classList.toggle('is-queued', on);
 }
 
 async function joinQueue(): Promise<void> {
   queueEl.hidden = false;
-  startRow.hidden = true;
   setQueuingUI(true);
+  // 直接在对局页空盘上等匹配（旧内嵌大厅已删除）——匹配成功后棋子直接落在眼前
+  showScreen('match');
+  render();
   queueTitle.textContent = window.t('bj.finding_opponent');
   queueSub.textContent = window.t('bj.in_queue');
 
@@ -1071,8 +1088,8 @@ async function joinQueue(): Promise<void> {
     }
     throw new Error('unexpected');
   } catch (e) {
-    cancelQueue(true);
     toast('Matchmaking unavailable');
+    cancelQueue(true);   // 取消即回模式选择页
   }
 }
 
@@ -1080,7 +1097,7 @@ function pollQueue(): void {
   const started = Date.now();
   const tick = async (): Promise<void> => {
     if (!state.matchId) return;
-    if (Date.now() - started > 60000) { cancelQueue(true); toast('No opponent found'); return; }
+    if (Date.now() - started > 60000) { toast('No opponent found'); cancelQueue(true); return; }
     try {
       const r = await fetch(
         API + '/api/match/poll?matchId=' + encodeURIComponent(state.matchId) + '&game=gomoku',
@@ -1091,7 +1108,7 @@ function pollQueue(): void {
         enterRankedRoom(j.code, !!j.ai, j.aiName);
         return;
       }
-      if (j.status === 'closed') { cancelQueue(true); toast('Queue closed'); return; }
+      if (j.status === 'closed') { toast('Queue closed'); cancelQueue(true); return; }
       const secs = Math.round((Date.now() - started) / 1000);
       queueSub.textContent = window.t('bj.waiting') + secs + window.t('bj.waiting_ai_fallback');
     } catch (e) { /* 轮询容错，下一拍重试 */ }
@@ -1100,7 +1117,8 @@ function pollQueue(): void {
   state.pollTimer = window.setTimeout(tick, 800);
 }
 
-function cancelQueue(silent = false): void {
+/** 纯清理：停轮询 + 撤匹配单 + 收起队列遮罩（不导航，退出对局时用） */
+function abortQueue(silent = false): void {
   if (state.pollTimer) { clearTimeout(state.pollTimer); state.pollTimer = null; }
   if (state.matchId) {
     void fetch(API + '/api/match/cancel', {
@@ -1112,9 +1130,14 @@ function cancelQueue(silent = false): void {
     state.matchId = null;
   }
   queueEl.hidden = true;
-  startRow.hidden = false;
   setQueuingUI(false);
   if (!silent) toast('Left the queue');
+}
+
+/** 玩家主动取消排队：清理后回模式选择页（旧内嵌大厅已删，没有别的地方可回） */
+function cancelQueue(silent = false): void {
+  abortQueue(silent);
+  location.replace(MODE_PAGE);
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -1128,7 +1151,6 @@ function wsUrl(code: string, name: string): string {
 function enterRankedRoom(code: string, isAi: boolean, aiName?: string): void {
   if (state.pollTimer) { clearTimeout(state.pollTimer); state.pollTimer = null; }
   queueEl.hidden = true;
-  startRow.hidden = false;
   setQueuingUI(false);
   state.roomCode = code;
   state.mode = 'ranked';
@@ -1184,7 +1206,10 @@ inviteCopyBtn.addEventListener('click', () => {
   }
 });
 
-async function startFriendRoom(opts?: { keepCard?: boolean }): Promise<void> {
+async function startFriendRoom(): Promise<void> {
+  // 直接在对局页空盘上等朋友进房（旧内嵌大厅已删除）
+  showScreen('match');
+  render();
   const fail = () => {
     toast('Could not open a friend room');
     window.setTimeout(() => location.replace(MODE_PAGE), 900);
@@ -1195,7 +1220,6 @@ async function startFriendRoom(opts?: { keepCard?: boolean }): Promise<void> {
     const code = String((j && j.code) || '').toUpperCase();
     if (!r.ok || !/^[A-Z2-9]{6}$/.test(code)) { fail(); return; }
     // 复用联机全链路：进自己的房间（state.mode 由 enterRankedRoom 置为 ranked）
-    if (!opts?.keepCard) pickModeCard('.go-mode[data-mode="ranked"]');
     enterRankedRoom(code, false);
     showInvite(code);
   } catch (e) {
@@ -1420,44 +1444,8 @@ recList.addEventListener('click', (e) => {
   seek(Number(cell.dataset.p));
 });
 
-/** 点卡片 = 选模式 + 直接行动（与 lobby 模式页一致：点卡即玩，不留"没反应"的中间态）。
- *  深链的合成点击（pickModeCard 的 card.click()，isTrusted=false）只做选中，
- *  由 applyDeepLink 自己调 joinQueue/newGame，避免双触发。 */
-document.querySelectorAll<HTMLButtonElement>('.go-mode[data-mode]').forEach((b) => {
-  b.addEventListener('click', (ev) => {
-    const m = b.dataset.mode as UIState['mode'] | 'friend';
-    document.querySelectorAll('.go-mode').forEach((x) => x.classList.remove('is-cur'));
-    b.classList.add('is-cur');
-    if (m === 'friend') {
-      // 好友房：建房即进房（state.mode 由 enterRankedRoom 置为 ranked）
-      startBtn.textContent = window.t('bj.create_room');
-      startNote.textContent = window.t('bj.create_room_desc');
-      if (ev.isTrusted) void startFriendRoom({ keepCard: true });
-      return;
-    }
-    state.mode = m;
-    if (b.dataset.level) state.level = b.dataset.level as GDifficulty;
-    if (m === 'ranked') {
-      startBtn.textContent = window.t('bj.enter_queue');
-      startNote.textContent = window.t('bj.enter_queue_desc');
-    } else if (m === 'ai') {
-      startBtn.textContent = window.t('bj.start_game');
-      startNote.textContent = window.t('bj.start_ai_desc', { level: LEVEL_LABEL[state.level] });
-    } else {
-      startBtn.textContent = window.t('bj.start_game');
-      startNote.textContent = window.t('bj.start_pass_desc');
-    }
-    if (ev.isTrusted) {
-      if (m === 'ranked') { void joinQueue(); return; }
-      newGame();
-    }
-  });
-});
-
-startBtn.addEventListener('click', () => {
-  if (state.mode === 'ranked') { void joinQueue(); return; }
-  newGame();
-});
+/* 模式选择卡片已随旧内嵌大厅删除：入口统一在 /games/gomoku/lobby/（纯链接跳转），
+   游戏页只消费 ?mode= / ?c= 深链。 */
 $('go-queue-cancel').addEventListener('click', () => cancelQueue(false));
 
 undoBtn.addEventListener('click', undo);
@@ -1511,13 +1499,6 @@ document.addEventListener('keydown', (e) => {
    玩家以为页面坏了。 */
 const MODE_PAGE = '/games/gomoku/lobby/';
 
-function pickModeCard(sel: string): boolean {
-  const card = document.querySelector<HTMLButtonElement>(sel);
-  if (!card) return false;
-  card.click(); // 复用卡片自身的点击逻辑，选中态与 Start 文案一并就位
-  return true;
-}
-
 function applyDeepLink(): void {
   const q = new URLSearchParams(location.search);
   const raw = (q.get('mode') || '').toLowerCase();
@@ -1528,18 +1509,20 @@ function applyDeepLink(): void {
     return;
   }
   if (raw === 'ranked') {
-    pickModeCard('.go-mode[data-mode="ranked"]');
+    state.mode = 'ranked';
     void joinQueue();
     return;
   }
   if (raw === 'pass') {
-    if (pickModeCard('.go-mode[data-mode="pass"]')) newGame();
+    state.mode = 'pass';
+    newGame();
     return;
   }
   if (raw === 'engine' || raw === 'ai') {
     const lv = (q.get('level') || '').toLowerCase();
-    const level: GDifficulty = lv === 'easy' || lv === 'hard' ? lv : 'medium';
-    if (pickModeCard(`.go-mode[data-level="${level}"]`)) newGame();
+    state.mode = 'ai';
+    state.level = lv === 'easy' || lv === 'hard' ? lv : 'medium';   // 白名单，防注入
+    newGame();
     return;
   }
   location.replace(MODE_PAGE);
@@ -1556,26 +1539,9 @@ function applyDeepLink(): void {
     }
   }
 
-  // 段位显示：用账号资料（有则显示，无则用默认文案，不编造数字）
-  void (async () => {
-    try {
-      const r = await fetch(API + '/api/account/me', { credentials: 'include' });
-      const j = await r.json();
-      if (j && j.loggedIn && j.nickname) {
-        rankLabel.textContent = String(j.nickname);
-        rankWait.textContent = window.t('bj.rating_kept');
-      } else {
-        rankLabel.textContent = window.t('bj.guest');
-        rankWait.textContent = window.t('bj.unrated');
-      }
-    } catch (e) { /* 离线也要能玩 */ }
-  })();
-
-  // 默认停在引擎 · Attacker（原「Play the engine」的中间档）
+  // 默认档位（深链会覆盖；排位/邀请流程由各自入口置 mode）
   state.mode = 'ai';
   state.level = 'medium';
-  document.querySelector('.go-mode[data-level="medium"]')?.classList.add('is-cur');
-  if (myUuid()) rankWait.textContent = window.t('bj.ranked_queue_live');
 
   resetClock();
   paintSoundBtn();   // 声音开关按 localStorage 里的选择就位（缺省开）
@@ -1589,6 +1555,9 @@ function applyDeepLink(): void {
     const host = inviteIsHost();
     state.mode = 'ranked';
     clearInviteParam();
+    // 旧内嵌大厅已删：进邀请房直接亮对局页空盘等对手（不再回选择页干等）
+    showScreen('match');
+    render();
     // M2（2026-10-01）：classroom 邀请链接（?tid=1）先弹代号输入，落 localStorage 后 reportRound 自动取
     const classroomHook = isClassroom() && urlRoomCode() === code
       ? ensureStudentCode(code)
