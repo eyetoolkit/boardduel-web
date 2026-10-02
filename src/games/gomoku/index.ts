@@ -1418,9 +1418,13 @@ soundBtn.addEventListener('click', () => {
    🔴 不能 once —— iOS 锁屏/切后台/来电中断后会把 AudioContext 重新挂起，
    必须在之后的每次触摸里重新 resume，否则"声音时有时无"。
    unlockSfx 幂等且开销极小（多数时候只是一次 state 判断），常驻无害。 */
+// capture 阶段 + passive，确保在最早的一次触摸/点击上执行。
+// pointerdown/touchstart/mousedown 三种都挂：老款 Android / 微信 X5 内核
+// 不一定派发 pointer events，漏挂就等于漏解锁（表现为"没声音"）。 */
 const keepAudioAlive = (): void => unlockSfx();
 document.addEventListener('pointerdown', keepAudioAlive, { capture: true, passive: true });
 document.addEventListener('touchstart', keepAudioAlive, { capture: true, passive: true });
+document.addEventListener('mousedown', keepAudioAlive, { capture: true });
 // 回前台也试着拉一把（Android Chrome 上 resume 无需手势，能救回切后台的场景）
 document.addEventListener('visibilitychange', keepAudioAlive);
 
