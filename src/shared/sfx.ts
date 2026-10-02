@@ -19,6 +19,7 @@ const LS_KEY = 'bd-sfx';
 export type SfxName = 'place' | 'win' | 'lose' | 'start';
 
 let ctx: AudioContext | null = null;
+let unlockedOnce = false;
 let enabled = true;
 
 try {
@@ -42,25 +43,33 @@ export function setSfx(on: boolean): void {
  * 在真实用户手势里解锁音频（iOS Safari / 微信内置浏览器必需）。
  *
  * 这些浏览器要求：AudioContext 必须在手势回调里创建过、且 resume 到一个
- * "真正播过东西"的状态，之后才能出声。否则第一次之后可能全程静音。
- * 做法：在最早的一次 pointerdown/touchstart 里建 context + resume +
- * 播一个 1 采样的静音 buffer（无害、听不见，但会把 context 踢进 running）。
+ * "真正播过东西"的状态，之后才能出声。
+ *
+ * 🔴 必须"每次手势都调"，不能 once：iOS 在锁屏 / 切后台 / 来电中断后会把
+ * AudioContext 重新挂起（state → suspended/interrupted），只解锁一次的话，
+ * 中断之后就永久静音直到刷新——这正是"声音时有时无"的主因。
+ * 本函数幂等且开销极小（多数时候只是一次 state 判断），放心常驻。
  */
 export function unlockSfx(): void {
   if (!enabled) return;
   const c = ac();
   if (!c) return;
-  if (c.state === 'suspended') void c.resume().catch(() => {});
-  try {
-    const s = c.createBufferSource();
-    s.buffer = c.createBuffer(1, 1, c.sampleRate);
-    s.connect(c.destination);
-    s.start(0);
-  } catch (e) { /* 解锁失败不影响棋局 */ }
+  if (c.state !== 'running') void c.resume().catch(() => {});
+  if (!unlockedOnce) {
+    try {
+      const s = c.createBufferSource();
+      s.buffer = c.createBuffer(1, 1, c.sampleRate);
+      s.connect(c.destination);
+      s.start(0);
+      unlockedOnce = true;   // 静音采样只需播一次把 ctx 踢进 running
+    } catch (e) { /* 解锁失败不影响棋局 */ }
+  }
 }
 
 /** 取（必要时创建）AudioContext；创建失败（无 WebAudio）返回 null，全函数静默降级 */
 function ac(): AudioContext | null {
+  // iOS 中断后可能把 context 关闭（state='closed'）——丢弃重建，别卡死在坏实例上
+  if (ctx && ctx.state === 'closed') { ctx = null; unlockedOnce = false; }
   if (ctx) return ctx;
   try {
     const Ctor: typeof AudioContext =
@@ -127,8 +136,9 @@ export function playSfx(name: SfxName): void {
   if (!enabled) return;
   const c = ac();
   if (!c) return;
-  // 手势后若仍处于 suspended（iOS/Safari 常见），尝试恢复；失败就静默跳过
-  if (c.state === 'suspended') void c.resume().catch(() => {});
+  // 非运行态（suspended / interrupted）都尝试恢复：挂起态下调度的节点会在
+  // resume 后补播，所以这里不 return —— 宁可延迟出声也不要吞掉这一手。
+  if (c.state !== 'running') void c.resume().catch(() => {});
 
   try {
     if (name === 'place') {

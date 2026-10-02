@@ -1414,11 +1414,15 @@ soundBtn.addEventListener('click', () => {
   if (on) playSfx('place');
 });
 
-/* 首次真实手势里解锁音频：iOS Safari / 微信内置浏览器不解锁就可能全程静音。
-   捕获阶段 + once，确保在最早的一次触摸/点击上执行。 */
-const unlockAudio = (): void => unlockSfx();
-document.addEventListener('pointerdown', unlockAudio, { once: true, capture: true });
-document.addEventListener('touchstart', unlockAudio, { once: true, capture: true, passive: true });
+/* 真实手势里解锁/保活音频：iOS Safari / 微信内置浏览器不解锁就静音。
+   🔴 不能 once —— iOS 锁屏/切后台/来电中断后会把 AudioContext 重新挂起，
+   必须在之后的每次触摸里重新 resume，否则"声音时有时无"。
+   unlockSfx 幂等且开销极小（多数时候只是一次 state 判断），常驻无害。 */
+const keepAudioAlive = (): void => unlockSfx();
+document.addEventListener('pointerdown', keepAudioAlive, { capture: true, passive: true });
+document.addEventListener('touchstart', keepAudioAlive, { capture: true, passive: true });
+// 回前台也试着拉一把（Android Chrome 上 resume 无需手势，能救回切后台的场景）
+document.addEventListener('visibilitychange', keepAudioAlive);
 
 /* ─── 回放条 ─── */
 replayBtn.addEventListener('click', enterReplay);

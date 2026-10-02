@@ -418,10 +418,12 @@ body.home-v2 .go-btn.go-icon-btn svg {
   fill: none; stroke: currentColor; stroke-width: 1.9;
   stroke-linecap: round; stroke-linejoin: round;
 }
-/* 声音：on 显示喇叭，off 显示静音（叉号），两者二选一 */
-body.home-v2 .go-sound .ico-off { display: none; }
-body.home-v2 .go-sound.is-off .ico-on { display: none; }
-body.home-v2 .go-sound.is-off .ico-off { display: block; }
+/* 声音：on 显示喇叭，off 显示静音（叉号），两者二选一。
+   ⚠️ 选择器必须带 svg 标签：上面的 .go-icon-btn svg { display:block }
+   优先级 (0,3,2)，不带 svg 的话 (0,3,0) 压不过它 → 两个图标同时显示。 */
+body.home-v2 .go-sound svg.ico-off { display: none; }
+body.home-v2 .go-sound.is-off svg.ico-on { display: none; }
+body.home-v2 .go-sound.is-off svg.ico-off { display: block; }
 body.home-v2 .go-sound.is-off { color: var(--mute2); opacity: .75; }
 
 /* ════════════════════════════════════════════════════════════
