@@ -330,11 +330,14 @@ body.home-v2 #go-chat-toggle { display: none; }
   body.home-v2.bd-in-match .go-invite[hidden] { display: none; }
 
   /* ── 底：操作行（触控目标 ≥44px） ── */
-  body.home-v2.bd-in-match .go-controls { order: 3; display: flex; gap: 8px; }
+  /* 2026-10-03：加了"回放 / 声音"两个键后一行挤 6 个会把 Resign 裁掉（实测溢出 4px），
+     所以图标键定宽 44px、文字键 flex 1 1 52px，并加 flex-wrap 兜底（宁可换行不裁字）。 */
+  body.home-v2.bd-in-match .go-controls { order: 3; display: flex; gap: 8px; flex-wrap: wrap; }
   body.home-v2.bd-in-match .go-controls .go-btn {
-    flex: 1; min-width: 0; min-height: 44px; padding: 10px 6px;
-    font-size: .82rem; text-align: center;
+    flex: 1 1 52px; min-width: 0; min-height: 44px; padding: 10px 4px;
+    font-size: .78rem; letter-spacing: .04em; text-align: center;
   }
+  body.home-v2.bd-in-match .go-controls .go-icon-btn { flex: 0 0 44px; padding: 8px 0; }
   body.home-v2.bd-in-match .go-controls .go-btn[hidden] { display: none; }
   body.home-v2.bd-in-match #go-back-lobby {
     order: 4; margin: 0; min-height: 38px; padding: 7px 10px;

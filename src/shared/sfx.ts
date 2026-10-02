@@ -38,6 +38,27 @@ export function setSfx(on: boolean): void {
   try { localStorage.setItem(LS_KEY, on ? '1' : '0'); } catch (e) { /* 隐私模式 */ }
 }
 
+/**
+ * 在真实用户手势里解锁音频（iOS Safari / 微信内置浏览器必需）。
+ *
+ * 这些浏览器要求：AudioContext 必须在手势回调里创建过、且 resume 到一个
+ * "真正播过东西"的状态，之后才能出声。否则第一次之后可能全程静音。
+ * 做法：在最早的一次 pointerdown/touchstart 里建 context + resume +
+ * 播一个 1 采样的静音 buffer（无害、听不见，但会把 context 踢进 running）。
+ */
+export function unlockSfx(): void {
+  if (!enabled) return;
+  const c = ac();
+  if (!c) return;
+  if (c.state === 'suspended') void c.resume().catch(() => {});
+  try {
+    const s = c.createBufferSource();
+    s.buffer = c.createBuffer(1, 1, c.sampleRate);
+    s.connect(c.destination);
+    s.start(0);
+  } catch (e) { /* 解锁失败不影响棋局 */ }
+}
+
 /** 取（必要时创建）AudioContext；创建失败（无 WebAudio）返回 null，全函数静默降级 */
 function ac(): AudioContext | null {
   if (ctx) return ctx;
@@ -111,9 +132,12 @@ export function playSfx(name: SfxName): void {
 
   try {
     if (name === 'place') {
-      // 木质棋盘落子：脆响 + 低频木共鸣 + 一点高频"啪"
-      clack(c, 0.055, 2100, 0.30);
-      ping(c, 'triangle', 320, 150, 0.085, 0.16);
+      // 木质棋盘落子：脆响 + 木共鸣 + 一点高频"啪"。
+      // 2026-10-03 调厚一档：手机小喇叭对 2kHz 以上的窄带脆响几乎没反应，
+      // 加长到 ~0.1s 并把共鸣降到 260→130Hz、增益提到 .3，听感明显但仍短促。
+      clack(c, 0.075, 1750, 0.34);
+      ping(c, 'triangle', 260, 130, 0.13, 0.30);
+      ping(c, 'sine', 900, 620, 0.035, 0.14);
       return;
     }
     if (name === 'start') {

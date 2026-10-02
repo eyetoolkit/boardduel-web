@@ -27,7 +27,7 @@ import {
 // M2（2026-10-01）：教师端房间码归因（?tid=1 + ?c= 同时存在 → classroom）
 import { isClassroom, reportRound, ensureStudentCode, urlRoomCode } from '../../shared/teacher-track';
 // 2026-10-03：落子音效（WebAudio 合成，跨页记住开关）
-import { playSfx, sfxOn, setSfx } from '../../shared/sfx';
+import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 
 const SLOT = 600;                 // SVG viewBox 边长
 const MARGIN = 4;                 // 外留白（仅容纳外框描边 + 阴影，尽量贴边）
@@ -1389,6 +1389,12 @@ soundBtn.addEventListener('click', () => {
   // 打开时立刻给一声，让"开了/关了"可听可见（也是首次手势解锁 AudioContext 的时机）
   if (on) playSfx('place');
 });
+
+/* 首次真实手势里解锁音频：iOS Safari / 微信内置浏览器不解锁就可能全程静音。
+   捕获阶段 + once，确保在最早的一次触摸/点击上执行。 */
+const unlockAudio = (): void => unlockSfx();
+document.addEventListener('pointerdown', unlockAudio, { once: true, capture: true });
+document.addEventListener('touchstart', unlockAudio, { once: true, capture: true, passive: true });
 
 /* ─── 回放条 ─── */
 replayBtn.addEventListener('click', enterReplay);
