@@ -478,6 +478,12 @@ a.go-mode:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; 
 .go-status-row b { font-weight: 700; font-variant-numeric: tabular-nums; }
 .go-turn-you { color: var(--paper); }
 .go-turn-opp { color: var(--ember); }
+/* 引擎思考中：轻微呼吸，让"延迟"看起来是刻意的而不是卡住 */
+.go-turn-opp.is-thinking { animation: go-think-pulse 1.1s ease-in-out infinite; }
+@keyframes go-think-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+@media (prefers-reduced-motion: reduce) {
+  .go-turn-opp.is-thinking { animation: none; }
+}
 
 .go-controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .go-controls .go-btn { padding: 9px 4px; text-align: center; }

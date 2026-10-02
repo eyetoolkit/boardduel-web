@@ -134,6 +134,8 @@ type UIState = {
   matchId: string | null;
   /** 收到过对局的 game_over（服务端终局），用于区分“我方认输”与“对手认输” */
   sawGameOver: boolean;
+  /** 引擎正在思考（延迟落子期间）—— 用于轮次行显示"思考中"并挡住玩家点击 */
+  aiThinking: boolean;
   clock: { w: number; b: number; side: 'w' | 'b' | null; base: number } | null;
 };
 
@@ -158,6 +160,7 @@ const state: UIState = {
   pollTimer: null,
   matchId: null,
   sawGameOver: false,
+  aiThinking: false,
   clock: null,
 };
 
@@ -402,6 +405,7 @@ function render(): void {
 
 /** 轮次提示文案（区分真人对手与引擎看门狗） */
 function oppWaitHint(): string {
+  if (state.mode === 'ai' && state.aiThinking) return 'Engine is thinking…';
   return 'Not your turn — waiting for the opponent';
 }
 
@@ -430,14 +434,20 @@ function renderHud(): void {
     return;
   }
 
+  // 引擎思考中：轮次行改显示"Engine · Thinking…"
+  // （390px 下 "Engine · White · Thinking…" 会截断 —— STATE 记录过同款坑，
+  //   所以思考态里省略执色，只留 Engine + 状态）
+  const thinking = !state.over && state.aiThinking;
   const label = state.mode === 'ai'
-    ? (state.turn === 1 ? 'You · Black' : `Engine · White`)
+    ? (state.turn === 1 ? 'You · Black' : (thinking ? `Engine · ${window.t('status.thinking')}` : 'Engine · White'))
     : state.mode === 'pass'
       ? (state.turn === 1 ? 'Black · P1' : 'White · P2')
       : (state.turn === 1 ? 'Black' : 'White');
 
   turnEl.textContent = state.over ? window.t('bi.game_over') : label;
-  turnEl.className = state.over ? '' : (isMyTurn() ? 'go-turn-you' : 'go-turn-opp');
+  turnEl.className = state.over
+    ? ''
+    : (isMyTurn() ? 'go-turn-you' : 'go-turn-opp') + (thinking ? ' is-thinking' : '');
   moveNoEl.textContent = String(state.moves.length + 1);
   lastEl.textContent = state.lastMove >= 0 ? notation(state.lastMove) : '—';
 
@@ -570,16 +580,46 @@ function afterMove(): void {
   }
 }
 
-function aiMove(): void {
-  const t = setTimeout(() => {
-    if (state.over || state.screen !== 'match') return;
+/* ------------------------------------------------------------------
+   引擎落子节奏（2026-10-03 用户反馈：玩家刚落完子 AI 就落，两次落子音
+   几乎重叠，听感像"一次响两下"）
+   原实现固定 220ms —— 短于落子音本身的时长，必然重叠。
+   现在按难度给不同的"思考时长"，并叠 ±12% 抖动（每手都卡同一个间隔
+   会像节拍器，机械感很重）。难度越高想得越久，也更符合直觉。
+   ------------------------------------------------------------------ */
+const AI_THINK_MS: Record<GDifficulty, number> = { easy: 520, medium: 660, hard: 820 };
+/** 开局（引擎先手）再多给一点，让玩家先看清空盘 */
+const AI_OPENING_EXTRA_MS = 260;
+let aiTimer = 0;
+
+/** 取消挂起的引擎落子（悔棋 / 新局 / 进回放 / 退出对局时都要调） */
+function cancelAiMove(): void {
+  if (aiTimer) { clearTimeout(aiTimer); aiTimer = 0; }
+  state.aiThinking = false;
+}
+
+function aiMove(extraMs = 0): void {
+  if (aiTimer) clearTimeout(aiTimer);
+  // 先把"思考中"画出来（同步 render 会在本次任务结束后上屏，
+  // 随后才轮到下面的定时器计算，所以这个状态是看得见的）
+  state.aiThinking = true;
+  render();
+  const base = AI_THINK_MS[state.level] ?? AI_THINK_MS.medium;
+  const jitter = Math.round(base * (Math.random() * 0.24 - 0.12));
+  aiTimer = window.setTimeout(() => {
+    aiTimer = 0;
+    state.aiThinking = false;
+    // 期间可能已经终局 / 离开对局 / 进回放 / 被悔棋 —— 一律不再落子
+    if (state.over || state.screen !== 'match' || state.reviewAt !== null || state.turn !== 2) {
+      render();
+      return;
+    }
     const m = bestMove(state.board, 2, state.level);
-    if (m < 0) return;
+    if (m < 0) { render(); return; }
     pushHistory();
     placeLocal(m, 2);
     afterMove();
-  }, 220);
-  void t;
+  }, Math.max(160, base + jitter + extraMs));
 }
 
 function finish(winner: GPlayer, line: number[] | null): void {
@@ -768,6 +808,8 @@ function undo(): void {
     return;
   }
   if (state.over || state.history.length === 0) return;
+  // 引擎还在想的那一步必须撤掉，否则悔棋后它会突然落下来
+  cancelAiMove();
   // AI 模式连退两步（回到自己回合）
   const steps = state.mode === 'ai' ? Math.min(2, state.history.length) : 1;
   for (let k = 0; k < steps; k++) {
@@ -809,6 +851,7 @@ function resign(): void {
 
 function doResign(): void {
   if (state.over) return;
+  cancelAiMove();
   if (state.mode === 'ranked') {
     // 先置位再发：服务端回 game_over 时要靠它区分“我方认输”
     state.sawGameOver = true;
@@ -869,6 +912,8 @@ function resetReplayUI(): void {
 
 function enterReplay(): void {
   if (!state.moves.length) { toast(window.t('bg.bg_gomoku_no_moves')); return; }
+  // 回放只演已发生的历史：引擎待落的那一步要撤掉，否则播到一半盘面会跳变
+  cancelAiMove();
   // 终局浮层/大厅都要让位：回放就在对局屏上看棋盘
   if (state.screen !== 'match') showScreen('match');
   state.reviewAt = 0;
@@ -978,6 +1023,7 @@ function stayInGame(): void {
  */
 function exitMatchToLobby(): void {
   leaveCard.hidden = true;
+  cancelAiMove();
   resetReplayUI();
   abortQueue(true);
   leaveRoom();
@@ -1018,6 +1064,8 @@ function showScreen(s: UIState['screen']): void {
    新局
    ══════════════════════════════════════════════════════════════ */
 function newGame(): void {
+  // 上一局挂起的引擎落子不能带进新局（否则新盘上会凭空多一子）
+  cancelAiMove();
   state.board = emptyBoard() as GBoard;
   state.turn = 1;
   state.humanSide = 1;
@@ -1049,7 +1097,7 @@ function newGame(): void {
 
   // AI 模式下黑方永远是本地玩家，白方是引擎；新局由黑先走，故 AI 不会即刻行动。
   // （保留显式分支以免未来改先手方时漏掉）
-  if (state.mode === 'ai' && (state.turn as number) === 2) aiMove();
+  if (state.mode === 'ai' && (state.turn as number) === 2) aiMove(AI_OPENING_EXTRA_MS);
 }
 
 /* ══════════════════════════════════════════════════════════════
