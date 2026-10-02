@@ -397,3 +397,74 @@ body.home-v2 .go-level-opt span { color: var(--mute2); font-size: .78rem; }
 body.home-v2 .go-level-opt:hover { border-color: #C7CBEE; }
 body.home-v2 .go-level-opt.is-cur { border-color: var(--ember); background: var(--ember-soft); }
 body.home-v2 .go-level-opt.is-cur::after { content: "\2713"; margin-left: auto; color: var(--ember); font-weight: 700; }
+
+/* ════════════════════════════════════════════════════════════
+ * 图标按钮（回放入口 + 声音开关，2026-10-03）
+ * 底栏空间有限，这两个只用图形表达；语义靠 aria-label 与 i18n。
+ * ════════════════════════════════════════════════════════════ */
+body.home-v2 .go-btn.go-icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 8px 10px; line-height: 0;
+}
+body.home-v2 .go-btn.go-icon-btn svg {
+  width: 17px; height: 17px; display: block;
+  fill: none; stroke: currentColor; stroke-width: 1.9;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+/* 声音：on 显示喇叭，off 显示静音（叉号），两者二选一 */
+body.home-v2 .go-sound .ico-off { display: none; }
+body.home-v2 .go-sound.is-off .ico-on { display: none; }
+body.home-v2 .go-sound.is-off .ico-off { display: block; }
+body.home-v2 .go-sound.is-off { color: var(--mute2); opacity: .75; }
+
+/* ════════════════════════════════════════════════════════════
+ * 棋谱回放条（#go-replaybar，2026-10-03）
+ * 桌面 = 侧栏竖排卡片；移动端 arena = 底栏上方的触控条。
+ * ════════════════════════════════════════════════════════════ */
+body.home-v2 .go-replaybar {
+  margin-top: 10px; padding: 10px 12px;
+  background: var(--ink2); border: 1px solid var(--line); border-radius: 12px;
+}
+body.home-v2 .go-replaybar[hidden] { display: none; }
+body.home-v2 .go-rp-row { display: flex; align-items: center; gap: 6px; }
+body.home-v2 .go-rp-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; flex: 0 0 auto;
+  border: 1px solid var(--line); border-radius: 9px;
+  background: var(--ink3); color: var(--paper); cursor: pointer;
+  transition: .13s;
+}
+body.home-v2 .go-rp-btn svg {
+  width: 16px; height: 16px; display: block;
+  fill: none; stroke: currentColor; stroke-width: 2;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+body.home-v2 .go-rp-btn:hover { border-color: var(--mute2); }
+body.home-v2 .go-rp-btn.is-primary { border-color: var(--ember); color: var(--ember); }
+body.home-v2 .go-rp-btn.is-primary:hover { background: var(--ember-soft); }
+/* 播放/暂停图标二选一（is-playing = 正在播，显示暂停符） */
+body.home-v2 .go-rp-btn .ico-pause { display: none; }
+body.home-v2 .go-rp-btn.is-playing .ico-play { display: none; }
+body.home-v2 .go-rp-btn.is-playing .ico-pause { display: block; }
+body.home-v2 .go-rp-pos {
+  margin-left: auto; font-family: var(--disp); font-size: .8rem;
+  font-weight: 700; color: var(--mute2); white-space: nowrap;
+}
+body.home-v2 .go-rp-exit { border-color: transparent; background: transparent; color: var(--mute2); }
+body.home-v2 .go-rp-range {
+  width: 100%; margin-top: 9px; accent-color: var(--ember);
+}
+
+/* 回放中隐藏常规操作键：Undo/Hint/Resign 会改棋局，回放时不能误触 */
+body.home-v2.bd-replay .go-controls { display: none; }
+
+@media (max-width: 899.5px) {
+  /* arena：回放条占底栏位置（controls 已被 .bd-replay 隐藏） */
+  body.home-v2.bd-in-match .go-replaybar { order: 4; margin: 0; }
+  body.home-v2.bd-in-match .go-replaybar[hidden] { display: none; }
+  body.home-v2.bd-in-match .go-rp-btn { width: 42px; height: 42px; }
+  body.home-v2.bd-in-match .go-rp-range { margin-top: 7px; }
+  /* 回放时把"返回大厅"留着（就是退出回放的退路），其余次要件让位 */
+  body.home-v2.bd-in-match.bd-replay .go-invite { display: none; }
+  body.home-v2.bd-in-match #go-back-lobby { order: 5; }
+}

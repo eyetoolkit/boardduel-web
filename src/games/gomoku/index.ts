@@ -26,6 +26,8 @@ import {
 } from './engine';
 // M2（2026-10-01）：教师端房间码归因（?tid=1 + ?c= 同时存在 → classroom）
 import { isClassroom, reportRound, ensureStudentCode, urlRoomCode } from '../../shared/teacher-track';
+// 2026-10-03：落子音效（WebAudio 合成，跨页记住开关）
+import { playSfx, sfxOn, setSfx } from '../../shared/sfx';
 
 const SLOT = 600;                 // SVG viewBox 边长
 const MARGIN = 4;                 // 外留白（仅容纳外框描边 + 阴影，尽量贴边）
@@ -76,6 +78,13 @@ const backLobbyBtn = $<HTMLButtonElement>('go-back-lobby');
 const levelBtn = $<HTMLButtonElement>('go-level');
 const levelCard = $<HTMLDivElement>('go-levelcard');
 const levelClose = $<HTMLButtonElement>('go-level-close');
+const replayBtn = $<HTMLButtonElement>('go-replay');
+const soundBtn = $<HTMLButtonElement>('go-sound');
+
+const rpBar = $<HTMLDivElement>('go-replaybar');
+const rpPlay = $<HTMLButtonElement>('go-rp-play');
+const rpRange = $<HTMLInputElement>('go-rp-range');
+const rpPos = $<HTMLElement>('go-rp-pos');
 
 const hintCard = $<HTMLDivElement>('go-hintcard');
 const hintList = $<HTMLOListElement>('go-hint-list');
@@ -227,6 +236,35 @@ function stoneStroke(p: GPlayer): string {
   return p === 1 ? 'var(--go-stone-stroke-b, #5C6B74)' : 'var(--go-stone-stroke-w, #8A99A3)';
 }
 
+/**
+ * 回放视图：把"第 n 手时的盘面"算出来。
+ *
+ * 棋谱回放的成本极低，正是因为棋盘游戏的状态完全由落子序列决定 ——
+ * 存一份 moves[]（每手一个 0..224 的整数，合计几十字节）就能还原任意
+ * 时刻的盘面，不需要录屏、不需要服务器、不看网络。这里只在前端重放：
+ *   board[moves[k]] = k 为偶数 ? 黑 : 白
+ *（黑先手，逐手交替，与 placeLocal 的落子顺序一致）。
+ *
+ * reviewAt === null 表示"看最新"，直接返回实时盘面。
+ */
+function viewBoard(): { board: GBoard; last: number; win: number[] | null } {
+  if (state.reviewAt === null) {
+    return { board: state.board, last: state.lastMove, win: state.winLine };
+  }
+  const b = emptyBoard() as GBoard;
+  const upto = Math.min(state.reviewAt, state.moves.length - 1);
+  for (let k = 0; k <= upto; k++) {
+    b[state.moves[k]] = (k % 2 === 0 ? 1 : 2) as GPlayer;
+  }
+  const atEnd = upto >= 0 && upto === state.moves.length - 1;
+  return {
+    board: b,
+    last: upto >= 0 ? state.moves[upto] : -1,
+    // 金环只在"看到最后一手且已终局"时出现 —— 中途回放不该提前剧透
+    win: atEnd ? state.winLine : null,
+  };
+}
+
 function render(): void {
   // ── 网格 ──
   let lines = '';
@@ -267,8 +305,11 @@ function render(): void {
   }
 
   // ── 棋子 + 命中区 ──
-  const board = state.board;
-  const winSet = new Set(state.winLine || []);
+  // ⚠️ 棋盘内容取决于"看到第几手"：复盘时用 moves 重放出那一刻的盘面，
+  //    而不是直接用 state.board（那是最新盘面，回放会一动不动）。
+  const view = viewBoard();
+  const board = view.board;
+  const winSet = new Set(view.win || []);
   let stones = '';
   let hits = '';
 
@@ -277,7 +318,7 @@ function render(): void {
     const p = board[i];
     if (p !== 0) {
       const isWin = winSet.has(i);
-      const isLast = state.lastMove === i;
+      const isLast = view.last === i;
       stones += `<circle class="go-stone${isLast ? ' is-last' : ''}" cx="${px}" cy="${py}" r="${STONE_R}" fill="${stoneColor(p as GPlayer)}" stroke="${stoneStroke(p as GPlayer)}" stroke-width="0.6"/>`;
       if (isLast && !isWin) {
         // 传统记法：最后一手在棋子上点反色圆点（黑子白点 / 白子黑点）
@@ -390,6 +431,16 @@ function isMyTurn(): boolean {
 }
 
 function renderHud(): void {
+  // 回放态：轮次行改成"第几手 / 共几手"，棋钟保持冻结（startClockTick 已跳过）
+  if (state.reviewAt !== null) {
+    const n = Math.min(state.reviewAt, Math.max(0, state.moves.length - 1));
+    turnEl.textContent = window.t('bg.bg_gomoku_replay');
+    turnEl.className = 'go-turn-you';
+    moveNoEl.textContent = String(n + 1);
+    lastEl.textContent = state.moves.length ? notation(state.moves[n]) : '—';
+    return;
+  }
+
   const label = state.mode === 'ai'
     ? (state.turn === 1 ? 'You · Black' : `Engine · White`)
     : state.mode === 'pass'
@@ -430,10 +481,11 @@ function renderRecorder(): void {
     const b = notation(mv[k]);
     const w = k + 1 < mv.length ? notation(mv[k + 1]) : '';
     const isCur = state.reviewAt !== null && (state.reviewAt === k || state.reviewAt === k + 1);
+    // data-p = 该格对应的全局手数下标（点击即可跳到那一手）
     html += `<li class="go-rec-row${isCur ? ' is-cur' : ''}">
       <span class="go-rec-n">${n}</span>
-      <span class="go-rec-b">${b}</span>
-      <span class="go-rec-w">${w}</span>
+      <span class="go-rec-b" data-p="${k}" role="button" tabindex="-1">${b}</span>
+      <span class="go-rec-w"${w ? ` data-p="${k + 1}" role="button" tabindex="-1"` : ''}>${w}</span>
     </li>`;
   }
   recList.innerHTML = html;
@@ -441,7 +493,14 @@ function renderRecorder(): void {
   // 只滚记谱器自身（容器内 scrollTop），不用 scrollIntoView ——
   // 部分移动端浏览器的 scrollIntoView 会连带滚动窗口，
   // 表现为"每落一子整页往下挪一点"（用户实测 BUG）。
-  if (state.reviewAt === null) recList.scrollTop = recList.scrollHeight;
+  if (state.reviewAt === null) {
+    recList.scrollTop = recList.scrollHeight;
+  } else {
+    // 回放：把当前手滚进可视区（同样只动容器 scrollTop）
+    const row = Math.floor(Math.min(state.reviewAt, mv.length - 1) / 2);
+    const el = recList.children[row] as HTMLElement | undefined;
+    if (el) recList.scrollTop = Math.max(0, el.offsetTop - recList.clientHeight / 2 + el.offsetHeight / 2);
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -490,6 +549,8 @@ function placeLocal(i: number, p: GPlayer): void {
   state.board[i] = p;
   state.lastMove = i;
   state.moves.push(i);
+  // 落子音效：无论是自己下、引擎下还是联机对手下，都走这一个出口
+  playSfx('place');
 }
 
 function afterMove(): void {
@@ -563,6 +624,7 @@ function finish(winner: GPlayer, line: number[] | null): void {
   endVerdict.textContent = verdict;
   endVerdict.className = 'go-end-verdict ' + (verdict.includes('win') && !verdict.includes('lose') ? 'is-win' : 'is-loss');
   endLine.textContent = lineText || '—';
+  playSfx(verdict.includes('win') && !verdict.includes('lose') ? 'win' : 'lose');
   showScreen('end');
   toast(verdict + (lineText ? ' · ' + lineText : ''));
 }
@@ -784,6 +846,88 @@ function offerDraw(): void {
 }
 
 /* ══════════════════════════════════════════════════════════════
+   棋谱回放（2026-10-03）
+   ------------------------------------------------------------
+   棋类回放天然便宜：盘面 = 落子序列的纯函数，所以只要 moves[] 在，
+   任意一手都能 O(n) 重放出来（n ≤ 225），不录屏、不上服务器、不占带宽。
+   这里提供：首/上一手/播放暂停/下一手/末 + 拖动轴 + 记谱器点格跳转。
+   ══════════════════════════════════════════════════════════════ */
+const REPLAY_MS = 700;                 // 自动播放每手间隔
+let replayPlaying = false;
+let replayTimer = 0;
+
+/** 收拾回放态（不改屏幕）：新局、回大厅、认输重开都要调它 */
+function resetReplayUI(): void {
+  replayPlaying = false;
+  if (replayTimer) { clearTimeout(replayTimer); replayTimer = 0; }
+  state.reviewAt = null;
+  rpBar.hidden = true;
+  document.body.classList.remove('bd-replay');
+}
+
+function enterReplay(): void {
+  if (!state.moves.length) { toast(window.t('bg.bg_gomoku_no_moves')); return; }
+  // 终局浮层/大厅都要让位：回放就在对局屏上看棋盘
+  if (state.screen !== 'match') showScreen('match');
+  state.reviewAt = 0;
+  rpBar.hidden = false;
+  document.body.classList.add('bd-replay');
+  syncReplayBar();
+  render();
+  // 点"回放"就是想看过程 —— 直接从头播，播完自动停
+  startReplay();
+}
+
+function exitReplay(): void {
+  resetReplayUI();
+  if (state.over) showScreen('end'); else showScreen('match');
+  render();
+}
+
+/** 同步回放条：拖动轴范围 / 位置文本 / 播放键图标 */
+function syncReplayBar(): void {
+  const total = state.moves.length;
+  const at = state.reviewAt === null ? total - 1 : state.reviewAt;
+  rpRange.max = String(Math.max(0, total - 1));
+  rpRange.value = String(Math.max(0, at));
+  rpPos.textContent = (at + 1) + ' / ' + total;
+  rpPlay.classList.toggle('is-playing', replayPlaying);
+  rpPlay.setAttribute('aria-label', window.t(replayPlaying ? 'bg.bg_gomoku_rp_pause' : 'bg.bg_gomoku_rp_play'));
+}
+
+function seek(n: number): void {
+  if (state.reviewAt === null) return;
+  const max = state.moves.length - 1;
+  state.reviewAt = Math.max(0, Math.min(max, n));
+  syncReplayBar();
+  render();
+}
+
+function stopReplay(): void {
+  replayPlaying = false;
+  if (replayTimer) { clearTimeout(replayTimer); replayTimer = 0; }
+  syncReplayBar();
+}
+
+function startReplay(): void {
+  if (state.reviewAt === null) return;
+  const max = state.moves.length - 1;
+  // 已在末尾 → 从头重播（连点播放键不会"没反应"）
+  if (state.reviewAt >= max) { state.reviewAt = 0; syncReplayBar(); render(); }
+  replayPlaying = true;
+  syncReplayBar();
+  const step = (): void => {
+    if (!replayPlaying) return;
+    const nxt = (state.reviewAt ?? 0) + 1;
+    if (nxt > max) { stopReplay(); return; }
+    seek(nxt);
+    playSfx('place');
+    replayTimer = window.setTimeout(step, REPLAY_MS);
+  };
+  replayTimer = window.setTimeout(step, REPLAY_MS);
+}
+
+/* ══════════════════════════════════════════════════════════════
    屏幕切换
    ══════════════════════════════════════════════════════════════ */
 function showScreen(s: UIState['screen']): void {
@@ -809,8 +953,9 @@ function newGame(): void {
   state.history = [];
   state.moves = [];
   state.ghost = -1;
-  state.reviewAt = null;
   state.sawGameOver = false;
+  // 新局脱离回放态（否则会带着上一局的 reviewAt 进新棋盘）
+  resetReplayUI();
   state.myIdx = state.mode === 'ranked' ? state.myIdx : null;
   hintCard.hidden = true;
   legendEl.hidden = true;
@@ -1172,6 +1317,45 @@ document.querySelectorAll<HTMLButtonElement>('.go-level-opt').forEach((b) => {
   });
 });
 
+/* ─── 声音开关：图标随状态切换，选择写 localStorage（跨页/跨局记住） ─── */
+function paintSoundBtn(): void {
+  const on = sfxOn();
+  soundBtn.classList.toggle('is-off', !on);
+  soundBtn.setAttribute('aria-pressed', String(on));
+  soundBtn.setAttribute('aria-label', window.t(on ? 'bg.bg_gomoku_sound_on' : 'bg.bg_gomoku_sound_off'));
+}
+soundBtn.addEventListener('click', () => {
+  const on = !sfxOn();
+  setSfx(on);
+  paintSoundBtn();
+  // 打开时立刻给一声，让"开了/关了"可听可见（也是首次手势解锁 AudioContext 的时机）
+  if (on) playSfx('place');
+});
+
+/* ─── 回放条 ─── */
+replayBtn.addEventListener('click', enterReplay);
+$('go-rp-first').addEventListener('click', () => { stopReplay(); seek(0); });
+$('go-rp-prev').addEventListener('click', () => { stopReplay(); seek((state.reviewAt ?? 0) - 1); });
+$('go-rp-next').addEventListener('click', () => { stopReplay(); seek((state.reviewAt ?? 0) + 1); });
+$('go-rp-last').addEventListener('click', () => { stopReplay(); seek(state.moves.length - 1); });
+rpPlay.addEventListener('click', () => { replayPlaying ? stopReplay() : startReplay(); });
+rpRange.addEventListener('input', () => {
+  // ⚠️ 必须先取值再 stopReplay()：stopReplay → syncReplayBar 会把 value 写回
+  //    当前手数，若先停再读，读到的就是旧位置，拖动表现为"弹回去"（实测 BUG）。
+  const v = Number(rpRange.value);
+  stopReplay();
+  seek(v);
+});
+$('go-rp-exit').addEventListener('click', exitReplay);
+// 记谱器点格跳转（data-p = 全局手数下标）
+recList.addEventListener('click', (e) => {
+  const cell = (e.target as HTMLElement).closest?.('[data-p]') as HTMLElement | null;
+  if (!cell || cell.dataset.p === undefined) return;
+  if (state.reviewAt === null) enterReplay();   // 不在回放态 → 先进回放再跳
+  stopReplay();
+  seek(Number(cell.dataset.p));
+});
+
 /** 点卡片 = 选模式 + 直接行动（与 lobby 模式页一致：点卡即玩，不留"没反应"的中间态）。
  *  深链的合成点击（pickModeCard 的 card.click()，isTrusted=false）只做选中，
  *  由 applyDeepLink 自己调 joinQueue/newGame，避免双触发。 */
@@ -1220,20 +1404,15 @@ hintClose.addEventListener('click', () => {
   hintCard.hidden = true;
   boardEl.querySelectorAll('.go-hintdot').forEach((n) => n.remove());
 });
-backLobbyBtn.addEventListener('click', () => { leaveRoom(); showScreen('lobby'); });
+backLobbyBtn.addEventListener('click', () => { resetReplayUI(); leaveRoom(); showScreen('lobby'); });
 
 rematchBtn.addEventListener('click', () => {
   if (state.mode === 'ranked') { sendWs({ type: 'restart' }); state.over = false; newGame(); return; }
   newGame();
 });
-reviewBtn.addEventListener('click', () => {
-  // 复盘：回到最后一手可见的棋盘
-  showScreen('match');
-  state.reviewAt = state.moves.length - 1;
-  render();
-  toast('Reviewing — press Hint or Undo to continue');
-});
-endLobbyBtn.addEventListener('click', () => { leaveRoom(); showScreen('lobby'); });
+/* "Review moves" = 进入完整棋谱回放（从头自动播放，可暂停/拖动/逐手） */
+reviewBtn.addEventListener('click', enterReplay);
+endLobbyBtn.addEventListener('click', () => { resetReplayUI(); leaveRoom(); showScreen('lobby'); });
 
 chatForm.addEventListener('submit', (e) => {
   e.preventDefault();
@@ -1243,8 +1422,14 @@ chatForm.addEventListener('submit', (e) => {
   chatInput.value = '';
 });
 
-// 键盘：Esc 回大厅
+// 键盘：回放中 ←/→ 逐手、空格播放/暂停、Esc 退出回放（不在回放态则回大厅）
 document.addEventListener('keydown', (e) => {
+  if (state.reviewAt !== null) {
+    if (e.key === 'ArrowLeft') { stopReplay(); seek((state.reviewAt ?? 0) - 1); return; }
+    if (e.key === 'ArrowRight') { stopReplay(); seek((state.reviewAt ?? 0) + 1); return; }
+    if (e.key === ' ') { e.preventDefault(); replayPlaying ? stopReplay() : startReplay(); return; }
+    if (e.key === 'Escape') { exitReplay(); return; }
+  }
   if (e.key === 'Escape' && state.screen === 'match') {
     if (state.mode === 'ranked') { leaveRoom(); }
     showScreen('lobby');
@@ -1330,6 +1515,7 @@ function applyDeepLink(): void {
   if (myUuid()) rankWait.textContent = window.t('bj.ranked_queue_live');
 
   resetClock();
+  paintSoundBtn();   // 声音开关按 localStorage 里的选择就位（缺省开）
   render();
 
   // ── 深链优先级：?c= 邀请房 > ?mode= 模式 ──
