@@ -88,6 +88,7 @@ const reviewBtn = $<HTMLButtonElement>('go-review');
 const endLobbyBtn = $<HTMLButtonElement>('go-end-lobby');
 
 const chatEl = $<HTMLDivElement>('go-chat');
+const chatToggleBtn = $<HTMLButtonElement>('go-chat-toggle');
 const chatLog = $<HTMLUListElement>('go-chat-log');
 const chatForm = $<HTMLFormElement>('go-chat-form');
 const chatInput = $<HTMLInputElement>('go-chat-input');
@@ -787,6 +788,8 @@ function showScreen(s: UIState['screen']): void {
   lobbyEl.hidden = s !== 'lobby';
   matchEl.hidden = s !== 'match';
   endEl.hidden = s !== 'end';
+  // 移动端沉浸对局：match/end 两屏锁定视口（CSS 只在 <900px 生效，桌面不受影响）
+  document.body.classList.toggle('bd-in-match', s !== 'lobby');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -921,6 +924,7 @@ function enterRankedRoom(code: string, isAi: boolean, aiName?: string): void {
   state.roomCode = code;
   state.mode = 'ranked';
   chatEl.hidden = false;
+  chatToggleBtn.hidden = false;
   chatRoom.textContent = code;
   chatLog.innerHTML = '';
   toast((isAi ? 'Matched vs ' + (aiName || 'engine') : 'Opponent found') + ' · room ' + code);
@@ -1121,7 +1125,15 @@ function leaveRoom(): void {
   state.myIdx = null;
   state.sawGameOver = false;
   chatEl.hidden = true;
+  chatEl.classList.remove('is-open');
+  chatToggleBtn.hidden = true;
 }
+
+/* 事件绑定区之前的小工具：移动端聊天浮层开关（桌面端按钮被 CSS 隐藏，此监听不触发） */
+chatToggleBtn.addEventListener('click', () => {
+  const open = chatEl.classList.toggle('is-open');
+  chatToggleBtn.setAttribute('aria-expanded', String(open));
+});
 
 /* ══════════════════════════════════════════════════════════════
    事件绑定

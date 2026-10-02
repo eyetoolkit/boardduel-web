@@ -2066,6 +2066,7 @@
     "bg_gomoku_last": "上步",
     "bg_gomoku_mode": "玩法",
     "bg_gomoku_undo": "撤销",
+    "bg_gomoku_chat": "聊天",
     "bg_gomoku_hint": "提示",
     "bg_gomoku_draw": "和棋",
     "bg_gomoku_resign": "认输",

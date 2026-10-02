@@ -222,3 +222,127 @@ html[data-theme="dark"] body.home-v2 .go-stone { filter: drop-shadow(0 1.3px 1.7
 html[data-theme="dark"] body.home-v2 .go-mode-wait,
 html[data-theme="dark"] body.home-v2 .go-chat-room,
 html[data-theme="dark"] body.home-v2 .go-chat-row b { color: #2CC7CC; }
+
+/* ════════════════════════════════════════════════════════════
+ * 移动端沉浸对局（body.bd-in-match + <900px，2026-10-02）
+ * ------------------------------------------------------------
+ * 参照主流五子棋 APP 的满屏范式：
+ *   顶 = 玩家条（对手 · VS · 我，含棋钟） · 中 = 棋盘最大化 · 底 = 操作行。
+ * 由 index.ts showScreen() 切换 body.bd-in-match；
+ * 仅 <900px 且对局/end 态生效，桌面（≥900px）与大厅态完全不受影响。
+ * 棋盘 SVG 自带外框（--go-frame），所以 wrap 在此退化为透明信箱容器。
+ * ════════════════════════════════════════════════════════════ */
+
+/* 聊天开关只属于移动端 arena（桌面侧栏常驻聊天卡） */
+body.home-v2 #go-chat-toggle { display: none; }
+
+@media (max-width: 899.5px) {
+  /* ranked 时 TS 解开 hidden → 按钮出现在底栏 */
+  body.home-v2 #go-chat-toggle:not([hidden]) { display: block; }
+
+  /* ── 锁定视口：对局中整页不可滚动 ── */
+  body.home-v2.bd-in-match {
+    position: fixed; inset: 0; overflow: hidden;
+  }
+  body.home-v2.bd-in-match .topbar,
+  body.home-v2.bd-in-match .sidebar,
+  body.home-v2.bd-in-match .overlay,
+  body.home-v2.bd-in-match .bd-hero,
+  body.home-v2.bd-in-match .bd-how,
+  body.home-v2.bd-in-match .bd-foot,
+  body.home-v2.bd-in-match #go-lobby { display: none; }
+
+  body.home-v2.bd-in-match .bd-main {
+    max-width: none; margin: 0; padding: 0;
+    height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
+  }
+
+  /* ── 对局屏 = 三段纵向 ── */
+  body.home-v2.bd-in-match #go-match {
+    display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 0;
+    padding: calc(6px + env(safe-area-inset-top)) 10px calc(8px + env(safe-area-inset-bottom));
+  }
+  body.home-v2.bd-in-match #go-end[hidden] { display: none; }
+  /* 终局时 match 屏被 TS 置 hidden，但 arena 里要保持棋盘在结算浮层底下可见（可复盘） */
+  body.home-v2.bd-in-match #go-match[hidden] { display: flex; }
+
+  /* 中段拆壳：棋盘 / 邀请条 / 控制键直接参与纵向排布 */
+  body.home-v2.bd-in-match .bd-play,
+  body.home-v2.bd-in-match .bd-side { display: contents; }
+
+  /* ── 顶：玩家条（对手 · VS · 我） ── */
+  body.home-v2.bd-in-match .go-clocks {
+    display: flex; align-items: stretch; gap: 10px;
+    margin: 0; order: 0;
+  }
+  body.home-v2.bd-in-match .go-clocks::before {
+    content: "VS"; align-self: center; flex: 0 0 auto; order: 1;
+    font-family: var(--disp); font-weight: 700; font-size: .95rem;
+    color: var(--mute2);
+  }
+  body.home-v2.bd-in-match .go-clock {
+    flex: 1; min-width: 0; flex-direction: column; align-items: flex-start; gap: 2px;
+    padding: 8px 12px; border-radius: 14px;
+  }
+  body.home-v2.bd-in-match #go-clock-opp { order: 0; }
+  body.home-v2.bd-in-match #go-clock-me { order: 2; }
+  body.home-v2.bd-in-match .go-clock-who {
+    font-size: .66rem; letter-spacing: .07em; max-width: 100%;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  body.home-v2.bd-in-match .go-clock-time { font-size: 1.18rem; }
+
+  /* ── 中：棋盘信箱容器（SVG 保持正方，自适应取宽高较小者） ── */
+  body.home-v2.bd-in-match .bd-board-wrap {
+    order: 1; flex: 1; min-height: 0;
+    width: 100%; max-width: none; aspect-ratio: auto;
+    background: transparent; border: none; box-shadow: none; border-radius: 0;
+    padding: 0;
+  }
+  body.home-v2.bd-in-match .bd-board-wrap svg {
+    width: auto; height: auto; max-width: 100%; max-height: 100%; margin: auto;
+  }
+
+  /* ── 好友房邀请条：底栏上方（建房后出现） ── */
+  body.home-v2.bd-in-match .go-invite { order: 2; margin: 0; }
+  body.home-v2.bd-in-match .go-invite[hidden] { display: none; }
+
+  /* ── 底：操作行（触控目标 ≥44px） ── */
+  body.home-v2.bd-in-match .go-controls { order: 3; display: flex; gap: 8px; }
+  body.home-v2.bd-in-match .go-controls .go-btn {
+    flex: 1; min-width: 0; min-height: 44px; padding: 10px 6px;
+    font-size: .82rem; text-align: center;
+  }
+  body.home-v2.bd-in-match .go-controls .go-btn[hidden] { display: none; }
+  body.home-v2.bd-in-match #go-back-lobby {
+    order: 4; margin: 0; min-height: 38px; padding: 7px 10px;
+    background: transparent; border-color: transparent;
+    color: var(--mute2); font-size: .78rem;
+  }
+
+  /* ── 次要面板离场：状态卡（轮次由棋钟高亮表达）、记谱器 ── */
+  body.home-v2.bd-in-match .go-status-card,
+  body.home-v2.bd-in-match .go-recorder { display: none; }
+
+  /* ── 聊天 / 引擎提示板：棋盘上方浮层 ── */
+  body.home-v2.bd-in-match .go-chat,
+  body.home-v2.bd-in-match .go-hintcard {
+    position: fixed; left: 10px; right: 10px;
+    bottom: calc(118px + env(safe-area-inset-bottom));
+    z-index: 70; margin: 0;
+    max-height: 42dvh; overflow-y: auto;
+  }
+  body.home-v2.bd-in-match .go-chat:not(.is-open) { display: none; }
+  body.home-v2.bd-in-match .go-chat.is-open { display: flex; flex-direction: column; }
+  body.home-v2.bd-in-match .go-chat[hidden],
+  body.home-v2.bd-in-match .go-hintcard[hidden] { display: none; }
+
+  /* ── 结算：居中浮层，棋盘留在底下可看 ── */
+  body.home-v2.bd-in-match #go-end {
+    position: fixed; inset: 0; z-index: 80;
+    display: flex; align-items: center; justify-content: center;
+    padding: 18px; background: rgba(18, 19, 31, .45);
+    backdrop-filter: blur(2px);
+  }
+  body.home-v2.bd-in-match #go-end .go-endbar { width: 100%; max-width: 420px; margin: 0; }
+}
