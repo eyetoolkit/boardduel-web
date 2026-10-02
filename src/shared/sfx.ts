@@ -68,106 +68,65 @@ export function unlockSfx(): void {
 }
 
 /* ══════════════════════════════════════════════════════════════
- * 兜底通道：运行时合成 WAV → <audio> 元素播放（2026-10-03）
+ * 主通道：<audio> 元素 + 同源 wav 文件（2026-10-03 二次改版）
  * ------------------------------------------------------------
- * WebAudio 在部分真机（iOS 静音态 / 老版微信 X5 / 个别 Android WebView）
- * 会被挡住或输出为空。HTMLAudioElement 是另一条独立的输出通道：
- * 只要在**某个真实手势里播放过一次**，之后即使由 setTimeout 程序化调用
- * play() 也放行（iOS 的经典解锁行为）。所以两条通道并存：
- *   WebAudio 可用（state==='running'）→ 用合成音（零延迟、可叠加）
- *   否则                              → 用 <audio> 元素兜底
- * WAV 在运行时用 JS 合成 + base64 内联，不必引入任何音频文件。
+ * 为什么不再用 data URI：本站 CSP 是 `default-src 'self'`，且没有单独的
+ * media-src 覆盖 → media-src 回落到 'self'，**data: 音频被 CSP 直接拦掉**。
+ * 上一版兜底因此等于没接上（华为/鸿蒙自带浏览器实测无声的真因之一）。
+ * 改为随包发布真实 wav（public/sfx/*.wav，共约 57KB，可被 CDN 缓存）：
+ *   · 同源加载，符合 CSP 'self'；
+ *   · 不踩 data URI 在个别 WebView 上的兼容坑；
+ *   · 首次访问下载一次，之后走缓存。
+ *
+ * 为什么元素通道当主通道：真机存在"WebAudio state 报 running 却不出声"
+ * 的情况（华为/鸿蒙自带浏览器即如此）。<audio> 走系统媒体通道，只要在
+ * 某个真实手势里播过一次解锁，之后 setTimeout 里的程序化 play() 也放行
+ * （iOS/Android 通用行为），实测最稳。WebAudio 合成保留为次通道顶上。
  * ══════════════════════════════════════════════════════════════ */
 
-const RATE = 22050;   // 单声道 22.05kHz 足够表达短促敲击音，体积最小
+const SFX_URL: Record<SfxName, string> = {
+  place: '/sfx/place.wav',
+  win: '/sfx/win.wav',
+  lose: '/sfx/lose.wav',
+  start: '/sfx/start.wav',
+};
 
-/** 把 Float32 采样编码成 WAV 的 base64 data URI */
-function encodeWav(smp: Float32Array): string {
-  const n = smp.length;
-  const buf = new ArrayBuffer(44 + n * 2);
-  const v = new DataView(buf);
-  const wr = (o: number, s: string): void => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
-  wr(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); wr(8, 'WAVE');
-  wr(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
-  v.setUint32(24, RATE, true); v.setUint32(28, RATE * 2, true);
-  v.setUint16(32, 2, true); v.setUint16(34, 16, true);
-  wr(36, 'data'); v.setUint32(40, n * 2, true);
-  for (let i = 0; i < n; i++) {
-    const s = Math.max(-1, Math.min(1, smp[i]));
-    v.setInt16(44 + i * 2, s < 0 ? s * 0x8000 : s * 0x7fff, true);
-  }
-  let bin = '';
-  const bytes = new Uint8Array(buf);
-  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-  return 'data:audio/wav;base64,' + btoa(bin);
-}
-
-/** 叠加一个衰减音（起止频率可不同）到 out 里 */
-function addTone(out: Float32Array, f0: number, f1: number, start: number, dur: number, amp: number): void {
-  const i0 = Math.floor(start * RATE), len = Math.floor(dur * RATE);
-  let phase = 0;
-  for (let i = 0; i < len && i0 + i < out.length; i++) {
-    const t = i / RATE;
-    const f = f0 + (f1 - f0) * (t / Math.max(0.0001, dur));
-    phase += (2 * Math.PI * f) / RATE;
-    out[i0 + i] += Math.sin(phase) * amp * Math.exp(-t * (3.2 / Math.max(0.02, dur)));
-  }
-}
-
-/** 合成各音效的采样（缓存 data URI） */
-function synth(name: SfxName): string {
-  const dur = name === 'win' ? 0.52 : name === 'lose' ? 0.45 : name === 'start' ? 0.16 : 0.17;
-  const out = new Float32Array(Math.floor(RATE * dur));
-  if (name === 'place') {
-    // 石头磕木盘：极短的宽带噪声"啪" + 低频木共鸣 + 一点高频泛音
-    for (let i = 0; i < out.length; i++) {
-      const t = i / RATE;
-      out[i] = (Math.random() * 2 - 1) * 0.55 * Math.exp(-t * 95);
-    }
-    addTone(out, 240, 120, 0, 0.15, 0.75);
-    addTone(out, 1650, 900, 0, 0.035, 0.28);
-  } else if (name === 'win') {
-    addTone(out, 523, 523, 0, 0.16, 0.30);
-    addTone(out, 659, 659, 0.11, 0.16, 0.30);
-    addTone(out, 784, 784, 0.22, 0.26, 0.32);
-  } else if (name === 'lose') {
-    addTone(out, 392, 392, 0, 0.18, 0.28);
-    addTone(out, 294, 240, 0.14, 0.30, 0.28);
-  } else {
-    addTone(out, 520, 680, 0, 0.14, 0.26);
-  }
-  return encodeWav(out);
-}
-
-const wavCache: Partial<Record<SfxName, string>> = {};
+const FALLBACK_VOL = 0.9;
 const elCache: Partial<Record<SfxName, HTMLAudioElement>> = {};
+let elUnlocked = false;
+let elUnlocking = false;
+let elBroken = false;      // 元素通道被浏览器明确拒绝过 → 之后改用 WebAudio
 
 /** 取（必要时创建）某个音效的 <audio> 元素；失败返回 null */
 function el(name: SfxName): HTMLAudioElement | null {
   if (elCache[name]) return elCache[name] || null;
   try {
-    if (!wavCache[name]) wavCache[name] = synth(name);
-    const a = new Audio(wavCache[name]);
+    const a = new Audio(SFX_URL[name]);
     a.preload = 'auto';
     a.volume = FALLBACK_VOL;
     elCache[name] = a;
     return a;
   } catch (e) {
-    return null;   // 不支持 WAV data URI（极老浏览器）→ 静默降级
+    return null;
   }
 }
 
-/** 兜底播放（走 <audio> 元素通道） */
-function playViaElement(name: SfxName): void {
+/** 走 <audio> 元素通道播放；返回是否真的发起了播放 */
+function playViaElement(name: SfxName): boolean {
   const a = el(name);
-  if (!a) return;
+  if (!a) return false;
   try {
     // ⚠️ 必须显式写回音量：解锁过程会临时把音量置 0，若解锁还在进行中
     //    就播这一声，会继承 volume=0 → 无声。宁可极小概率重一小声，也不要哑。
     a.volume = FALLBACK_VOL;
     a.currentTime = 0;
-    void a.play().catch(() => { /* 未解锁 / 被拦截：不影响棋局 */ });
-  } catch (e) { /* noop */ }
+    const pr = a.play();
+    if (pr && typeof pr.catch === 'function') pr.catch(() => { elBroken = true; });
+    return true;
+  } catch (e) {
+    elBroken = true;
+    return false;
+  }
 }
 
 /** 在手势里把 <audio> 通道也解锁（音量 0 偷播一次，听不见但能解锁） */
@@ -183,16 +142,13 @@ function unlockElements(): void {
   };
   try {
     a.volume = 0;
-    const p = a.play();
-    if (p && typeof p.then === 'function') p.then(done).catch(done);
+    const pr = a.play();
+    if (pr && typeof pr.then === 'function') pr.then(done, done);
     else done();
   } catch (e) {
     done();
   }
 }
-const FALLBACK_VOL = 0.9;
-let elUnlocked = false;
-let elUnlocking = false;
 
 /** 取（必要时创建）AudioContext；创建失败（无 WebAudio）返回 null，全函数静默降级 */
 function ac(): AudioContext | null {
@@ -263,14 +219,11 @@ function clack(c: AudioContext, dur: number, center: number, gain: number, delay
 export function playSfx(name: SfxName): void {
   if (!enabled) return;
   const c = ac();
-  if (!c) { playViaElement(name); return; }   // 根本没有 WebAudio → 直接走兜底
-  // 非运行态（suspended / interrupted）都尝试恢复：挂起态下调度的节点会在
-  // resume 后补播，所以这里不 return —— 宁可延迟出声也不要吞掉这一手。
-  if (c.state !== 'running') void c.resume().catch(() => {});
-  // 🔴 兜底：WebAudio 通道此刻不可用（iOS 静音/老 WebView/被拦截）时，
-  //    再走一次 <audio> 元素通道。两条通道是独立的，任一条通就有声。
-  if (c.state !== 'running') playViaElement(name);
-
+  // WebAudio 通道保持就绪（挂起态就恢复），但发声优先交给 <audio> 元素
+  if (c && c.state !== 'running') void c.resume().catch(() => {});
+  // 主通道：<audio> 元素（真机最稳）。发起成功就不再叠 WebAudio，避免重音。
+  if (!elBroken && playViaElement(name)) return;
+  if (!c) return;                 // 元素通道不可用、又没有 WebAudio → 只能放弃
   try {
     if (name === 'place') {
       // 木质棋盘落子：脆响 + 木共鸣 + 一点高频"啪"。
