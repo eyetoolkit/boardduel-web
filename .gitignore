@@ -2,6 +2,7 @@ node_modules/
 dist/
 boardduel-build/
 .vite/
+vite.config.ts.timestamp-*.mjs
 .env
 .env.local
 *.log
