@@ -30,13 +30,10 @@ const here = dirname(fileURLToPath(import.meta.url));
  * 2026-09-28：tictactoe / connect4 / reversi / chess（含各自 lobby 与玩法页）已全量上线，
  * 从 beta-only 移入下方常驻 input。此列表保留为空，供后续未上线的新棋盘使用。
  *
- * 2026-10-03：围棋 /games/go/（W1 引擎 + W2 AI/棋盘/演示页完成）加入 beta-only。
- * 围棋仍是自包含孤岛（无任何页面链接到它，W3 arena + 棋钟 + i18n 后才转正），
- * 故生产构建不产出该页，避免半成品上线。转正时：移入常驻 input + 加首页/nav + sitemap。
+ * 2026-10-03：围棋 /games/go/（W1 引擎 + W2 AI/棋盘 + W3 arena/棋钟/i18n 完工）转正 ——
+ * 已加入下方常驻 input（不再走 BETA_ONLY），故此列表再次置空。
  */
-const BETA_ONLY_INPUTS: Record<string, string> = {
-  go: resolve(here, 'games/go/index.html'),
-};
+const BETA_ONLY_INPUTS: Record<string, string> = {};
 
 const META_PROD = {
   TITLE: 'BoardDuel — play five classic boards online, free',
@@ -103,6 +100,9 @@ export default defineConfig({
         connect4Lobby: resolve(here, 'games/connect4/lobby/index.html'),
         reversiLobby: resolve(here, 'games/reversi/lobby/index.html'),
         chessLobby: resolve(here, 'games/chess/lobby/index.html'),
+        // 围棋（2026-10-03 W3 转正：arena 三屏 + 中日棋钟 + 6 语言 i18n 完工）
+        go: resolve(here, 'games/go/index.html'),
+        goLobby: resolve(here, 'games/go/lobby/index.html'),
         // 4 篇玩法页
         howtoTictactoe: resolve(here, 'how-to-play/tictactoe/index.html'),
         howtoConnect4: resolve(here, 'how-to-play/connect4/index.html'),

@@ -19,9 +19,11 @@
   <url><loc>https://boardduel.com/games/connect4/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://boardduel.com/games/reversi/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://boardduel.com/games/chess/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://boardduel.com/games/go/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://boardduel.com/games/gomoku/lobby/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://boardduel.com/games/tictactoe/lobby/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://boardduel.com/games/connect4/lobby/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://boardduel.com/games/reversi/lobby/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://boardduel.com/games/chess/lobby/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://boardduel.com/games/go/lobby/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
 </urlset>
