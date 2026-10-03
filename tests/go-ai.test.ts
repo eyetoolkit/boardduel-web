@@ -14,7 +14,7 @@ import {
   initialState, makeState, idx, scoreChinese, pass, hashPosition, computePlay, legalMoves,
 } from '../src/games/go/engine.ts';
 import {
-  bestMoveEasy, bestMoveMedium, bestMove, terminalScore, didWin, playOut, type Difficulty,
+  bestMoveEasy, bestMoveMedium, bestMoveHard, bestMove, terminalScore, didWin, playOut, type Difficulty,
 } from '../src/games/go/ai.ts';
 
 function build(size: number, placements: Array<[number, number, Stone]>, toPlay: 1 | 2 = 1): GoState {
@@ -43,26 +43,51 @@ test('easy：返回合法手；有吃子机会时优先吃子', () => {
 });
 
 // ───────────────────────── 2. medium 合法 + 吃子 ─────────────────────────
-test('medium：返回合法手；吃子得分最高时选择吃子', () => {
+// W6 重写说明（2026-10-03）：medium 原为独立 1-ply 贪心，实测 medium vs easy
+// 0/8、平均 -30.4 目（比随机还弱）—— 贪心在围棋里不可叠加。现改为与 hard 同源的
+// α-β 搜索、固定 depth=1。因此下面断言从「贪心公式的具体手」改为**行为不变式**。
+test('medium：返回合法手；空盘落在三线/四线（不是天元或一线）', () => {
   const s = initialState(9);
   const m = bestMoveMedium(s, deterministicRng(1));
   assert.ok(m >= 0 && legalMoves(s).includes(m), 'medium returns a legal move');
 
-  const s2 = build(9, [
-    [4, 4, 2], [3, 4, 1], [5, 4, 1], [4, 3, 1],
-  ], 1);
-  const m2 = bestMoveMedium(s2, deterministicRng(1));
-  assert.equal(m2, idx(9, 4, 5), 'medium picks the capturing move (captured×15 dominates)');
+  const x = m % 9;
+  const y = Math.floor(m / 9);
+  const edgeDist = Math.min(x, y, 8 - x, 8 - y);
+  assert.ok(edgeDist >= 2 && edgeDist <= 3,
+    `medium 开局应落三/四线，实得 (${x},${y}) edgeDist=${edgeDist}`);
 });
 
-// ───────────────────────── 3. medium 打吃威胁 ─────────────────────────
-test('medium：能识别打吃（落子使对方组气≤1）并优先选择', () => {
-  // 白单子 (4,4) 两面临黑 (3,4)(5,4)，留 (4,3)(4,5) 两气；黑落任一口均打吃
+test('hard：空盘首手在三线/四线（9/13/19 路都成立）', () => {
+  for (const size of [9, 13, 19]) {
+    const s = initialState(size);
+    const m = bestMoveHard(s, { budgetMs: 1500 });
+    const x = m % size;
+    const y = Math.floor(m / size);
+    const edgeDist = Math.min(x, y, size - 1 - x, size - 1 - y);
+    assert.ok(edgeDist >= 2 && edgeDist <= 3,
+      `${size} 路 hard 首手应在三/四线，实得 (${x},${y}) edgeDist=${edgeDist}`);
+  }
+});
+
+test('hard：从不选择填自己真眼的手（纳卡）', () => {
+  // 黑 (2,2) 已被自己的子四邻围成真眼 —— 填它等于自毁
   const s = build(9, [
-    [4, 4, 2], [3, 4, 1], [5, 4, 1],
+    [2, 2, 1], [1, 2, 1], [3, 2, 1], [2, 1, 1], [2, 3, 1],
   ], 1);
-  const m = bestMoveMedium(s, deterministicRng(1));
-  assert.ok(m === idx(9, 4, 3) || m === idx(9, 4, 5), 'medium plays a move that ataris the white stone');
+  const m = bestMoveHard(s, { budgetMs: 1200 });
+  assert.notEqual(m, idx(9, 2, 2), 'hard must not fill its own true eye');
+  assert.ok(legalMoves(s).includes(m), 'hard move is legal');
+});
+
+test('hard：被短气包围时选择逃气而不是原地等死', () => {
+  // 黑一子 (4,4)，白围三边，只留 (4,5)/(5,4) 两个逃气方向
+  const s = build(9, [
+    [4, 4, 1], [4, 3, 2], [3, 3, 2], [3, 4, 2], [3, 5, 2],
+  ], 1);
+  const m = bestMoveHard(s, { budgetMs: 1500 });
+  assert.ok(m === idx(9, 4, 5) || m === idx(9, 5, 4),
+    `黑被打吃应逃气，实得 (${m % 9},${Math.floor(m / 9)})`);
 });
 
 // ───────────────────────── 4. medium 不送死（不选自杀/劫禁，computePlay 已拒） ─────────────────────────

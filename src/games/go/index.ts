@@ -31,7 +31,19 @@ const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
 const MODE_PAGE = '/games/go/lobby/';
 // 思考节奏：hard 是 2-ply 搜索，比 medium 慢，故给更长思考时间（避免"秒落"显得假）
-const AI_THINK_MS: Record<Difficulty, number> = { easy: 480, medium: 760, hard: 1000 };
+// 思考节奏：easy 纯随机（几乎瞬时），medium/hard 走 α-β 搜索
+const AI_THINK_MS: Record<Difficulty, number> = { easy: 420, medium: 700, hard: 900 };
+
+/**
+ * 🆕 W6：hard/medium 的**搜索时间预算**（ms）。
+ *
+ * 🔴 关键约束：搜索是**同步**跑的（bestMove 在主线程），预算 = 真实 UI 卡顿时间。
+ * 必须与 AI_THINK_MS 协调：动画播完后再卡 budget ms。
+ * 取 350ms 是权衡结果：9 路 depth 3~4 能在预算内跑完，桌面不卡手；
+ * 且搜索在 depth 2 之后收益趋平（实测 depth2/3/4 选点几乎一致），
+ * 再加预算只烧时间不涨棋力。移动端若仍卡，可下调或改走 Web Worker。
+ */
+const AI_BUDGET_MS: Record<Difficulty, number> = { easy: 0, medium: 160, hard: 350 };
 const REPLAY_MS = 900;
 const END_DELAY_MS = 1500;
 const HUMAN: Player = 1;                              // 人类执黑先手
@@ -400,7 +412,7 @@ function scheduleAi(): void {
       afterMove();
       return;
     }
-    const m = bestMove(state.go, state.level);
+    const m = bestMove(state.go, state.level, { budgetMs: AI_BUDGET_MS[state.level] });
     if (m < 0) {
       state.history.push(state.go);
       state.go = pass(state.go);
