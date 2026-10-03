@@ -103,6 +103,13 @@ export default defineConfig({
         // 围棋（2026-10-03 W3 转正：arena 三屏 + 中日棋钟 + 6 语言 i18n 完工）
         go: resolve(here, 'games/go/index.html'),
         goLobby: resolve(here, 'games/go/lobby/index.html'),
+        // 围棋教程 5 页（2026-10-03 W4：规则/提子/劫与自杀/让子/数目终局）
+        howtoGo: resolve(here, 'how-to-play/go/index.html'),
+        howtoGoRules: resolve(here, 'how-to-play/go/rules/index.html'),
+        howtoGoCapture: resolve(here, 'how-to-play/go/capture/index.html'),
+        howtoGoKo: resolve(here, 'how-to-play/go/ko/index.html'),
+        howtoGoHandicap: resolve(here, 'how-to-play/go/handicap/index.html'),
+        howtoGoScoring: resolve(here, 'how-to-play/go/scoring/index.html'),
         // 4 篇玩法页
         howtoTictactoe: resolve(here, 'how-to-play/tictactoe/index.html'),
         howtoConnect4: resolve(here, 'how-to-play/connect4/index.html'),

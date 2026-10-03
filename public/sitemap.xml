@@ -14,6 +14,12 @@
   <url><loc>https://boardduel.com/how-to-play/connect4/</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
   <url><loc>https://boardduel.com/how-to-play/reversi/</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
   <url><loc>https://boardduel.com/how-to-play/chess/</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://boardduel.com/how-to-play/go/</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://boardduel.com/how-to-play/go/rules/</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://boardduel.com/how-to-play/go/capture/</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://boardduel.com/how-to-play/go/ko/</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://boardduel.com/how-to-play/go/handicap/</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://boardduel.com/how-to-play/go/scoring/</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
   <url><loc>https://boardduel.com/games/gomoku/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://boardduel.com/games/tictactoe/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://boardduel.com/games/connect4/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
