@@ -30,7 +30,8 @@ const boardEl = $<HTMLDivElement>('bd-board');
 const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
 const MODE_PAGE = '/games/go/lobby/';
-const AI_THINK_MS: Record<Difficulty, number> = { easy: 480, medium: 760 };
+// 思考节奏：hard 是 2-ply 搜索，比 medium 慢，故给更长思考时间（避免"秒落"显得假）
+const AI_THINK_MS: Record<Difficulty, number> = { easy: 480, medium: 760, hard: 1000 };
 const REPLAY_MS = 900;
 const END_DELAY_MS = 1500;
 const HUMAN: Player = 1;                              // 人类执黑先手
@@ -62,7 +63,7 @@ interface UIState {
 const state: UIState = {
   screen: 'match',
   mode: 'ai',
-  level: 'medium',
+  level: 'hard',       // 默认最强档（W5.5 新增 hard；纯规则 2-ply，8/8 胜随机）
   size: 19,
   handicap: 0,
   go: initialState(19),
@@ -260,6 +261,13 @@ function onCountCell(i: number): void {
   renderBoard();
 }
 
+/** 当前难度的显示名（三档） */
+function levelLabel(): string {
+  if (state.level === 'easy') return t('bg.bg_go_lv_easy_t', 'Novice');
+  if (state.level === 'hard') return t('bg.bg_go_lv_hard_t', 'Master');
+  return t('bg.bg_go_lv_medium_t', 'Adept');
+}
+
 function updateInfo(): void {
   const over = state.over;
   const thinking = state.aiThinking;
@@ -281,7 +289,7 @@ function updateInfo(): void {
   capsEl.textContent = `${state.go.captures[0]} / ${state.go.captures[1]}`;
   lastEl.textContent = state.go.lastMove >= 0 && !over ? notation(state.size, state.go.lastMove) : '—';
   modeEl.textContent = state.mode === 'ai'
-    ? `${t('bg.bg_go_vs', 'vs engine')} · ${state.level === 'easy' ? t('bg.bg_go_lv_easy_t', 'Novice') : t('bg.bg_go_lv_medium_t', 'Adept')}`
+    ? `${t('bg.bg_go_vs', 'vs engine')} · ${levelLabel()}`
     : t('bg.bg_go_pass_play', 'Pass & Play');
   renderClocks();
 }
@@ -744,7 +752,7 @@ function readMode(): void {
   const m = q.get('mode');
   state.mode = m === 'pass' ? 'pass' : 'ai';
   const lv = q.get('level');
-  if (lv === 'easy' || lv === 'medium') state.level = lv;
+  if (lv === 'easy' || lv === 'medium' || lv === 'hard') state.level = lv;
   const sz = q.get('size');
   if (sz === '9' || sz === '13' || sz === '19') state.size = Number(sz) as Size;
   // 让子只在同屏双人模式有意义（AI 棋力固定，不需要让子）

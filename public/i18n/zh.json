@@ -2313,6 +2313,8 @@
     "bg_go_lv_easy_s": "随机，爱吃子",
     "bg_go_lv_medium_t": "好手",
     "bg_go_lv_medium_s": "1 层，看得见威胁",
+    "bg_go_lv_hard_t": "高手",
+    "bg_go_lv_hard_s": "2 层，看得见你的反击",
     "bg_go_leave_title": "要退出对局吗？",
     "bg_go_leave_note": "对局还没结束，现在离开算输。",
     "bg_go_stay": "继续下",

@@ -2342,6 +2342,8 @@
     "bg_go_lv_easy_s": "aleatorio, captura",
     "bg_go_lv_medium_t": "Hábil",
     "bg_go_lv_medium_s": "1 capa, ve amenazas",
+    "bg_go_lv_hard_t": "Maestro",
+    "bg_go_lv_hard_s": "2 capas, lee tus respuestas",
     "bg_go_leave_title": "¿Salir de la partida?",
     "bg_go_leave_note": "La partida sigue en curso; salir ahora la pierde.",
     "bg_go_stay": "Seguir jugando",

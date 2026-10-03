@@ -2265,6 +2265,8 @@
     "bg_go_lv_easy_s": "random, grabs captures",
     "bg_go_lv_medium_t": "Adept",
     "bg_go_lv_medium_s": "1-ply, spots threats",
+    "bg_go_lv_hard_t": "Master",
+    "bg_go_lv_hard_s": "2-ply, reads your replies",
     "bg_go_leave_title": "Leave the game?",
     "bg_go_leave_note": "This game is still in progress — leaving now loses it.",
     "bg_go_stay": "Keep playing",

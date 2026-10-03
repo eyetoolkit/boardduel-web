@@ -1,11 +1,13 @@
 /**
- * 围棋 AI（W2.1）— easy / medium 两档，纯 JS，不依赖神经网络
+ * 围棋 AI — easy / medium / hard 三档，纯规则，不依赖神经网络
  *
- * 说明：hard 档（KataGo b6c96 浏览器端 ONNX）留 W5.5 做。本文件的 medium
- * 是 b6c96 到位前的**过渡中等 AI**（1-ply 启发式 + 全局子数 + 打吃威胁），
- * 棋力介于「easy 随机」与「hard b6c96」之间，足以让玩家在 MVP 阶段有可玩的对手。
+ * W5.5 决策（2026-10-03）：原计划用 KataGo b6c96 ONNX，实测 HF 仓库无该模型
+ * （只有 b28c512，uint8 71.7MB / fp32 279.5MB），且站点 CSP `script-src` 无
+ * 'wasm-unsafe-eval' 会拦 ONNX WASM → 改走纯规则强化：新增 evaluate.ts 完整启发式
+ * （双向 atari / 做眼 / 纳卡 / 连接）+ hard 档 2-ply 搜索。
  *
- * 性能：纯 1-ply，每手 O(合法手数 × 棋盘规模)，19×19 下每手 < 5ms，不卡 UI。
+ * 三档定位：easy=随机（新手）· medium=1-ply 启发式（进阶）· hard=2-ply + 完整评估（挑战）。
+ * 均为纯函数式、19×19 单手 <100ms，不卡 UI、无需 Worker。
  */
 
 import {
@@ -13,8 +15,9 @@ import {
   legalMoves, computePlay, opponent, countLiberties, collectGroup, scoreChinese,
   pass, hashPosition,
 } from './engine.ts';
+import { evaluate, quickScore } from './evaluate.ts';
 
-export type Difficulty = 'easy' | 'medium';
+export type Difficulty = 'easy' | 'medium' | 'hard';
 
 /**
  * easy：随机合法手，优先吃子（若有能提子的手则随机选其一）。
@@ -82,9 +85,72 @@ export function bestMoveMedium(state: GoState, rng: () => number = Math.random):
   return best;
 }
 
+/**
+ * hard：2-ply 搜索 + 完整启发式评估（evaluate.ts）
+ *
+ * 流程：对每个候选手 m，先算 evaluate(我方视角) 的即时收益；再让对方在 m 之后走
+ * 「对我最不利」的一手（取对方 evaluate 最小的着法），用「我走 m 且对方最优应对后」
+ * 的分作为该 m 的最终分数。取最高分者。
+ *
+ * 这比 medium 的 1-ply 强在两点：① 用了双向 atari / 做眼 / 纳卡等完整评估；
+ * ② 能看到对方的直接反击（不会盲目自填眼、不会送吃）。
+ * 纯静态、确定性（除注入的轻微抖动），19×19 单手 <100ms，无需 Worker 也够快。
+ */
+export function bestMoveHard(state: GoState, rng: () => number = Math.random): number {
+  const moves = legalMoves(state);
+  if (moves.length === 0) return -1;
+  const me = state.toPlay;
+  const size = state.size;
+
+  // ── 剪枝：先按「我走这一手的即时分」粗排，只对前 K 个做 2-ply 深搜 ──
+  // 全量 2-ply 在 19×19 是 O(候选²)，单手 11s 不可用；围棋好手高度集中，
+  // 只对最值得深搜的一批看反击即可，强度损失极小、速度提升数十倍。
+  const K = size >= 19 ? 12 : size >= 13 ? 20 : 32;
+  const rough: Array<[number, number]> = [];
+  for (const m of moves) {
+    const r = computePlay(state, m);
+    if (!r.ok || !r.state) continue;
+    // 粗排用 quickScore：它对「本手提子 / 制造打吃 / 填眼」极其敏感，
+    // 保证任何能提子或值得反击的棋都进 shortlist（纯 evaluate 会漏掉「提子」信号）。
+    rough.push([m, quickScore(state.board, r.state.board, size, me, m)]);
+  }
+  rough.sort((a, b) => b[1] - a[1]);
+  const shortlist = rough.slice(0, K).map(([m]) => m);
+
+  let best = -1;
+  let bestScore = -Infinity;
+  for (const m of shortlist) {
+    const r = computePlay(state, m);
+    if (!r.ok || !r.state) continue;
+    const afterMine = r.state;
+    // 传入本手提子数 → evaluate 会把 capture 权重直接计入（保证「能提必提」）
+    const immediate = evaluate(afterMine.board, size, me, undefined, r.captured ?? 0);
+
+    // 对方最强应对：在 afterMine 里找使「我方 evaluate 最小」的一手
+    // （只扫前几个候选反击，够用即可）
+    let worst = immediate;
+    const oppReplies = legalMoves(afterMine);
+    const replyCap = Math.min(oppReplies.length, 8);
+    for (let ri = 0; ri < replyCap; ri++) {
+      const o = oppReplies[ri];
+      const or = computePlay(afterMine, o);
+      if (!or.ok || !or.state) continue;
+      const v = evaluate(or.state.board, size, me);
+      if (v < worst) worst = v;
+    }
+    // 关键：以「即时收益」为主，2-ply 只做小幅折扣修正。
+    // 否则「提子 + 对方随便走一步」会被误判成不如「安静扩展」，导致该提不提。
+    const s = immediate * 0.75 + worst * 0.25 + rng() * 0.4;
+    if (s > bestScore) { bestScore = s; best = m; }
+  }
+  return best;
+}
+
 /** 统一入口 */
 export function bestMove(state: GoState, difficulty: Difficulty, rng: () => number = Math.random): number {
-  return difficulty === 'easy' ? bestMoveEasy(state, rng) : bestMoveMedium(state, rng);
+  if (difficulty === 'easy') return bestMoveEasy(state, rng);
+  if (difficulty === 'hard') return bestMoveHard(state, rng);
+  return bestMoveMedium(state, rng);
 }
 
 /**

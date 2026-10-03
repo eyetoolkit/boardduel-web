@@ -2341,6 +2341,8 @@
     "bg_go_lv_easy_s": "aléatoire, capture",
     "bg_go_lv_medium_t": "Habile",
     "bg_go_lv_medium_s": "1 pli, voit les menaces",
+    "bg_go_lv_hard_t": "Maître",
+    "bg_go_lv_hard_s": "2 plis, lit vos ripostes",
     "bg_go_leave_title": "Quitter la partie ?",
     "bg_go_leave_note": "La partie est en cours — partir maintenant la perd.",
     "bg_go_stay": "Continuer",
