@@ -29,8 +29,14 @@ const here = dirname(fileURLToPath(import.meta.url));
 /**
  * 2026-09-28：tictactoe / connect4 / reversi / chess（含各自 lobby 与玩法页）已全量上线，
  * 从 beta-only 移入下方常驻 input。此列表保留为空，供后续未上线的新棋盘使用。
+ *
+ * 2026-10-03：围棋 /games/go/（W1 引擎 + W2 AI/棋盘/演示页完成）加入 beta-only。
+ * 围棋仍是自包含孤岛（无任何页面链接到它，W3 arena + 棋钟 + i18n 后才转正），
+ * 故生产构建不产出该页，避免半成品上线。转正时：移入常驻 input + 加首页/nav + sitemap。
  */
-const BETA_ONLY_INPUTS: Record<string, string> = {};
+const BETA_ONLY_INPUTS: Record<string, string> = {
+  go: resolve(here, 'games/go/index.html'),
+};
 
 const META_PROD = {
   TITLE: 'BoardDuel — play five classic boards online, free',

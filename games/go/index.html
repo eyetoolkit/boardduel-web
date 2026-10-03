@@ -97,7 +97,7 @@
     <div class="bd-game-meta">
       <span><b id="go-meta-size">19×19</b> board</span>
       <span><b>Chinese</b> scoring</span>
-      <span><b>pass &amp; play</b> demo</span>
+      <span><b id="go-meta-mode">2 players</b> mode</span>
     </div>
   </header>
 
@@ -107,6 +107,19 @@
     </div>
 
     <aside class="go-demo-panel">
+      <div class="go-modes" id="go-modes">
+        <button type="button" data-mode="pass" class="is-cur">2 Players</button>
+        <button type="button" data-mode="ai">vs AI</button>
+      </div>
+
+      <div class="go-diff" id="go-diff" hidden>
+        <span class="go-diff-label">AI</span>
+        <div class="go-diff-btns">
+          <button type="button" data-diff="easy">Easy</button>
+          <button type="button" data-diff="medium" class="is-cur">Medium</button>
+        </div>
+      </div>
+
       <div class="go-sizes" id="go-sizes">
         <button type="button" data-size="9">9×9</button>
         <button type="button" data-size="13">13×13</button>
@@ -128,7 +141,9 @@
         <button type="button" class="go-btn is-primary" id="go-new">New game</button>
       </div>
 
-      <p class="go-demo-note">Pass-and-play demo. Click any intersection to place; captured stones shrink away. Two passes end the game. (AI opponent + clocks land in the next milestone.)</p>
+      <div class="go-result" id="go-result" hidden></div>
+
+      <p class="go-demo-note" id="go-note">Pass-and-play demo. Click any intersection to place; captured stones shrink away. Two passes end the game. (AI opponent + clocks land in the next milestone.)</p>
     </aside>
   </section>
 
