@@ -1,12 +1,22 @@
 /**
- * BoardDuel · Connect 4 · 完整可玩
- * 6×7 棋盘，玩家执红，AI 执黄（teal）。点击列顶下落。
- * Online：通过 ?c=<CODE> 进入好友房，走 judgment WS（发 place / 收 opponent_place + 权威 state）
+ * BoardDuel · Connect 4 · arena 范式拷贝（2026-10-03）
+ * ------------------------------------------------------------
+ * 直接镜像 tictactoe 的 11 项范式：
+ *   · 三屏布局 + 两段式大厅
+ *   · 双棋钟 + 头像 + AI 难度键 + 退出守卫 + 终局延迟
+ *   · 音效（<audio> 主通道 + WebAudio 兜底） + 棋谱回放（moves[] 纯函数）
+ *   · 结算页 i18n（再来一局 / 回看棋谱 / 回大厅） + 浏览器语言自动探测
+ *
+ * 与 tictactoe 的差异：
+ *   · 棋盘 6 行 × 7 列（重力下落，点列顶投子）
+ *   · m 序列按"列号 0..6"记录，回放时按 col 还原（c4drop 自动算行号）
+ *
+ * 完整范式清单见 E:/Users/workbuddy/游戏检测/_playbook/08-arena-pattern-template.md
  */
 import {
-  setupNav,
-  startTimer, stopTimer, createTimer, fmtClock,
-  toast, type Mode} from '../game-core';
+  setupNav, startTimer, stopTimer, createTimer, fmtClock,
+  toast, type Mode,
+} from '../game-core';
 import { wireLobbyChrome } from '../../lobby-chrome';
 import {
   emptyBoard, cloneBoard, drop as c4drop, bestMove, checkWinner, ROWS, COLS,
@@ -17,135 +27,267 @@ import {
   type OnlineState, type OnlineMsg,
 } from '../online-core';
 import { modeFromUrl, syncModeCardUI } from '../shared';
-// M2（2026-10-01）：教师端房间码归因
-import { isClassroom, urlRoomCode, reportRound, ensureStudentCode } from '../../shared/teacher-track';
+import { reportRound, isClassroom, urlRoomCode, ensureStudentCode } from '../../shared/teacher-track';
+import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 
-const SLOT_W = 420, SLOT_H = SLOT_W * ROWS / COLS;
+/* ======================
+ * 棋盘常量
+ * ====================== */
+const SLOT_W = 420;
+const SLOT_H = SLOT_W * ROWS / COLS;
 const PAD = 16;
 const R = (SLOT_W - 2 * PAD) / (COLS * 2.4);
 const CELL = (SLOT_W - 2 * PAD) / COLS;
 
+/* ======================
+ * DOM 引用
+ * ====================== */
 const boardEl = document.getElementById('bd-board') as HTMLDivElement;
-const turnEl  = document.getElementById('bd-turn-v') as HTMLSpanElement;
-const timeEl  = document.getElementById('bd-time-v') as HTMLSpanElement;
-const statusEl = document.getElementById('bd-status-v') as HTMLSpanElement;
-const modeEl  = document.getElementById('bd-mode-v') as HTMLSpanElement;
-const newBtn  = document.getElementById('bd-new') as HTMLButtonElement;
-const undoBtn = document.getElementById('bd-undo') as HTMLButtonElement;
+const turnEl = document.getElementById('c4-turn') as HTMLElement;
+const statusEl = document.getElementById('c4-status') as HTMLElement;
+const modeEl = document.getElementById('c4-mode-v') as HTMLElement;
+const undoBtn = document.getElementById('c4-undo') as HTMLButtonElement;
+const resignBtn = document.getElementById('c4-resign') as HTMLButtonElement;
+const levelBtn = document.getElementById('c4-level') as HTMLButtonElement;
+const levelCard = document.getElementById('c4-levelcard') as HTMLElement;
+const levelClose = document.getElementById('c4-level-close') as HTMLButtonElement;
+const replayBtn = document.getElementById('c4-replay') as HTMLButtonElement;
+const soundBtn = document.getElementById('c4-sound') as HTMLButtonElement;
+const replayBar = document.getElementById('c4-replaybar') as HTMLElement;
+const rpFirst = document.getElementById('c4-rp-first') as HTMLButtonElement;
+const rpPrev = document.getElementById('c4-rp-prev') as HTMLButtonElement;
+const rpPlay = document.getElementById('c4-rp-play') as HTMLButtonElement;
+const rpNext = document.getElementById('c4-rp-next') as HTMLButtonElement;
+const rpLast = document.getElementById('c4-rp-last') as HTMLButtonElement;
+const rpExit = document.getElementById('c4-rp-exit') as HTMLButtonElement;
+const rpRange = document.getElementById('c4-rp-range') as HTMLInputElement;
+const rpPos = document.getElementById('c4-rp-pos') as HTMLElement;
+const matchEl = document.getElementById('c4-match') as HTMLElement;
+const endEl = document.getElementById('c4-end') as HTMLElement;
+const endVerdict = document.getElementById('c4-end-verdict') as HTMLElement;
+const endLine = document.getElementById('c4-end-line') as HTMLElement;
+const rematchBtn = document.getElementById('c4-rematch') as HTMLButtonElement;
+const reviewBtn = document.getElementById('c4-review') as HTMLButtonElement;
+const endLobbyBtn = document.getElementById('c4-end-lobby') as HTMLButtonElement;
+const leaveCard = document.getElementById('c4-leavecard') as HTMLElement;
+const leaveClose = document.getElementById('c4-leave-close') as HTMLButtonElement;
+const leaveStay = document.getElementById('c4-leave-stay') as HTMLButtonElement;
+const leaveYes = document.getElementById('c4-leave-yes') as HTMLButtonElement;
+const backLobbyBtn = document.getElementById('c4-back-lobby') as HTMLButtonElement;
+const clockMeTime = document.getElementById('go-clock-me-time') as HTMLElement;
+const clockMeCard = document.getElementById('go-clock-me') as HTMLElement;
+const clockOppCard = document.getElementById('go-clock-opp') as HTMLElement;
 
 setupNav('connect4');
 
-// F-002（2026-09-28）：URL ?mode= 初始 mode；online (?c=) 优先级最高
-const _initialMode: Mode = inviteCode() ? 'online' : modeFromUrl('ai');
-if (_initialMode !== 'online') syncModeCardUI(_initialMode);
-
-const state = {
-  mode: _initialMode as Mode,
-  level: 'medium' as CDifficulty,
-  board: emptyBoard() as CBoard,
-  player: 1 as CPlayer, // 1=玩家, 2=AI
-  lastMove: -1,
-  over: false,
-  history: [] as { board: CBoard; player: CPlayer; lastMove: number }[],
-  timer: createTimer(),
-  ws: null as WebSocket | null,
-  roomCode: null as string | null,
-  myIdx: null as number | null,
+/* ======================
+ * 状态
+ * ====================== */
+type UIState = {
+  screen: 'match' | 'end';
+  mode: Mode;
+  level: CDifficulty;
+  board: CBoard;
+  player: CPlayer;
+  lastMove: number;
+  over: boolean;
+  /** 每步快照：用于 Undo */
+  history: { board: CBoard; player: CPlayer; lastMove: number }[];
+  /** 完整落子序列（按 col 0..6 记录，重力计算由 c4drop 负责） */
+  moves: number[];
+  timer: ReturnType<typeof createTimer>;
+  aiThinking: boolean;
+  reviewAt: number | null;
+  replayPlaying: boolean;
+  ws: WebSocket | null;
+  roomCode: string | null;
+  myIdx: number | null;
+  sawGameOver: boolean;
 };
 
-function filledCount(b: CBoard): number {
-  return b.reduce<number>((s, v) => s + (v !== 0 ? 1 : 0), 0);
-}
-function onlineMyTurn(): boolean {
-  if (state.myIdx === null) return false;
-  return filledCount(state.board) % 2 === state.myIdx;
-}
+const state: UIState = {
+  screen: 'match',
+  mode: 'ai',
+  level: 'medium',
+  board: emptyBoard() as CBoard,
+  player: 1,
+  lastMove: -1,
+  over: false,
+  history: [],
+  moves: [],
+  timer: createTimer(),
+  aiThinking: false,
+  reviewAt: null,
+  replayPlaying: false,
+  ws: null,
+  roomCode: null,
+  myIdx: null,
+  sawGameOver: false,
+};
 
+const MODE_PAGE = '/games/connect4/lobby/';
+
+/* ======================
+ * 工具函数
+ * ====================== */
 function pieceColor(p: CPlayer): string {
   return p === 1 ? 'var(--c4-p1, #FF6A3C)' : 'var(--c4-p2, #2FC4C9)';
 }
 
+/** 渲染棋盘（按 reviewAt 决定看最新还是看历史；moves 序列按 col 重放） */
+function viewBoard(moves: number[], reviewAt: number | null): { b: CBoard; lastMove: number } {
+  const b = emptyBoard() as CBoard;
+  const n = reviewAt === null ? moves.length : reviewAt + 1;
+  let last = -1;
+  for (let k = 0; k < Math.min(n, moves.length); k++) {
+    const col = moves[k];
+    if (col < 0 || col >= COLS) continue;
+    const p = (k % 2 === 0 ? 1 : 2) as CPlayer;
+    const idx = c4drop(b, col, p);
+    if (idx >= 0) last = idx;
+  }
+  return { b, lastMove: last };
+}
+
+/* ======================
+ * 渲染
+ * ====================== */
 function render(): void {
+  const { b, lastMove } = viewBoard(state.moves, state.reviewAt);
+  const renderBoard = state.reviewAt !== null ? b : state.board;
+  const lastIdx = state.reviewAt !== null ? lastMove : state.lastMove;
+
   // 列落子提示（顶部）+ 棋盘格子 + 棋子
   let header = '';
   for (let c = 0; c < COLS; c++) {
     const cx = PAD + c * CELL + CELL / 2;
     const hoverable = !state.over && state.board[c] === 0 &&
-      (state.mode === 'pass' || (state.mode === 'online' ? onlineMyTurn() : state.player === 1));
+      state.mode !== 'online' &&
+      (state.mode === 'pass' || (state.mode === 'ai' ? state.player === 1 && !state.aiThinking : true));
     if (hoverable) {
       header += `<g class="c4-cell" data-c="${c}" style="cursor:pointer">
         <rect class="hit" x="${PAD + c * CELL}" y="0" width="${CELL}" height="${SLOT_H}" fill="transparent"/>
-        <polygon points="${cx - 9},${PAD - 3} ${cx + 9},${PAD - 3} ${cx},${PAD + 12}" fill="${pieceColor(state.player as 1) }" opacity="0.55"/>
+        <polygon points="${cx - 9},${PAD - 3} ${cx + 9},${PAD - 3} ${cx},${PAD + 12}" fill="${pieceColor(state.player)}" opacity="0.55"/>
       </g>`;
     }
   }
 
   let board = '';
-  // 棋盘格
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
       const cx = PAD + c * CELL + CELL / 2;
       const cy = PAD + r * CELL + CELL / 2;
-      board += `<circle cx="${cx}" cy="${cy}" r="${R}" fill="transparent" stroke="var(--c4-hole, #2A3741)" stroke-width="0.6"/>`;
+      board += `<circle cx="${cx}" cy="${cy}" r="${R}" fill="transparent" stroke="var(--c4-hole, rgba(124,58,237,.20))" stroke-width="0.6"/>`;
     }
   }
-  // 棋子
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
       const idx = r * COLS + c;
-      const v = state.board[idx];
+      const v = renderBoard[idx];
       if (v === 0) continue;
       const cx = PAD + c * CELL + CELL / 2;
       const cy = PAD + r * CELL + CELL / 2;
-      board += `<circle class="c4-piece${state.lastMove === idx ? ' is-last' : ''}" cx="${cx}" cy="${cy}" r="${R}" fill="${pieceColor(v as CPlayer)}"/>`;
+      board += `<circle class="c4-piece${lastIdx === idx ? ' is-last' : ''}" cx="${cx}" cy="${cy}" r="${R}" fill="${pieceColor(v as CPlayer)}"/>`;
     }
   }
 
   boardEl.innerHTML = `<svg viewBox="0 0 ${SLOT_W} ${SLOT_H}" aria-label="Connect 4 board">
-    <rect x="0" y="0" width="${SLOT_W}" height="${SLOT_H}" fill="var(--c4-plate, #151D24)" rx="6"/>
-    <rect x="${PAD - 6}" y="${PAD - 6}" width="${SLOT_W - 2 * (PAD - 6)}" height="${SLOT_H - 2 * (PAD - 6)}" rx="6" fill="var(--c4-bg, #1C262E)" stroke="var(--c4-edge, #2A3741)"/>
+    <rect x="0" y="0" width="${SLOT_W}" height="${SLOT_H}" fill="var(--c4-plate, #FFFFFF)" rx="10"/>
+    <rect x="${PAD - 6}" y="${PAD - 6}" width="${SLOT_W - 2 * (PAD - 6)}" height="${SLOT_H - 2 * (PAD - 6)}" rx="8" fill="var(--c4-bg, #FFFFFF)" stroke="var(--c4-edge, rgba(124,58,237,.22))"/>
     ${header}${board}
   </svg>`;
   boardEl.querySelectorAll<SVGGElement>('.c4-cell').forEach((g) => {
     g.addEventListener('click', () => onCell(Number(g.dataset.c)));
   });
 
-  turnEl.textContent = state.over
-    ? '— game over —'
-    : state.mode === 'online'
-      ? (state.player === 1 ? 'Red (P1)' : 'Teal (P2)')
-      : state.mode === 'pass'
-        ? (state.player === 1 ? 'Red (P1)' : 'Teal (P2)')
-        : (state.player === 1 ? 'You (Red)' : 'AI (Teal)');
-  turnEl.className = 'bd-hud-v ' + (state.over ? '' : state.mode === 'ai' && state.player === 2 ? 'bd-turn-ai' : 'bd-turn-you');
-  statusEl.textContent = state.over
-    ? 'game over'
-    : state.mode === 'online'
-      ? (state.player === state.myIdx! + 1 ? 'your turn' : 'opponent turn')
-      : (state.player === 1 ? 'your turn' : 'AI thinking');
-  modeEl.textContent = state.mode === 'ai' ? window.t('bi.vs_ai_prefix') + state.level : state.mode === 'pass' ? window.t('bi.pass_play') : window.t('bi.online') + (state.roomCode ? ' · ' + state.roomCode : '');
+  renderHud();
+  renderClockHud();
+}
+
+function renderHud(): void {
+  const thinking = !state.over && state.aiThinking && state.mode === 'ai' && state.player === 2;
+  let label: string;
+  if (state.reviewAt !== null) {
+    label = window.t('bg.bg_connect4_replay');
+  } else if (state.over) {
+    label = window.t('bi.game_over');
+  } else if (state.mode === 'pass') {
+    label = state.player === 1 ? window.t('bg.bg_connect4_you_red_lc') : window.t('bg.bg_connect4_pass_teal_lc');
+  } else if (state.mode === 'online') {
+    label = state.player === 1 ? window.t('bg.bg_connect4_you_red_lc') : window.t('bg.bg_connect4_engine_teal_lc');
+  } else {
+    label = state.player === 1
+      ? window.t('bg.bg_connect4_you_red_lc')
+      : (thinking ? 'Engine · ' + window.t('status.thinking') : window.t('bg.bg_connect4_engine_teal_lc'));
+  }
+  turnEl.textContent = label;
+  turnEl.className = 'go-turn-you' + (thinking ? ' is-thinking' : '');
+
+  statusEl.textContent = statusLabel();
+  const lvName = state.level === 'easy' ? window.t('bg.bg_connect4_lv1') :
+                  state.level === 'medium' ? window.t('bg.bg_connect4_lv2') :
+                  window.t('bg.bg_connect4_lv3');
+  modeEl.textContent = state.mode === 'ai'
+    ? window.t('bi.vs_ai_prefix') + ' ' + lvName
+    : state.mode === 'pass' ? window.t('bi.pass_play')
+    : window.t('bi.online') + (state.roomCode ? ' · ' + state.roomCode : '');
+}
+
+function statusLabel(): string {
+  if (state.over) {
+    const w = checkWinner(state.board).winner;
+    if (w === 3) return 'draw';
+    return w === 1 ? 'you win' : (state.mode === 'ai' ? 'AI wins' : 'Teal wins');
+  }
+  if (state.aiThinking) return window.t('status.thinking');
+  return state.player === 1 ? window.t('bg.bg_connect4_you_red_lc') + ' turn' : 'Teal turn';
+}
+
+function renderClockHud(): void {
+  if (state.mode === 'ai') {
+    clockMeCard.classList.toggle('is-active', !state.over && state.player === 1 && !state.aiThinking);
+    clockOppCard.classList.toggle('is-active', !state.over && (state.player === 2 || state.aiThinking));
+  } else if (state.mode === 'pass') {
+    clockMeCard.classList.toggle('is-active', false);
+    clockOppCard.classList.toggle('is-active', false);
+  } else {
+    const myTurn = state.myIdx !== null && state.player === (state.myIdx === 0 ? 1 : 2);
+    clockMeCard.classList.toggle('is-active', !state.over && myTurn);
+    clockOppCard.classList.toggle('is-active', !state.over && !myTurn);
+  }
+}
+
+/* ======================
+ * 落子
+ * ====================== */
+function placeLocal(col: number, p: CPlayer): number {
+  state.moves.push(col);
+  const idx = c4drop(state.board, col, p);
+  state.lastMove = idx;
+  playSfx('place');           // 唯一出口（gomoku/tictactoe 同款范式）
+  return idx;
 }
 
 function onCell(col: number): void {
   if (state.over || state.board[col] !== 0) return;
+  if (state.mode === 'ai' && state.aiThinking) return;
   if (state.mode === 'ai' && state.player !== 1) return;
+  if (state.mode === 'online' && !onlineMyTurn()) return;
+  if (state.reviewAt !== null) return;
+
+  pushHistory();
   if (state.mode === 'online') {
-    if (!onlineMyTurn()) return;
-    const me = (state.myIdx! + 1) as CPlayer;
-    const idx = c4drop(state.board, col, me);
-    if (idx < 0) return;
-    state.history.push({ board: cloneBoard(state.board), player: state.player, lastMove: state.lastMove });
-    state.player = me;
-    state.lastMove = idx;
-    afterMove();
-    sendWs(state as OnlineState, { type: 'place', p: me, c: col });
-    return;
+    state.player = ((state.myIdx ?? 0) + 1) as CPlayer;
   }
-  state.history.push({ board: cloneBoard(state.board), player: state.player, lastMove: state.lastMove });
-  const idx = c4drop(state.board, col, state.player);
-  if (idx < 0) return;
-  state.lastMove = idx;
+  placeLocal(col, state.player);
   afterMove();
+  if (state.mode === 'online' && state.ws) {
+    sendWs(state as OnlineState, { type: 'place', p: state.player, c: col, by: state.myIdx ?? 0 });
+  }
+}
+
+function pushHistory(): void {
+  state.history.push({ board: cloneBoard(state.board), player: state.player, lastMove: state.lastMove });
 }
 
 function afterMove(): void {
@@ -154,51 +296,193 @@ function afterMove(): void {
     state.over = true;
     stopTimer(state.timer);
     render();
-    if (r.winner === 3) toast('Draw');
-    else if (state.mode === 'ai') toast(r.winner === 1 ? 'Red wins' : 'Teal wins');
-    else toast(r.winner === state.player ? 'You win' : 'Opponent wins');
-    // M2（2026-10-01）：classroom 在线终局上报
-    if (state.mode === 'online' && isClassroom() && state.roomCode) {
-      const dur = state.timer ? Date.now() - state.timer.startedAt : 0;
-      const youWin = r.winner === 3 ? false : (r.winner === state.player);
-      reportRound(state.roomCode, {
-        round: 1,
-        solved: youWin,
-        duration_ms: dur,
-        outcome: r.winner === 3 ? 'draw' : (youWin ? 'win' : 'loss'),
-      });
-    }
+    finish(r.winner as CPlayer, r.line);
+    return;
+  }
+  if (state.board.every((v) => v !== 0)) {
+    state.over = true;
+    stopTimer(state.timer);
+    render();
+    finishDraw();
     return;
   }
   state.player = state.player === 1 ? 2 : 1;
   render();
   if (state.mode === 'ai' && state.player === 2) {
-    setTimeout(() => {
-      if (state.over) return;
-      const col = bestMove(state.board, 2, state.level);
-      if (col < 0) return;
-      const idx = c4drop(state.board, col, 2);
-      if (idx < 0) return;
-      state.history.push({ board: cloneBoard(state.board), player: state.player, lastMove: state.lastMove });
-      state.lastMove = idx;
-      afterMove();
-    }, 250);
+    aiMove();
   }
 }
 
-function newGame(): void {
-  state.board = emptyBoard();
-  state.player = 1;
-  state.lastMove = -1;
-  state.over = false;
-  state.history = [];
-  startTimer(state.timer, (ms) => { timeEl.textContent = fmtClock(ms); });
+/* ======================
+ * AI 思考节奏（gomoku/tictactoe 同款范式）
+ * ====================== */
+const AI_THINK_MS: Record<CDifficulty, number> = { easy: 520, medium: 660, hard: 820 };
+let aiTimer = 0;
+
+function cancelAiMove(): void {
+  if (aiTimer) { clearTimeout(aiTimer); aiTimer = 0; }
+  state.aiThinking = false;
+}
+
+function aiMove(extraMs = 0): void {
+  if (aiTimer) clearTimeout(aiTimer);
+  state.aiThinking = true;
+  render();
+  const base = AI_THINK_MS[state.level] ?? AI_THINK_MS.medium;
+  const jitter = Math.round(base * (Math.random() * 0.24 - 0.12));
+  aiTimer = window.setTimeout(() => {
+    aiTimer = 0;
+    state.aiThinking = false;
+    if (state.over || state.screen !== 'match' || state.reviewAt !== null || state.player !== 2) {
+      render();
+      return;
+    }
+    const col = bestMove(state.board, 2, state.level);
+    if (col < 0) { render(); return; }
+    pushHistory();
+    placeLocal(col, 2);
+    afterMove();
+  }, Math.max(160, base + jitter + extraMs));
+}
+
+/* ======================
+ * 终局
+ * ====================== */
+let endScreenTimer = 0;
+function scheduleEndScreen(): void {
+  if (endScreenTimer) window.clearTimeout(endScreenTimer);
+  endScreenTimer = window.setTimeout(() => {
+    endScreenTimer = 0;
+    if (state.over && state.screen === 'match' && state.reviewAt === null) showScreen('end');
+  }, 1500);
+}
+
+function notation(i: number): string {
+  const col = String.fromCharCode(65 + (i % COLS));
+  const row = (Math.floor(i / COLS) + 1).toString();
+  return col + row;
+}
+
+function finish(winner: CPlayer, line: number[] | null): void {
+  if (state.mode === 'online' && isClassroom() && state.roomCode) {
+    const dur = state.timer ? Date.now() - state.timer.startedAt : 0;
+    const me = ((state.myIdx ?? 0) + 1) as CPlayer;
+    const youWin = winner === me;
+    reportRound(state.roomCode, {
+      round: 1, solved: youWin, duration_ms: dur,
+      outcome: youWin ? 'win' : 'loss',
+    });
+  }
+
+  const verdict = state.mode === 'ai'
+    ? (winner === 1 ? 'You win' : 'Engine wins')
+    : state.mode === 'pass'
+      ? (winner === 1 ? 'Red wins' : 'Teal wins')
+      : (winner === ((state.myIdx ?? 0) + 1) ? 'You win' : 'You lose');
+  endVerdict.textContent = verdict;
+  endLine.textContent = line && line.length ? line.map(notation).join(' – ') : '—';
+  endVerdict.className = 'go-end-verdict ' + (winner === 1 ? 'is-win' : 'is-loss');
+  playSfx(winner === 1 ? 'win' : 'lose');
+
+  toast(verdict + (line && line.length ? ' · ' + line.map(notation).join(' – ') : ''));
+  scheduleEndScreen();
+}
+
+function finishDraw(): void {
+  endVerdict.textContent = window.t('bi.draw');
+  endVerdict.className = 'go-end-verdict';
+  endLine.textContent = window.t('bi.board_full');
+  toast(window.t('bi.draw'));
+  scheduleEndScreen();
+}
+
+/* ======================
+ * 棋谱回放
+ * ====================== */
+let replayTimer = 0;
+const REPLAY_MS = 700;
+
+function resetReplayUI(): void {
+  state.replayPlaying = false;
+  if (replayTimer) { clearTimeout(replayTimer); replayTimer = 0; }
+  state.reviewAt = null;
+  replayBar.hidden = true;
+  document.body.classList.remove('bd-replay');
+}
+
+function enterReplay(): void {
+  if (!state.moves.length) { toast('No moves yet'); return; }
+  cancelAiMove();
+  if (state.screen !== 'match') showScreen('match');
+  state.reviewAt = 0;
+  replayBar.hidden = false;
+  document.body.classList.add('bd-replay');
+  syncReplayBar();
+  render();
+  startReplay();
+}
+
+function exitReplay(): void {
+  resetReplayUI();
+  if (state.over) showScreen('end'); else showScreen('match');
   render();
 }
 
+function syncReplayBar(): void {
+  const total = state.moves.length;
+  const at = state.reviewAt === null ? total - 1 : state.reviewAt;
+  rpRange.max = String(Math.max(0, total - 1));
+  rpRange.value = String(Math.max(0, at));
+  rpPos.textContent = (at + 1) + ' / ' + total;
+  rpPlay.classList.toggle('is-playing', state.replayPlaying);
+}
+
+function seek(n: number): void {
+  if (state.reviewAt === null) return;
+  const max = state.moves.length - 1;
+  state.reviewAt = Math.max(0, Math.min(max, n));
+  syncReplayBar();
+  render();
+}
+
+function startReplay(): void {
+  if (state.reviewAt === null) return;
+  const max = state.moves.length - 1;
+  if (state.reviewAt >= max) { state.reviewAt = 0; syncReplayBar(); render(); }
+  state.replayPlaying = true;
+  syncReplayBar();
+  const step = (): void => {
+    if (!state.replayPlaying) return;
+    const nxt = (state.reviewAt ?? 0) + 1;
+    if (nxt > max) { stopReplay(); return; }
+    seek(nxt);
+    playSfx('place');
+    replayTimer = window.setTimeout(step, REPLAY_MS);
+  };
+  replayTimer = window.setTimeout(step, REPLAY_MS);
+}
+
+function stopReplay(): void {
+  state.replayPlaying = false;
+  if (replayTimer) { clearTimeout(replayTimer); replayTimer = 0; }
+  syncReplayBar();
+}
+
+rpFirst.addEventListener('click', () => { stopReplay(); seek(0); });
+rpPrev.addEventListener('click', () => { stopReplay(); seek((state.reviewAt ?? 0) - 1); });
+rpNext.addEventListener('click', () => { stopReplay(); seek((state.reviewAt ?? 0) + 1); });
+rpLast.addEventListener('click', () => { stopReplay(); seek(state.moves.length - 1); });
+rpPlay.addEventListener('click', () => state.replayPlaying ? stopReplay() : startReplay());
+rpExit.addEventListener('click', exitReplay);
+rpRange.addEventListener('input', () => { stopReplay(); seek(Number(rpRange.value)); });
+
+/* ======================
+ * Undo / Resign
+ * ====================== */
 function undo(): void {
-  if (state.mode === 'online') { toast('Undo is off in online rooms'); return; }
-  if (state.over || state.history.length === 0) return;
+  if (state.over) return;
+  cancelAiMove();
+  if (state.history.length === 0) return;
   const last = state.history.pop()!;
   state.board = last.board;
   state.player = last.player;
@@ -209,28 +493,216 @@ function undo(): void {
     state.player = prev.player;
     state.lastMove = prev.lastMove;
   }
+  state.moves.pop();
   render();
 }
 
-// ─── 在线双人房 ───
+let resignArmed = false;
+let resignTimer = 0;
+function resign(): void {
+  if (state.over) return;
+  if (!resignArmed) {
+    resignArmed = true;
+    resignBtn.textContent = window.t('bj.confirm_resign');
+    resignBtn.classList.add('is-confirm');
+    resignTimer = window.setTimeout(() => {
+      resignArmed = false;
+      resignBtn.textContent = window.t('bj.resign');
+      resignBtn.classList.remove('is-confirm');
+    }, 2200);
+    return;
+  }
+  clearTimeout(resignTimer);
+  resignArmed = false;
+  resignBtn.textContent = window.t('bj.resign');
+  resignBtn.classList.remove('is-confirm');
+  doResign();
+}
+
+function doResign(): void {
+  if (state.over) return;
+  cancelAiMove();
+  state.over = true;
+  stopTimer(state.timer);
+  endVerdict.textContent = 'You resigned';
+  endVerdict.className = 'go-end-verdict is-loss';
+  endLine.textContent = '—';
+  toast('Resigned');
+  scheduleEndScreen();
+}
+
+/* ======================
+ * 难度键
+ * ====================== */
+levelBtn.addEventListener('click', () => {
+  if (state.mode !== 'ai') return;
+  levelCard.hidden = false;
+  levelCard.querySelectorAll<HTMLButtonElement>('.go-level-opt').forEach((b) => {
+    b.classList.toggle('is-cur', b.dataset.level === state.level);
+  });
+});
+levelClose.addEventListener('click', () => { levelCard.hidden = true; });
+levelCard.addEventListener('click', (e) => { if (e.target === levelCard) levelCard.hidden = true; });
+levelCard.querySelectorAll<HTMLButtonElement>('.go-level-opt').forEach((b) => {
+  b.addEventListener('click', () => {
+    const lv = b.dataset.level as CDifficulty;
+    levelCard.hidden = true;
+    if (state.mode !== 'ai' || lv === state.level) return;
+    state.level = lv;
+    toast(window.t('bj.engine_set_to', { level: lv.toUpperCase() }));
+    newGame();
+  });
+});
+
+/* ======================
+ * 声音键
+ * ====================== */
+function refreshSoundBtn(): void {
+  soundBtn.classList.toggle('is-off', !sfxOn());
+  soundBtn.setAttribute('aria-pressed', sfxOn() ? 'true' : 'false');
+  soundBtn.setAttribute('aria-label', window.t(sfxOn() ? 'bg.bg_connect4_sound_on' : 'bg.bg_connect4_sound_off'));
+  soundBtn.setAttribute('title', window.t(sfxOn() ? 'bg.bg_connect4_sound_on' : 'bg.bg_connect4_sound_off'));
+}
+soundBtn.addEventListener('click', () => {
+  setSfx(!sfxOn());
+  refreshSoundBtn();
+  if (sfxOn()) playSfx('place');
+});
+
+/* ======================
+ * 退出守卫
+ * ====================== */
+let backGuard = false;
+let backLeaving = false;
+let pendingLobbyNav = false;
+function armBackGuard(): void {
+  if (backGuard) return;
+  history.pushState({ c4Guard: 1 }, '', location.href);
+  backGuard = true;
+}
+function disarmBackGuard(): void {
+  if (!backGuard) return;
+  backGuard = false;
+  pendingLobbyNav = false;
+}
+window.addEventListener('popstate', () => {
+  if (backLeaving) { backLeaving = false; return; }
+  if (!backGuard) return;
+  history.pushState({ c4Guard: 1 }, '', location.href);
+  if (state.screen === 'match' && !state.over) {
+    leaveCard.hidden = false;
+  } else {
+    disarmBackGuard();
+    if (state.screen === 'match') location.replace(MODE_PAGE);
+  }
+});
+
+function exitMatchToLobby(): void {
+  leaveCard.hidden = true;
+  cancelAiMove();
+  resetReplayUI();
+  leaveRoom();
+  if (backGuard) {
+    backLeaving = true;
+    backGuard = false;
+    pendingLobbyNav = true;
+    try { history.back(); } catch (e) { location.replace(MODE_PAGE); }
+    setTimeout(() => {
+      if (pendingLobbyNav) { pendingLobbyNav = false; backLeaving = false; location.replace(MODE_PAGE); }
+    }, 600);
+  } else {
+    location.replace(MODE_PAGE);
+  }
+}
+leaveClose.addEventListener('click', () => { leaveCard.hidden = true; });
+leaveStay.addEventListener('click', () => { leaveCard.hidden = true; });
+leaveYes.addEventListener('click', exitMatchToLobby);
+backLobbyBtn.addEventListener('click', exitMatchToLobby);
+
+/* ======================
+ * 结算页三键
+ * ====================== */
+rematchBtn.addEventListener('click', () => {
+  if (state.mode === 'online') {
+    if (state.ws) sendWs(state as OnlineState, { type: 'restart' });
+    state.over = false; newGame(); return;
+  }
+  newGame();
+});
+reviewBtn.addEventListener('click', enterReplay);
+endLobbyBtn.addEventListener('click', exitMatchToLobby);
+
+/* ======================
+ * 模式与深链
+ * ====================== */
+const _initialMode: Mode = inviteCode() ? 'online' : modeFromUrl('ai');
+state.mode = _initialMode;
+syncModeCardUI(state.mode);
+
+/* ======================
+ * 屏幕切换
+ * ====================== */
+function showScreen(s: 'match' | 'end'): void {
+  state.screen = s;
+  matchEl.hidden = s !== 'match';
+  endEl.hidden = s !== 'end';
+  if (s === 'match') document.body.classList.add('bd-in-match');
+  else document.body.classList.remove('bd-in-match');
+  render();
+}
+
+/* ======================
+ * 新局
+ * ====================== */
+function newGame(): void {
+  cancelAiMove();
+  resetReplayUI();
+  state.board = emptyBoard() as CBoard;
+  state.player = 1;
+  state.lastMove = -1;
+  state.over = false;
+  state.history = [];
+  state.moves = [];
+  state.aiThinking = false;
+  state.sawGameOver = false;
+  startTimer(state.timer, (ms) => { clockMeTime.textContent = fmtClock(ms); });
+  levelBtn.hidden = state.mode !== 'ai';
+  showScreen('match');
+  render();
+  armBackGuard();
+}
+
+/* ======================
+ * 联机
+ * ====================== */
+function onlineMyTurn(): boolean {
+  if (state.myIdx === null) return false;
+  return state.moves.length % 2 === state.myIdx;
+}
+
+function leaveRoom(): void {
+  if (state.ws) {
+    try { state.ws.close(); } catch (e) { /* ignore */ }
+    state.ws = null;
+  }
+  state.roomCode = null;
+  state.myIdx = null;
+}
+
 function handleWs(msg: OnlineMsg): void {
   const t = String(msg.type || '');
   if (t === 'opponent_place') {
     const c = typeof msg.c === 'number' ? msg.c : -1;
     const by = typeof msg.by === 'number' ? msg.by : -1;
     if (c >= 0 && by !== state.myIdx) {
-      const idx = c4drop(state.board, c, (by + 1) as CPlayer);
-      if (idx >= 0) {
-        state.history.push({ board: cloneBoard(state.board), player: state.player, lastMove: state.lastMove });
-        state.lastMove = idx;
-        state.player = (by + 1) as CPlayer;
-        afterMove();
-      }
+      pushHistory();
+      placeLocal(c, (by + 1) as CPlayer);
+      afterMove();
     }
   } else if (t === 'start' || t === 'restart_notify') {
     newGame();
   } else if (t === 'opponent_leave') {
-    toast('Opponent left the room');
+    toast('Opponent left');
   } else if (t === 'game_over') {
     state.over = true;
     stopTimer(state.timer);
@@ -238,53 +710,59 @@ function handleWs(msg: OnlineMsg): void {
   }
 }
 
-// 模式切换 → 重置
+/* ======================
+ * 启动
+ * ====================== */
 document.querySelectorAll<HTMLButtonElement>('.bd-mode-card').forEach((b) => {
   b.addEventListener('click', () => {
     if (b.classList.contains('is-disabled')) return;
-    if (state.mode === 'online') { toast('Leave the room first to change mode'); return; }
-    document.querySelectorAll('.bd-mode-card').forEach((x) => x.classList.remove('is-cur'));
-    b.classList.add('is-cur');
-    state.mode = b.dataset.mode as Mode;
+    const m = b.dataset.mode as Mode;
+    if (m === 'human') { toast('Online match coming soon'); return; }
+    state.mode = m;
+    syncModeCardUI(m);
     newGame();
   });
 });
-document.querySelectorAll<HTMLButtonElement>('.bd-diff-btn').forEach((b) => {
-  b.addEventListener('click', () => {
-    if (state.mode === 'online') { toast('Leave the room first to change level'); return; }
-    document.querySelectorAll('.bd-diff-btn').forEach((x) => x.classList.remove('is-cur'));
-    b.classList.add('is-cur');
-    state.level = b.dataset.level as CDifficulty;
-    newGame();
-  });
-});
-newBtn.addEventListener('click', () => {
-  if (state.mode === 'online') { sendWs(state as OnlineState, { type: 'restart' }); return; }
-  newGame();
-});
+
 undoBtn.addEventListener('click', undo);
+resignBtn.addEventListener('click', resign);
+replayBtn.addEventListener('click', enterReplay);
 
-newGame();
-
-// 站点 chrome（侧栏抽屉 / 桌面收起 / 主题切换）
+const keepAlive = () => { unlockSfx(); };
+window.addEventListener('pointerdown', keepAlive, { capture: true, passive: true });
+window.addEventListener('touchstart', keepAlive, { capture: true, passive: true });
+window.addEventListener('mousedown', keepAlive, { capture: true, passive: true });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) unlockSfx(); });
+refreshSoundBtn();
 wireLobbyChrome();
 
-// 通过 ?c=<CODE> 进入好友房
+document.addEventListener('keydown', (e) => {
+  if (state.reviewAt !== null) {
+    if (e.key === 'ArrowLeft') { stopReplay(); seek((state.reviewAt ?? 0) - 1); e.preventDefault(); return; }
+    if (e.key === 'ArrowRight') { stopReplay(); seek((state.reviewAt ?? 0) + 1); e.preventDefault(); return; }
+    if (e.key === ' ') { e.preventDefault(); state.replayPlaying ? stopReplay() : startReplay(); return; }
+    if (e.key === 'Escape') { exitReplay(); return; }
+  }
+  if (e.key === 'Escape' && state.screen === 'match') exitMatchToLobby();
+});
+
 const ic = inviteCode();
 if (ic) {
   clearInviteParam();
-  // M2（2026-10-01）：classroom 邀请链接先弹代号
-  const classroomHook = isClassroom() && urlRoomCode() === ic
-    ? ensureStudentCode(ic)
-    : Promise.resolve(null);
+  const classroomHook = isClassroom() && urlRoomCode() === ic ? ensureStudentCode(ic) : Promise.resolve(null);
   (classroomHook || Promise.resolve()).then(() => {
     enterRoom(state as OnlineState, ic, {
       onConnect: () => { newGame(); toast('Connected · room ' + ic); },
       onOpponentPlace: handleWs,
       onStart: () => newGame(),
       onRestart: () => newGame(),
-      onOpponentLeave: () => toast('Opponent left the room'),
+      onOpponentLeave: () => toast('Opponent left'),
       onGameOver: handleWs,
     });
   });
+} else {
+  newGame();
 }
+
+// i18n 字典异步 fetch 兜底：250ms 后强制 rerender 一次（gomoku/tictactoe 同款范式）
+setTimeout(() => render(), 250);
