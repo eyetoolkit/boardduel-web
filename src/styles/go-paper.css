@@ -1,0 +1,182 @@
+/* ============================================================
+ * BoardDuel · Go（围棋）对局页 · paper 皮肤 v1（W2.2 · 2026-10-03）
+ * ------------------------------------------------------------
+ * 复用 gomoku-paper.css 的 --go-* 木盘皮肤变量与棋子/坐标/命中区类名；
+ * 新增：落子(.is-new) 与 提子(.is-captured) 关键帧动画。
+ * 本文件只被 /games/go/ 加载；演示页布局(.go-demo-*) 自包含，
+ * 不依赖 arena 的 .bd-play/.go-controls 等（W3 接入 arena 范式时再对齐）。
+ * ============================================================ */
+
+/* ── 木盘皮肤变量（与 gomoku 一致观感，Go 页独立作用域） ── */
+body.home-v2 {
+  --go-board-bg: #DBA859;                       /* 棋面：经典木黄 */
+  --go-grid: rgba(94, 62, 24, .62);             /* 格线/星位：深棕 */
+  --go-ghost: rgba(94, 62, 24, .8);
+  --go-stone-stroke-b: #3F3A2C;
+  --go-stone-stroke-w: #9A7B44;
+  --go-frame: #C89452;                          /* 外框带：略深木色 */
+  --go-frame-edge: rgba(94, 62, 24, .38);
+  --go-last: #B45309;                           /* 最后一手环：深琥珀棕 */
+  /* 纸面底纹 */
+  background-color: #F4F5F9;
+  background-image:
+    linear-gradient(rgba(124, 58, 237, .038) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124, 58, 237, .038) 1px, transparent 1px);
+  background-size: 24px 24px;
+  color: #1E1B39;
+}
+
+/* ── 棋子立体落子投影 ── */
+body.home-v2 .go-stone { filter: drop-shadow(0 1.3px 1.7px rgba(30, 27, 75, .32)); }
+
+/* ── 坐标文字（木黄盘上深棕） ── */
+body.home-v2 .go-coord {
+  fill: rgba(94, 62, 24, .78);
+  font: 600 13px var(--disp, "Space Grotesk", system-ui, sans-serif);
+}
+html[data-theme="dark"] body.home-v2 .go-coord { fill: var(--mute2); }
+
+/* ── 最后一手环辉光 ── */
+body.home-v2 .go-last-ring { filter: drop-shadow(0 0 4px rgba(180, 83, 9, .35)); }
+
+/* ── 棋盘容器自适应 ── */
+body.home-v2 #bd-board { width: 100%; }
+body.home-v2 #bd-board svg { width: 100%; height: auto; display: block; }
+
+/* ── 命中区：可落点指针 ── */
+body.home-v2 .go-cell { cursor: pointer; }
+
+/* ════════════════════════════════════════════════════════════
+ * 落子 / 提子 动画
+ * ════════════════════════════════════════════════════════════ */
+/* 落子：缩放弹入 + 轻微下落（cubic-bezier 回弹） */
+body.home-v2 .go-stone.is-new {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: go-stone-drop .26s cubic-bezier(.2, 1.25, .4, 1) both;
+}
+@keyframes go-stone-drop {
+  0%   { transform: translateY(-6px) scale(.25); opacity: .25; }
+  55%  { transform: translateY(0)    scale(1.08); opacity: 1; }
+  100% { transform: translateY(0)    scale(1); }
+}
+
+/* 提子：缩小 + 淡出（phantom 在 after board 已清空的位置上播完即移除） */
+body.home-v2 .go-stone.is-captured {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: go-stone-capture .28s ease-in both;
+  pointer-events: none;
+}
+@keyframes go-stone-capture {
+  0%   { transform: scale(1);   opacity: 1; }
+  100% { transform: scale(.05); opacity: 0; }
+}
+
+/* 尊重"减少动态"偏好 */
+@media (prefers-reduced-motion: reduce) {
+  body.home-v2 .go-stone.is-new,
+  body.home-v2 .go-stone.is-captured { animation: none; }
+}
+
+/* ════════════════════════════════════════════════════════════
+ * 演示页布局（W2.2 pass-and-play；W3 接入 arena 三段式时整体替换）
+ * ════════════════════════════════════════════════════════════ */
+body.home-v2 .go-demo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 268px;
+  gap: 22px;
+  align-items: start;
+  margin-top: 18px;
+}
+body.home-v2 .go-demo-board {
+  width: 100%;
+  max-width: min(78vh, 680px);
+  margin: 0 auto;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 0;
+}
+body.home-v2 .go-demo-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+body.home-v2 .go-sizes {
+  display: flex; gap: 8px;
+}
+body.home-v2 .go-sizes button {
+  flex: 1; min-height: 42px; padding: 8px 4px;
+  border: 1px solid var(--line); border-radius: 12px;
+  background: var(--ink2); color: var(--paper);
+  font: 700 .82rem var(--disp, system-ui, sans-serif); cursor: pointer;
+  transition: .13s;
+}
+body.home-v2 .go-sizes button:hover { border-color: #C7CBEE; }
+body.home-v2 .go-sizes button.is-cur {
+  border-color: var(--ember); background: var(--ember-soft); color: var(--ember-dim);
+}
+body.home-v2 .go-info {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  padding: 14px; border: 1px solid var(--line); border-radius: 14px;
+  background: var(--ink2);
+}
+body.home-v2 .go-info > div {
+  display: flex; flex-direction: column; gap: 2px;
+}
+body.home-v2 .go-info span {
+  font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; color: var(--mute);
+}
+body.home-v2 .go-info b { font: 700 1.05rem var(--disp, system-ui, sans-serif); }
+body.home-v2 .go-demo-row { display: flex; gap: 8px; flex-wrap: wrap; }
+body.home-v2 .go-demo-row .go-btn {
+  flex: 1 1 auto; min-height: 42px; padding: 10px 12px;
+  border: 1px solid var(--line); border-radius: 12px;
+  background: var(--ink2); color: var(--paper); cursor: pointer;
+  font: 700 .82rem var(--disp, system-ui, sans-serif);
+  transition: .13s;
+}
+body.home-v2 .go-demo-row .go-btn:hover { border-color: #C7CBEE; background: #FFFFFF; }
+body.home-v2 .go-demo-row .go-btn.is-primary {
+  background: var(--gold); color: #1E1B39; border-color: transparent;
+  box-shadow: 0 8px 20px rgba(245, 158, 11, .28);
+}
+body.home-v2 .go-demo-note {
+  font-size: .8rem; line-height: 1.5; color: var(--mute2);
+  margin: 0; padding: 12px 14px; border: 1px dashed var(--line); border-radius: 12px;
+}
+
+/* ════════════════════════════════════════════════════════════
+ * 暗色模式
+ * ════════════════════════════════════════════════════════════ */
+html[data-theme="dark"] body.home-v2 {
+  --go-board-bg: #1E2033;
+  --go-grid: rgba(232, 234, 244, .32);
+  --go-ghost: #565B78;
+  --go-stone-stroke-b: #9AA0BC;
+  --go-stone-stroke-w: #D8DBEA;
+  --go-frame: #161827;
+  --go-frame-edge: rgba(232, 234, 244, .10);
+  --go-last: #FBBF24;
+  background-color: #12131F;
+  background-image:
+    linear-gradient(rgba(232, 234, 244, .035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232, 234, 244, .035) 1px, transparent 1px);
+  background-size: 24px 24px;
+  color: #E8EAF4;
+}
+html[data-theme="dark"] body.home-v2 .go-stone { filter: drop-shadow(0 1.3px 1.7px rgba(0, 0, 0, .55)); }
+html[data-theme="dark"] body.home-v2 .go-info,
+html[data-theme="dark"] body.home-v2 .go-sizes button,
+html[data-theme="dark"] body.home-v2 .go-demo-row .go-btn { box-shadow: 0 2px 4px rgba(0,0,0,.35), 0 4px 12px rgba(0,0,0,.35); }
+
+/* ════════════════════════════════════════════════════════════
+ * 移动端：棋盘最大化（演示页简化版，单栏纵向）
+ * ════════════════════════════════════════════════════════════ */
+@media (max-width: 899.5px) {
+  body.home-v2 .go-demo { grid-template-columns: 1fr; gap: 14px; }
+  body.home-v2 .go-demo-board { max-width: min(94vw, 560px); }
+  body.home-v2 .go-demo-panel { order: 2; }
+}
