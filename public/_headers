@@ -10,11 +10,14 @@
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://plausible.io https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://cloudflareinsights.com wss://boardduel.com wss://www.boardduel.com; worker-src 'self'; manifest-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
 
-# HTML 不缓存（部署即时生效；旧 max-age=600 会让用户在部署后 10 分钟内拿到旧页面）
+# HTML 短缓存（2026-10-03 接入 · 修复"经常打不开"）
+# max-age=300：CF 边缘命中 5 分钟（避开链路抖动 + AMS 边缘选错的根因）
+# stale-while-revalidate=86400：5 分钟后用户先拿旧 HTML（仍可读），后台异步拉新版本
+# 部署后需手动 purge_cache（`POST /zones/{id}/purge_cache`）让新 HTML 立即生效
 /
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=300, stale-while-revalidate=86400
 /*.html
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=300, stale-while-revalidate=86400
 
 # PWA manifest 短期缓存
 /manifest*.webmanifest
