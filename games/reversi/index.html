@@ -1,23 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:38,fallback:"en"};</script>
-  <script src="/i18n/i18n.js?v=38"></script>
+  <!-- 五子棋 arena 范式 · 三屏拷贝目标：Reversi (Othello) -->
+  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:48,fallback:"en"};</script>
+  <script src="/i18n/i18n.js?v=46"></script>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#F4F5F9">
-<title>Reversi — BoardDuel</title>
-<meta name="description" content="Reversi (Othello) — 8×8 board. Flip opponent discs by sandwiching. 3 AI levels.">
+<title>Othello — BoardDuel</title>
+<meta name="description" content="Reversi / Othello — 8×8. Flip the most discs. Three engine levels.">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="BoardDuel">
-<meta property="og:title" content="Reversi — BoardDuel">
-<meta property="og:description" content="Reversi (Othello) — 8×8 board. Flip opponent discs by sandwiching. 3 AI levels.">
+<meta property="og:title" content="Othello — BoardDuel">
+<meta property="og:description" content="Reversi / Othello — 8×8 grid. Flip the most discs to win.">
 <meta property="og:url" content="https://boardduel.com/games/reversi/">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Reversi — BoardDuel">
-<meta name="twitter:description" content="Reversi (Othello) — 8×8 board. Flip opponent discs by sandwiching. 3 AI levels.">
 <link rel="canonical" href="https://boardduel.com/games/reversi/">
 <link rel="alternate" hreflang="en" href="https://boardduel.com/games/reversi/">
 <link rel="alternate" hreflang="x-default" href="https://boardduel.com/games/reversi/">
@@ -25,29 +23,29 @@
 <link rel="stylesheet" href="/src/styles/chrome.css">
 <link rel="stylesheet" href="/src/styles/boardduel.css">
 <link rel="stylesheet" href="/src/styles/arena-paper.css">
+<link rel="stylesheet" href="/src/styles/reversi-paper.css">
+<script>(function(){try{var t=localStorage.getItem('bd-theme2');if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}})();</script>
 <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/space-grotesk-latin-700.woff2" as="font" type="font/woff2" crossorigin>
-<script>(function(){try{var t=localStorage.getItem('bd-theme2');if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}})();</script>
 </head>
 <body class="home-v2">
-<!-- ══ 移动端顶栏（<1120px 显示） ══ -->
+
 <div class="topbar">
   <button class="burger" id="burger" aria-label="Open navigation" aria-expanded="false">
     <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
   </button>
   <a class="logo" href="/">Board<b>Duel</b></a>
-  <a class="btn-login" href="/games/reversi/lobby/">Mode picker</a>
+  <a class="btn-login" href="/games/reversi/lobby/">Play now</a>
 </div>
 <div class="overlay" id="overlay"></div>
 
-<!-- ══ 侧边导航（Othello 高亮） ══ -->
 <aside class="sidebar" id="sidebar">
   <div class="sb-top">
     <a class="logo" href="/">Board<b>Duel</b></a>
     <button class="sb-collapse" id="collapse" title="Collapse navigation" aria-label="Collapse navigation">&laquo;</button>
   </div>
   <div class="sb-login">
-    <a class="btn-login" href="/games/reversi/lobby/"><span>Mode picker</span></a>
+    <a class="btn-login" href="/games/reversi/lobby/"><span>Play now</span></a>
     <button class="sb-theme" type="button" title="Toggle theme" aria-label="Toggle theme" aria-pressed="false">
       <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13A8 8 0 1 1 11 4a6.5 6.5 0 0 0 9 9z"/></svg>
     </button>
@@ -72,7 +70,7 @@
     <a class="nav-item" href="/games/chess/lobby/">
       <img class="mini" src="/games/chess/cover.svg" alt="" aria-hidden="true"><label>Chess</label>
     </a>
-      <div class="nav-group">More</div>
+    <div class="nav-group">More</div>
     <a class="nav-item" href="/rank/">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3"/><path d="M7 5H4v2a3 3 0 0 0 3 3"/></svg><label>Leaderboard</label>
     </a>
@@ -91,58 +89,125 @@
     <span class="sb-copy">&copy; 2026</span>
   </div>
 </aside>
+
 <main class="bd-main">
-  <section class="bd-hero">
-    <h1 data-i18n="bg.bg_h1_reversi">Reversi</h1>
-    <p class="bd-lead" data-i18n="bg.bg_lead_reversi">8×8 board, 4 centre discs to start. Place a disc so it traps one or more straight lines of opponent discs between your discs; they flip to your colour.</p>
-    <div class="bd-game-meta"><span><b>8×8</b> board</span>
-          <span><b>flip</b> rules</span>
-          <span><b>3</b> AI levels</span>
+
+  <header class="bd-hero">
+    <h1>Othello<span class="bd-dot">.</span> <span class="bd-hero-sub">Flip the board. End with the most discs.</span></h1>
+    <p class="bd-lead">8×8 board, four discs in the center to start. Place a stone to outflank the opponent's disc row — every flanked disc flips to your color. Most discs at the end wins.</p>
+    <div class="bd-game-meta">
+      <span><b>8×8</b> grid</span>
+      <span><b>3</b> engine levels</span>
+      <span><b>flipping</b> rules</span>
+      <span><b>no login</b></span>
+    </div>
+  </header>
+
+  <section id="rv-match" hidden>
+
+    <div class="go-clocks" id="go-clocks">
+      <div class="go-clock is-active" id="go-clock-me">
+        <span class="go-avatar go-avatar-me" aria-hidden="true"><svg viewBox="0 0 40 40" role="img" aria-label="Player avatar"><defs><clipPath id="gav-me"><circle cx="20" cy="20" r="20"/></clipPath></defs><circle cx="20" cy="20" r="20" fill="#7C3AED"/><g clip-path="url(#gav-me)"><circle cx="20" cy="15.6" r="6.4" fill="#fff" opacity=".93"/><path d="M7 36c1.6-6.6 6.7-10.2 13-10.2S31.4 29.4 33 36z" fill="#fff" opacity=".93"/></g></svg></span>
+        <span class="go-clock-who" id="go-clock-me-who" data-i18n="bg.bg_reversi_you_white">YOU · WHITE</span>
+        <span class="go-clock-time" id="go-clock-me-time">0:00</span>
+      </div>
+      <div class="go-clock" id="go-clock-opp">
+        <span class="go-avatar go-avatar-opp" aria-hidden="true"><svg viewBox="0 0 40 40" role="img" aria-label="Opponent avatar"><defs><clipPath id="gav-opp"><circle cx="20" cy="20" r="20"/></clipPath></defs><circle cx="20" cy="20" r="20" fill="#0FA3A8"/><g clip-path="url(#gav-opp)"><rect x="11" y="15" width="18" height="13" rx="4" fill="#fff" opacity=".93"/><circle cx="16.6" cy="21" r="1.9" fill="#0B7F85"/><circle cx="23.4" cy="21" r="1.9" fill="#0B7F85"/><path d="M20 15v-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><circle cx="20" cy="9.6" r="1.9" fill="#fff"/></g></svg></span>
+        <span class="go-clock-who" id="go-clock-opp-who" data-i18n="bg.bg_reversi_engine_black">ENGINE · BLACK</span>
+        <span class="go-clock-time" id="go-clock-opp-time">0:00</span>
+      </div>
+    </div>
+
+    <div class="bd-play">
+      <div class="bd-board-wrap">
+        <div id="bd-board" class="go-board rv-board"></div>
+      </div>
+
+      <aside class="bd-side">
+        <div class="go-status-card">
+          <div class="go-status-row"><span data-i18n="bg.bg_reversi_turn">Turn</span><b id="rv-turn" class="go-turn-you" data-i18n="bg.bg_reversi_you_white_lc">You · White</b></div>
+          <div class="go-status-row"><span data-i18n="bg.bg_reversi_mode">Mode</span><b id="rv-mode-v">vs engine · Blocker</b></div>
+          <div class="go-status-row"><span data-i18n="bg.bg_reversi_score">Score</span><b id="rv-score">2 · 2</b></div>
+        </div>
+
+        <div class="go-controls">
+          <button type="button" class="go-btn go-icon-btn" id="rv-replay" data-i18n-aria-label="bg.bg_reversi_replay" aria-label="Replay" title="Replay">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5v14"/><path d="M11 5.5l8.5 6.5-8.5 6.5z"/></svg>
+          </button>
+          <button type="button" class="go-btn go-icon-btn go-sound" id="rv-sound" aria-pressed="true" data-i18n-aria-label="bg.bg_reversi_sound_on" aria-label="Sound on" title="Sound">
+            <svg class="ico-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.4L12.5 19V5L7.4 9.5H4z"/><path d="M15.8 9.4a4.2 4.2 0 0 1 0 5.2"/><path d="M18.4 7a7.6 7.6 0 0 1 0 10"/></svg>
+            <svg class="ico-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.4L12.5 19V5L7.4 9.5H4z"/><path d="M16.5 10l4.5 4"/><path d="M21 10l-4.5 4"/></svg>
+          </button>
+          <button type="button" class="go-btn" id="rv-undo" data-i18n="bg.bg_reversi_undo">Undo</button>
+          <button type="button" class="go-btn" id="rv-level" hidden data-i18n="bg.bg_reversi_level">Level</button>
+          <button type="button" class="go-btn is-danger" id="rv-resign" data-i18n="bg.bg_reversi_resign">Resign</button>
+        </div>
+
+        <div class="go-replaybar" id="rv-replaybar" hidden>
+          <div class="go-rp-row">
+            <button type="button" class="go-rp-btn" id="rv-rp-first" data-i18n-aria-label="bg.bg_reversi_rp_first" aria-label="First move"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5v14"/><path d="M19 5.5l-9 6.5 9 6.5z"/></svg></button>
+            <button type="button" class="go-rp-btn" id="rv-rp-prev" data-i18n-aria-label="bg.bg_reversi_rp_prev" aria-label="Previous move"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 5.5l-9 6.5 9 6.5z"/></svg></button>
+            <button type="button" class="go-rp-btn is-primary" id="rv-rp-play" data-i18n-aria-label="bg.bg_reversi_rp_play" aria-label="Play"><svg class="ico-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.2l11 6.8-11 6.8z"/></svg><svg class="ico-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5v14"/><path d="M15.5 5v14"/></svg></button>
+            <button type="button" class="go-rp-btn" id="rv-rp-next" data-i18n-aria-label="bg.bg_reversi_rp_next" aria-label="Next move"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5l9 6.5-9 6.5z"/></svg></button>
+            <button type="button" class="go-rp-btn" id="rv-rp-last" data-i18n-aria-label="bg.bg_reversi_rp_last" aria-label="Last move"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 5v14"/><path d="M5 5.5l9 6.5-9 6.5z"/></svg></button>
+            <span class="go-rp-pos" id="rv-rp-pos">0 / 0</span>
+            <button type="button" class="go-rp-btn go-rp-exit" id="rv-rp-exit" data-i18n-aria-label="bg.bg_reversi_rp_exit" aria-label="Exit replay"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg></button>
+          </div>
+          <input type="range" class="go-rp-range" id="rv-rp-range" min="0" max="0" value="0" step="1" data-i18n-aria-label="bg.bg_reversi_rp_scrub" aria-label="Scrub moves">
+        </div>
+
+        <div class="go-levelcard" id="rv-levelcard" hidden>
+          <div class="go-level-panel">
+            <div class="go-hintcard-h">
+              <span data-i18n="bg.bg_reversi_level">Level</span>
+              <button type="button" id="rv-level-close" aria-label="Close">×</button>
+            </div>
+            <div class="go-level-opts">
+              <button type="button" class="go-level-opt" data-level="easy"><b data-i18n="bg.bg_reversi_lv1">Casual</b><span data-i18n="bg.bg_reversi_lv1_sub">level 1 · positional heuristic</span></button>
+              <button type="button" class="go-level-opt" data-level="medium"><b data-i18n="bg.bg_reversi_lv2">Blocker</b><span data-i18n="bg.bg_reversi_lv2_sub">level 2 · mobility + corners</span></button>
+              <button type="button" class="go-level-opt" data-level="hard"><b data-i18n="bg.bg_reversi_lv3">Master</b><span data-i18n="bg.bg_reversi_lv3_sub">level 3 · αβ + endgame solver</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="go-levelcard go-leavecard" id="rv-leavecard" hidden>
+          <div class="go-level-panel">
+            <div class="go-hintcard-h">
+              <span data-i18n="bg.bg_reversi_leave_title">Leave the game?</span>
+              <button type="button" id="rv-leave-close" data-i18n-aria-label="bg.bg_reversi_rp_exit" aria-label="Cancel">×</button>
+            </div>
+            <p class="go-leave-note" data-i18n="bg.bg_reversi_leave_note">This game is still in progress — leaving now loses it.</p>
+            <div class="go-leave-acts">
+              <button type="button" class="go-btn is-primary" id="rv-leave-stay" data-i18n="bg.bg_reversi_stay">Keep playing</button>
+              <button type="button" class="go-btn is-danger" id="rv-leave-yes" data-i18n="bg.bg_reversi_leave">Leave</button>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="go-btn" id="rv-back-lobby" data-i18n="bg.bg_reversi_back_lobby">Back to lobby</button>
+      </aside>
     </div>
   </section>
 
-  <div class="bd-section-title" data-i18n="bg.bg_section_pick_mode">Pick a mode</div>
-  <div class="bd-mode-row" id="bd-modes">
-    <button type="button" class="bd-mode-card is-cur" data-mode="ai">
-      <span class="bd-mode-label" data-i18n="bg.bg_mode_engine">Play the engine</span>
-      <span class="bd-mode-badge">3 levels</span>
-    </button>
-    <button type="button" class="bd-mode-card" data-mode="pass">
-      <span class="bd-mode-label" data-i18n="bg.bg_mode_pass">Pass &amp; play</span>
-      <span class="bd-mode-badge">two players, one screen</span>
-    </button>
-    <button type="button" class="bd-mode-card is-disabled" data-mode="human" disabled>
-      <span class="bd-mode-label" data-i18n="bg.bg_mode_online">Online match</span>
-      <span class="bd-mode-badge">coming soon</span>
-    </button>
-  </div>
-
-  <div class="bd-section-title" data-i18n="bg.bg_section_engine_difficulty">Engine difficulty</div>
-  <div class="bd-diff-row" id="bd-diffs">
-    <button type="button" class="bd-diff-btn" data-level="easy"><span data-i18n="bg.bg_diff_easy">Easy</span></button>
-    <button type="button" class="bd-diff-btn is-cur" data-level="medium"><span data-i18n="bg.bg_diff_medium">Medium</span></button>
-    <button type="button" class="bd-diff-btn" data-level="hard"><span data-i18n="bg.bg_diff_hard">Hard</span></button>
-  </div>
-
-  <div class="bd-play">
-    <div class="bd-board-wrap" id="bd-board">
-      <span class="bd-mode-badge" data-i18n="bg.bg_press_new">Press New game to start</span>
-    </div>
-    <div class="bd-side">
-      <div class="bd-hud">
-        <div class="bd-hud-row"><span class="bd-hud-l" data-i18n="bg.bg_hud_mode">Mode</span><span class="bd-hud-v" id="bd-mode-v">vs AI · medium</span></div>
-        <div class="bd-hud-row"><span class="bd-hud-l" data-i18n="bg.bg_hud_turn">Turn</span><span class="bd-hud-v" id="bd-turn-v">—</span></div>
-        <div class="bd-hud-row"><span class="bd-hud-l" data-i18n="bg.bg_hud_time">Time</span><span class="bd-hud-v" id="bd-time-v">0:00</span></div>
-        <div class="bd-hud-row"><span class="bd-hud-l" data-i18n="bg.bg_hud_status">Status</span><span class="bd-hud-v" id="bd-status-v">idle</span></div>
+  <section id="rv-end" hidden>
+    <div class="go-endbar" id="rv-endbar">
+      <div class="go-end-main">
+        <span class="go-end-verdict" id="rv-end-verdict">You win</span>
+        <span class="go-end-line" id="rv-end-line">—</span>
       </div>
-      <div class="bd-control">
-        <button type="button" id="bd-new" class="bd-primary">New game</button>
-        <button type="button" id="bd-undo">Undo</button>
+      <div class="go-end-acts">
+        <button type="button" class="go-btn is-primary" id="rv-rematch" data-i18n="common.play_again">Play Again</button>
+        <button type="button" class="go-btn" id="rv-review" data-i18n="bg.bg_reversi_review">Review moves</button>
+        <button type="button" class="go-btn" id="rv-end-lobby" data-i18n="bg.bg_reversi_back_lobby">Back to lobby</button>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div class="bd-how">Click any <b>valid empty square</b> (highlighted on hover) to place your disc. Valid = it traps at least one straight line of enemy discs between two of your discs. Trapped discs flip to your colour.</div>
+  <div class="bd-how">
+    Place a stone to outflank the opponent's disc row — every flanked disc flips to your color.
+    Legal moves are highlighted with a ring; if you have none, you must <b>pass</b>.
+    Most discs at the end wins.
+  </div>
 
   <div class="bd-foot">
   <span>© 2026 BoardDuel · free to play · privacy-first</span>
