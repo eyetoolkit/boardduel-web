@@ -50,6 +50,10 @@ export interface GoRenderInput {
   capturedColor?: Player;
   /** 幽灵预览点（-1 或省略表示无） */
   ghost?: number;
+  /** 终局确认：被标为「死子」的点（画 ✕ 标记，仍显示棋子） */
+  dead?: number[];
+  /** 终局确认：己方 territory（画小方块标记，用于数目预览） */
+  territory?: number[];
   /** 是否绘制四面坐标尺（默认 true） */
   showCoords?: boolean;
   /** 是否渲染命中区（可落点 <g class="go-cell">，默认 false） */
@@ -76,6 +80,8 @@ export function renderGoBoardSVG(input: GoRenderInput): string {
   const captured = input.captured ?? [];
   const capturedColor = input.capturedColor ?? 2;
   const ghost = input.ghost ?? -1;
+  const dead = input.dead ?? [];
+  const territory = input.territory ?? [];
   const showCoords = input.showCoords ?? true;
   const interactive = input.interactive ?? false;
 
@@ -143,6 +149,28 @@ export function renderGoBoardSVG(input: GoRenderInput): string {
     }
   }
 
+  // ── 死子标记（终局确认）：在子上画 ✕ ──
+  let deadMarks = '';
+  const xR = stoneR * 0.52;
+  for (const i of dead) {
+    if (board[i] === 0) continue;
+    const gx = i % size;
+    const gy = Math.floor(i / size);
+    const [px, py] = cellXY(size, gx, gy);
+    deadMarks += `<g class="go-dead-mark"><line x1="${(px - xR).toFixed(2)}" y1="${(py - xR).toFixed(2)}" x2="${(px + xR).toFixed(2)}" y2="${(py + xR).toFixed(2)}"/><line x1="${(px + xR).toFixed(2)}" y1="${(py - xR).toFixed(2)}" x2="${(px - xR).toFixed(2)}" y2="${(py + xR).toFixed(2)}"/></g>`;
+  }
+
+  // ── territory 标记（终局数目预览）：空点画小方块 ──
+  let terrMarks = '';
+  const tR = cell * 0.16;
+  for (const i of territory) {
+    if (board[i] !== 0) continue;
+    const gx = i % size;
+    const gy = Math.floor(i / size);
+    const [px, py] = cellXY(size, gx, gy);
+    terrMarks += `<rect class="go-terr-mark" x="${(px - tR).toFixed(2)}" y="${(py - tR).toFixed(2)}" width="${(tR * 2).toFixed(2)}" height="${(tR * 2).toFixed(2)}" rx="2"/>`;
+  }
+
   // ── 提子幻影（播缩小淡出动画；这些点在 after board 中已为空） ──
   let caps = '';
   for (const i of captured) {
@@ -192,7 +220,7 @@ export function renderGoBoardSVG(input: GoRenderInput): string {
     + `<rect x="${PAD - 6}" y="${PAD - 6}" width="${GO_SLOT - 2 * PAD + 12}" height="${GO_SLOT - 2 * PAD + 12}" rx="6" fill="var(--go-board-bg,#DBA859)"/>`;
 
   return `<svg viewBox="0 0 ${GO_SLOT} ${GO_SLOT}" role="img" aria-label="Go board, ${size} by ${size}" preserveAspectRatio="xMidYMid meet">
-    ${defs}${frame}
-    ${lines}${stars}${coords}${stones}${caps}${ghostEl}${hits}
-  </svg>`;
+  ${defs}${frame}
+  ${lines}${stars}${coords}${terrMarks}${stones}${deadMarks}${caps}${ghostEl}${hits}
+</svg>`;
 }

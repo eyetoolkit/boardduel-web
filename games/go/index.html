@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:50,fallback:"en"};</script>
-  <script src="/i18n/i18n.js?v=50"></script>
+  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:51,fallback:"en"};</script>
+  <script src="/i18n/i18n.js?v=51"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#F4F5F9">
@@ -153,6 +153,26 @@
           <button type="button" data-size="9">9×9</button>
           <button type="button" data-size="13">13×13</button>
           <button type="button" data-size="19" class="is-cur">19×19</button>
+        </div>
+
+        <!-- 让子（Handicap）：弱手补偿，黑让 n-1 子后白先行 -->
+        <div class="go-sizes" id="go-handicap">
+          <button type="button" data-hc="0" class="is-cur" data-i18n="bg.bg_go_hc_even">Even</button>
+          <button type="button" data-hc="2" data-i18n="bg.bg_go_hc_2">H2</button>
+          <button type="button" data-hc="4" data-i18n="bg.bg_go_hc_4">H4</button>
+          <button type="button" data-hc="6" data-i18n="bg.bg_go_hc_6">H6</button>
+          <button type="button" data-hc="9" data-i18n="bg.bg_go_hc_9">H9</button>
+        </div>
+
+        <!-- 终局数目条：双 pass 后进入，标对方死子 → 确认结算 -->
+        <div class="go-countbar" id="go-countbar" hidden>
+          <p class="go-count-hint" id="go-count-hint" data-i18n="bg.bg_go_count_hint">Tap a group of enemy stones to mark them dead. Empty eyes you already own are yours.</p>
+          <div class="go-count-line"><span data-i18n="bg.bg_go_count_b">Black</span><b id="go-count-b">0</b></div>
+          <div class="go-count-line"><span data-i18n="bg.bg_go_count_w">White</span><b id="go-count-w">7.5</b></div>
+          <div class="go-count-acts">
+            <button type="button" class="go-btn" id="go-count-clear" data-i18n="bg.bg_go_count_clear">Reset</button>
+            <button type="button" class="go-btn is-primary" id="go-count-ok" data-i18n="bg.bg_go_count_ok">Confirm score</button>
+          </div>
         </div>
 
         <div class="go-controls">

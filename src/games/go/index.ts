@@ -14,8 +14,9 @@ import { setupNav, toast } from '../game-core';
 import { wireLobbyChrome } from '../../lobby-chrome';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 import {
-  initialState, play, pass, notation, opponent, scoreChinese,
-  type GoState, type Player,
+  initialState, initialStateHandicap, play, pass, notation, opponent,
+  scoreWithDead, toggleDeadGroup, resolveDead,
+  type GoState, type Player, type DeadSet,
 } from './engine';
 import { renderGoBoardSVG, diffCaptures } from './render';
 import { bestMove, type Difficulty } from './ai';
@@ -43,6 +44,7 @@ interface UIState {
   mode: 'ai' | 'pass';
   level: Difficulty;
   size: Size;
+  handicap: number;                // 0 = 分先（黑先）；>=2 让子（白先）
   go: GoState;
   history: GoState[];
   moves: number[];                 // 棋谱：每手一个点下标（-1 = pass）
@@ -53,6 +55,8 @@ interface UIState {
   endReason: 'score' | 'resign' | 'timeout' | null;
   resignArmed: boolean;
   endScheduled: boolean;
+  counting: boolean;               // 终局数目确认阶段
+  dead: DeadSet;                   // 玩家标定的「对方死子」下标
 }
 
 const state: UIState = {
@@ -60,6 +64,7 @@ const state: UIState = {
   mode: 'ai',
   level: 'medium',
   size: 19,
+  handicap: 0,
   go: initialState(19),
   history: [],
   moves: [],
@@ -70,6 +75,8 @@ const state: UIState = {
   endReason: null,
   resignArmed: false,
   endScheduled: false,
+  counting: false,
+  dead: new Set(),
 };
 
 let ghost = -1;
@@ -106,6 +113,9 @@ const endLine = $<HTMLElement>('go-end-line');
 const matchEl = $<HTMLElement>('go-match');
 const endEl = $<HTMLElement>('go-end');
 const resignBtn = $<HTMLButtonElement>('go-resign');
+const countBar = $<HTMLElement>('go-countbar');
+const countB = $<HTMLElement>('go-count-b');
+const countW = $<HTMLElement>('go-count-w');
 
 /** 取翻译：字典未就绪 / 未命中时回退到 fallback（避免首帧显示裸 key） */
 const t = (k: string, fallback: string): string => {
@@ -133,14 +143,49 @@ function renderBoard(opts?: { placed?: number; captured?: number[]; capturedColo
     captured: opts?.captured ?? [],
     capturedColor: opts?.capturedColor ?? 2,
     ghost,
+    dead: state.counting ? [...state.dead] : [],
+    territory: state.counting ? territoryOf(state.dead) : [],
     interactive: true,
   });
   updateInfo();
 }
 
+/** 终局预览：去死子后的盘面上，双方各自围住的空点（territory） */
+function territoryOf(dead: DeadSet): number[] {
+  const resolved = resolveDead(state.go.board, state.size, dead);
+  // flood-fill 空点，只邻接一种颜色 → 归该色；这里只用于「画哪些点」，
+  // 归属颜色由 scoreWithDead 计算，渲染层只要知道「这些点被某方拥有」即可。
+  const out: number[] = [];
+  const seen = new Set<number>();
+  for (let i = 0; i < resolved.length; i++) {
+    if (resolved[i] !== 0 || seen.has(i)) continue;
+    const region: number[] = [];
+    const stack = [i];
+    seen.add(i);
+    let tb = false, tw = false;
+    while (stack.length) {
+      const cur = stack.pop() as number;
+      region.push(cur);
+      const x = cur % state.size, y = Math.floor(cur / state.size);
+      for (const [dx, dy] of [[1, 0], [0, 1], [-1, 0], [0, -1]] as const) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= state.size || ny >= state.size) continue;
+        const ni = ny * state.size + nx;
+        if (resolved[ni] === 0) { if (!seen.has(ni)) { seen.add(ni); stack.push(ni); } }
+        else if (resolved[ni] === 1) tb = true;
+        else tw = true;
+      }
+    }
+    if (tb !== tw) out.push(...region);      // 只被一方围住 → 是 territory
+  }
+  return out;
+}
+
 /** 纯函数回放：重放 moves[0..upTo]，返回该时刻的 GoState（提子/劫都由引擎真实重放） */
 function viewBoard(moves: number[], upTo: number): GoState {
-  let s = initialState(state.size);
+  let s = state.handicap >= 2
+    ? initialStateHandicap(state.size, state.handicap)
+    : initialState(state.size);
   for (let i = 0; i <= upTo && i < moves.length; i++) {
     const m = moves[i];
     if (m < 0) s = pass(s);
@@ -155,8 +200,64 @@ function viewBoard(moves: number[], upTo: number): GoState {
 function canHumanMove(): boolean {
   if (state.over || state.reviewAt !== null) return false;
   if (state.screen !== 'match') return false;
+  if (state.counting) return false;                    // 数目阶段不算「走子」
   if (state.mode === 'ai') return state.go.toPlay === HUMAN && !state.aiThinking;
   return true;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   终局数目确认（双 pass 后进入；玩家标对方死子 → 确认结算）
+   ══════════════════════════════════════════════════════════════ */
+function enterCounting(): void {
+  state.counting = true;
+  state.dead = new Set();
+  stopClockLoop();
+  document.body.classList.add('bd-counting');
+  countBar.hidden = false;
+  syncCount();
+  renderBoard();
+  // AI 模式：AI 不会主动认死子，由玩家替双方标（简化：玩家标完直接确认）
+  $<HTMLElement>('go-count-hint').textContent = state.mode === 'ai'
+    ? t('bg.bg_go_count_hint_ai', 'Tap enemy groups to mark them dead, then confirm. You are Black; the engine concedes any group with no liberties.')
+    : t('bg.bg_go_count_hint', 'Tap a group of enemy stones to mark them dead. Empty eyes you already own are yours.');
+}
+
+/** 刷新数目条读数（去死子后中国规则数目） */
+function syncCount(): void {
+  const sc = scoreWithDead(state.go, state.dead);
+  countB.textContent = String(sc.black);
+  countW.textContent = String(sc.white);
+}
+
+/** 确认数目 → 终局结算 */
+function confirmCount(): void {
+  const sc = scoreWithDead(state.go, state.dead);
+  const humanWon = state.mode === 'ai' ? sc.winner === HUMAN : sc.winner === 1;
+  const verdict = state.mode === 'ai'
+    ? (humanWon ? t('bg.bg_go_you_win', 'You win') : t('bg.bg_go_ai_wins', 'Engine wins'))
+    : (sc.winner === 1 ? t('bi.black_wins', 'Black wins') : t('bi.white_wins', 'White wins'));
+  const line = `${sc.black} – ${sc.white} · ${t('bg.bg_go_komi', 'komi')} 7.5`;
+  exitCounting();
+  endGame(verdict, line, 'score', humanWon);
+}
+function exitCounting(): void {
+  state.counting = false;
+  state.dead = new Set();
+  document.body.classList.remove('bd-counting');
+  countBar.hidden = true;
+}
+
+/** 数目阶段点击：切换对方棋块的死活（点任一点整块切换） */
+function onCountCell(i: number): void {
+  if (!state.counting) return;
+  const enemy: Player = state.mode === 'ai' ? AI : (state.go.toPlay === 1 ? 2 : 1);
+  if (state.go.board[i] !== enemy) {
+    toast(t('bg.bg_go_count_only_enemy', 'Only enemy stones can be marked dead'));
+    return;
+  }
+  state.dead = toggleDeadGroup(state.dead, i, enemy, state.go.board, state.size);
+  syncCount();
+  renderBoard();
 }
 
 function updateInfo(): void {
@@ -263,8 +364,12 @@ function passLocal(): void {
 
 /** 落子/停手后统一收尾：终局判定 + AI 调度 */
 function afterMove(): void {
-  if (state.go.passes >= 2) { finishByScore(); return; }
-  if (state.mode === 'ai' && !state.over && state.go.toPlay === AI) scheduleAi();
+  if (state.go.passes >= 2) {
+    // 双 pass → 进入数目确认阶段（玩家标死子），不在这里直接结束
+    if (!state.counting) { enterCounting(); return; }
+    return;
+  }
+  if (state.mode === 'ai' && !state.over && !state.counting && state.go.toPlay === AI) scheduleAi();
 }
 
 function scheduleAi(): void {
@@ -276,7 +381,17 @@ function scheduleAi(): void {
   aiTimer = window.setTimeout(() => {
     aiTimer = null;
     state.aiThinking = false;
-    if (state.over || state.reviewAt !== null || state.screen !== 'match') { updateInfo(); return; }
+    if (state.over || state.reviewAt !== null || state.screen !== 'match' || state.counting) { updateInfo(); return; }
+    // 人类已停一手（passes>=1）→ AI 也停一手，进入终局数目确认
+    if (state.go.passes >= 1) {
+      state.history.push(state.go);
+      state.go = pass(state.go);
+      state.moves.push(-1);
+      state.clock = afterMoveClock(state.clock, AI);
+      renderBoard();
+      afterMove();
+      return;
+    }
     const m = bestMove(state.go, state.level);
     if (m < 0) {
       state.history.push(state.go);
@@ -310,15 +425,6 @@ function cancelAiMove(): void {
 /* ══════════════════════════════════════════════════════════════
    终局（双 pass 数目 / 认输 / 超时）
    ══════════════════════════════════════════════════════════════ */
-function finishByScore(): void {
-  const sc = scoreChinese(state.go);
-  const humanWon = sc.winner === HUMAN;
-  const verdict = state.mode === 'ai'
-    ? (humanWon ? t('bg.bg_go_you_win', 'You win') : t('bg.bg_go_ai_wins', 'Engine wins'))
-    : (sc.winner === 1 ? t('bi.black_wins', 'Black wins') : t('bi.white_wins', 'White wins'));
-  const line = `${sc.black} – ${sc.white} · ${t('bg.bg_go_komi', 'komi')} 7.5`;
-  endGame(verdict, line, 'score', state.mode === 'ai' ? humanWon : sc.winner === 1);
-}
 function finishByResign(): void {
   if (state.mode === 'ai') {
     endGame(t('bj.you_resigned', 'You resigned'), t('bj.by_resignation', 'by resignation'), 'resign', false);
@@ -376,7 +482,10 @@ function newGame(sz?: Size): void {
   cancelAiMove();
   stopClockLoop();
   resetReplayUI();
-  state.go = initialState(state.size);
+  exitCounting();
+  state.go = state.handicap >= 2
+    ? initialStateHandicap(state.size, state.handicap)
+    : initialState(state.size);
   state.history = [];
   state.moves = [];
   state.clock = initialClock();
@@ -388,7 +497,9 @@ function newGame(sz?: Size): void {
   ghost = -1;
   moveToken++;
   metaSizeEl.textContent = `${state.size}×${state.size}`;
-  metaModeEl.textContent = state.mode === 'ai' ? `${t('bg.bg_go_vs', 'vs AI')} · ${state.level}` : '2 players';
+  metaModeEl.textContent = state.mode === 'ai'
+    ? `${t('bg.bg_go_vs', 'vs AI')} · ${state.level}`
+    : (state.handicap >= 2 ? `H${state.handicap}` : '2 players');
   document.querySelectorAll<HTMLButtonElement>('#go-sizes button').forEach((b) => {
     b.classList.toggle('is-cur', Number(b.dataset.size) === state.size);
   });
@@ -537,7 +648,10 @@ function exitMatchToLobby(): void {
    ══════════════════════════════════════════════════════════════ */
 boardEl.addEventListener('click', (ev) => {
   const g = (ev.target as Element).closest?.('.go-cell') as HTMLElement | null;
-  if (g) placeLocal(Number(g.dataset.i));
+  if (!g) return;
+  const i = Number(g.dataset.i);
+  if (state.counting) { onCountCell(i); return; }
+  placeLocal(i);
 });
 if (!isTouch) {
   boardEl.addEventListener('mousemove', (ev) => {
@@ -552,6 +666,24 @@ if (!isTouch) {
 $<HTMLButtonElement>('go-pass').addEventListener('click', passLocal);
 $<HTMLButtonElement>('go-undo').addEventListener('click', doUndo);
 resignBtn.addEventListener('click', doResign);
+
+/* ── 终局数目确认 ── */
+$<HTMLButtonElement>('go-count-ok').addEventListener('click', confirmCount);
+$<HTMLButtonElement>('go-count-clear').addEventListener('click', () => {
+  state.dead = new Set();
+  syncCount();
+  renderBoard();
+});
+
+/* ── 让子棋 ── */
+$<HTMLElement>('go-handicap').addEventListener('click', (ev) => {
+  const b = (ev.target as HTMLElement).closest?.('button[data-hc]') as HTMLButtonElement | null;
+  if (!b) return;
+  state.handicap = Number(b.dataset.hc);
+  document.querySelectorAll<HTMLButtonElement>('#go-handicap button').forEach((x) => x.classList.toggle('is-cur', x === b));
+  newGame();
+});
+
 $<HTMLElement>('go-sizes').addEventListener('click', (ev) => {
   const b = (ev.target as HTMLElement).closest?.('button[data-size]') as HTMLButtonElement | null;
   if (b) newGame(Number(b.dataset.size) as Size);
@@ -615,11 +747,15 @@ function readMode(): void {
   if (lv === 'easy' || lv === 'medium') state.level = lv;
   const sz = q.get('size');
   if (sz === '9' || sz === '13' || sz === '19') state.size = Number(sz) as Size;
+  // 让子只在同屏双人模式有意义（AI 棋力固定，不需要让子）
+  const hc = q.get('hc');
+  if (state.mode === 'pass' && hc && /^[02469]$/.test(hc)) state.handicap = Number(hc);
 }
 
 function boot(): void {
   readMode();
   levelBtn.hidden = state.mode !== 'ai';
+  $<HTMLElement>('go-handicap').hidden = state.mode !== 'pass';   // 让子仅同屏双人
   syncSound();
   newGame();
   // i18n 字典异步 fetch：ready/change 后重渲染，避免首帧裸 key（gomoku 同款坑）

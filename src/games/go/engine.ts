@@ -359,6 +359,135 @@ export function scoreChinese(state: GoState): ScoreResult {
   };
 }
 
+// ───────────────────────── 死子确认 + 让子棋（W4） ─────────────────────────
+
+/**
+ * 死子集合：一组被判定为「死」的对方棋子的下标集合（Set<number>，存己方视角的敌色下标）。
+ * 终局双方轮流确认对方死子后，用 resolveDead 把死子提掉再数目。
+ */
+export type DeadSet = Set<number>;
+
+/**
+ * 移除死子并「连带提气」：死子被拿走后，原先靠它活着的对方棋块可能变成 0 气，
+ * 这些也要一起提掉（真实规则：填眼确认死子后可能引发连锁提子）。返回新盘面。
+ * dead 是「被移除的点的下标集合」；颜色不限（双方死子都各自传入自己的 dead 集合后合并）。
+ */
+export function resolveDead(board: Board, size: number, dead: DeadSet): Board {
+  const nb = board.slice();
+  for (const i of dead) {
+    if (i >= 0 && i < nb.length && nb[i] !== 0) nb[i] = 0;
+  }
+  // 连锁：反复扫描，若任一棋块 0 气则整块提掉（提子后对方可能再失去气）
+  let changed = true;
+  while (changed) {
+    changed = false;
+    const seen = new Set<number>();
+    for (let i = 0; i < nb.length; i++) {
+      if (nb[i] === 0 || seen.has(i)) continue;
+      const g = collectGroup(nb, size, i);
+      for (const s of g.stones) seen.add(s);
+      if (g.liberties === 0) {
+        for (const s of g.stones) nb[s] = 0;
+        changed = true;
+      }
+    }
+  }
+  return nb;
+}
+
+/** 死子确认后的最终数目（中国规则：活子 + 围空，白 +KOMI）。dead = 己方判定的对方死子。 */
+export function scoreWithDead(state: GoState, dead: DeadSet): ReturnType<typeof scoreChinese> {
+  const board = resolveDead(state.board, state.size, dead);
+  return scoreChinese({ ...state, board });
+}
+
+/** 快速判定：给定死子集合后，是否有任何一个死子其实还「有 2 气以上」（活着的），用于「复活」检查 */
+export function stoneIsAlive(board: Board, size: number, i: number): boolean {
+  if (board[i] === 0) return false;
+  return collectGroup(board, size, i).liberties >= 2;
+}
+
+/** 点击一个点：切换它的「死/活」状态（终局确认用）。返回新的 DeadSet（不改入参）。 */
+export function toggleDead(dead: DeadSet, i: number, enemyColor: Player, board: Board): DeadSet {
+  const next = new Set(dead);
+  if (board[i] !== enemyColor) return next;           // 只能标对方（自己确认对方的死子）
+  if (next.has(i)) next.delete(i);
+  else next.add(i);
+  return next;
+}
+
+/** 把一组棋块整体标记/取消（点棋块任一点即整块切换，避免逐子点）。返回新 DeadSet。 */
+export function toggleDeadGroup(dead: DeadSet, i: number, enemyColor: Player, board: Board, size: number): DeadSet {
+  if (board[i] !== enemyColor) return new Set(dead);
+  const g = collectGroup(board, size, i);
+  const allMarked = g.stones.every((s) => dead.has(s));
+  const next = new Set(dead);
+  for (const s of g.stones) {
+    if (allMarked) next.delete(s);
+    else next.add(s);
+  }
+  return next;
+}
+
+/** 死子确认摘要：返回被移除的死子数与去子后的盘面（UI 展示用）。 */
+export function deadSummary(board: Board, size: number, dead: DeadSet): { count: number; resolved: Board } {
+  const resolved = resolveDead(board, size, dead);
+  let count = 0;
+  for (const i of dead) if (board[i] !== 0) count++;
+  return { count, resolved };
+}
+
+// ── 让子棋（handicap）───────────────────────────────────────────────
+
+/**
+ * 标准让子点（以 19 路为例，返回 [x,y] 坐标对；小盘取靠边对应点）。
+ * 让子数 h：黑棋预先在星位附近摆 h-1 子 + 天元（奇数让子时天元必给），白先行。
+ * 顺序按传统「先角后边再天元」，保证不靠太近。
+ */
+export function handicapPoints(size: number, handicap: number): Array<[number, number]> {
+  if (handicap < 2) return [];
+  const e = size - 1;                 // 边线坐标
+  const m = (size - 1) / 2;           // 中线（19→9）
+  const d = size >= 13 ? 3 : 2;       // 星位离边距离
+  // 四个角星 + 四条边中星 + 天元
+  const corners: Array<[number, number]> = [[d, d], [d, e - d], [e - d, d], [e - d, e - d]];
+  const edges: Array<[number, number]> = [[d, m], [e - d, m], [m, d], [m, e - d]];
+  const tengen: [number, number] = [m, m];
+  // 标准让子点序：偶数让子（2/4/6/8）不含天元，奇数（3/5/7/9）含天元
+  switch (handicap) {
+    case 2: return [corners[0], corners[1]];
+    case 3: return [corners[0], corners[1], tengen];
+    case 4: return corners;
+    case 5: return [...corners, tengen];
+    case 6: return [corners[0], corners[1], corners[2], corners[3], edges[0], edges[1]];
+    case 7: return [corners[0], corners[1], corners[2], corners[3], edges[0], edges[1], tengen];
+    case 8: return [...corners, ...edges];
+    default: return [...corners, ...edges, tengen];   // >= 9
+  }
+}
+
+/**
+ * 生成让子初始局面：黑棋在让子点摆 handicap-1 子（最后一位留给天元时省略），
+ * 白方先行（toPlay=2）。handicap<=1 时等同 initialState（黑先）。
+ * handicap=0/1：黑先行，无让子。
+ * handicap>=2：黑让 handicap-1 子（2 子=1子, 3子=2子... 实际标准：让 n 子黑先摆 n 子但最后一点作为「还棋」由白下，
+ * 这里采用常见简化：黑摆 handicap-1 子，白先行；handicap=2 → 黑1子白先）。
+ */
+export function initialStateHandicap(size: number, handicap: number): GoState {
+  if (handicap <= 1) return initialState(size);
+  const pts = handicapPoints(size, handicap);
+  // 标准让子：黑摆 handicap-1 子（留一点作「白还棋」的位置，白下在那里后黑再继续）——
+  // 简化实现：黑直接摆 handicap-1 子，白先走。
+  const placeCount = Math.max(1, handicap - 1);
+  const board = emptyBoard(size);
+  for (let k = 0; k < placeCount && k < pts.length; k++) {
+    const [x, y] = pts[k];
+    board[idx(size, x, y)] = 1;   // 黑子
+  }
+  // 白先行（让子后黑方让先）
+  return makeState(size, board, 2, null, null, 0, [0, 0], -1, 0);
+}
+
 // ───────────────────────── 批量落子（测试 / 复盘用） ─────────────────────────
 
 /** 用记谱坐标序列落子（如 ['pd','dp',...]），支持 'pass'。非法手抛错（测试用） */

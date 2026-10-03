@@ -98,6 +98,33 @@ body.home-v2 .go-sizes button {
 body.home-v2 .go-sizes button:hover { border-color: #C7CBEE; }
 body.home-v2 .go-sizes button.is-cur { border-color: var(--ember); background: var(--ember-soft); color: var(--ember-dim); }
 
+/* ── 终局确认标记：死子 ✕ / territory 方块 ── */
+body.home-v2 .go-dead-mark line {
+  stroke: #E11D48; stroke-width: 2.4; stroke-linecap: round;
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, .8));
+}
+html[data-theme="dark"] body.home-v2 .go-dead-mark line { stroke: #FB7185; }
+body.home-v2 .go-terr-mark {
+  fill: var(--go-grid); opacity: .5;
+}
+body.home-v2.bd-counting .go-cell { cursor: crosshair; }
+
+/* ── 终局数目条 ── */
+body.home-v2 .go-countbar {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px;
+  background: var(--ink2);
+}
+body.home-v2 .go-countbar[hidden] { display: none; }
+body.home-v2 .go-count-hint { font-size: .8rem; line-height: 1.5; color: var(--mute2); margin: 0; }
+body.home-v2 .go-count-line {
+  display: flex; align-items: center; justify-content: space-between;
+  font-family: var(--disp); font-weight: 700; font-size: .9rem;
+}
+body.home-v2 .go-count-line b { font-size: 1.05rem; }
+body.home-v2 .go-count-acts { display: flex; gap: 8px; }
+body.home-v2 .go-count-acts .go-btn { flex: 1; min-height: 40px; }
+
 /* ── 玩家头像：桌面隐藏，移动端 arena 玩家条显示 ── */
 body.home-v2 .go-avatar { display: none; }
 
