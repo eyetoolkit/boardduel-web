@@ -1,0 +1,327 @@
+/* ============================================================
+ * BoardDuel · Tic-Tac-Toe 对局页 · MathDuel paper 皮肤（2026-10-03）
+ * ------------------------------------------------------------
+ * 直接镜像 gomoku-paper.css 的范式：
+ *   · 共用 boardduel.css + arena-paper.css 的 token
+ *   · 本文件只补 Tic-Tac-Toe 棋盘颜色与对局特有的小细节
+ *
+ * 棋盘沿用 arena-paper.css 的 --ttt-* 变量（X=紫、O=琥珀、白底），
+ * 头像/棋钟/底栏/退出确认/难度键/棋谱回放条**全部**复用
+ * gomoku-paper.css 的 .go-* 样式（共用一套 .go- 类前缀）。
+ * ============================================================ */
+
+/* ── 棋盘 SVG 变量（沿用 arena-paper.css 的浅色版） ──
+   body.home-v2 下 arena-paper.css 已把 --ttt-bg=#FFFFFF / --ttt-grid=rgba(124,58,237,.45) /
+   --ttt-x=#7C3AED / --ttt-o=#F59E0B 配好。本文件只补井字棋的对局边角变量。 */
+body.home-v2 {
+  /* 紫白棋盘的浅色 token 已在 arena-paper.css，本文件无需重写 */
+}
+
+/* Space Grotesk 只有 400/700，boardduel.css 里的 640/750 一律落 700 */
+body.home-v2 .bd-hero h1,
+body.home-v2 .go-end-verdict { font-weight: 700; }
+
+/* 卡片投影：白卡 + 软靛影（与 gomoku-paper 同款；五子棋 / 井字棋共用一套） */
+body.home-v2 .bd-board-wrap,
+body.home-v2 .go-mode,
+body.home-v2 .go-status-card,
+body.home-v2 .go-recorder,
+body.home-v2 .go-hintcard,
+body.home-v2 .go-chat,
+body.home-v2 .go-invite,
+body.home-v2 .go-clock,
+body.home-v2 .go-queue-inner,
+body.home-v2 .go-endbar {
+  box-shadow: 0 2px 4px rgba(30, 27, 57, .06), 0 4px 12px rgba(30, 27, 57, .07);
+}
+body.home-v2 .bd-board-wrap,
+body.home-v2 .go-mode { border-radius: 16px; }
+body.home-v2 .go-status-card,
+body.home-v2 .go-recorder,
+body.home-v2 .go-hintcard,
+body.home-v2 .go-chat,
+body.home-v2 .go-invite,
+body.home-v2 .go-clock,
+body.home-v2 .go-queue-inner,
+body.home-v2 .go-endbar { border-radius: 14px; }
+body.home-v2 .go-btn { border-radius: 12px; }
+body.home-v2 .go-btn:hover { border-color: #C7CBEE; background: #FFFFFF; }
+body.home-v2 .go-mode:hover { border-color: #C7CBEE; }
+body.home-v2 .go-mode.is-cur { border-color: var(--indigo-hover); background: #EEF0FB; }
+
+/* 主 CTA：琥珀实心 */
+body.home-v2 .go-btn.is-primary {
+  background: var(--gold);
+  color: #1E1B39;
+  border-color: transparent;
+  box-shadow: 0 8px 20px rgba(245, 158, 11, .28);
+}
+body.home-v2 .go-btn.is-primary:hover { background: #FBBF24; border-color: transparent; }
+
+/* 危险按钮 */
+body.home-v2 .go-btn.is-danger { color: #DC2626; }
+body.home-v2 .go-btn.is-danger:hover { border-color: #DC2626; background: #FFFFFF; }
+
+/* ── 玩家头像：默认隐藏（桌面侧栏棋钟不显示），仅移动端 arena 玩家条显示 ── */
+body.home-v2 .go-avatar { display: none; }
+
+/* 触屏确认气泡：白底靛墨 */
+body.home-v2 .go-hint-legend {
+  background: #FFFFFF;
+  border-color: var(--line);
+  color: var(--paper);
+  box-shadow: 0 6px 16px rgba(30, 27, 75, .12);
+}
+
+/* toast：白底靛墨 */
+body.home-v2 .bd-toast-item {
+  background: #FFFFFF;
+  color: var(--paper);
+  border-color: var(--line);
+  box-shadow: 0 8px 20px rgba(30, 27, 75, .14);
+}
+
+/* 棋子投影（井字棋 X / O 落在白盘上，比五子棋更需要立体感） */
+body.home-v2 .ttt-grid path,
+body.home-v2 .ttt-grid circle {
+  filter: drop-shadow(0 1px 1.4px rgba(30, 27, 75, .22));
+}
+
+/* 品牌强调点：Tic-Tac-Toe 后的圆点改琥珀 */
+body.home-v2 .bd-hero .bd-dot { color: var(--ember); }
+
+/* ════════════════════════════════════════════════════════════
+ * 难度选择浮层（#tt-levelcard，仅 AI 模式入口）
+ * 全屏遮罩 + 居中面板，桌面 / 移动端统一（与 gomoku-paper.css 同款）。
+ * ════════════════════════════════════════════════════════════ */
+body.home-v2 .go-levelcard {
+  position: fixed; inset: 0; z-index: 90;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; background: rgba(18, 19, 31, .45);
+}
+body.home-v2 .go-levelcard[hidden] { display: none; }
+body.home-v2 .go-level-panel {
+  width: 100%; max-width: 340px;
+  background: var(--ink2); border: 1px solid var(--line);
+  border-radius: 16px; padding: 16px;
+  box-shadow: 0 12px 32px rgba(30, 27, 57, .18);
+}
+body.home-v2 .go-level-opts { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+body.home-v2 .go-level-opt {
+  display: flex; align-items: baseline; gap: 8px;
+  padding: 12px 14px; border-radius: 12px;
+  background: var(--ink2); border: 1px solid var(--line); cursor: pointer;
+  font: inherit; color: inherit; text-align: left;
+}
+body.home-v2 .go-level-opt b { font-family: var(--disp); }
+body.home-v2 .go-level-opt span { color: var(--mute2); font-size: .78rem; }
+body.home-v2 .go-level-opt:hover { border-color: #C7CBEE; }
+body.home-v2 .go-level-opt.is-cur { border-color: var(--ember); background: var(--ember-soft); }
+body.home-v2 .go-level-opt.is-cur::after { content: "\2713"; margin-left: auto; color: var(--ember); font-weight: 700; }
+
+/* ════════════════════════════════════════════════════════════
+ * 图标按钮（回放入口 + 声音开关）
+ * 直接复用 gomoku-paper.css 的 .go-icon-btn / .go-sound 规则。
+ * ════════════════════════════════════════════════════════════ */
+body.home-v2 .go-btn.go-icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 8px 10px; line-height: 0;
+}
+body.home-v2 .go-btn.go-icon-btn svg {
+  width: 17px; height: 17px; display: block;
+  fill: none; stroke: currentColor; stroke-width: 1.9;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+body.home-v2 .go-sound svg.ico-off { display: none; }
+body.home-v2 .go-sound.is-off svg.ico-on { display: none; }
+body.home-v2 .go-sound.is-off svg.ico-off { display: block; }
+body.home-v2 .go-sound.is-off { color: var(--mute2); opacity: .75; }
+
+/* ════════════════════════════════════════════════════════════
+ * 棋谱回放条（#tt-replaybar）
+ * 复用 gomoku-paper.css 的 .go-replaybar / .go-rp-* 规则。
+ * ════════════════════════════════════════════════════════════ */
+body.home-v2 .go-replaybar {
+  margin-top: 10px; padding: 10px 12px;
+  background: var(--ink2); border: 1px solid var(--line); border-radius: 12px;
+}
+body.home-v2 .go-replaybar[hidden] { display: none; }
+body.home-v2 .go-rp-row { display: flex; align-items: center; gap: 6px; }
+body.home-v2 .go-rp-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; flex: 0 0 auto;
+  border: 1px solid var(--line); border-radius: 9px;
+  background: var(--ink3); color: var(--paper); cursor: pointer;
+  transition: .13s;
+}
+body.home-v2 .go-rp-btn svg {
+  width: 16px; height: 16px; display: block;
+  fill: none; stroke: currentColor; stroke-width: 2;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+body.home-v2 .go-rp-btn:hover { border-color: var(--mute2); }
+body.home-v2 .go-rp-btn.is-primary { border-color: var(--ember); color: var(--ember); }
+body.home-v2 .go-rp-btn.is-primary:hover { background: var(--ember-soft); }
+body.home-v2 .go-rp-btn .ico-pause { display: none; }
+body.home-v2 .go-rp-btn.is-playing .ico-play { display: none; }
+body.home-v2 .go-rp-btn.is-playing .ico-pause { display: block; }
+body.home-v2 .go-rp-pos {
+  margin-left: auto; font-family: var(--disp); font-size: .8rem;
+  font-weight: 700; color: var(--mute2); white-space: nowrap;
+}
+body.home-v2 .go-rp-exit { border-color: transparent; background: transparent; color: var(--mute2); }
+body.home-v2 .go-rp-range {
+  width: 100%; margin-top: 9px; accent-color: var(--ember);
+}
+
+/* 回放中隐藏常规操作键 */
+body.home-v2.bd-replay .go-controls { display: none; }
+
+/* ════════════════════════════════════════════════════════════
+ * 退出确认框（#tt-leavecard）
+ * ════════════════════════════════════════════════════════════ */
+body.home-v2 .go-leave-note {
+  margin: 10px 0 0; font-size: .84rem; line-height: 1.55; color: var(--mute2);
+}
+body.home-v2 .go-leave-acts { display: flex; gap: 8px; margin-top: 14px; }
+body.home-v2 .go-leave-acts .go-btn { flex: 1; min-height: 42px; }
+
+/* ════════════════════════════════════════════════════════════
+ * 移动端沉浸对局（body.bd-in-match + <900px）
+ * ------------------------------------------------------------
+ * 井字棋棋盘本身只有 3×3 = 9 格，棋盘相对更小（SVIEW=540 / 3 = 180px/格），
+ * 所以玩家条/底栏间距收一点，棋盘留更多空间。
+ * ════════════════════════════════════════════════════════════ */
+
+/* 聊天开关只属于移动端 arena（桌面侧栏常驻聊天卡） */
+body.home-v2 #tt-chat-toggle { display: none; }
+
+@media (max-width: 899.5px) {
+  body.home-v2 #tt-chat-toggle:not([hidden]) { display: block; }
+
+  /* 锁定视口：对局中整页不可滚动 */
+  body.home-v2.bd-in-match {
+    position: fixed; inset: 0; overflow: hidden;
+  }
+  body.home-v2.bd-in-match .topbar,
+  body.home-v2.bd-in-match .sidebar,
+  body.home-v2.bd-in-match .overlay,
+  body.home-v2.bd-in-match .bd-hero,
+  body.home-v2.bd-in-match .bd-how,
+  body.home-v2.bd-in-match .bd-foot { display: none; }
+
+  body.home-v2.bd-in-match .bd-main {
+    max-width: none; margin: 0; padding: 0;
+    height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
+  }
+
+  body.home-v2.bd-in-match #tt-match {
+    display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0;
+    padding: calc(6px + env(safe-area-inset-top)) 10px calc(8px + env(safe-area-inset-bottom));
+  }
+  body.home-v2.bd-in-match #tt-end[hidden] { display: none; }
+  body.home-v2.bd-in-match #tt-match[hidden] { display: flex; }
+
+  body.home-v2.bd-in-match .bd-play,
+  body.home-v2.bd-in-match .bd-side { display: contents; }
+
+  /* 顶：玩家条（VS / 我 · 头像 / 对手 · 头像） */
+  body.home-v2.bd-in-match .go-clocks {
+    display: flex; align-items: stretch; gap: 10px;
+    margin: 0; order: 0;
+  }
+  body.home-v2.bd-in-match .go-clocks::before {
+    content: "VS"; align-self: center; flex: 0 0 auto; order: 1;
+    font-family: var(--disp); font-weight: 700; font-size: .95rem;
+    color: var(--mute2);
+  }
+  body.home-v2.bd-in-match .go-clock {
+    flex: 1; min-width: 0;
+    display: grid; grid-template-columns: 38px 1fr; grid-template-rows: auto auto;
+    align-items: center; column-gap: 9px; row-gap: 1px;
+    padding: 8px 11px; border-radius: 14px;
+  }
+  body.home-v2.bd-in-match #go-clock-me { order: 0; }
+  body.home-v2.bd-in-match #go-clock-opp { order: 2; }
+  body.home-v2.bd-in-match .go-avatar {
+    display: block; grid-row: 1 / 3;
+    width: 38px; height: 38px;
+    filter: drop-shadow(0 1px 2px rgba(30, 27, 57, .25));
+  }
+  body.home-v2.bd-in-match .go-avatar svg { width: 100%; height: 100%; display: block; }
+  body.home-v2.bd-in-match .go-clock-who { grid-column: 2; }
+  body.home-v2.bd-in-match .go-clock-who {
+    font-size: .6rem; letter-spacing: .04em; max-width: 100%;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  body.home-v2.bd-in-match .go-clock-time { font-size: 1.18rem; }
+
+  /* 中：棋盘信箱容器 */
+  body.home-v2.bd-in-match .bd-board-wrap {
+    order: 1; flex: 1; min-height: 0;
+    width: 100%; max-width: none; aspect-ratio: auto;
+    background: transparent; border: none; box-shadow: none; border-radius: 0;
+    padding: 0;
+  }
+  body.home-v2.bd-in-match .bd-board-wrap svg {
+    width: auto; height: auto; max-width: 100%; max-height: 100%; margin: auto;
+  }
+
+  /* 底：操作行 */
+  body.home-v2.bd-in-match .go-controls { order: 3; display: flex; gap: 8px; flex-wrap: wrap; }
+  body.home-v2.bd-in-match .go-controls .go-btn {
+    flex: 1 1 52px; min-width: 0; min-height: 44px; padding: 10px 4px;
+    font-size: .78rem; letter-spacing: .04em; text-align: center;
+  }
+  body.home-v2.bd-in-match .go-controls .go-icon-btn { flex: 0 0 44px; padding: 8px 0; }
+  body.home-v2.bd-in-match .go-controls .go-btn[hidden] { display: none; }
+  body.home-v2.bd-in-match #go-back-lobby {
+    order: 4; margin: 0; min-height: 38px; padding: 7px 10px;
+    background: transparent; border-color: transparent;
+    color: var(--mute2); font-size: .78rem;
+  }
+
+  /* 状态卡 / 记谱器 / 邀请条：arena 中让位 */
+  body.home-v2.bd-in-match .go-status-card,
+  body.home-v2.bd-in-match .go-recorder,
+  body.home-v2.bd-in-match .go-invite { display: none; }
+
+  /* 回放条：占底栏位置 */
+  body.home-v2.bd-in-match .go-replaybar { order: 4; margin: 0; }
+  body.home-v2.bd-in-match .go-replaybar[hidden] { display: none; }
+  body.home-v2.bd-in-match .go-rp-btn { width: 42px; height: 42px; }
+  body.home-v2.bd-in-match .go-rp-range { margin-top: 7px; }
+  body.home-v2.bd-in-match.bd-replay #go-back-lobby { order: 5; }
+
+  /* 结算：居中浮层 */
+  body.home-v2.bd-in-match #tt-end {
+    position: fixed; inset: 0; z-index: 80;
+    display: flex; align-items: center; justify-content: center;
+    padding: 18px; background: rgba(18, 19, 31, .45);
+    backdrop-filter: blur(2px);
+  }
+  body.home-v2.bd-in-match #tt-end .go-endbar { width: 100%; max-width: 420px; margin: 0; }
+}
+
+/* ════════════════════════════════════════════════════════════
+ * 暗色模式
+ * ════════════════════════════════════════════════════════════ */
+html[data-theme="dark"] body.home-v2 .bd-board-wrap,
+html[data-theme="dark"] body.home-v2 .go-mode,
+html[data-theme="dark"] body.home-v2 .go-status-card,
+html[data-theme="dark"] body.home-v2 .go-recorder,
+html[data-theme="dark"] body.home-v2 .go-hintcard,
+html[data-theme="dark"] body.home-v2 .go-chat,
+html[data-theme="dark"] body.home-v2 .go-invite,
+html[data-theme="dark"] body.home-v2 .go-clock,
+html[data-theme="dark"] body.home-v2 .go-queue-inner,
+html[data-theme="dark"] body.home-v2 .go-endbar {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .35), 0 4px 12px rgba(0, 0, 0, .35);
+}
+html[data-theme="dark"] body.home-v2 .bd-hero .bd-dot { color: #FBBF24; }
+html[data-theme="dark"] body.home-v2 .go-hint-legend { box-shadow: 0 6px 16px rgba(0, 0, 0, .45); }
+html[data-theme="dark"] body.home-v2 .bd-toast-item { box-shadow: 0 8px 20px rgba(0, 0, 0, .5); }
+html[data-theme="dark"] body.home-v2 .ttt-grid path,
+html[data-theme="dark"] body.home-v2 .ttt-grid circle {
+  filter: drop-shadow(0 1px 1.4px rgba(0, 0, 0, .55));
+}
