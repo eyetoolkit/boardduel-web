@@ -23,7 +23,28 @@ import {
 import { evaluate, evaluateMove, quickScore, DEFAULT_WEIGHTS, type EvalWeights } from './evaluate.ts';
 import { searchBest } from './search.ts';
 
-export type Difficulty = 'easy' | 'medium' | 'hard';
+/**
+ * 难度档位。
+ *
+ * 🆕 2026-10-04：面向玩家的档位改成三档 **medium / hard / katago**，
+ * 去掉了原来的 easy（随机）——它对任何有基本判断力的玩家都没有挑战性。
+ * 第三档 `katago` 是 b6c96 神经网络，**不走这个同步入口**：
+ * 它要下载 TF.js + 3.7 MB 权重、前向是异步的，见 katago.ts。
+ *
+ * 注意 `bestMoveEasy` 仍导出，供测试与 legacy 路径使用（tests/go-ai*.test.ts
+ * 大量引用），只是不再是玩家可选的档位。
+ */
+export type Difficulty = 'easy' | 'medium' | 'hard' | 'katago';
+
+/** 玩家在 UI 上能选的三档（easy 已从 UI 移除）。 */
+export type UiDifficulty = 'medium' | 'hard' | 'katago';
+
+export const UI_DIFFICULTIES: readonly UiDifficulty[] = ['medium', 'hard', 'katago'];
+
+/** 该档位是否走神经网络（异步）路径。 */
+export function isNeural(d: Difficulty): boolean {
+  return d === 'katago';
+}
 
 export interface AiOptions {
   rng?: () => number;
@@ -89,16 +110,33 @@ export function bestMoveHard(state: GoState, opts: AiOptions = {}): number {
   return res.move;
 }
 
-/** 统一入口 */
-export function bestMove(state: GoState, difficulty: Difficulty, opts: AiOptions = {}): number {
+/**
+ * 统一入口（仅规则档位）。
+ *
+ * 🔴 `katago` 不在这里处理 —— 它是异步神经网络路径，必须由调用方
+ * （index.ts）await katago.ts 的 bestMoveKatago()。这里若被传入 katago
+ * 会退回 medium，这是**静默降级**，所以显式抛错。
+ */
+export function bestMove(state: GoState, difficulty: Exclude<Difficulty, 'katago'>, opts: AiOptions = {}): number {
   if (difficulty === 'easy') return bestMoveEasy(state, opts.rng ?? Math.random);
   if (difficulty === 'hard') return bestMoveHard(state, opts);
   return bestMoveMedium(state, opts.rng ?? Math.random, opts.weights ?? DEFAULT_WEIGHTS);
 }
 
-/** 兼容旧调用：bestMove(state, level, rng) */
+/**
+ * 宽口径入口：任何 Difficulty 都能传，katago 会**明确抛错**而不是静默降级。
+ * 运行时检查而非仅靠类型，是为了让 JS 调用方和测试也能拿到清晰报错。
+ */
+export function bestMoveAny(state: GoState, difficulty: Difficulty, opts: AiOptions = {}): number {
+  if (difficulty === 'katago') {
+    throw new Error('katago is an async neural tier — call bestMoveKatago() from katago.ts instead');
+  }
+  return bestMove(state, difficulty, opts);
+}
+
+/** 兼容旧调用：bestMove(state, level, rng)。神经网络档会明确抛错（应走 katago.ts）。 */
 export function bestMoveLegacy(state: GoState, difficulty: Difficulty, rng: () => number = Math.random): number {
-  return bestMove(state, difficulty, { rng });
+  return bestMoveAny(state, difficulty, { rng });
 }
 
 /** 终局评估（供对局结束 / 测试判定胜负）：中国规则数目，从 me 视角返回带符号分差 */
@@ -128,7 +166,7 @@ export function playOut(
   const cap = maxSteps ?? s.size * s.size * 2.4;
   let steps = 0;
   while (s.passes < 2 && steps < cap) {
-    const m = bestMove(s, difficulty, { rng, budgetMs: opts.budgetMs, weights: opts.weights });
+    const m = bestMoveAny(s, difficulty, { rng, budgetMs: opts.budgetMs, weights: opts.weights });
     if (m < 0) { s = pass(s); continue; }
     const r = computePlay(s, m, superko ? { superko: true, history } : {});
     if (!r.ok || !r.state) s = pass(s);

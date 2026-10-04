@@ -19,7 +19,8 @@ import {
   type GoState, type Player, type DeadSet,
 } from './engine';
 import { renderGoBoardSVG, diffCaptures } from './render';
-import { bestMove, type Difficulty } from './ai';
+import { bestMoveAny, isNeural, type Difficulty } from './ai';
+import { bestMoveKatago, warmupKatago, katagoStatus } from './katago';
 import { initialClock, tickClock, afterMoveClock, formatClock, type ClockState } from './clock';
 
 setupNav('go');
@@ -32,7 +33,22 @@ const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 const MODE_PAGE = '/games/go/lobby/';
 // 思考节奏：hard 是 2-ply 搜索，比 medium 慢，故给更长思考时间（避免"秒落"显得假）
 // 思考节奏：easy 纯随机（几乎瞬时），medium/hard 走 α-β 搜索
-const AI_THINK_MS: Record<Difficulty, number> = { easy: 420, medium: 700, hard: 900 };
+const AI_THINK_MS: Record<Difficulty, number> = { easy: 420, medium: 700, hard: 900, katago: 260 };
+
+/**
+ * 🆕 W6：hard/medium 的**搜索时间预算**（ms）。
+ *
+ * 🔴 关键约束：搜索是**同步**跑的（bestMove 在主线程），预算 = 真实 UI 卡顿时间。
+ * 必须与 AI_THINK_MS 协调：动画播完后再卡 budget ms。
+ * 取 350ms 是权衡结果：9 路 depth 3~4 能在预算内跑完，桌面不卡手；
+ * 且搜索在 depth 2 之后收益趋平（实测 depth2/3/4 选点几乎一致），
+ * 再加预算只烧时间不涨棋力。移动端若仍卡，可下调或改走 Web Worker。
+ *
+ * katago 档**不用这个预算**（走神经网络，思考时间由前向耗时决定）：
+ * 实测真机 WebGL 15.6 ms/手、CPU 回退 1022 ms/手，故给 260ms 的"起手延迟"，
+ * 之后 await 前向即可。
+ */
+const AI_BUDGET_MS: Record<Difficulty, number> = { easy: 0, medium: 160, hard: 350, katago: 0 };
 
 /**
  * 🆕 W6：hard/medium 的**搜索时间预算**（ms）。
@@ -43,7 +59,6 @@ const AI_THINK_MS: Record<Difficulty, number> = { easy: 420, medium: 700, hard: 
  * 且搜索在 depth 2 之后收益趋平（实测 depth2/3/4 选点几乎一致），
  * 再加预算只烧时间不涨棋力。移动端若仍卡，可下调或改走 Web Worker。
  */
-const AI_BUDGET_MS: Record<Difficulty, number> = { easy: 0, medium: 160, hard: 350 };
 const REPLAY_MS = 900;
 const END_DELAY_MS = 1500;
 const HUMAN: Player = 1;                              // 人类执黑先手
@@ -392,6 +407,13 @@ function afterMove(): void {
   if (state.mode === 'ai' && !state.over && !state.counting && state.go.toPlay === AI) scheduleAi();
 }
 
+/**
+ * AI 回合。
+ *
+ * 🆕 第三档 katago 是**异步**神经网络路径：要先加载 TF.js + 3.7 MB 权重，
+ * 前向在 WebGL 上是异步的（await）。规则档（medium/hard）仍是同步调用。
+ * 所以拆成两条路径，共用后面的落子/渲染逻辑。
+ */
 function scheduleAi(): void {
   cancelAiMove();
   state.aiThinking = true;
@@ -412,31 +434,77 @@ function scheduleAi(): void {
       afterMove();
       return;
     }
-    const m = bestMove(state.go, state.level, { budgetMs: AI_BUDGET_MS[state.level] });
-    if (m < 0) {
-      state.history.push(state.go);
-      state.go = pass(state.go);
-      state.moves.push(-1);
-      state.clock = afterMoveClock(state.clock, AI);
-      renderBoard();
-    } else {
-      const before = state.go;
-      const r = play(before, m);
-      if (r.ok && r.state) {
-        state.history.push(before);
-        const captured = diffCaptures(before.board, r.state.board, HUMAN);
-        state.go = r.state;
-        state.moves.push(m);
-        state.clock = afterMoveClock(state.clock, AI);
-        playSfx('place');
-        const token = ++moveToken;
-        renderBoard({ placed: m, captured, capturedColor: HUMAN });
-        if (captured.length) window.setTimeout(() => { if (token === moveToken) renderBoard(); }, 300);
-      }
+    if (isNeural(state.level)) {
+      // 异步：等待模型加载 + 前向
+      void runKatagoTurn();
+      return;
     }
-    afterMove();
+    // 到这里必定是规则档（katago 已在上面 return），但 TS 仍看到全联合类型，
+    // 故用 bestMoveAny —— 它对 katago 会明确抛错而非静默降级。
+    const m = bestMoveAny(state.go, state.level, { budgetMs: AI_BUDGET_MS[state.level] });
+    applyAiMove(m);
   }, delay);
 }
+
+/** 把算出的落点落到盘上并推进 UI（规则/神经网络两条路径共用）。 */
+function applyAiMove(m: number): void {
+  if (m < 0) {
+    state.history.push(state.go);
+    state.go = pass(state.go);
+    state.moves.push(-1);
+    state.clock = afterMoveClock(state.clock, AI);
+    renderBoard();
+  } else {
+    const before = state.go;
+    const r = play(before, m);
+    if (r.ok && r.state) {
+      state.history.push(before);
+      const captured = diffCaptures(before.board, r.state.board, HUMAN);
+      state.go = r.state;
+      state.moves.push(m);
+      state.clock = afterMoveClock(state.clock, AI);
+      playSfx('place');
+      const token = ++moveToken;
+      renderBoard({ placed: m, captured, capturedColor: HUMAN });
+      if (captured.length) window.setTimeout(() => { if (token === moveToken) renderBoard(); }, 300);
+    }
+  }
+  afterMove();
+}
+
+/** KataGo 不可用时的用户提示（不打断对局，只告知已降级）。 */
+function aiFallbackNote(err: string): void {
+  toast(t('bg.bg_go_katago_fallback', 'KataGo could not load, playing at Master level instead') + ` (${err})`);
+}
+
+/** 第三档：KataGo 神经网络回合（异步）。 */
+async function runKatagoTurn(): Promise<void> {
+  state.aiThinking = true;
+  updateInfo();
+  const before = state.go;
+  const movesSnapshot = state.moves.slice();
+  try {
+    const m = await bestMoveKatago(before, state.size, movesSnapshot);
+    // 等待期间玩家可能已经退出/悔棋/重开 —— 丢弃这一手
+    if (state.over || state.screen !== 'match' || state.go !== before) {
+      state.aiThinking = false;
+      updateInfo();
+      return;
+    }
+    state.aiThinking = false;
+    applyAiMove(m);
+  } catch (e) {
+    state.aiThinking = false;
+    updateInfo();
+    // 加载失败不该让玩家卡死：降级到 hard 规则档走一手，并说明原因
+    const msg = katagoStatus().error ?? String(e);
+    console.warn('[go] KataGo unavailable, falling back to hard:', msg);
+    aiFallbackNote(msg);
+    const m = bestMoveAny(before, 'hard', { budgetMs: AI_BUDGET_MS.hard });
+    if (state.go === before && !state.over) applyAiMove(m);
+  }
+}
+
 function cancelAiMove(): void {
   if (aiTimer !== null) { window.clearTimeout(aiTimer); aiTimer = null; }
   state.aiThinking = false;
@@ -724,6 +792,11 @@ levelCard.addEventListener('click', (ev) => {
   if (!b) return;
   state.level = b.dataset.level as Difficulty;
   levelCard.hidden = true;
+  // 神经网络档：先在后台把 TF.js + 权重拉起来，5 MB 下载不占用玩家的思考时间。
+  if (isNeural(state.level)) {
+    toast(t('bg.bg_go_katago_loading', 'Loading the KataGo model…'));
+    void warmupKatago(state.size);
+  }
   newGame();
 });
 $<HTMLButtonElement>('go-level-close').addEventListener('click', () => { levelCard.hidden = true; });
