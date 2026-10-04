@@ -2369,7 +2369,7 @@
     "bg_go_rules_title": "中国规则",
     "bg_go_rules_note": "子数加数目，无需清理死子。白棋贴 7.5 目，因此不会因贴目下和棋。",
     "bg_go_clock_title": "中日读秒棋钟",
-    "bg_go_clock_note": "主时间 30 秒，之后进入 3 段 × 1 分钟读秒。每落一手扣一段，用尽则判超时负。",
+    "bg_go_clock_note": "主时间 10 分钟，之后进入 5 段 × 1 分钟读秒。每落一手扣一段，用尽则判超时负。",
     "bg_go_how_h2": "玩法<small>黑先 &rarr; 围住对方 &rarr; 双方停一手即终局</small>",
     "bg_go_how_h2_small": "黑先 → 围住对方 → 双方停一手即终局",
     "bg_go_step1_t": "落一子",

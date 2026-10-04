@@ -2398,7 +2398,7 @@
     "bg_go_rules_title": "Reglas chinas",
     "bg_go_rules_note": "Cuenta territory + stones, sin retirar piedras muertas. La blanca recibe 7,5 komi, así que nunca hay empate por komi.",
     "bg_go_clock_title": "Reloj de byoyomi",
-    "bg_go_clock_note": "30s de tiempo principal, luego tres periodos de 1 minuto. Gasta un periodo por jugada; si se acaba, pierdes por tiempo.",
+    "bg_go_clock_note": "10 min de tiempo principal, luego cinco periodos de 1 minuto. Gasta un periodo por jugada; si se acaba, pierdes por tiempo.",
     "bg_go_how_h2": "Cómo se juega<small>Negro primero &rarr; rodea &rarr; dos pases terminan.</small>",
     "bg_go_how_h2_small": "Negro primero → rodea → dos pases terminan.",
     "bg_go_step1_t": "Coloca una piedra",

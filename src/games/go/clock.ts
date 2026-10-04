@@ -2,7 +2,7 @@
  * 围棋 · 中日式棋钟（byoyomi clock）—— 纯逻辑，无 DOM、无计时器（测试友好）
  *
  * 规则（中国/日本「读秒」制）：
- *   1. 每方有「主时间」mainSec（如 30s）+ 「读秒」periods 段（如 3 段 × periodSec=60s）。
+ *   1. 每方有「主时间」mainSec（如 600s）+ 「读秒」periods 段（如 5 段 × periodSec=60s）。
  *   2. 主时间走完 → 进入读秒：每落一手扣 1 段（从当前段的时间里扣）。
  *   3. 读秒时间用尽且无剩余段 → 该方超时判负。
  *   4. 读秒模式下若在段内提前落子，剩余时间**不累积**到下一段（标准读秒规则），
@@ -43,7 +43,21 @@ export interface ClockState {
   timeout: Player | null;
 }
 
-export const DEFAULT_CLOCK: ClockConfig = { mainSec: 30, periods: 3, periodSec: 60 };
+/**
+ * 🔴 2026-10-04 修正（原值 30s + 3×60s —— 配置量级错了，实测必超时）
+ *
+ * 原配置下按正常节奏推演（实测脚本跑过 clock.ts 真实逻辑）：
+ *   人类 8s/手 →主时间只够 3 手 + 读秒 3 手 → **第 13 手被判超时**
+ *   人类 12s/手 → 主时间只够 2 手 + 读秒 3 手 → **第 11 手被判超时**
+ *   人类 20s/手 → 主时间只够 1 手 + 读秒 3 手 → **第  9 手被判超时**
+ * 而 19 路一局要 100~200 手 ⇒ 玩家「正常下」也必定在第 9~13 手看到超时提示。
+ *根因是把棋钟当成了「反应速度测试」，而不是「一整局的总预算」。
+ *
+ * 现在的量级按「一局 19 路（~150 手）+ 人类平均 8~12s/手」定：
+ *   主时间 10 min = 600s，覆盖约 50~75 手（读秒段另有 5 手余量）
+ *   读秒 5 段 × 60s，每段 1 分钟是中日规则惯例（读秒制的「一气」长度）
+ */
+export const DEFAULT_CLOCK: ClockConfig = { mainSec: 600, periods: 5, periodSec: 60 };
 
 /** 某方是否还在走（未超时） */
 export function sideActive(c: SideClock): boolean {

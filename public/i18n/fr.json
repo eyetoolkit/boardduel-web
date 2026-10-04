@@ -2397,7 +2397,7 @@
     "bg_go_rules_title": "Règles chinoises",
     "bg_go_rules_note": "Territoire + pierres, sans retirer les pierres mortes. Les blancs reçoivent 7,5 komi : jamais de nul par komi.",
     "bg_go_clock_title": "Horloge byoyomi",
-    "bg_go_clock_note": "30s de temps principal, puis trois périodes d'une minute. Une période par coup ; à court, vous perdez au temps.",
+    "bg_go_clock_note": "10 min de temps principal, puis cinq périodes d'une minute. Une période par coup ; à court, vous perdez au temps.",
     "bg_go_how_h2": "Comment jouer<small>Noir d'abord &rarr; encercler &rarr; deux pass finissent.</small>",
     "bg_go_how_h2_small": "Noir d'abord → encercler → deux pass finissent.",
     "bg_go_step1_t": "Posez une pierre",

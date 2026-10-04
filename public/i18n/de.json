@@ -2398,7 +2398,7 @@
     "bg_go_rules_title": "Chinesische Regeln",
     "bg_go_rules_note": "Territorium + Steine, ohne Steinentfernung. Weiß bekommt 7,5 Komi – daher nie Unentschieden durch Komi.",
     "bg_go_clock_title": "Byoyomi-Uhr",
-    "bg_go_clock_note": "30s Hauptzeit, dann drei 1-Minuten-Byoyomi-Perioden. Pro Zug eine Periode; geht sie aus, verlieren Sie nach Zeit.",
+    "bg_go_clock_note": "10 Min. Hauptzeit, dann fünf 1-Minuten-Byoyomi-Perioden. Pro Zug eine Periode; geht sie aus, verlieren Sie nach Zeit.",
     "bg_go_how_h2": "So wird gespielt<small>Schwarz zuerst &rarr; umringen &rarr; zwei Pass beenden.</small>",
     "bg_go_how_h2_small": "Schwarz zuerst → umringen → zwei Pass beenden.",
     "bg_go_step1_t": "Stein setzen",

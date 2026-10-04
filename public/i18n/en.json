@@ -2321,7 +2321,7 @@
     "bg_go_rules_title": "Chinese rules",
     "bg_go_rules_note": "Territory + stones count, no dead-stone removal needed. White gets 7.5 komi, so the game is never a draw by komi.",
     "bg_go_clock_title": "Byoyomi clock",
-    "bg_go_clock_note": "30s main time, then three 1-minute byoyomi periods. Spend a period per move; run out and you lose on time.",
+    "bg_go_clock_note": "10 min main time, then five 1-minute byoyomi periods. Spend a period per move; run out and you lose on time.",
     "bg_go_how_h2": "How to play<small>Black first &rarr; surround &rarr; two passes end the game.</small>",
     "bg_go_how_h2_small": "Black first → surround → two passes end the game.",
     "bg_go_step1_t": "Place a stone",

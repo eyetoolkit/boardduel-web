@@ -344,7 +344,21 @@ function renderClocks(): void {
 
 /* ══════════════════════════════════════════════════════════════
    棋钟驱动（每 250ms 推进到 Play 方）
+
+   🔴 2026-10-04：加冻结机制。两个「假超时」来源都会让人以为计时器坏了：
+     ① KataGo 首次加载（TF.js + 3.7MB 权重，弱网好几秒）。这段时间**谁都没在思考**，
+        却一直在扣 AI 的表 → AI 自己先超时。加载完成前整个表停走。
+     ② 标签页切后台。浏览器会把 setInterval 节流到 ≥1s（后台甚至 1min），
+        玩家回来那一帧 dt = 60s+ → 瞬间烧掉一分钟 → 假超时。
+        切走时冻结，回来时重新取基准点，dt 不累积。
    ══════════════════════════════════════════════════════════════ */
+function clockFrozen(): boolean {
+  if (document.hidden) return true;
+  // 引擎加载中：AI 的表不走（人类此刻也没法落子，公平）
+  if (state.mode === 'ai' && katagoStatus().loading) return true;
+  return false;
+}
+
 function startClockLoop(): void {
   stopClockLoop();
   clockLast = performance.now();
@@ -352,8 +366,8 @@ function startClockLoop(): void {
     if (state.screen !== 'match' || state.over || state.reviewAt !== null) return;
     const now = performance.now();
     const dt = now - clockLast;
-    clockLast = now;
-    if (dt <= 0) return;
+    clockLast = now;                       // 🔴 无论走不走表都刷新基准（冻结时 dt 被丢弃）
+    if (dt <= 0 || clockFrozen()) return;
     state.clock = { ...state.clock, toPlay: state.go.toPlay };
     const next = tickClock(state.clock, dt);
     state.clock = next;
@@ -861,7 +875,12 @@ soundBtn.addEventListener('click', () => {
 });
 ['pointerdown', 'touchstart', 'mousedown'].forEach((ev) =>
   window.addEventListener(ev, unlockSfx, { passive: true }));
-document.addEventListener('visibilitychange', () => { if (!document.hidden) unlockSfx(); });
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) unlockSfx();
+  // 🔴 回前台：重取棋钟基准点。否则冻结期间累积的 dt 会在下一帧一次性灌进表里
+  // → 玩家切个回来就被判超时（实测 setInterval 后台被节流到 1s+，回来就是 60s+ 的 dt）。
+  clockLast = performance.now();
+});
 document.addEventListener('keydown', (ev) => {
   if (ev.key !== 'Escape') return;
   levelCard.hidden = true;

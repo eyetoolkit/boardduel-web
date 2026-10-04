@@ -120,8 +120,36 @@ test('clock: formatClock 主时间 mm:ss / 读秒带段数', () => {
 
 /* ── 默认配置 ── */
 
-test('clock: 默认配置 = 30s + 3×60s 读秒', () => {
-  ok(DEFAULT_CLOCK.mainSec === 30, '主 30s');
-  ok(DEFAULT_CLOCK.periods === 3, '3 段');
+test('clock: 默认配置 = 10min 主时间 + 5×60s 读秒', () => {
+  // 🔴 2026-10-04 修正：原 30s + 3×60s。实测正常节奏下第 9~13 手就必超时
+  // （人类 8s/手 → 第 13 手；12s/手 → 第 11 手；20s/手 → 第 9 手），
+  // 而 19 路一局要 100~200 手 ⇒ 玩家「正常下」也一定看到超时提示。
+  ok(DEFAULT_CLOCK.mainSec === 600, '主 600s');
+  ok(DEFAULT_CLOCK.periods === 5, '5 段');
   ok(DEFAULT_CLOCK.periodSec === 60, '每段 60s');
+});
+
+/* ── 防回归：一局真实长度的对局不该在中途超时 ── */
+
+test('clock: 正常节奏走完 150 手不超时（回归：棋钟量级）', () => {
+  // 人类 8s/手、AI 5s/手（实测 KataGo 真机约 5s/手），连走 150 手 = 19 路一局的长度
+  const longGame: ClockConfig = DEFAULT_CLOCK;
+  let s = initialClock(longGame);
+  const dt = 250;
+  const step = (ms: number, mover: Player) => {
+    let spent = 0;
+    while (spent < ms) {
+      const d = Math.min(dt, ms - spent);
+      s = tickClock(s, d, longGame);
+      spent += d;
+      if (s.timeout !== null) return false;
+    }
+    s = afterMoveClock(s, mover, longGame);
+    return true;
+  };
+  for (let i = 0; i < 150; i++) {
+    const mover: Player = (i % 2 === 0) ? 1 : 2;
+    s = { ...s, toPlay: mover };
+    ok(step(mover === 1 ? 8_000 : 5_000, mover), `第 ${i + 1} 手不该超时（实际在第 ${i + 1} 手耗尽）`);
+  }
 });

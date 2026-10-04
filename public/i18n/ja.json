@@ -2420,7 +2420,7 @@
     "bg_go_rules_title": "中国ルール",
     "bg_go_rules_note": "石の計算＋領域。死石の除去は不要。白に7.5目のコミ、コミでの引き分けはありません。",
     "bg_go_clock_title": "読秒時計",
-    "bg_go_clock_note": "主時間30秒、その後3回×1分の読秒。1手で1回消費し、切れば時間切れ負け。",
+    "bg_go_clock_note": "主時間10分、その後5回×1分の読秒。1手で1回消費し、切れば時間切れ負け。",
     "bg_go_how_h2": "遊び方<small>黒が先 &rarr; 囲む &rarr; 双方パスで終局</small>",
     "bg_go_how_h2_small": "黒が先 → 囲む → 双方パスで終局",
     "bg_go_step1_t": "石を置く",
