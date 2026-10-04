@@ -40,6 +40,8 @@
     "othello": "◐ 黑白棋",
     "chess": "♞ 国际象棋",
     "go": "⚫ 围棋",
+    "xiangqi": "🐴 中国象棋",
+
     "checkers": "♚ 西洋跳棋",
     "g_title": "⚔️ Board<span>Duel</span>",
     "privacy": "隐私",

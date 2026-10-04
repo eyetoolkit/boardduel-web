@@ -42,6 +42,8 @@
     "othello": "◐ Othello",
     "chess": "♞ Ajedrez",
     "go": "⚫ Go",
+    "xiangqi": "🐴 Xiangqi",
+
     "checkers": "♚ Damas",
     "g_title": "⚔️ Board<span>Duelo</span>",
     "privacy": "Privacidad",
