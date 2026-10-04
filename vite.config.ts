@@ -30,10 +30,26 @@ const here = dirname(fileURLToPath(import.meta.url));
  * 2026-09-28：tictactoe / connect4 / reversi / chess（含各自 lobby 与玩法页）已全量上线，
  * 从 beta-only 移入下方常驻 input。此列表保留为空，供后续未上线的新棋盘使用。
  *
- * 2026-10-03：围棋 /games/go/（W1 引擎 + W2 AI/棋盘 + W3 arena/棋钟/i18n 完工）转正 ——
- * 已加入下方常驻 input（不再走 BETA_ONLY），故此列表再次置空。
+ * 2026-10-04：围棋退回 beta-only。围棋 + KataGo 神经网络第三档已上线并通过线上 E2E
+ * （见 scripts/check-katago-live.mjs），但**尚未在真实玩家场景下打磨**——按分支策略
+ * 「完善后才正式上线主站」，先把围棋放回 beta 继续打磨。
+ *
+ * 🔴 移回 beta 时必须同时改两处，只改一处会造成「生产有页面但没入口」的死链：
+ *   ① 这里的 BETA_ONLY_INPUTS（决定页面是否产出）
+ *   ② index.html 里围棋卡片的 data-stage="live" → "beta"（决定导航/首页是否可见）
  */
-const BETA_ONLY_INPUTS: Record<string, string> = {};
+const BETA_ONLY_INPUTS: Record<string, string> = {
+  // 围棋游戏页 + lobby
+  go: resolve(here, 'games/go/index.html'),
+  goLobby: resolve(here, 'games/go/lobby/index.html'),
+  // 围棋教程 6 页（规则 / 提子 / 劫与自杀 / 让子 / 数目终局）
+  howtoGo: resolve(here, 'how-to-play/go/index.html'),
+  howtoGoRules: resolve(here, 'how-to-play/go/rules/index.html'),
+  howtoGoCapture: resolve(here, 'how-to-play/go/capture/index.html'),
+  howtoGoKo: resolve(here, 'how-to-play/go/ko/index.html'),
+  howtoGoHandicap: resolve(here, 'how-to-play/go/handicap/index.html'),
+  howtoGoScoring: resolve(here, 'how-to-play/go/scoring/index.html'),
+};
 
 const META_PROD = {
   TITLE: 'BoardDuel — play five classic boards online, free',
@@ -100,16 +116,6 @@ export default defineConfig({
         connect4Lobby: resolve(here, 'games/connect4/lobby/index.html'),
         reversiLobby: resolve(here, 'games/reversi/lobby/index.html'),
         chessLobby: resolve(here, 'games/chess/lobby/index.html'),
-        // 围棋（2026-10-03 W3 转正：arena 三屏 + 中日棋钟 + 6 语言 i18n 完工）
-        go: resolve(here, 'games/go/index.html'),
-        goLobby: resolve(here, 'games/go/lobby/index.html'),
-        // 围棋教程 5 页（2026-10-03 W4：规则/提子/劫与自杀/让子/数目终局）
-        howtoGo: resolve(here, 'how-to-play/go/index.html'),
-        howtoGoRules: resolve(here, 'how-to-play/go/rules/index.html'),
-        howtoGoCapture: resolve(here, 'how-to-play/go/capture/index.html'),
-        howtoGoKo: resolve(here, 'how-to-play/go/ko/index.html'),
-        howtoGoHandicap: resolve(here, 'how-to-play/go/handicap/index.html'),
-        howtoGoScoring: resolve(here, 'how-to-play/go/scoring/index.html'),
         // 4 篇玩法页
         howtoTictactoe: resolve(here, 'how-to-play/tictactoe/index.html'),
         howtoConnect4: resolve(here, 'how-to-play/connect4/index.html'),
