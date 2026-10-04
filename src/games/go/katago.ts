@@ -225,20 +225,31 @@ function bootTf(progress?: Progress): Promise<Tf> {
  *
  * 不能靠 `go.board[m]` 反推 —— 那是被子占据后的颜色，且让子局黑棋先摆子、白先走，
  * 黑白并非从黑开始交替。用「当前 toPlay + 剩余手数」倒推才对：
- * n 步历史之后的下一个走子方就是 go.toPlay，于是第 i 手的颜色 = toPlay 往前推 (n-1-i) 次。
+ * moves 是按时间顺序的，go.toPlay 是「下一手该走谁」。
+ * 第 i 手与 go.toPlay 之间共隔了 (n - i) 次换手（i→i+1 是 1 次，…，i→n 是 n-i 次），
+ * 所以 mover(i) = flip^(n-i)(go.toPlay)。
+ *
+ * 🔴 2026-10-04 修正 P0（深度审计实测确认 100% 错误）：
+ *   原实现写 `n - 1 - i` —— 少循环一次 ⇒ 每一手颜色都取反。
+ *   后果是 kg-features.mjs:190 第 0 手 player 不匹配直接 break ⇒ 历史 5 个平面全空。
+ *   自洽验证（编码器+前向）通过是因为官方二进制也是基于同一份 bug moves 算的，
+ *   但「整局喂错颜色」让神经网络实际在另一个棋谱上推理。
  */
 function buildHistory(go: GoState, moves: number[]): { player: Player; pos: number }[] {
   const played = moves.filter((m) => m >= 0);
   const n = played.length;
   const hist: { player: Player; pos: number }[] = [];
   for (let i = 0; i < n; i++) {
-    // 第 i 手与下一手（i = n-1 的下一手，即 go.toPlay）之间隔了 (n-1-i) 次换手
     let c: Player = go.toPlay;
-    for (let k = 0; k < n - 1 - i; k++) c = (c === 1 ? 2 : 1);
+    for (let k = 0; k < n - i; k++) c = (c === 1 ? 2 : 1);
     hist.push({ player: c, pos: played[i] });
   }
   return hist;
 }
+
+// 仅供测试导出：buildHistory 是模块内部辅助，但 fix-2026-10-04 后是 P0 级 bug，
+// 留个出口给 go-katago-history.test.ts 验证。
+(globalThis as any).__buildHistory = buildHistory;
 
 /** 单次前向的耗时（ms），滑动平均。搜索预算必须基于实测，不能猜。 */
 let lastForwardMs = 0;

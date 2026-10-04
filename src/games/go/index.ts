@@ -209,6 +209,8 @@ function renderBoard(opts?: { placed?: number; captured?: number[]; capturedColo
     dead: state.counting ? [...state.dead] : [],
     territory: state.counting ? territoryOf(state.dead) : [],
     interactive: true,
+    hitMode: state.counting ? 'count' : 'play',
+    countEnemy: (state.mode === 'ai' ? AI : (state.go.toPlay === 1 ? 2 : 1)) as Player,
   });
   updateInfo();
 }
@@ -591,8 +593,10 @@ async function runKatagoTurn(): Promise<void> {
   const hashSnapshot = new Set(state.posHashes);
   try {
     const m = await bestMoveKatago(before, state.size, movesSnapshot, undefined, undefined, hashSnapshot);
-    // 等待期间玩家可能已经退出/悔棋/重开 —— 丢弃这一手
-    if (state.over || state.screen !== 'match' || state.go !== before) {
+    // 等待期间玩家可能已经退出/悔棋/重开/进回放 —— 丢弃这一手
+    // 🔴 2026-10-04：补 state.reviewAt 守卫（与 scheduleAi 对齐）。
+    // 否则进回放期间 KataGo 解出手 → 落在被回放覆盖的盘面上（state.go 已不对应 before）。
+    if (state.over || state.screen !== 'match' || state.go !== before || state.reviewAt !== null) {
       state.aiThinking = false;
       updateInfo();
       return;
@@ -707,7 +711,9 @@ function newGame(sz?: Size): void {
 
 function doUndo(): void {
   cancelAiMove();
-  if (state.over || state.reviewAt !== null || !state.history.length) return;
+  // 🔴 2026-10-04：原守卫缺 state.counting —— 玩家可在数目阶段悔棋退掉双 pass，
+  // 此时 counting 仍 true 但 passes 已退回 1，局面与数目阶段脱节、canHumanMove 永久 false。
+  if (state.over || state.reviewAt !== null || state.counting || !state.history.length) return;
   let guard = 0;
   while (state.history.length > 0 && guard < state.size * state.size + 2) {
     state.go = state.history.pop()!;
@@ -781,9 +787,23 @@ function exitReplay(): void {
   state.reviewAt = null;
   replayBar.hidden = true;
   document.body.classList.remove('bd-replay');
-  if (!state.over) startClockLoop();
+  // 🔴 2026-10-04：对局已结束时（end 屏点 Review 进回放），退出回放必须回到 end 屏，
+  // 不能留在 match 屏（match 屏 over=true 时全部控件失效，Rematch/End Lobby 都不可见）。
+  if (state.over) {
+    showScreen('end');
+  } else {
+    if (state.screen !== 'match') showScreen('match');
+    startClockLoop();
+  }
   renderBoard();
   updateInfo();
+  // 🔴 2026-10-04：进回放期间可能轮到 AI，scheduleAi 的 setTimeout 被 cancelAiMove 清掉，
+  // KataGo 的 await 返回时由 reviewAt 守卫丢弃。退出回放后必须重新调度，
+  // 否则 < 1300ms 进回放就会卡死（AI 表持续走约 5 分钟后判超时，玩家看着引擎超时结束）。
+  if (!state.over && !state.counting && state.screen === 'match'
+      && state.mode === 'ai' && state.go.toPlay === AI && !state.aiThinking) {
+    scheduleAi();
+  }
 }
 function setReview(at: number): void {
   if (state.reviewAt === null) return;
@@ -936,7 +956,12 @@ $<HTMLButtonElement>('go-leave-yes').addEventListener('click', exitMatchToLobby)
 $<HTMLButtonElement>('go-back-lobby').addEventListener('click', exitMatchToLobby);
 $<HTMLButtonElement>('go-end-lobby').addEventListener('click', exitMatchToLobby);
 $<HTMLButtonElement>('go-rematch').addEventListener('click', () => newGame());
-$<HTMLButtonElement>('go-review').addEventListener('click', () => { showScreen('match'); enterReplay(); });
+// 🔴 2026-10-04：原代码 `showScreen('match'); enterReplay();` ——
+// review 从 end 屏跳到 match 屏进回放，但退出回放时 state.screen 仍是 'match'，
+// 而 state.over=true 使 match 屏所有控件失效，end 屏又因 showScreen('match')
+// 被 hide。Rematch / go-end-lobby / go-review 都不可见，玩家无法重开或退房。
+// 修法：从 end 屏 Review 专用路径，进回放不切屏，退出回放时显式回到 end 屏。
+$<HTMLButtonElement>('go-review').addEventListener('click', () => { enterReplay(); });
 
 const soundBtn = $<HTMLButtonElement>('go-sound');
 function syncSound(): void {
@@ -985,15 +1010,20 @@ function boot(): void {
   readMode();
   levelBtn.hidden = state.mode !== 'ai';
   $<HTMLElement>('go-handicap').hidden = state.mode !== 'pass';   // 让子仅同屏双人
+  // 🔴 2026-10-04：go-resign 已移走 data-i18n（i18n MutationObserver 会把动态文案重置回 fallback，
+  // 导致二次确认「Confirm resign?」被 60ms 后还原）。JS 在 boot 时填充一次，i18n:ready/change
+  // 时仅在「未二次确认」状态下同步，避免认输流程误重置。
+  resignBtn.textContent = t('bg.bg_go_resign', 'Resign');
   syncSound();
   // 神经网络档：进页面就预热（5 MB 弱网下要几秒，越早开始越好），
   // 不要等玩家走完第一手才加载。
   if (state.mode === 'ai') startKatagoWarmup();
   newGame();
   // i18n 字典异步 fetch：ready/change 后重渲染，避免首帧裸 key（gomoku 同款坑）
-  window.addEventListener('i18n:ready', () => { updateInfo(); syncSound(); });
-  window.addEventListener('i18n:change', () => { updateInfo(); syncSound(); });
-  setTimeout(() => { updateInfo(); syncSound(); }, 250);
+  // 🔴 2026-10-04：go-resign 二次确认态由 JS 管，i18n:change 时仅当未 armed 才刷新文案。
+  window.addEventListener('i18n:ready', () => { updateInfo(); syncSound(); if (!state.resignArmed) resignBtn.textContent = t('bg.bg_go_resign', 'Resign'); });
+  window.addEventListener('i18n:change', () => { updateInfo(); syncSound(); if (!state.resignArmed) resignBtn.textContent = t('bg.bg_go_resign', 'Resign'); });
+  setTimeout(() => { updateInfo(); syncSound(); if (!state.resignArmed) resignBtn.textContent = t('bg.bg_go_resign', 'Resign'); }, 250);
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

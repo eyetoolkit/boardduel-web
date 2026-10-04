@@ -255,11 +255,10 @@ function orderedMoves(pos: PosState, ctx: Sctx, moveNum: number, limit: number):
     const mk = log.length;
     const cap = make(pos, i, log, mk);
     if (cap < 0) { unmake(pos, log, mk); continue; }
-    // 🔴 leafEval 恒以「黑方净胜」为标量，toPlay 翻转时整体取负。
-    // 这里必须**按当前 toPlay 视角**折算后再比较，否则轮到白走时排序完全反向
-    // （对手的「最差手」被当成「最好手」，剪枝把好手全砍掉）。
-    // 症状：depth=1 选 (4,3) 三线，depth≥2 一律退化成 (1,0) 一线。
-    // 落子后 toPlay 翻转 → leafEval 折算成对手视角，取负还原成当前行棋方收益
+    // 落子后 toPlay 翻转 → leafEval 返回「**对手视角**」分数。
+    // 走子方关心的是「自己视角」，所以 toPlay=1 时多取一次负。
+    // 注意：原代码「黑方多取一次负、白方不取」是**正确**的（按 toPlay 视角折算）。
+    // 这里曾被审计报告误判为符号 bug，回滚为原表达式。
     const afterLeaf = leafEval(pos, ctx, moveNum + 1);
     const s = (pos.toPlay === 1 ? -afterLeaf : afterLeaf) - baseLeaf;
     unmake(pos, log, mk);
@@ -295,8 +294,8 @@ function rootCandidates(pos: PosState, ctx: Sctx): Array<{ move: number; score: 
     const mk = log.length;
     const cap = make(pos, i, log, mk);
     if (cap < 0) { unmake(pos, log, mk); continue; }
-    // 落子后 toPlay 已翻转，leafEval 会折算成「落子方视角」= 仍是 toPlay 的对手，
-    // 故取负还原成落子方的收益
+    // 落子后 toPlay 已翻转，leafEval 返回「对手视角」分数；
+    // 走子方关心自己视角，toPlay=1 时多取一次负（与 orderedMoves 同公式）。
     const afterLeaf = leafEval(pos, ctx, ctx.base + 1);
     const s = (toPlay === 1 ? -afterLeaf : afterLeaf) - base;
     unmake(pos, log, mk);

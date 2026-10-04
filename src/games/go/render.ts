@@ -58,6 +58,15 @@ export interface GoRenderInput {
   showCoords?: boolean;
   /** 是否渲染命中区（可落点 <g class="go-cell">，默认 false） */
   interactive?: boolean;
+  /**
+   * 命中区模式：'play' = 只在空点（默认）；'count' = 终局数目阶段，覆盖敌色子
+   * （点整块切换死活），空点也保留以避免视觉跳变。
+   * 🔴 2026-10-04 修复：原 'play' 模式只覆盖空点，但终局确认时点击的是**棋子**，
+   * 两边直接矛盾 ⇒ 标死子功能 100% 不可用，toast 只会提示「只能标对方的子为死子」。
+   */
+  hitMode?: 'play' | 'count';
+  /** count 模式下哪些颜色算「敌」（用于生成命中区） */
+  countEnemy?: Player;
 }
 
 /**
@@ -84,6 +93,8 @@ export function renderGoBoardSVG(input: GoRenderInput): string {
   const territory = input.territory ?? [];
   const showCoords = input.showCoords ?? true;
   const interactive = input.interactive ?? false;
+  const hitMode = input.hitMode ?? 'play';
+  const countEnemy = input.countEnemy ?? 0;
 
   const inner = GO_SLOT - 2 * PAD;
   const cell = inner / (size - 1);
@@ -191,11 +202,17 @@ export function renderGoBoardSVG(input: GoRenderInput): string {
     ghostEl = `<circle class="go-ghost" cx="${px.toFixed(2)}" cy="${py.toFixed(2)}" r="${stoneR.toFixed(2)}" fill="none" stroke="var(--go-ghost,#8A99A3)" stroke-width="1.6" stroke-dasharray="4 4"/>`;
   }
 
-  // ── 命中区（始终渲染，能否落子的判断收进 click 处理） ──
+  // ── 命中区 ──
+  // play 模式（对局中）：只覆盖空点，点了落子；
+  // count 模式（终局数目确认）：覆盖敌色子（点整块切换死活），
+  //   且**空点也保留命中区**，否则玩家会看到棋盘所有位置都不能点（错误感强烈）。
   let hits = '';
   if (interactive) {
     for (let i = 0; i < board.length; i++) {
-      if (board[i] !== 0) continue;
+      const ok = hitMode === 'count'
+        ? (board[i] === 0 || board[i] === countEnemy)
+        : (board[i] === 0);
+      if (!ok) continue;
       const gx = i % size;
       const gy = Math.floor(i / size);
       const [px, py] = cellXY(size, gx, gy);
