@@ -240,6 +240,18 @@ function buildHistory(go: GoState, moves: number[]): { player: Player; pos: numb
   return hist;
 }
 
+/** 单次前向的耗时（ms），滑动平均。搜索预算必须基于实测，不能猜。 */
+let lastForwardMs = 0;
+
+/** 只读调试/性能探针：给 E2E 与性能预算用，不参与任何游戏逻辑。 */
+(globalThis as any).__kgProbe = () => ({
+  ready: state.ready,
+  backend: state.backend,
+  lastForwardMs,
+  loadedBytes: state.loadedBytes,
+  totalBytes: state.totalBytes,
+});
+
 /** 拉模型权重 + 解析，按需按棋盘尺寸建实例。 */
 function bootKg(size: number, progress?: Progress): Promise<any> {
   if (kgPromise) return kgPromise;
@@ -295,11 +307,15 @@ function forwardOnce(model: any, tf: Tf, spec: any) {
   }, spatial, global);
   const S = Float32Array.from(spatial);
   const G = Float32Array.from(global);
-  return tf.tidy(() => {
+  const t0 = (globalThis as any).performance?.now?.() ?? Date.now();
+  const out = tf.tidy(() => {
     const s = tf.tensor4d(S, [1, B, B, model.SPATIAL]);
     const g = tf.tensor2d(G, [1, model.GLOBAL]);
     return model.forward(s, g);
   });
+  const t1 = (globalThis as any).performance?.now?.() ?? Date.now();
+  lastForwardMs = lastForwardMs ? lastForwardMs * 0.7 + (t1 - t0) * 0.3 : (t1 - t0);
+  return out;
 }
 
 /** 预热：进入第三档时先调用，让 UI 有机会显示加载态。 */
