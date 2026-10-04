@@ -151,7 +151,8 @@ function humanSide(): Side {
 }
 function pieceChar(code: number): string {
   const t = Math.abs(code);
-  return GLYPH[t][code > 0 ? 0 : 1];
+  const g = GLYPH[t];
+  return g ? g[code > 0 ? 0 : 1] : '';  // 空格(0)无字形：返回空串，不要抛异常
 }
 function coord(sq: number): string {
   const c = sq % COLS;
@@ -160,9 +161,19 @@ function coord(sq: number): string {
   const rank = ROWS - r;                       // red perspective 1..10
   return file + rank;
 }
+/**
+ * 着法文字（如 "兵 a7→a6"）。
+ * ⚠️ 不能用 `state.gs.board[m.from]` 取子：走完子后 from 格已空(=0)，
+ *    GLYPH[0] 是 undefined → TypeError 抛在 render() 里 →
+ *    afterMove() 在调用 aiMove() 之前就中断 → 黑方永远不动、红方计时继续。
+ *    必须回放到"这一步之前"的局面再取子。
+ */
 function moveLabel(m: Move): string {
-  const p = state.gs.board[m.from];
-  return pieceChar(p) + ' ' + coord(m.from) + '→' + coord(m.to);
+  const i = state.reviewAt !== null ? state.reviewAt : state.moves.length - 1;
+  let g = createGame();
+  for (let k = 0; k < Math.max(0, i); k++) g = applyMove(g, state.moves[k]);
+  const ch = pieceChar(g.board[m.from]);
+  return (ch ? ch + ' ' : '') + coord(m.from) + '→' + coord(m.to);
 }
 function legalFor(s: GameState): Move[] { return legalMoves(s.board, s.side); }
 
@@ -423,8 +434,18 @@ function aiMove(extraMs = 0): void {
       return;
     }
     // 用引擎自带的难度时间预算（easy 350 / medium 800 / hard 1600），不要再硬编码覆盖
-    const m = search(state.gs, state.level).move;
-    if (!m) { render(); return; }
+    let m: Move | null = null;
+    try {
+      m = search(state.gs, state.level).move;
+    } catch (e) {
+      console.error('[xiangqi] search failed', e);
+    }
+    // 兜底：搜索异常或返回空时随机走一步合法着法，绝不让黑方卡住不动
+    if (!m) {
+      const ms2 = legalFor(state.gs);
+      if (!ms2.length) { render(); return; }
+      m = ms2[Math.floor(Math.random() * ms2.length)];
+    }
     doMove(m);
   }, Math.max(200, base + jitter + extraMs));
 }
