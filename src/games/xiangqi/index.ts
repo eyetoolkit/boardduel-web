@@ -17,8 +17,9 @@ import {
 } from '../game-core';
 import { wireLobbyChrome } from '../../lobby-chrome';
 import {
-  createGame, cloneState, legalMoves, applyMove, search, isOver,
-  type GameState, type Side, type Move,
+  createGame, cloneState, legalMoves, applyMove, search, isOver, isKingSafe,
+  newArbiter, arbiterPush, arbiterVerdict,
+  type GameState, type Side, type Move, type Arbiter,
 } from './engine';
 import {
   enterRoom, sendWs, inviteCode, clearInviteParam,
@@ -110,6 +111,7 @@ type UIState = {
   roomCode: string | null;
   myIdx: number | null;
   sawGameOver: boolean;
+  arb: Arbiter;
 };
 
 const state: UIState = {
@@ -130,6 +132,7 @@ const state: UIState = {
   roomCode: null,
   myIdx: null,
   sawGameOver: false,
+  arb: newArbiter(),
 };
 
 const MODE_PAGE = '/games/xiangqi/lobby/';
@@ -318,8 +321,10 @@ function renderHud(): void {
       ? window.t('bg.bg_xq_you_red')
       : (thinking ? window.t('bg.bg_xq_engine_black') + ' · ' + window.t('status.thinking') : window.t('bg.bg_xq_engine_black'));
   }
-  turnEl.textContent = label;
-  turnEl.className = 'go-turn-you' + (thinking ? ' is-thinking' : '');
+  // 将军提示（R2）
+  const inCheck = !state.over && state.reviewAt === null && !isKingSafe(state.gs.board, state.gs.side);
+  turnEl.textContent = inCheck ? label + ' · ' + window.t('bg.bg_xq_check') : label;
+  turnEl.className = 'go-turn-you' + (thinking ? ' is-thinking' : '') + (inCheck ? ' is-check' : '');
 
   const lvName = state.level === 'easy' ? window.t('bg.bg_xq_lv1') :
                   state.level === 'medium' ? window.t('bg.bg_xq_lv2') :
@@ -347,6 +352,7 @@ function doMove(m: Move): void {
   state.history.push(cloneState(state.gs));
   state.moves.push(m);
   state.gs = applyMove(state.gs, m);
+  arbiterPush(state.arb, state.gs.board, state.gs.side, m);
   state.lastMove = m;
   state.selected = -1;
   playSfx('place');
@@ -356,6 +362,17 @@ function doMove(m: Move): void {
   afterMove();
 }
 
+/** 悔棋/回放后按当前着法序列重建仲裁器（保证重复局面与长将计数正确） */
+function rebuildArbiter(): void {
+  const a = newArbiter();
+  let g = createGame();
+  for (const m of state.moves) {
+    g = applyMove(g, m);
+    arbiterPush(a, g.board, g.side, m);
+  }
+  state.arb = a;
+}
+
 function afterMove(): void {
   const over = isOver(state.gs.board, state.gs.side);
   if (over.over) {
@@ -363,6 +380,16 @@ function afterMove(): void {
     stopTimer(state.timer);
     render();
     finish(over.winner);
+    return;
+  }
+  // 和棋 / 长将判负
+  const v = arbiterVerdict(state.arb);
+  if (v.draw || v.loser) {
+    state.over = true;
+    stopTimer(state.timer);
+    render();
+    if (v.reason === 'perpetual_check') toast(window.t('bg.bg_xq_perp_check'));
+    finish(v.loser ? ((-v.loser) as Side) : 0);
     return;
   }
   render();
@@ -395,7 +422,8 @@ function aiMove(extraMs = 0): void {
       render();
       return;
     }
-    const m = search(state.gs, state.level, 1500).move;
+    // 用引擎自带的难度时间预算（easy 350 / medium 800 / hard 1600），不要再硬编码覆盖
+    const m = search(state.gs, state.level).move;
     if (!m) { render(); return; }
     doMove(m);
   }, Math.max(200, base + jitter + extraMs));
@@ -423,9 +451,20 @@ function finish(winner: Side | 0): void {
     });
   }
 
+  // 和棋：三次重复局面 / 自然限着
+  if (winner === 0) {
+    endVerdict.textContent = window.t('bg.bg_xq_draw');
+    endVerdict.className = 'go-end-verdict is-draw';
+    endLine.textContent = window.t('bg.bg_xq_draw_line');
+    playSfx('place');
+    toast(window.t('bg.bg_xq_draw'));
+    scheduleEndScreen();
+    return;
+  }
+
   const meWon = winner === myColor();
   const verdict = meWon ? window.t('bg.bg_xq_you_win') : window.t('bg.bg_xq_you_lose');
-  const line = winner === 0 ? window.t('bg.bg_xq_draw_line') : (meWon ? window.t('bg.bg_xq_win_line') : window.t('bg.bg_xq_lose_line'));
+  const line = window.t(meWon ? 'bg.bg_xq_win_line' : 'bg.bg_xq_lose_line');
   endVerdict.textContent = verdict;
   endLine.textContent = line;
   endVerdict.className = 'go-end-verdict ' + (meWon ? 'is-win' : 'is-loss');
@@ -531,6 +570,7 @@ function undo(): void {
     state.moves.pop();
     state.lastMove = state.moves.length ? state.moves[state.moves.length - 1] : null;
   }
+  rebuildArbiter();
   render();
 }
 
@@ -705,6 +745,7 @@ function newGame(): void {
   state.over = false;
   state.history = [];
   state.moves = [];
+  state.arb = newArbiter();
   state.aiThinking = false;
   state.sawGameOver = false;
   startTimer(state.timer, (ms) => { clockMeTime.textContent = fmtClock(ms); });
@@ -724,7 +765,9 @@ function handleWs(msg: OnlineMsg): void {
     if (typeof from === 'number' && typeof to === 'number') {
       const m: Move = { from, to, cap: state.gs.board[to] };
       state.history.push(cloneState(state.gs));
+      state.moves.push(m);
       state.gs = applyMove(state.gs, m);
+      arbiterPush(state.arb, state.gs.board, state.gs.side, m);
       state.lastMove = m;
       state.selected = -1;
       afterMove();

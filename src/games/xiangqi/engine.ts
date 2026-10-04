@@ -264,6 +264,55 @@ export function isOver(board: Int8Array, side: Side): { over: boolean; winner: S
   return { over: false, winner: 0 };
 }
 
+// ── 和棋 / 长将 仲裁 ────────────────────────────────────────────────────────────
+export interface Arbiter {
+  hashes: number[];   // 每次落子后的局面哈希（含行棋方）
+  noCap: number;      // 连续无吃子的 plies
+  chkSide: Side | 0;  // 最近连续将军的一方
+  chkRun: number;     // 该方连续将军的次数
+  sinceChk: number;   // 距上次将军经过的 plies
+}
+
+export function newArbiter(): Arbiter {
+  return { hashes: [], noCap: 0, chkSide: 0, chkRun: 0, sinceChk: 0 };
+}
+
+/** 每步落子之后调用：sideToMove = 走完这一步后的行棋方，m = 刚走的着法。 */
+export function arbiterPush(a: Arbiter, board: Int8Array, sideToMove: Side, m: Move): void {
+  a.hashes.push(boardHash(board, sideToMove));
+  a.noCap = m.cap !== 0 ? 0 : a.noCap + 1;
+  const mover = (-sideToMove) as Side;
+  if (!isKingSafe(board, sideToMove)) {
+    // mover 将军了
+    if (a.chkSide === mover && a.sinceChk <= 2) a.chkRun++;
+    else { a.chkSide = mover; a.chkRun = 1; }
+    a.sinceChk = 0;
+  } else {
+    a.sinceChk++;
+    if (a.sinceChk > 2) { a.chkRun = 0; a.chkSide = 0; }
+  }
+}
+
+export interface DrawVerdict { draw: boolean; loser: Side | 0; reason: string }
+
+/**
+ * 判定和棋 / 长将：
+ *  - 长将判负：同一方连续将军 3 次（中国象棋规则），loser = 长将方
+ *  - 三次重复局面判和
+ *  - 自然限着：连续 120 plies（60 回合）无吃子判和
+ */
+export function arbiterVerdict(a: Arbiter): DrawVerdict {
+  if (a.chkRun >= 3) return { draw: false, loser: a.chkSide as Side, reason: 'perpetual_check' };
+  const last = a.hashes[a.hashes.length - 1];
+  if (last !== undefined) {
+    let n = 0;
+    for (const h of a.hashes) if (h === last) n++;
+    if (n >= 3) return { draw: true, loser: 0, reason: 'repetition' };
+  }
+  if (a.noCap >= 120) return { draw: true, loser: 0, reason: 'no_capture' };
+  return { draw: false, loser: 0, reason: '' };
+}
+
 // ── Evaluation (swappable) ──────────────────────────────────────────────────────
 const VAL: Record<number, number> = {
   [T.K]: 6000, [T.R]: 600, [T.C]: 285, [T.H]: 300, [T.E]: 130, [T.A]: 130, [T.P]: 30,
@@ -272,7 +321,9 @@ const VAL: Record<number, number> = {
 // Lightweight positional bonus (from the piece's own perspective).
 function posBonus(code: number, r: number, c: number): number {
   const t = typeOf(code), s = sideOf(code);
-  const rr = s === 1 ? r : 9 - r;       // advancement: 0 = own back rank, 9 = enemy back
+  // 🔴 注意方向：红方(s=1)底线在 row 9，黑方(s=-1)底线在 row 0。
+  // rr 必须归一化成「0 = 己方底线，9 = 敌方底线」，否则过河奖励会给到没过河的子。
+  const rr = s === 1 ? 9 - r : r;
   const center = 4 - Math.abs(c - 4);   // 0..4
   let b = 0;
   switch (t) {
@@ -304,7 +355,12 @@ const MATE = 100000;
 const INF = 1e9;
 const TIMEOUT = Symbol('timeout');
 
-interface Ctx { nodes: number; deadline: number; tt: Map<number, { d: number; f: number; s: number; m: Move | null }>; }
+interface Ctx {
+  nodes: number;
+  deadline: number;
+  tt: Map<number, { d: number; f: number; s: number; m: Move | null }>;
+  path: Set<number>; // 当前搜索路径上的局面哈希（用于识别循环）
+}
 
 function orderMoves(moves: Move[]): void {
   moves.sort((a, b) => mvvLva(b) - mvvLva(a));
@@ -324,7 +380,7 @@ const ZOB: Int32Array = (() => {
   }
   return a;
 })();
-function hashBoard(board: Int8Array, side: Side): number {
+function boardHash(board: Int8Array, side: Side): number {
   let h = side === 1 ? ZOB[N * 14] : ZOB[N * 14 + 1];
   for (let i = 0; i < N; i++) {
     const p = board[i];
@@ -333,18 +389,22 @@ function hashBoard(board: Int8Array, side: Side): number {
   return h;
 }
 
-function qsearch(board: Int8Array, side: Side, alpha: number, beta: number, ctx: Ctx): number {
+function qsearch(board: Int8Array, side: Side, alpha: number, beta: number, ply: number, ctx: Ctx): number {
   if ((ctx.nodes++ & 2047) === 0 && perfNow() > ctx.deadline) throw TIMEOUT;
-  const stand = evaluate(board, side);
-  if (stand >= beta) return beta;
-  if (stand > alpha) alpha = stand;
-
-  const caps = genPseudo(board, side).filter((m) => m.cap !== 0);
-  orderMoves(caps);
-  for (const m of caps) {
+  // 被将军时不能用静态评估兜底（会把杀棋误判成普通局面），必须枚举所有应将手段
+  const inChk = !isKingSafe(board, side);
+  if (!inChk) {
+    const stand = evaluate(board, side);
+    if (stand >= beta) return beta;
+    if (stand > alpha) alpha = stand;
+  }
+  const moves = inChk ? legalMoves(board, side) : genPseudo(board, side).filter((m) => m.cap !== 0);
+  if (inChk && moves.length === 0) return -MATE + ply; // 将死
+  orderMoves(moves);
+  for (const m of moves) {
     const cap = makeMove(board, m);
-    if (!isKingSafe(board, side)) { unmakeMove(board, m, cap); continue; }
-    const score = -qsearch(board, (-side) as Side, -beta, -alpha, ctx);
+    if (!inChk && !isKingSafe(board, side)) { unmakeMove(board, m, cap); continue; }
+    const score = -qsearch(board, (-side) as Side, -beta, -alpha, ply + 1, ctx);
     unmakeMove(board, m, cap);
     if (score >= beta) return beta;
     if (score > alpha) alpha = score;
@@ -354,22 +414,39 @@ function qsearch(board: Int8Array, side: Side, alpha: number, beta: number, ctx:
 
 function negamax(board: Int8Array, side: Side, depth: number, alpha: number, beta: number, ply: number, ctx: Ctx): number {
   if ((ctx.nodes++ & 2047) === 0 && perfNow() > ctx.deadline) throw TIMEOUT;
-  const key = hashBoard(board, side);
+  if (depth <= 0) return qsearch(board, side, alpha, beta, ply, ctx);
+
+  const key = boardHash(board, side);
+  // 搜索路径内出现重复局面 → 按和棋处理，避免 AI 把"兜圈子"算成有利
+  if (ctx.path.has(key)) return 0;
+  ctx.path.add(key);
+  try {
+    return negamaxBody(board, side, depth, alpha, beta, ply, ctx, key);
+  } finally {
+    ctx.path.delete(key);
+  }
+}
+
+function negamaxBody(board: Int8Array, side: Side, depth: number, alpha: number, beta: number, ply: number, ctx: Ctx, key: number): number {
   const tt = ctx.tt.get(key);
   if (tt && tt.d >= depth) {
-    if (tt.f === 0) return tt.s;
-    if (tt.f === 1 && tt.s > alpha) alpha = tt.s;
-    if (tt.f === -1 && tt.s < beta) beta = tt.s;
-    if (alpha >= beta) return tt.s;
+    // 置换表里存的是「相对根节点的杀棋距离」，取用时需按当前 ply 还原
+    let s = tt.s;
+    if (s > MATE - 1000) s -= ply; else if (s < -MATE + 1000) s += ply;
+    if (tt.f === 0) return s;
+    if (tt.f === 1 && s > alpha) alpha = s;   // lower bound
+    if (tt.f === -1 && s < beta) beta = s;    // upper bound
+    if (alpha >= beta) return s;
   }
 
   const pseudo = genPseudo(board, side);
-  let anyLegal = false;
-  if (depth <= 0) return qsearch(board, side, alpha, beta, ctx);
-
   orderMoves(pseudo);
+  // 🔴 必须保存原始 alpha：下面的循环会不断抬高 alpha，
+  // 若用抬高后的 alpha 判断 flag，会把「精确值」误标成上界，污染置换表。
+  const alphaOrig = alpha;
   let best = -INF;
   let bestMove: Move | null = null;
+  let anyLegal = false;
   for (const m of pseudo) {
     const cap = makeMove(board, m);
     if (!isKingSafe(board, side)) { unmakeMove(board, m, cap); continue; }
@@ -382,8 +459,11 @@ function negamax(board: Int8Array, side: Side, depth: number, alpha: number, bet
   }
   if (!anyLegal) return -MATE + ply; // checkmate or 困毙 = loss for side to move
 
-  const flag = best <= alpha ? -1 : best >= beta ? 1 : 0;
-  ctx.tt.set(key, { d: depth, f: flag, s: best, m: bestMove });
+  const flag = best <= alphaOrig ? -1 : best >= beta ? 1 : 0;
+  // 存表时把杀棋距离换算回「相对根节点」
+  let st = best;
+  if (st > MATE - 1000) st += ply; else if (st < -MATE + 1000) st -= ply;
+  ctx.tt.set(key, { d: depth, f: flag, s: st, m: bestMove });
   return best;
 }
 
@@ -421,7 +501,7 @@ export function search(state: GameState, level: Level, timeMs?: number): SearchR
   const board = state.board;
   const side = state.side;
   const lim = LIMITS[level];
-  const ctx: Ctx = { nodes: 0, deadline: perfNow() + (timeMs ?? lim.time), tt: new Map() };
+  const ctx: Ctx = { nodes: 0, deadline: perfNow() + (timeMs ?? lim.time), tt: new Map(), path: new Set() };
 
   let bestMove: Move | null = null, bestScore = 0, reached = 0;
   for (let d = 1; d <= lim.maxDepth; d++) {
