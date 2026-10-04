@@ -210,8 +210,15 @@ const t = (k: string, fallback: string): string => {
 function renderBoard(opts?: { placed?: number; captured?: number[]; capturedColor?: Player }): void {
   if (state.reviewAt !== null) {                    // 回放中：纯函数重放盘面
     const s = viewBoard(state.moves, state.reviewAt);
+    // 🔴 2026-10-04 round3 修复：回放期间态势/形势叠加层也要跟上 reviewAt 位置，
+    // 否则棋盘已回到第 N 手但形势叠加层还显示「最后一手」的染色（永远对不上）。
+    // 但点目面板在 updateInfo 钩子里按 state.go 算数字 —— 见下方 renderScorePanel 分支。
+    const reviewSit = state.showSituation
+      ? territoryByColor(s.board, state.size, state.dead)
+      : undefined;
     boardEl.innerHTML = renderGoBoardSVG({
       size: state.size, board: s.board, lastMove: s.lastMove, placed: -1, interactive: false,
+      situation: reviewSit,
     });
     return;
   }
@@ -226,8 +233,8 @@ function renderBoard(opts?: { placed?: number; captured?: number[]; capturedColo
     dead: state.counting ? [...state.dead] : [],
     territory: state.counting ? territoryOf(state.dead) : [],
     // 「形势」叠加：玩家主动开启时把每个空位按归属染色。
-    // 终局后强制关闭 —— 玩家已认输/超时，再显示染色反而误导。
-    situation: state.showSituation && !state.over
+    // 🔴 2026-10-04 round3 修复：终局后仍可看形势（玩家审视死子是否漏标），去掉 !state.over 守卫。
+    situation: state.showSituation
       ? territoryByColor(state.go.board, state.size, state.dead)
       : undefined,
     interactive: true,
@@ -815,7 +822,12 @@ function toggleScorePanel(): void {
 function renderScorePanel(): void {
   // 用 scoreWithDead 而不是 scoreChinese —— 玩家若已标了死子（counting），
   // 面板数值必须与「终局结算」保持一致，否则「点目」与「确认结算」对不上。
-  const sc = scoreWithDead(state.go, state.dead);
+  // 🔴 2026-10-04 round3 修复：回放期间用 viewBoard(state.moves, reviewAt) 的局面，
+  // 否则数字属于「最后一手」而不属于「回放位置」，与棋盘显示脱节。
+  const reviewSt = state.reviewAt !== null
+    ? viewBoard(state.moves, state.reviewAt)
+    : state.go;
+  const sc = scoreWithDead(reviewSt, state.dead);
   const sign = (n: number) => n > 0 ? '+' + n.toFixed(1) : n.toFixed(1);
   // 行：黑 / 白 / 差（已含 KOMI；scoreWithDead 把 +7.5 加到白上）
   const diff = sc.black - sc.white;
