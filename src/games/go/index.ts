@@ -14,7 +14,7 @@ import { setupNav, toast } from '../game-core';
 import { wireLobbyChrome } from '../../lobby-chrome';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 import {
-  initialState, initialStateHandicap, play, pass, notation, opponent,
+  initialState, play, pass, notation, opponent,
   scoreWithDead, toggleDeadGroup, resolveDead, hashPosition,
   type GoState, type Player, type DeadSet,
 } from './engine';
@@ -72,7 +72,6 @@ interface UIState {
   mode: 'ai' | 'pass';
   level: Difficulty;
   size: Size;
-  handicap: number;                // 0 = 分先（黑先）；>=2 让子（白先）
   go: GoState;
   history: GoState[];
   moves: number[];                 // 棋谱：每手一个点下标（-1 = pass）
@@ -103,7 +102,6 @@ const state: UIState = {
   mode: 'ai',
   level: 'katago',     // 唯一档：神经网络 AI（medium/hard 规则档已从 UI 移除）
   size: 19,
-  handicap: 0,
   go: initialState(19),
   history: [],
   moves: [],
@@ -248,9 +246,7 @@ function territoryOf(dead: DeadSet): number[] {
 
 /** 纯函数回放：重放 moves[0..upTo]，返回该时刻的 GoState（提子/劫都由引擎真实重放） */
 function viewBoard(moves: number[], upTo: number): GoState {
-  let s = state.handicap >= 2
-    ? initialStateHandicap(state.size, state.handicap)
-    : initialState(state.size);
+  let s = initialState(state.size);
   for (let i = 0; i <= upTo && i < moves.length; i++) {
     const m = moves[i];
     if (m < 0) s = pass(s);
@@ -681,9 +677,7 @@ function newGame(sz?: Size): void {
   stopClockLoop();
   resetReplayUI();
   exitCounting();
-  state.go = state.handicap >= 2
-    ? initialStateHandicap(state.size, state.handicap)
-    : initialState(state.size);
+  state.go = initialState(state.size);
   state.history = [];
   state.moves = [];
   state.clock = initialClock();
@@ -698,7 +692,7 @@ function newGame(sz?: Size): void {
   metaSizeEl.textContent = `${state.size}×${state.size}`;
   metaModeEl.textContent = state.mode === 'ai'
     ? `${t('bg.bg_go_vs', 'vs AI')} · ${state.level}`
-    : (state.handicap >= 2 ? `H${state.handicap}` : '2 players');
+    : t('bj.pass_play', 'Pass & Play');
   document.querySelectorAll<HTMLButtonElement>('#go-sizes button').forEach((b) => {
     b.classList.toggle('is-cur', Number(b.dataset.size) === state.size);
   });
@@ -738,9 +732,7 @@ function doUndo(): void {
 /** 按state.moves 从初始局面重放，重建 posHashes（悔棋后调用） */
 function rebuildPosHashes(): void {
   state.posHashes = new Set<string>();
-  const s0 = state.handicap >= 2
-    ? initialStateHandicap(state.size, state.handicap)
-    : initialState(state.size);
+  const s0 = initialState(state.size);
   registerHash(s0);
   const h = new Set<string>(state.posHashes);
   let cur = s0;
@@ -915,14 +907,7 @@ $<HTMLButtonElement>('go-count-clear').addEventListener('click', () => {
   renderBoard();
 });
 
-/* ── 让子棋 ── */
-$<HTMLElement>('go-handicap').addEventListener('click', (ev) => {
-  const b = (ev.target as HTMLElement).closest?.('button[data-hc]') as HTMLButtonElement | null;
-  if (!b) return;
-  state.handicap = Number(b.dataset.hc);
-  document.querySelectorAll<HTMLButtonElement>('#go-handicap button').forEach((x) => x.classList.toggle('is-cur', x === b));
-  newGame();
-});
+/* 让子棋已下线（2026-10-04：用户决策）。原 #go-handicap 区块保留但隐藏以兼容旧 HTML 引用。 */
 
 $<HTMLElement>('go-sizes').addEventListener('click', (ev) => {
   const b = (ev.target as HTMLElement).closest?.('button[data-size]') as HTMLButtonElement | null;
@@ -1001,15 +986,11 @@ function readMode(): void {
   if (lv === 'easy' || lv === 'medium' || lv === 'hard' || lv === 'katago') state.level = lv;
   // 9 路 / 13 路已下线（模型只按 19 路调优过），旧深链统一落到 19 路而不是报错。
   state.size = 19;
-  // 让子只在同屏双人模式有意义（AI 棋力固定，不需要让子）
-  const hc = q.get('hc');
-  if (state.mode === 'pass' && hc && /^[02469]$/.test(hc)) state.handicap = Number(hc);
 }
 
 function boot(): void {
   readMode();
   levelBtn.hidden = state.mode !== 'ai';
-  $<HTMLElement>('go-handicap').hidden = state.mode !== 'pass';   // 让子仅同屏双人
   // 🔴 2026-10-04：go-resign 已移走 data-i18n（i18n MutationObserver 会把动态文案重置回 fallback，
   // 导致二次确认「Confirm resign?」被 60ms 后还原）。JS 在 boot 时填充一次，i18n:ready/change
   // 时仅在「未二次确认」状态下同步，避免认输流程误重置。
