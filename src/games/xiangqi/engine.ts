@@ -266,48 +266,45 @@ export function isOver(board: Int8Array, side: Side): { over: boolean; winner: S
 
 // ── 和棋 / 长将 仲裁 ────────────────────────────────────────────────────────────
 export interface Arbiter {
-  hashes: number[];   // 每次落子后的局面哈希（含行棋方）
+  /** 每次落子后的局面记录：哈希 + 该时刻"行棋方是否被将军" + 将军方 */
+  pos: { h: number; inChk: boolean; by: Side | 0 }[];
   noCap: number;      // 连续无吃子的 plies
-  chkSide: Side | 0;  // 最近连续将军的一方
-  chkRun: number;     // 该方连续将军的次数
-  sinceChk: number;   // 距上次将军经过的 plies
 }
 
 export function newArbiter(): Arbiter {
-  return { hashes: [], noCap: 0, chkSide: 0, chkRun: 0, sinceChk: 0 };
+  return { pos: [], noCap: 0 };
 }
 
 /** 每步落子之后调用：sideToMove = 走完这一步后的行棋方，m = 刚走的着法。 */
 export function arbiterPush(a: Arbiter, board: Int8Array, sideToMove: Side, m: Move): void {
-  a.hashes.push(boardHash(board, sideToMove));
+  const inChk = !isKingSafe(board, sideToMove);
+  a.pos.push({ h: boardHash(board, sideToMove), inChk, by: inChk ? ((-sideToMove) as Side) : 0 });
   a.noCap = m.cap !== 0 ? 0 : a.noCap + 1;
-  const mover = (-sideToMove) as Side;
-  if (!isKingSafe(board, sideToMove)) {
-    // mover 将军了
-    if (a.chkSide === mover && a.sinceChk <= 2) a.chkRun++;
-    else { a.chkSide = mover; a.chkRun = 1; }
-    a.sinceChk = 0;
-  } else {
-    a.sinceChk++;
-    if (a.sinceChk > 2) { a.chkRun = 0; a.chkSide = 0; }
-  }
 }
 
 export interface DrawVerdict { draw: boolean; loser: Side | 0; reason: string }
 
 /**
- * 判定和棋 / 长将：
- *  - 长将判负：同一方连续将军 3 次（中国象棋规则），loser = 长将方
- *  - 三次重复局面判和
+ * 判定和棋 / 长将（以"局面重复"为唯一依据，避免误杀正当连将进攻）：
+ *  - 三次重复局面：若每次重复时都是**同一方在将军**（即同一方被将军），判该将军方负（长将）
+ *  - 三次重复局面但将军方不一致 → 判和
  *  - 自然限着：连续 120 plies（60 回合）无吃子判和
+ *
+ * ⚠️ 早期实现用"同一方连续将军 3 次"判负，会把**不同子力轮番将军的正当进攻**误判为长将
+ *    （实测 6 局有 3 局被误杀，触发时局面重复次数仅 1）。长将的本质是**局面循环**。
  */
 export function arbiterVerdict(a: Arbiter): DrawVerdict {
-  if (a.chkRun >= 3) return { draw: false, loser: a.chkSide as Side, reason: 'perpetual_check' };
-  const last = a.hashes[a.hashes.length - 1];
+  const last = a.pos[a.pos.length - 1];
   if (last !== undefined) {
-    let n = 0;
-    for (const h of a.hashes) if (h === last) n++;
-    if (n >= 3) return { draw: true, loser: 0, reason: 'repetition' };
+    const same = a.pos.filter((p) => p.h === last.h);
+    if (same.length >= 3) {
+      // 重复局面里是否始终由同一方将军（=同一方一直被将军）
+      const bys = new Set(same.map((p) => p.by));
+      if (bys.size === 1 && last.by !== 0) {
+        return { draw: false, loser: last.by as Side, reason: 'perpetual_check' };
+      }
+      return { draw: true, loser: 0, reason: 'repetition' };
+    }
   }
   if (a.noCap >= 120) return { draw: true, loser: 0, reason: 'no_capture' };
   return { draw: false, loser: 0, reason: '' };
