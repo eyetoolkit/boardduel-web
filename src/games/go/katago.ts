@@ -343,8 +343,13 @@ export async function bestMoveKatago(
   moves: number[],
   temp = DEFAULT_TEMP,
   progress?: Progress,
+  history?: Set<string>,
 ): Promise<number> {
-  const legal = legalMoves(go);
+  // 🔴 2026-10-04：必须带上调用方的 superko 集合。
+  // 原来固定 `legalMoves(go)`（无 opts）→ AI 不知道哪些点已被全局同形再现禁止，
+  // 会选中一个 UI 层 `playWithKo` 判非法的手 → applyAiMove 静默不落子
+  // （r.ok=false 时代码什么都不做，也不报错）= AI 突然「停手」。
+  const legal = history ? legalMoves(go, { superko: true, history }) : legalMoves(go);
   if (legal.length === 0) return -1;
 
   const model = await bootKg(size, progress);

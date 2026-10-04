@@ -15,7 +15,7 @@ import { wireLobbyChrome } from '../../lobby-chrome';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 import {
   initialState, initialStateHandicap, play, pass, notation, opponent,
-  scoreWithDead, toggleDeadGroup, resolveDead,
+  scoreWithDead, toggleDeadGroup, resolveDead, hashPosition,
   type GoState, type Player, type DeadSet,
 } from './engine';
 import { renderGoBoardSVG, diffCaptures } from './render';
@@ -85,6 +85,17 @@ interface UIState {
   endScheduled: boolean;
   counting: boolean;               // 终局数目确认阶段
   dead: DeadSet;                   // 玩家标定的「对方死子」下标
+  /**
+   * 🔴 2026-10-04：已出现过的局面哈希集合（board + toPlay），用于 positional superko。
+   *
+   * 中国规则要求「同形再现禁止」—— 整盘局面 + 轮到方不得重复。
+   * 引擎的 `superko` 是**可选参数**（`computePlay(state,i,opts)`），
+   * 而 `ai.ts` 内部搜索**开了**（superko=true + 自建 history），
+   * 但 UI 的 8 处 play()/legalMoves() 调用**全部没传** ⇒ 玩家能走 AI 认为非法的棋，
+   * 三劫 / 长生 / 双打单等循环劫争无解。
+   * 这个集合必须在每次落子后更新，并在悔棋/新局/回放重建时同步。
+   */
+  posHashes: Set<string>;
 }
 
 const state: UIState = {
@@ -105,7 +116,29 @@ const state: UIState = {
   endScheduled: false,
   counting: false,
   dead: new Set(),
+  posHashes: new Set<string>(),
 };
+
+/* ══════════════════════════════════════════════════════════════
+   超级劫（positional superko）辅助
+   中国规则要求整盘局面不得重复。所有落子路径必须走playWithKo()，
+   它负责「校验时带上 posHashes，落子后把新局面加进去」。
+   ══════════════════════════════════════════════════════════════ */
+/** 落子 + 登记局面哈希（唯一落子出口的规则层包装） */
+function playWithKo(st: GoState, i: number) {
+  const r = play(st, i, { superko: true, history: state.posHashes });
+  if (r.ok && r.state) state.posHashes.add(hashPosition(r.state.board, r.state.toPlay));
+  return r;
+}
+/** pass 也是一次轮转，局面（board+toPlay）同样算「出现过」 */
+function registerHash(st: GoState): void {
+  state.posHashes.add(hashPosition(st.board, st.toPlay));
+}
+/** 新局 / 让子变更：重置局面集合并登记初始局面 */
+function resetPosHashes(): void {
+  state.posHashes = new Set<string>();
+  registerHash(state.go);
+}
 
 let ghost = -1;
 let moveToken = 0;
@@ -385,7 +418,7 @@ function stopClockLoop(): void {
 function placeLocal(i: number): boolean {
   if (!canHumanMove()) return false;
   const before = state.go;
-  const r = play(before, i);
+  const r = playWithKo(before, i);
   if (!r.ok) return false;
   const mover = before.toPlay;
   const oppC: Player = opponent(mover);
@@ -407,6 +440,7 @@ function passLocal(): void {
   const mover = state.go.toPlay;
   state.history.push(state.go);
   state.go = pass(state.go);
+  registerHash(state.go);                    // 🔴 pass 也是一次轮转，局面要登记
   state.moves.push(-1);
   state.clock = afterMoveClock(state.clock, mover);
   renderBoard();
@@ -444,6 +478,7 @@ function scheduleAi(): void {
     if (state.go.passes >= 1) {
       state.history.push(state.go);
       state.go = pass(state.go);
+      registerHash(state.go);
       state.moves.push(-1);
       state.clock = afterMoveClock(state.clock, AI);
       renderBoard();
@@ -467,12 +502,13 @@ function applyAiMove(m: number): void {
   if (m < 0) {
     state.history.push(state.go);
     state.go = pass(state.go);
+    registerHash(state.go);
     state.moves.push(-1);
     state.clock = afterMoveClock(state.clock, AI);
     renderBoard();
   } else {
     const before = state.go;
-    const r = play(before, m);
+    const r = playWithKo(before, m);
     if (r.ok && r.state) {
       state.history.push(before);
       const captured = diffCaptures(before.board, r.state.board, HUMAN);
@@ -483,6 +519,17 @@ function applyAiMove(m: number): void {
       const token = ++moveToken;
       renderBoard({ placed: m, captured, capturedColor: HUMAN });
       if (captured.length) window.setTimeout(() => { if (token === moveToken) renderBoard(); }, 300);
+    } else {
+      // 🔴 2026-10-04 补：原来这里静默跳过。AI 与 UI 的合法点集不一致时（曾因
+      // katago.ts 漏传 superko 导致）表现为「AI 突然停手不落子」，玩家无从察觉。
+      // 现在落成warn + 降级 pass，保证对局继续且留有痕迹。
+      console.warn('[go] AI move rejected by engine:', r.reason, 'idx', m);
+      state.history.push(before);
+      state.go = pass(before);
+      registerHash(state.go);
+      state.moves.push(-1);
+      state.clock = afterMoveClock(state.clock, AI);
+      renderBoard();
     }
   }
   afterMove();
@@ -539,8 +586,11 @@ async function runKatagoTurn(): Promise<void> {
   updateInfo();
   const before = state.go;
   const movesSnapshot = state.moves.slice();
+  // 🔴快照传给异步 AI：等待期间玩家可能悔棋/落子，live 的 posHashes 已变，
+  // 但 AI 是在「等待前那一刻」的合法点集上决策的（这才是它该看到的局面）。
+  const hashSnapshot = new Set(state.posHashes);
   try {
-    const m = await bestMoveKatago(before, state.size, movesSnapshot);
+    const m = await bestMoveKatago(before, state.size, movesSnapshot, undefined, undefined, hashSnapshot);
     // 等待期间玩家可能已经退出/悔棋/重开 —— 丢弃这一手
     if (state.over || state.screen !== 'match' || state.go !== before) {
       state.aiThinking = false;
@@ -633,6 +683,7 @@ function newGame(sz?: Size): void {
   state.history = [];
   state.moves = [];
   state.clock = initialClock();
+  resetPosHashes();                    // 🔴 新局必须重置 superko 集合，否则沿用上一局的历史局面
   state.over = false;
   state.endReason = null;
   state.resignArmed = false;
@@ -664,14 +715,39 @@ function doUndo(): void {
     guard++;
     if (state.mode !== 'ai' || state.go.toPlay === HUMAN) break;
   }
-  // 棋钟按剩余手数重建（黑先，依次轮转）
-  state.clock = initialClock();
-  for (let i = 0; i < state.moves.length; i++) {
-    state.clock = afterMoveClock(state.clock, (i % 2 === 0 ? 1 : 2) as Player);
-  }
+  // 🔴 2026-10-04 原实现把棋钟`initialClock()` 全额重建 = 双方时间与读秒段全部返还。
+  //   后果：玩家在读秒最后 5s 时悔棋一次就回到 600s/5 段 → 可无限悔棋续命，
+  //   计时器对人类形同虚设（30s 时代只是小作弊，10min 棋钟下是彻底无限制）。
+  //   改为：只轮转toPlay（谁走表），**不动任何剩余时间**。
+  //   走完的AI 思考时间也不退还 —— 那是真实消耗。
+  state.clock = { ...state.clock, toPlay: state.go.toPlay };
+  // 局面哈希也要跟着回退：悔棋后历史被丢弃，但已出现过的局面必须重���登记，
+  // 否则玩家可以悔棋重走一个「当时被判superko 非法」的点。
+  rebuildPosHashes();
   ghost = -1;
   moveToken++;
   renderBoard();
+}
+
+/** 按state.moves 从初始局面重放，重建 posHashes（悔棋后调用） */
+function rebuildPosHashes(): void {
+  state.posHashes = new Set<string>();
+  const s0 = state.handicap >= 2
+    ? initialStateHandicap(state.size, state.handicap)
+    : initialState(state.size);
+  registerHash(s0);
+  const h = new Set<string>(state.posHashes);
+  let cur = s0;
+  for (const m of state.moves) {
+    if (m < 0) { cur = pass(cur); }
+    else {
+      const r = play(cur, m, { superko: true, history: h });
+      if (!r.ok || !r.state) break;          // 历史里不该有非法手；保险起见停止
+      cur = r.state;
+    }
+    h.add(hashPosition(cur.board, cur.toPlay));
+  }
+  state.posHashes = h;
 }
 
 function doResign(): void {
