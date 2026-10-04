@@ -38,7 +38,7 @@ export function startBoard(): Int8Array {
   const back = [T.R, T.H, T.E, T.A, T.K, T.A, T.E, T.H, T.R];
   for (let c = 0; c < 9; c++) b[idx(0, c)] = -back[c];      // black back rank (top)
   b[idx(2, 1)] = -T.C; b[idx(2, 7)] = -T.C;                 // black cannons
-  for (const c of [0, 2, 4, 6, 8]) b[idx(2, c)] = -T.P;     // black soldiers
+  for (const c of [0, 2, 4, 6, 8]) b[idx(3, c)] = -T.P;     // black soldiers (row 3, mirrored to red row 6)
   for (let c = 0; c < 9; c++) b[idx(9, c)] = back[c];       // red back rank (bottom)
   b[idx(7, 1)] = T.C; b[idx(7, 7)] = T.C;                   // red cannons
   for (const c of [0, 2, 4, 6, 8]) b[idx(6, c)] = T.P;      // red soldiers
