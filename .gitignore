@@ -9,3 +9,6 @@ vite.config.ts.timestamp-*.mjs
 .DS_Store
 dist-beta/
 dist-beta/
+
+# 残留的 git 修复目录（.git.broken / .git_backup 等）不应进仓库
+.git.broken/
