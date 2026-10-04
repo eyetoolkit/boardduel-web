@@ -101,8 +101,11 @@ export const DEFAULT_WEIGHTS: EvalWeights = {
   eye: 6.5,
   alive: 14.0,
   fragile: 6.0,
-  atariSelf: 7.0,
-  atariOpp: 5.5,
+  // 🔴 2026-10-04：这两项**必须相等**，否则 evaluate(b,1)+evaluate(b,2) ≠ 0，
+  // 破坏 α-β 的零和前提（实测导致 hard 档打不过 medium：胜率 40%、胜势 -5.5 目）。
+  // 推导见下方总分处的注释。6.25 = 原 7.0/5.5 的中点，尽量保持评估量级不变。
+  atariSelf: 6.25,
+  atariOpp: 6.25,
   liberty: 0.18,
   cohesion: 0.25,
   // 🔴 capture 必须 ≥30（实测扫描得出，不是拍脑袋）：
@@ -369,11 +372,18 @@ export function evaluate(
   }
 
   // ── 3. 势力差（双方都强处 = 真争夺 → 打折）──
+  // 🔴 2026-10-04 修正零和性：原来直接用 (ib - iw)，即「黑势力 - 白势力」。
+  // 但 evaluate() 是**me 视角**的：me=2 时「我方」是白，差值应当反号，
+  // 否则 evaluate(b,1) + evaluate(b,2) ≠ 0（实测贡献 -0.0447）。
+  // 修法：按 me 的颜色选取「我方势力场」与「对方势力场」，
+  // 差值恒为「我 - 敌」，与 me 无关地自反。
+  const myInf = me === 1 ? _infB : _infW;
+  const oppInf = me === 1 ? _infW : _infB;
   let infScore = 0;
   for (let p = 0; p < n; p++) {
     if (b[p] !== 0) continue;
-    const ib = _infB[p];
-    const iw = _infW[p];
+    const ib = myInf[p];
+    const iw = oppInf[p];
     if (ib === 0 && iw === 0) continue;
     const contest = Math.min(1, Math.min(ib, iw) * 2);
     infScore += (ib - iw) * (1 - 0.55 * contest) * pointValueAt(size, p, phase);
@@ -470,8 +480,8 @@ export function evaluate(
       const x = cur % size;
       const y = (cur / size) | 0;
       sumEdge += Math.min(x, y, size - 1 - x, size - 1 - y);
-      ib += _infB[cur];
-      iw += _infW[cur];
+      ib += myInf[cur];
+      iw += oppInf[cur];
       for (let k = 0; k < 4; k++) {
         const nx = x + (k === 0 ? 1 : k === 1 ? -1 : 0);
         const ny = y + (k === 2 ? 1 : k === 3 ? -1 : 0);
@@ -501,16 +511,31 @@ export function evaluate(
       }
     }
     const avgEdge = sumEdge / nPts;
-    if (touchesB && !touchesW) {
+    // 🔴 2026-10-04 同influence：touchesB/touchesW 是**绝对颜色**，
+    // 这里必须换算成 me 视角的「我方独有 / 对方独有 / 公气」，
+    // 否则 me=2 时符号全反（实测 territory 零和贡献 -2.0809）。
+    const tMy = me === 1 ? touchesB : touchesW;
+    const tOpp = me === 1 ? touchesW : touchesB;
+    if (tMy && !tOpp) {
       terr += regionValue(nPts, borderLibs, borderMaxEyes, avgEdge, phase);
-    } else if (touchesW && !touchesB) {
+    } else if (tOpp && !tMy) {
       terr -= regionValue(nPts, borderLibs, borderMaxEyes, avgEdge, phase);
     } else {
-      terr += (ib - iw) * 0.5;   // 公气/劫争：按势力差折半
+      terr += (ib - iw) * 0.5;   // 公气/劫争：按势力差折半（ib/iw 已是 me 视角）
     }
   }
 
   // ── 5. 折算总分 ──
+  // ── 6. 总分 ──
+  // 🔴 2026-10-04 零和性修正（实测：此项是最大破坏源，孤立零和贡献 -65.7）
+  // 推导：me 视角 f(me) = -myAtari*A + oppAtari*B，交换 me 后
+  //       f(opp) = -oppAtari*A + myAtari*B
+  //   ⇒ f(me) + f(opp) = (B - A) * (myAtari + oppAtari)
+  // 所以**必须 A == B** 才能保证 evaluate(b,1)+evaluate(b,2) === 0。
+  // 原来 atariSelf=7.0 / atariOpp=5.5 不等 → 零和被破坏 → α-β 的
+  // score(我) = -score(敌) 前提不成立 → 深度越大越偏 → hard 档反而
+  // 打不过 medium（实测胜率 40%、平均胜势 -5.5 目）。
+  // 取 6.25 = 原来两项的算术中点，尽量不改变整体评估量级。
   const score =
     terr * w.territory
     + infScore * w.influence
