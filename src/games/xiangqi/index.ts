@@ -142,7 +142,7 @@ function pointXY(sq: number): [number, number] {
   const r = (sq / COLS) | 0;
   return [PAD + c * CELL, PAD + r * CELL];
 }
-function myColor(): Side { return state.myIdx === 0 ? 1 : -1; }
+function myColor(): Side { return state.mode === 'ai' ? 1 : (state.myIdx === 0 ? 1 : -1); }
 function humanSide(): Side {
   return state.mode === 'ai' ? 1 : state.gs.side;
 }
@@ -416,14 +416,14 @@ function scheduleEndScreen(): void {
 function finish(winner: Side | 0): void {
   if (state.mode === 'online' && isClassroom() && state.roomCode) {
     const dur = state.timer ? Date.now() - state.timer.startedAt : 0;
-    const meWon = winner !== myColor();
+    const meWon = winner === myColor();
     reportRound(state.roomCode, {
       round: 1, solved: !!meWon, duration_ms: dur,
       outcome: meWon ? 'win' : 'loss',
     });
   }
 
-  const meWon = state.mode === 'ai' ? winner === -1 : (state.mode === 'online' ? winner !== myColor() : false);
+  const meWon = winner === myColor();
   const verdict = meWon ? window.t('bg.bg_xq_you_win') : window.t('bg.bg_xq_you_lose');
   const line = winner === 0 ? window.t('bg.bg_xq_draw_line') : (meWon ? window.t('bg.bg_xq_win_line') : window.t('bg.bg_xq_lose_line'));
   endVerdict.textContent = verdict;
