@@ -362,3 +362,60 @@ html[data-theme="dark"] body.home-v2 .bd-toast-item { box-shadow: 0 8px 20px rgb
   body.home-v2.bd-in-match .go-rp-range { margin-top: 7px; }
   body.home-v2.bd-in-match #go-back-lobby { order: 5; }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   KataGo 引擎加载卡
+   🔴 手机端必需：5 MB 模型在弱网下要好几秒，只有转瞬即逝的 toast
+   会让玩家以为「加载失败」而刷新页面。进度用 fetch 的 Content-Length
+   做真实百分比，拿不到长度时走不确定态动画。
+   ══════════════════════════════════════════════════════════════ */
+.go-kg-load {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .06);
+  border: 1px solid rgba(255, 255, 255, .10);
+  display: grid;
+  gap: 8px;
+}
+.go-kg-load[hidden] { display: none; }
+.go-kg-load-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.35;
+}
+.go-kg-load-note { opacity: .55; font-size: 11px; white-space: nowrap; }
+.go-kg-track {
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .12);
+  overflow: hidden;
+}
+.go-kg-bar {
+  height: 100%;
+  width: 0;
+  border-radius: 999px;
+  background: var(--brand, #5b8cff);
+  transition: width .18s ease-out;
+}
+/* 拿不到 Content-Length 时：来回扫的动画，表示「在动但不知道到哪」 */
+.go-kg-bar.is-indeterminate {
+  width: 100% !important;
+  background: linear-gradient(90deg,
+    rgba(91, 140, 255, 0) 0%, var(--brand, #5b8cff) 35%,
+    var(--brand, #5b8cff) 65%, rgba(91, 140, 255, 0) 100%);
+  background-size: 220% 100%;
+  animation: go-kg-slide 1.15s linear infinite;
+  transition: none;
+}
+@keyframes go-kg-slide {
+  from { background-position: 140% 0; }
+  to   { background-position: -40% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .go-kg-bar.is-indeterminate { animation: none; background: var(--brand, #5b8cff); }
+  .go-kg-bar { transition: none; }
+}

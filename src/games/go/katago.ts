@@ -38,6 +38,16 @@ export interface KatagoStatus {
   backend: string;
   /** 失败原因（若有），可直接展示给用户 */
   error: string | null;
+  /**
+   * 0~1 的模型下载进度。
+   * 🔴 手机端必须要这个：模型 3.7 MB，弱网下要好几秒，只有一个转瞬即逝的 toast
+   * 会让玩家以为「加载失败」。null = 还没开始/已结束。
+   */
+  downloadProgress: number | null;
+  /** 已下载字节（调试/展示用） */
+  loadedBytes: number;
+  /** 模型总字节 */
+  totalBytes: number;
 }
 
 type Progress = (msg: string) => void;
@@ -47,10 +57,89 @@ let kgPromise: Promise<any> | null = null;
 let backendName = '';
 let lastError: string | null = null;
 
-const state: KatagoStatus = { ready: false, loading: false, backend: '', error: null };
+const state: KatagoStatus = {
+  ready: false, loading: false, backend: '', error: null,
+  downloadProgress: null, loadedBytes: 0, totalBytes: 0,
+};
 
 export function katagoStatus(): KatagoStatus {
   return { ...state };
+}
+
+// 只读状态钩子，供 E2E 断言「神经网络是否真的就绪」。
+// 🔴 有了这个，验收才能区分「KataGo 在跑」与「静默降级到规则档」——
+// 后者曾经伪装成成功（棋盘上有子，但引擎早炸了）。
+(globalThis as any).__kgStatus = katagoStatus;
+
+/**
+ * 带进度地 fetch 模型权重。
+ * 🔴 不用 fetch().arrayBuffer()：它不给进度，手机弱网下用户只能干等（看起来像失败）。
+ */
+async function fetchModel(): Promise<Uint8Array> {
+  // 🔴 手机端弱网下 3.7 MB 很容易中断，一次失败就永久降级太脆。
+  // 最多 2 次重试；第 2 次失败才放弃。
+  let lastErr: unknown = null;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      return await fetchModelOnce();
+    } catch (e) {
+      lastErr = e;
+      state.error = null;             // 重试中别把「第一次失败」当成最终结论
+      if (attempt < 2) await new Promise((r) => setTimeout(r, 800));
+    }
+  }
+  throw lastErr instanceof Error ? lastErr : new Error(String(lastErr));
+}
+
+async function fetchModelOnce(): Promise<Uint8Array> {
+  const resp = await fetch(MODEL);
+  if (!resp.ok) throw new Error(`model fetch failed: HTTP ${resp.status}`);
+
+  // 拿不到长度就退回一次性读（Content-Length 缺失时）
+  const lenHeader = resp.headers.get('content-length');
+  if (!resp.body || !lenHeader) {
+    state.downloadProgress = null;
+    const gz = new Uint8Array(await resp.arrayBuffer());
+    if (typeof DecompressionStream !== 'function') {
+      throw new Error('DecompressionStream unsupported in this browser');
+    }
+    const stream = new Blob([gz]).stream().pipeThrough(new DecompressionStream('gzip'));
+    return new Uint8Array(await new Response(stream).arrayBuffer());
+  }
+
+  const total = Number(lenHeader);
+  state.totalBytes = total;
+  state.loadedBytes = 0;
+  state.downloadProgress = 0;
+
+  const reader = resp.body.getReader();
+  const chunks: Uint8Array[] = [];
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (value) {
+      chunks.push(value);
+      state.loadedBytes += value.byteLength;
+      state.downloadProgress = Math.min(1, state.loadedBytes / total);
+    }
+  }
+  // 合并成一个连续 buffer
+  const gz = new Uint8Array(state.loadedBytes);
+  let off = 0;
+  for (const c of chunks) { gz.set(c, off); off += c.byteLength; }
+  state.downloadProgress = null;   // 进入解压 / 解析阶段
+
+  // 🔴 模型是 gzip 存的（3.7 MB → 7.1 MB），必须显式解压。
+  // 漏这一步会让 parseKataGoModelV8 直接读压缩字节，报
+  // "Invalid int token: )%i…." —— 表现为「模型加载失败」，与手机端无关但同样致命。
+  // 用平台内置的 DecompressionStream，不引第三方库（红线：别为解压加 30 KB 依赖）。
+  if (typeof DecompressionStream === 'function') {
+    const ds = new DecompressionStream('gzip');
+    const stream = new Blob([gz]).stream().pipeThrough(ds);
+    return new Uint8Array(await new Response(stream).arrayBuffer());
+  }
+  // 老浏览器没有 DecompressionStream：只能放弃（KataGo 档不可用，会降级）
+  throw new Error('DecompressionStream unsupported in this browser');
 }
 
 function loadScript(src: string): Promise<void> {
@@ -72,21 +161,38 @@ function bootTf(progress?: Progress): Promise<Tf> {
 
   tfPromise = (async () => {
     progress?.('tfjs');
-    // core 必须先加载；后端按 webgl → cpu 顺序试，webgpu 在集显上反而更慢，不进默认链。
-    await loadScript(`${TFJS}/tf-core.min.js`);
     const w = globalThis as any;
+
+    // 🔴 core 必须先加载，且后端脚本要在 setBackend 之前就位。
+    // 原实现把 tf-backend-cpu.min.js 放在 setBackend('webgl') 失败的 catch 里加载，
+    // 结果：一旦 setBackend('webgl')「成功」就永远不会加载 cpu，而很多手机其实是
+    // WebGL 初始化成功但前向一跑就崩/超时 → 没有任何可用后端。
+    // 现在无条件加载 cpu（约 130 KB），webgl / cpu 至少有一个可用。
+    await loadScript(`${TFJS}/tf-core.min.js`);
     if (!w.tf) throw new Error('tfjs core did not register window.tf');
     const tf = w.tf;
 
     await loadScript(`${TFJS}/tf-backend-webgl.min.js`);
+    await loadScript(`${TFJS}/tf-backend-cpu.min.js`);
+
+    // 真机探测：WebGL 上下文拿不到就直接别试 webgl，省掉一次失败的 GPU 初始化
+    // （某些移动端 WebGL 初始化会卡住整帧，表现为「加载中」一直转）。
+    let hasWebgl = false;
     try {
-      await tf.setBackend('webgl');
-      await tf.ready();
-      backendName = 'webgl';
-    } catch {
-      // WebGL 不可用（老设备 / 禁 GPU / 无头环境）→ 退到 CPU。单手会慢到 1 s 量级，
-      // 但至少能玩；UI 层据此提示。
-      await loadScript(`${TFJS}/tf-backend-cpu.min.js`);
+      const c = document.createElement('canvas');
+      hasWebgl = !!(c.getContext('webgl2') || c.getContext('webgl'));
+    } catch { hasWebgl = false; }
+
+    if (hasWebgl) {
+      try {
+        await tf.setBackend('webgl');
+        await tf.ready();
+        backendName = 'webgl';
+      } catch {
+        backendName = '';
+      }
+    }
+    if (!backendName) {
       await tf.setBackend('cpu');
       await tf.ready();
       backendName = 'cpu';
@@ -95,19 +201,11 @@ function bootTf(progress?: Progress): Promise<Tf> {
   })()
     .then(async (tf) => {
       progress?.('modules');
-      const [{ KgModel }, { parseKataGoModelV8 }] = await Promise.all([
+      const [{ KgModel }] = await Promise.all([
         import(/* @vite-ignore */ `${TFJS}/kg-model.mjs`),
-        import(/* @vite-ignore */ `${TFJS}/kg-parse.mjs`),
       ]);
       const kg = globalThis as any;
       kg.KgModel = KgModel;
-      kg.parseKataGoModelV8 = parseKataGoModelV8;
-      // 面积计算模块被 kg-features 内部 import，这里挂到全局供 page 侧对齐
-      if (!kg.KG_AREA) {
-        try {
-          kg.KG_AREA = await import(/* @vite-ignore */ `${TFJS}/kg-area.mjs`);
-        } catch { /* 面积模块缺失会导致 planes 18/19 退化为空，属可接受降级 */ }
-      }
       state.backend = backendName;
       return tf;
     })
@@ -148,11 +246,14 @@ function bootKg(size: number, progress?: Progress): Promise<any> {
   progress?.('model');
   kgPromise = (async () => {
     const tf = await bootTf(progress);
-    const res = await fetch(MODEL);
-    if (!res.ok) throw new Error(`model fetch failed: HTTP ${res.status}`);
-    const raw = new Uint8Array(await res.arrayBuffer());
+    const raw = await fetchModel();
     progress?.('parse');
-    const parsed = tf.tidy(() => tf.decode(raw, 'string'));
+    // 🔴 正确用法是 parseKataGoModelV8(raw)——kg-parse.mjs 导出的函数，自己按
+    // DataView 解字节。**不要用 tf.decode()**：TF.js 4.22 的 core bundle 里没有它
+    // （实测 tf.decode === undefined，静态/动态加载都一样），会直接抛
+    // "tf.decode is not a function"，进而被 catch 成「KataGo 不可用」静默降级到 hard。
+    const { parseKataGoModelV8 } = await import(/* @vite-ignore */ `${TFJS}/kg-parse.mjs`);
+    const parsed = parseKataGoModelV8(raw);
     const m = new (globalThis as any).KgModel(tf, parsed, size);
     // fillInputsV7 挂在 kg-features 上，makeInput 需要它
     const features = await import(/* @vite-ignore */ `${TFJS}/kg-features.mjs`);

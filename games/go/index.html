@@ -138,6 +138,15 @@
     <div class="bd-play">
       <div class="bd-board-wrap go-board-host">
         <div id="bd-board" class="go-board"></div>
+
+        <!-- KataGo 引擎加载卡：5 MB 模型在弱网下要好几秒，没有它用户会以为加载失败 -->
+        <div id="go-kg-load" class="go-kg-load" hidden>
+          <div class="go-kg-load-row">
+            <span id="go-kg-txt" data-i18n="bg.bg_go_kg_downloading">Downloading the engine</span>
+            <span class="go-kg-load-note" data-i18n="bg.bg_go_kg_once">one-time, ~5 MB</span>
+          </div>
+          <div class="go-kg-track"><div id="go-kg-bar" class="go-kg-bar"></div></div>
+        </div>
       </div>
 
       <aside class="bd-side">
@@ -150,8 +159,6 @@
         </div>
 
         <div class="go-sizes" id="go-sizes">
-          <button type="button" data-size="9">9×9</button>
-          <button type="button" data-size="13">13×13</button>
           <button type="button" data-size="19" class="is-cur">19×19</button>
         </div>
 
@@ -211,8 +218,6 @@
               <button type="button" id="go-level-close" aria-label="Close">×</button>
             </div>
             <div class="go-level-opts">
-              <button type="button" class="go-level-opt" data-level="medium"><b data-i18n="bg.bg_go_lv_medium_t">Adept</b><span data-i18n="bg.bg_go_lv_medium_s">sees threats, takes captures</span></button>
-              <button type="button" class="go-level-opt" data-level="hard"><b data-i18n="bg.bg_go_lv_hard_t">Master</b><span data-i18n="bg.bg_go_lv_hard_s">searches deeply, reads your replies</span></button>
               <button type="button" class="go-level-opt is-cur" data-level="katago"><b data-i18n="bg.bg_go_lv_katago_t">KataGo</b><span data-i18n="bg.bg_go_lv_katago_s">neural net, strongest — loads ~5 MB</span></button>
             </div>
           </div>

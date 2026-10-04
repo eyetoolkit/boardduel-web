@@ -90,7 +90,7 @@ interface UIState {
 const state: UIState = {
   screen: 'match',
   mode: 'ai',
-  level: 'hard',       // 默认最强档（W5.5 新增 hard；纯规则 2-ply，8/8 胜随机）
+  level: 'katago',     // 唯一档：神经网络 AI（medium/hard 规则档已从 UI 移除）
   size: 19,
   handicap: 0,
   go: initialState(19),
@@ -110,6 +110,8 @@ const state: UIState = {
 let ghost = -1;
 let moveToken = 0;
 let aiTimer: number | null = null;
+/** KataGo 下载进度轮询（200ms），见 startKatagoWarmup */
+let kgPollTimer: number | null = null;
 let clockTimer: number | null = null;
 let replayTimer: number | null = null;
 let replayPlaying = false;
@@ -477,6 +479,46 @@ function aiFallbackNote(err: string): void {
   toast(t('bg.bg_go_katago_fallback', 'KataGo could not load, playing at Master level instead') + ` (${err})`);
 }
 
+/**
+ * 🔴 手机端的加载反馈。
+ *
+ * 症状：5 MB 弱网下要好几秒，而原来只有一个 2.2 秒的 toast —— 用户看到屏幕没反应
+ * 就以为「加载失败」。这里改成一个常驻的加载卡，带真实百分比（来自 fetch 的
+ * Content-Length），并在超长无响应时给出可重试的按钮。
+ */
+function updateLoadCard(): void {
+  const card = document.getElementById('go-kg-load');
+  if (!card) return;
+  const st = katagoStatus();
+  const need = st.loading;
+  card.hidden = !need;
+  if (!need) return;
+  const pct = st.downloadProgress;
+  const bar = document.getElementById('go-kg-bar');
+  const txt = document.getElementById('go-kg-txt');
+  if (bar) bar.style.width = pct == null ? '100%' : `${Math.round(pct * 100)}%`;
+  if (bar) bar.classList.toggle('is-indeterminate', pct == null);
+  if (txt) {
+    txt.textContent = pct == null
+      ? t('bg.bg_go_kg_preparing', 'Preparing the engine…')
+      : t('bg.bg_go_kg_downloading', 'Downloading the engine') + ` ${Math.round(pct * 100)}%`;
+  }
+}
+
+/** 启动 KataGo 预热（带进度 UI + 失败重试）。 */
+function startKatagoWarmup(): void {
+  if (!isNeural(state.level)) return;
+  updateLoadCard();
+  // 轮询进度：fetch 的 reader 每收到一块就更新 katagoStatus()，
+  // 这里 200 ms 刷一次 UI 就够（再密只是烧 CPU）。
+  if (kgPollTimer) window.clearInterval(kgPollTimer);
+  kgPollTimer = window.setInterval(updateLoadCard, 200);
+  void warmupKatago(state.size)
+    .then(updateLoadCard)
+    .catch(updateLoadCard)
+    .finally(() => { if (kgPollTimer) { window.clearInterval(kgPollTimer); kgPollTimer = 0; } });
+}
+
 /** 第三档：KataGo 神经网络回合（异步）。 */
 async function runKatagoTurn(): Promise<void> {
   state.aiThinking = true;
@@ -793,10 +835,7 @@ levelCard.addEventListener('click', (ev) => {
   state.level = b.dataset.level as Difficulty;
   levelCard.hidden = true;
   // 神经网络档：先在后台把 TF.js + 权重拉起来，5 MB 下载不占用玩家的思考时间。
-  if (isNeural(state.level)) {
-    toast(t('bg.bg_go_katago_loading', 'Loading the KataGo model…'));
-    void warmupKatago(state.size);
-  }
+  if (isNeural(state.level)) startKatagoWarmup();
   newGame();
 });
 $<HTMLButtonElement>('go-level-close').addEventListener('click', () => { levelCard.hidden = true; });
@@ -836,10 +875,12 @@ function readMode(): void {
   const q = new URLSearchParams(location.search);
   const m = q.get('mode');
   state.mode = m === 'pass' ? 'pass' : 'ai';
+  // 2026-10-04：UI 只保留 katago 一档，但旧深链（?level=hard 等）仍要能进游戏，
+  // 否则玩家从收藏的链接进来会掉进「没选难度」的状态。
   const lv = q.get('level');
-  if (lv === 'easy' || lv === 'medium' || lv === 'hard') state.level = lv;
-  const sz = q.get('size');
-  if (sz === '9' || sz === '13' || sz === '19') state.size = Number(sz) as Size;
+  if (lv === 'easy' || lv === 'medium' || lv === 'hard' || lv === 'katago') state.level = lv;
+  // 9 路 / 13 路已下线（模型只按 19 路调优过），旧深链统一落到 19 路而不是报错。
+  state.size = 19;
   // 让子只在同屏双人模式有意义（AI 棋力固定，不需要让子）
   const hc = q.get('hc');
   if (state.mode === 'pass' && hc && /^[02469]$/.test(hc)) state.handicap = Number(hc);
@@ -850,6 +891,9 @@ function boot(): void {
   levelBtn.hidden = state.mode !== 'ai';
   $<HTMLElement>('go-handicap').hidden = state.mode !== 'pass';   // 让子仅同屏双人
   syncSound();
+  // 神经网络档：进页面就预热（5 MB 弱网下要几秒，越早开始越好），
+  // 不要等玩家走完第一手才加载。
+  if (state.mode === 'ai') startKatagoWarmup();
   newGame();
   // i18n 字典异步 fetch：ready/change 后重渲染，避免首帧裸 key（gomoku 同款坑）
   window.addEventListener('i18n:ready', () => { updateInfo(); syncSound(); });
