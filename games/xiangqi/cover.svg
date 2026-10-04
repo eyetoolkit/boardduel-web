@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#C0392B"/>
+  <rect x="70" y="64" width="372" height="384" fill="#EFD9A8" rx="10"/>
+  <g stroke="#6B4F2A" stroke-width="4">
+    <line x1="106" y1="96" x2="106" y2="416"/>
+    <line x1="406" y1="96" x2="406" y2="416"/>
+    <line x1="106" y1="96" x2="406" y2="96"/>
+    <line x1="106" y1="256" x2="406" y2="256"/>
+    <line x1="106" y1="416" x2="406" y2="416"/>
+    <line x1="226" y1="96" x2="226" y2="196"/>
+    <line x1="286" y1="96" x2="286" y2="196"/>
+    <line x1="226" y1="316" x2="226" y2="416"/>
+    <line x1="286" y1="316" x2="286" y2="416"/>
+    <line x1="226" y1="96" x2="286" y2="196"/>
+    <line x1="286" y1="96" x2="226" y2="196"/>
+    <line x1="226" y1="316" x2="286" y2="416"/>
+    <line x1="286" y1="316" x2="226" y2="416"/>
+  </g>
+  <circle cx="256" cy="160" r="22" fill="#F7E8C8" stroke="#1A1A1A" stroke-width="3"/>
+  <text x="256" y="160" dy="0.35em" text-anchor="middle" font-size="26" font-family="serif" fill="#1A1A1A" font-weight="700">将</text>
+  <circle cx="256" cy="352" r="22" fill="#F7E8C8" stroke="#C0392B" stroke-width="3"/>
+  <text x="256" y="352" dy="0.35em" text-anchor="middle" font-size="26" font-family="serif" fill="#C0392B" font-weight="700">帅</text>
+</svg>

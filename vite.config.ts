@@ -42,6 +42,9 @@ const BETA_ONLY_INPUTS: Record<string, string> = {
   // 围棋游戏页 + lobby
   go: resolve(here, 'games/go/index.html'),
   goLobby: resolve(here, 'games/go/lobby/index.html'),
+  // 中国象棋游戏页 + lobby
+  xiangqi: resolve(here, 'games/xiangqi/index.html'),
+  xiangqiLobby: resolve(here, 'games/xiangqi/lobby/index.html'),
   // 围棋教程 6 页（规则 / 提子 / 劫与自杀 / 让子 / 数目终局）
   howtoGo: resolve(here, 'how-to-play/go/index.html'),
   howtoGoRules: resolve(here, 'how-to-play/go/rules/index.html'),
