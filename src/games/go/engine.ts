@@ -401,6 +401,46 @@ export function scoreWithDead(state: GoState, dead: DeadSet): ReturnType<typeof 
   return scoreChinese({ ...state, board });
 }
 
+/**
+ * 扫描盘面把每个空点按区域归属染色：黑独占→黑；白独占→白；中立跳过。
+ * 与 scoreChinese 共用判定（flood-fill 邻接单色），保证两边数字一致。
+ * 用作「形势」叠加层的渲染输入 —— 点「形势」按钮时把这些空点涂成浅色。
+ *
+ * ⚠️ 死子先 resolveDead 移除再做归属（与 scoreWithDead 一致），
+ * 否则玩家把某块标死后，那块棋围的空地仍会算成「我方领地」，
+ * 形势图与目数对不上会让玩家迷惑。
+ */
+export function territoryByColor(board: Board, size: number, dead: DeadSet): { black: number[]; white: number[] } {
+  const resolved = resolveDead(board, size, dead);
+  const black: number[] = [];
+  const white: number[] = [];
+  const seen = new Set<number>();
+  for (let i = 0; i < resolved.length; i++) {
+    if (resolved[i] !== 0 || seen.has(i)) continue;
+    const region: number[] = [];
+    const stack = [i];
+    seen.add(i);
+    let tb = false, tw = false;
+    while (stack.length) {
+      const cur = stack.pop() as number;
+      region.push(cur);
+      const x = cur % size, y = (Math.floor(cur / size));
+      for (const [dx, dy] of [[1, 0], [0, 1], [-1, 0], [0, -1]] as const) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= size || ny >= size) continue;
+        const ni = ny * size + nx;
+        if (resolved[ni] === 0) { if (!seen.has(ni)) { seen.add(ni); stack.push(ni); } }
+        else if (resolved[ni] === 1) tb = true;
+        else tw = true;
+      }
+    }
+    if (tb && !tw) black.push(...region);
+    else if (tw && !tb) white.push(...region);
+    // 中立（tb && tw）跳过，不入形势图
+  }
+  return { black, white };
+}
+
 /** 快速判定：给定死子集合后，是否有任何一个死子其实还「有 2 气以上」（活着的），用于「复活」检查 */
 export function stoneIsAlive(board: Board, size: number, i: number): boolean {
   if (board[i] === 0) return false;

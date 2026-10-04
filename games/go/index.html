@@ -162,6 +162,23 @@
           <button type="button" data-size="19" class="is-cur">19×19</button>
         </div>
 
+        <!-- 点目面板：任意时刻点「∑」按钮展开，显示完整目数精算（活子 + 围空 + 贴目） -->
+        <div class="go-scorepanel" id="go-scorepanel" hidden>
+          <div class="go-scorepanel-h">
+            <b data-i18n="bg.bg_go_score_panel_title">Score breakdown</b>
+            <button type="button" id="go-scorepanel-close" data-i18n-aria-label="bg.bg_go_score_panel_close_aria" aria-label="Close">×</button>
+          </div>
+          <table class="go-scorepanel-tbl">
+            <thead>
+              <tr><th></th><th data-i18n="bg.bg_go_stones_col">Stones</th><th data-i18n="bg.bg_go_terr_col">Territory</th><th data-i18n="bg.bg_go_total_col">Total</th></tr>
+            </thead>
+            <tbody id="go-scorepanel-body">
+              <!-- JS 注入 -->
+            </tbody>
+          </table>
+          <p class="go-scorepanel-komi" id="go-scorepanel-komi"></p>
+        </div>
+
         <!-- 终局数目条：双 pass 后进入，标对方死子 → 确认结算 -->
         <div class="go-countbar" id="go-countbar" hidden>
           <p class="go-count-hint" id="go-count-hint" data-i18n="bg.bg_go_count_hint">Tap a group of enemy stones to mark them dead. Empty eyes you already own are yours.</p>
@@ -184,6 +201,8 @@
           <button type="button" class="go-btn" id="go-undo" data-i18n="bg.bg_go_undo">Undo</button>
           <button type="button" class="go-btn" id="go-pass" data-i18n="bg.bg_go_pass">Pass</button>
           <button type="button" class="go-btn" id="go-level" hidden data-i18n="bg.bg_go_level">Level</button>
+          <button type="button" class="go-btn" id="go-situation" aria-pressed="false" data-i18n-aria-label="bg.bg_go_situation_aria" aria-label="Situation overlay" title="Situation">▦</button>
+          <button type="button" class="go-btn" id="go-score-panel" aria-pressed="false" data-i18n-aria-label="bg.bg_go_score_panel_aria" aria-label="Score breakdown" title="Score">∑</button>
           <button type="button" class="go-btn is-danger" id="go-resign">Resign</button>
         </div>
 

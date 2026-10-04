@@ -419,3 +419,66 @@ html[data-theme="dark"] body.home-v2 .bd-toast-item { box-shadow: 0 8px 20px rgb
   .go-kg-bar.is-indeterminate { animation: none; background: var(--brand, #5b8cff); }
   .go-kg-bar { transition: none; }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   形势叠加层（点「形势」后启用）
+   - 用小方块表示每个空位的归属（黑/白/中立不画）
+   - 半透明叠加在棋盘网格上，不挡落子命中区
+   ══════════════════════════════════════════════════════════════ */
+body.home-v2 .go-sit-mark {
+  pointer-events: none;
+  opacity: .35;
+}
+body.home-v2 .go-sit-mark.go-sit-b { fill: #1b212a; }
+body.home-v2 .go-sit-mark.go-sit-w {
+  fill: #F4F6F2;
+  stroke: #1b212a; stroke-width: 0.6;
+}
+html[data-theme="dark"] body.home-v2 .go-sit-mark.go-sit-b { fill: #cbd5e1; }
+html[data-theme="dark"] body.home-v2 .go-sit-mark.go-sit-w {
+  fill: #1b212a; stroke: #cbd5e1; stroke-width: 0.6;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   点目面板（任意时刻可开启）
+   - 紧贴 status-card 下，显示活子/围空/合计三列
+   - 「差」一行用颜色标记胜负
+   ══════════════════════════════════════════════════════════════ */
+body.home-v2 .go-scorepanel {
+  margin-top: 12px; padding: 12px 14px;
+  border: 1px solid var(--line); border-radius: 12px;
+  background: var(--ink2);
+}
+body.home-v2 .go-scorepanel[hidden] { display: none; }
+body.home-v2 .go-scorepanel-h {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+body.home-v2 .go-scorepanel-h b { font-family: var(--disp); font-size: .9rem; }
+body.home-v2 .go-scorepanel-h button {
+  background: transparent; border: 0; color: var(--mute2);
+  font-size: 1.2rem; line-height: 1; padding: 0 6px; cursor: pointer;
+}
+body.home-v2 .go-scorepanel-tbl {
+  width: 100%; border-collapse: collapse; font-size: .82rem;
+}
+body.home-v2 .go-scorepanel-tbl th,
+body.home-v2 .go-scorepanel-tbl td {
+  text-align: right; padding: 4px 0;
+}
+body.home-v2 .go-scorepanel-tbl th:first-child,
+body.home-v2 .go-scorepanel-tbl td:first-child {
+  text-align: left; padding-left: 4px;
+}
+body.home-v2 .go-scorepanel-tbl th {
+  color: var(--mute2); font-weight: 500; font-size: .72rem;
+  border-bottom: 1px solid var(--line);
+}
+body.home-v2 .go-scorepanel-tbl td { border-bottom: 1px dotted var(--line); }
+body.home-v2 .go-scorepanel-tbl tr:last-child td { border-bottom: 0; }
+body.home-v2 .go-scorepanel-tbl td b { font-family: var(--disp); font-size: .95rem; }
+body.home-v2 .go-scorepanel-side.go-scorepanel-b { color: #2b3340; font-weight: 700; }
+body.home-v2 .go-scorepanel-side.go-scorepanel-w { color: #6b7280; font-weight: 700; }
+body.home-v2 .go-scorepanel-komi {
+  margin: 8px 0 0; font-size: .72rem; color: var(--mute2); text-align: right;
+}

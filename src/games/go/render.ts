@@ -67,6 +67,11 @@ export interface GoRenderInput {
   hitMode?: 'play' | 'count';
   /** count 模式下哪些颜色算「敌」（用于生成命中区） */
   countEnemy?: Player;
+  /**
+   * 「形势」叠加层：把每个空点按归属染成浅黑/浅白，仅在玩家主动打开时传入。
+   * 不传或 undefined 时不渲染 —— 棋盘外观与之前一致。
+   */
+  situation?: { black: number[]; white: number[] };
 }
 
 /**
@@ -95,6 +100,7 @@ export function renderGoBoardSVG(input: GoRenderInput): string {
   const interactive = input.interactive ?? false;
   const hitMode = input.hitMode ?? 'play';
   const countEnemy = input.countEnemy ?? 0;
+  const situation = input.situation;
 
   const inner = GO_SLOT - 2 * PAD;
   const cell = inner / (size - 1);
@@ -182,6 +188,27 @@ export function renderGoBoardSVG(input: GoRenderInput): string {
     terrMarks += `<rect class="go-terr-mark" x="${(px - tR).toFixed(2)}" y="${(py - tR).toFixed(2)}" width="${(tR * 2).toFixed(2)}" height="${(tR * 2).toFixed(2)}" rx="2"/>`;
   }
 
+  // ── 形势叠加（玩家主动点「形势」时启用）：把空点按归属染色
+  // 用小三角标记每个空位的归属，浅色不干扰落子决策。
+  let sitMarks = '';
+  if (situation) {
+    const sR = cell * 0.14;
+    for (const i of situation.black) {
+      if (board[i] !== 0) continue;
+      const gx = i % size;
+      const gy = Math.floor(i / size);
+      const [px, py] = cellXY(size, gx, gy);
+      sitMarks += `<rect class="go-sit-mark go-sit-b" x="${(px - sR).toFixed(2)}" y="${(py - sR).toFixed(2)}" width="${(sR * 2).toFixed(2)}" height="${(sR * 2).toFixed(2)}" rx="1"/>`;
+    }
+    for (const i of situation.white) {
+      if (board[i] !== 0) continue;
+      const gx = i % size;
+      const gy = Math.floor(i / size);
+      const [px, py] = cellXY(size, gx, gy);
+      sitMarks += `<rect class="go-sit-mark go-sit-w" x="${(px - sR).toFixed(2)}" y="${(py - sR).toFixed(2)}" width="${(sR * 2).toFixed(2)}" height="${(sR * 2).toFixed(2)}" rx="1"/>`;
+    }
+  }
+
   // ── 提子幻影（播缩小淡出动画；这些点在 after board 中已为空） ──
   let caps = '';
   for (const i of captured) {
@@ -238,6 +265,6 @@ export function renderGoBoardSVG(input: GoRenderInput): string {
 
   return `<svg viewBox="0 0 ${GO_SLOT} ${GO_SLOT}" role="img" aria-label="Go board, ${size} by ${size}" preserveAspectRatio="xMidYMid meet">
   ${defs}${frame}
-  ${lines}${stars}${coords}${terrMarks}${stones}${deadMarks}${caps}${ghostEl}${hits}
+  ${lines}${stars}${coords}${terrMarks}${sitMarks}${stones}${deadMarks}${caps}${ghostEl}${hits}
 </svg>`;
 }

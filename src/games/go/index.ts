@@ -16,6 +16,7 @@ import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 import {
   initialState, play, pass, notation, opponent,
   scoreWithDead, toggleDeadGroup, resolveDead, hashPosition,
+  territoryByColor,
   type GoState, type Player, type DeadSet,
 } from './engine';
 import { renderGoBoardSVG, diffCaptures } from './render';
@@ -85,6 +86,17 @@ interface UIState {
   counting: boolean;               // 终局数目确认阶段
   dead: DeadSet;                   // 玩家标定的「对方死子」下标
   /**
+   * 「形势」叠加层：玩家主动点「形势」按钮时为 true，把每个空位按归属染色；
+   * 默认 false，棋盘外观与之前一致。
+   * 终局（state.over）时强制关闭 —— 双方已确认死子，进「点目」精算即可。
+   */
+  showSituation: boolean;
+  /**
+   * 「点目」面板：true 时显示精算目数（活子 + territory + 贴目，含 KOMI）。
+   * 与 `state.counting` 不同：counting 是终局后死子确认，这个是**任意时刻**的精算。
+   */
+  showScorePanel: boolean;
+  /**
    * 🔴 2026-10-04：已出现过的局面哈希集合（board + toPlay），用于 positional superko。
    *
    * 中国规则要求「同形再现禁止」—— 整盘局面 + 轮到方不得重复。
@@ -114,6 +126,8 @@ const state: UIState = {
   endScheduled: false,
   counting: false,
   dead: new Set(),
+  showSituation: false,
+  showScorePanel: false,
   posHashes: new Set<string>(),
 };
 
@@ -177,6 +191,11 @@ const resignBtn = $<HTMLButtonElement>('go-resign');
 const countBar = $<HTMLElement>('go-countbar');
 const countB = $<HTMLElement>('go-count-b');
 const countW = $<HTMLElement>('go-count-w');
+const situationBtn = $<HTMLButtonElement>('go-situation');
+const scorePanelBtn = $<HTMLButtonElement>('go-score-panel');
+const scorePanel = $<HTMLElement>('go-scorepanel');
+const scorePanelBody = $<HTMLElement>('go-scorepanel-body');
+const scorePanelKomi = $<HTMLElement>('go-scorepanel-komi');
 
 /** 取翻译：字典未就绪 / 未命中时回退到 fallback（避免首帧显示裸 key） */
 const t = (k: string, fallback: string): string => {
@@ -206,6 +225,11 @@ function renderBoard(opts?: { placed?: number; captured?: number[]; capturedColo
     ghost,
     dead: state.counting ? [...state.dead] : [],
     territory: state.counting ? territoryOf(state.dead) : [],
+    // 「形势」叠加：玩家主动开启时把每个空位按归属染色。
+    // 终局后强制关闭 —— 玩家已认输/超时，再显示染色反而误导。
+    situation: state.showSituation && !state.over
+      ? territoryByColor(state.go.board, state.size, state.dead)
+      : undefined,
     interactive: true,
     hitMode: state.counting ? 'count' : 'play',
     countEnemy: (state.mode === 'ai' ? AI : (state.go.toPlay === 1 ? 2 : 1)) as Player,
@@ -352,6 +376,8 @@ function updateInfo(): void {
     ? `${t('bg.bg_go_vs', 'vs engine')} · ${levelLabel()}`
     : t('bg.bg_go_pass_play', 'Pass & Play');
   renderClocks();
+  // 点目面板开着就跟着刷新（每手棋后数值变）
+  if (state.showScorePanel) renderScorePanel();
 }
 
 function renderClocks(): void {
@@ -687,6 +713,8 @@ function newGame(sz?: Size): void {
   state.resignArmed = false;
   state.endScheduled = false;
   state.reviewAt = null;
+  state.showSituation = false;          // 关闭形势叠加层
+  state.showScorePanel = false;         // 关闭点目面板
   ghost = -1;
   moveToken++;
   metaSizeEl.textContent = `${state.size}×${state.size}`;
@@ -759,6 +787,60 @@ function doResign(): void {
     return;
   }
   finishByResign();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   形势 / 点目（玩家主动触发的叠加层 + 精算面板）
+
+   - 「形势」：把每个空点按归属染色（黑/白独占），中立空点不画。
+   - 「点目」：任意时刻展示精算目数（活子 + 围空 + KOMI），与终局的
+     死子确认逻辑共用 engine.scoreWithDead / territoryByColor。
+   - 两者都是「视图层」功能，不动 state.go，不算手，不触发 i18n。
+   ══════════════════════════════════════════════════════════════ */
+function toggleSituation(): void {
+  // 终局后强制关闭 —— 双方已确认死子，再染色反而误导
+  if (state.over) return;
+  state.showSituation = !state.showSituation;
+  situationBtn.setAttribute('aria-pressed', String(state.showSituation));
+  renderBoard();
+}
+
+function toggleScorePanel(): void {
+  state.showScorePanel = !state.showScorePanel;
+  scorePanel.hidden = !state.showScorePanel;
+  scorePanelBtn.setAttribute('aria-pressed', String(state.showScorePanel));
+  if (state.showScorePanel) renderScorePanel();
+}
+
+function renderScorePanel(): void {
+  // 用 scoreWithDead 而不是 scoreChinese —— 玩家若已标了死子（counting），
+  // 面板数值必须与「终局结算」保持一致，否则「点目」与「确认结算」对不上。
+  const sc = scoreWithDead(state.go, state.dead);
+  const sign = (n: number) => n > 0 ? '+' + n.toFixed(1) : n.toFixed(1);
+  // 行：黑 / 白 / 差（已含 KOMI；scoreWithDead 把 +7.5 加到白上）
+  const diff = sc.black - sc.white;
+  scorePanelBody.innerHTML = `
+    <tr>
+      <td class="go-scorepanel-side go-scorepanel-b">${t('bj.black_p1', 'Black')}</td>
+      <td>${sc.blackStones}</td>
+      <td>${sc.blackTerritory}</td>
+      <td><b>${sc.black.toFixed(1)}</b></td>
+    </tr>
+    <tr>
+      <td class="go-scorepanel-side go-scorepanel-w">${t('bj.white_p2', 'White')}</td>
+      <td>${sc.whiteStones}</td>
+      <td>${sc.whiteTerritory}</td>
+      <td><b>${sc.white.toFixed(1)}</b></td>
+    </tr>
+    <tr>
+      <td class="go-scorepanel-side">${t('bg.bg_go_score_diff', 'Diff')}</td>
+      <td></td>
+      <td></td>
+      <td><b class="${diff > 0 ? 'go-scorepanel-b' : diff < 0 ? 'go-scorepanel-w' : ''}">${sign(diff)}</b></td>
+    </tr>
+  `;
+  // KOMI 提示：白 +7.5 贴目已在 score.white 里算进，这里只解释给玩家看。
+  scorePanelKomi.textContent = `${t('bg.bg_go_komi', 'komi')} 7.5`;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -898,6 +980,15 @@ if (!isTouch) {
 $<HTMLButtonElement>('go-pass').addEventListener('click', passLocal);
 $<HTMLButtonElement>('go-undo').addEventListener('click', doUndo);
 resignBtn.addEventListener('click', doResign);
+
+// 形势叠加 / 点目面板
+situationBtn.addEventListener('click', toggleSituation);
+scorePanelBtn.addEventListener('click', toggleScorePanel);
+$<HTMLButtonElement>('go-scorepanel-close').addEventListener('click', () => {
+  state.showScorePanel = false;
+  scorePanel.hidden = true;
+  scorePanelBtn.setAttribute('aria-pressed', 'false');
+});
 
 /* ── 终局数目确认 ── */
 $<HTMLButtonElement>('go-count-ok').addEventListener('click', confirmCount);
