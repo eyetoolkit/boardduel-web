@@ -2411,7 +2411,8 @@
     "bg_gomoku_plies": "0 步",
     "bg_gomoku_invite": "邀请好友",
     "bg_gomoku_close_hint": "关闭提示板",
-    "bg_go_lv_katago_sub": "KataGo 神经网络 (b6c96) —— 三档中最强"
+    "bg_go_lv_katago_sub": "KataGo 神经网络 (b6c96) —— 三档中最强",
+    "go_opp_wins": "你输了"
   },
   "bk": {
     "bk_blog_tag_brain": "脑力训练",
@@ -2488,7 +2489,14 @@
     "queue_title": "匹配对手",
     "queue_cancel": "取消",
     "chat_live": " · 在线",
-    "chat_offline": " · 离线"
+    "chat_offline": " · 离线",
+    "ranked_online": "联机排位",
+    "pass_play": "双人轮流",
+    "takeback_requested": "已请求悔棋",
+    "takeback_accepted": "悔棋已同意",
+    "takeback_declined": "悔棋被拒绝",
+    "opp_left": "对手离开了",
+    "link_copied": "邀请链接已复制"
   },
   "bk2": {
     "bk2_p1": "棋类游戏与解谜游戏都号称能训练大脑，但两者发展的是截然不同的认知技能。了解哪种类型更契合你的目标，能让你的游戏时间更有收获。",

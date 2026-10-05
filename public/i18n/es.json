@@ -2440,7 +2440,8 @@
     "bg_gomoku_plies": "0 jugadas",
     "bg_gomoku_invite": "Invitar a un amigo",
     "bg_gomoku_close_hint": "Cerrar panel de pistas",
-    "bg_go_lv_katago_sub": "KataGo red neuronal (b6c96) — la más fuerte de las tres"
+    "bg_go_lv_katago_sub": "KataGo red neuronal (b6c96) — la más fuerte de las tres",
+    "go_opp_wins": "Pierdes"
   },
   "bk": {
     "bk_blog_tag_brain": "Entrenamiento cerebral",
@@ -2517,7 +2518,14 @@
     "queue_title": "Emparejamiento",
     "queue_cancel": "Cancelar",
     "chat_live": " · en vivo",
-    "chat_offline": " · sin conexión"
+    "chat_offline": " · sin conexión",
+    "ranked_online": "En línea (ranked)",
+    "pass_play": "Pasa y juega",
+    "takeback_requested": "Retroceso solicitado",
+    "takeback_accepted": "Retroceso aceptado",
+    "takeback_declined": "Retroceso rechazado",
+    "opp_left": "El rival salió",
+    "link_copied": "Enlace de invitación copiado"
   },
   "bk2": {
     "bk2_p1": "Tanto los juegos de mesa como los rompecabezas afirman entrenar tu cerebro. Pero desarrollan habilidades cognitivas muy diferentes. Entender qué tipo se adapta a tus objetivos te ayuda a aprovechar mejor tu tiempo de juego.",

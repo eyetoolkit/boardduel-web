@@ -2363,7 +2363,8 @@
     "bg_gomoku_plies": "0 plies",
     "bg_gomoku_invite": "Invite a friend",
     "bg_gomoku_close_hint": "Close hint board",
-    "bg_go_lv_katago_sub": "KataGo neural net (b6c96) — strongest of the three"
+    "bg_go_lv_katago_sub": "KataGo neural net (b6c96) — strongest of the three",
+    "go_opp_wins": "You lose"
   },
   "bk": {
     "bk_blog_tag_brain": "Brain Training",
@@ -2440,7 +2441,14 @@
     "queue_title": "Matchmaking",
     "queue_cancel": "Cancel",
     "chat_live": " · live",
-    "chat_offline": " · offline"
+    "chat_offline": " · offline",
+    "ranked_online": "Ranked online",
+    "pass_play": "Pass & Play",
+    "takeback_requested": "Takeback requested",
+    "takeback_accepted": "Takeback accepted",
+    "takeback_declined": "Takeback declined",
+    "opp_left": "Opponent left",
+    "link_copied": "Invite link copied"
   },
   "bk2": {
     "bk2_p1": "Both board games and puzzle games claim to train your brain. But they develop very different cognitive skills. Understanding which type suits your goals helps you get more from your game time.",

@@ -2440,7 +2440,8 @@
     "bg_gomoku_plies": "0 Züge",
     "bg_gomoku_invite": "Freund einladen",
     "bg_gomoku_close_hint": "Hinweistafel schließen",
-    "bg_go_lv_katago_sub": "KataGo Neuronales Netz (b6c96) — am stärksten der drei"
+    "bg_go_lv_katago_sub": "KataGo Neuronales Netz (b6c96) — am stärksten der drei",
+    "go_opp_wins": "Du verlierst"
   },
   "bk": {
     "bk_blog_tag_brain": "Gehirntraining",
@@ -2517,7 +2518,14 @@
     "queue_title": "Partie-Suche",
     "queue_cancel": "Abbrechen",
     "chat_live": " · live",
-    "chat_offline": " · offline"
+    "chat_offline": " · offline",
+    "ranked_online": "Online-Rangliste",
+    "pass_play": "Pass & Spiel",
+    "takeback_requested": "Zug zurück angefordert",
+    "takeback_accepted": "Zug zurück akzeptiert",
+    "takeback_declined": "Zug zurück abgelehnt",
+    "opp_left": "Gegner hat verlassen",
+    "link_copied": "Einladungslink kopiert"
   },
   "bk2": {
     "bk2_p1": "Brettspiele und Puzzle behaupten beide, das Gehirn zu trainieren. Doch sie fördern sehr unterschiedliche kognitive Fähigkeiten. Zu verstehen, welcher Typ zu deinen Zielen passt, hilft dir, deine Spielzeit optimal zu nutzen.",

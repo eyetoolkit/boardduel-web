@@ -13,6 +13,7 @@
 import { setupNav, toast } from '../game-core';
 import { wireLobbyChrome } from '../../lobby-chrome';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
+import { myName as ocMyName } from '../online-core';
 import {
   initialState, play, pass, notation, opponent,
   scoreWithDead, toggleDeadGroup, resolveDead, hashPosition,
@@ -63,7 +64,7 @@ type Screen = 'match' | 'end';
 
 interface UIState {
   screen: Screen;
-  mode: 'ai' | 'pass';
+  mode: 'ai' | 'pass' | 'ranked';
   level: Difficulty;
   size: Size;
   go: GoState;
@@ -100,6 +101,14 @@ interface UIState {
    * 这个集合必须在每次落子后更新，并在悔棋/新局/回放重建时同步。
    */
   posHashes: Set<string>;
+  /** 联机：WebSocket */
+  ws: WebSocket | null;
+  /** 联机：房间码 */
+  roomCode: string | null;
+  /** 联机：本玩家座位 0/1（0=黑，1=白） */
+  myIdx: number | null;
+  /** 联机：本地是否已发起/收到 game_over（区分“我认输” vs “对手认输”） */
+  sawGameOver: boolean;
 }
 
 const state: UIState = {
@@ -122,6 +131,10 @@ const state: UIState = {
   showSituation: false,
   showScorePanel: false,
   posHashes: new Set<string>(),
+  ws: null,
+  roomCode: null,
+  myIdx: null,
+  sawGameOver: false,
 };
 
 /* ══════════════════════════════════════════════════════════════
@@ -143,6 +156,38 @@ function registerHash(st: GoState): void {
 function resetPosHashes(): void {
   state.posHashes = new Set<string>();
   registerHash(state.go);
+}
+
+const API = (() => {
+  const w = window as unknown as { API_BASE?: string };
+  if (w.API_BASE) return w.API_BASE;
+  return '';
+})();
+
+function myName(): string {
+  return ocMyName();
+}
+
+/* ─── 邀请深链 ─── */
+function inviteCode(): string {
+  try {
+    const c = new URLSearchParams(location.search).get('c');
+    if (!c) return '';
+    return /^[A-Za-z0-9]{5,8}$/.test(c) ? c.toUpperCase() : '';
+  } catch (e) { return ''; }
+}
+function inviteIsHost(): boolean {
+  try { return new URLSearchParams(location.search).get('vs') === '1'; }
+  catch (e) { return false; }
+}
+function clearInviteParam(): void {
+  try {
+    const u = new URL(location.href);
+    u.searchParams.delete('c');
+    u.searchParams.delete('vs');
+    const q = u.searchParams.toString();
+    history.replaceState(null, '', u.pathname + (q ? '?' + q : '') + u.hash);
+  } catch (e) { /* noop */ }
 }
 
 let ghost = -1;
@@ -185,6 +230,15 @@ const countBar = $<HTMLElement>('go-countbar');
 const countB = $<HTMLElement>('go-count-b');
 const countW = $<HTMLElement>('go-count-w');
 const situationBtn = $<HTMLButtonElement>('go-situation');
+const chatEl = $<HTMLDivElement>('go-chat');
+const chatToggleBtn = $<HTMLButtonElement>('go-chat-toggle');
+const chatLog = $<HTMLUListElement>('go-chat-log');
+const chatForm = $<HTMLFormElement>('go-chat-form');
+const chatInput = $<HTMLInputElement>('go-chat-input');
+const chatRoom = $<HTMLElement>('go-chat-room');
+const inviteEl = $<HTMLElement>('go-invite');
+const inviteCodeEl = $<HTMLElement>('go-invite-code');
+const inviteCopyBtn = $<HTMLButtonElement>('go-invite-copy');
 const scorePanelBtn = $<HTMLButtonElement>('go-score-panel');
 const scorePanel = $<HTMLElement>('go-scorepanel');
 const scorePanelBody = $<HTMLElement>('go-scorepanel-body');
@@ -286,8 +340,14 @@ function canHumanMove(): boolean {
   if (state.over || state.reviewAt !== null) return false;
   if (state.screen !== 'match') return false;
   if (state.counting) return false;                    // 数目阶段不算「走子」
-  if (state.mode === 'ai') return state.go.toPlay === HUMAN && !state.aiThinking;
-  return true;
+  if (state.aiThinking) return false;
+  if (state.mode === 'ai') return state.go.toPlay === HUMAN;
+  if (state.mode === 'ranked') {
+    if (state.myIdx === null) return false;
+    const mySide: Player = state.myIdx === 0 ? 1 : 2;
+    return state.go.toPlay === mySide;
+  }
+  return true; // pass & play
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -317,10 +377,18 @@ function syncCount(): void {
 /** 确认数目 → 终局结算 */
 function confirmCount(): void {
   const sc = scoreWithDead(state.go, state.dead);
-  const humanWon = state.mode === 'ai' ? sc.winner === HUMAN : sc.winner === 1;
-  const verdict = state.mode === 'ai'
-    ? (humanWon ? t('bg.bg_go_you_win', 'You win') : t('bg.bg_go_ai_wins', 'Engine wins'))
-    : (sc.winner === 1 ? t('bi.black_wins', 'Black wins') : t('bi.white_wins', 'White wins'));
+  let verdict: string;
+  let humanWon = false;
+  if (state.mode === 'ai') {
+    humanWon = sc.winner === HUMAN;
+    verdict = humanWon ? t('bg.bg_go_you_win', 'You win') : t('bg.bg_go_ai_wins', 'Engine wins');
+  } else if (state.mode === 'ranked') {
+    const mySide: Player = state.myIdx === 0 ? 1 : 2;
+    humanWon = sc.winner === mySide;
+    verdict = humanWon ? t('bg.bg_go_you_win', 'You win') : t('bg.bg_go_opp_wins', 'You lose');
+  } else {
+    verdict = sc.winner === 1 ? t('bi.black_wins', 'Black wins') : t('bi.white_wins', 'White wins');
+  }
   const line = `${sc.black} – ${sc.white} · ${t('bg.bg_go_komi', 'komi')} 7.5`;
   exitCounting();
   endGame(verdict, line, 'score', humanWon);
@@ -364,6 +432,9 @@ function updateInfo(): void {
       : (thinking
         ? `${t('bg.bg_go_engine', 'Engine')} · ${t('status.thinking', 'thinking…')}`
         : t('bg.bg_go_engine_white', 'Engine · White'));
+  } else if (state.mode === 'ranked') {
+    // ranked：轮次行只显示黑白（与 gomoku 一致，避免和 HUD 标签重复）
+    turn = state.go.toPlay === 1 ? 'Black' : 'White';
   } else {
     turn = state.go.toPlay === 1 ? t('bj.black_p1', 'Black P1') : t('bj.white_p2', 'White P2');
   }
@@ -374,7 +445,9 @@ function updateInfo(): void {
   lastEl.textContent = state.go.lastMove >= 0 && !over ? notation(state.size, state.go.lastMove) : '—';
   modeEl.textContent = state.mode === 'ai'
     ? `${t('bg.bg_go_vs', 'vs engine')} · ${levelLabel()}`
-    : t('bg.bg_go_pass_play', 'Pass & Play');
+    : state.mode === 'ranked'
+      ? t('bj.ranked_online', 'Ranked online')
+      : t('bg.bg_go_pass_play', 'Pass & Play');
   renderClocks();
   // 点目面板开着就跟着刷新（每手棋后数值变）
   if (state.showScorePanel) renderScorePanel();
@@ -390,6 +463,9 @@ function renderClocks(): void {
   if (state.mode === 'ai') {
     clockMeWho.textContent = t('bg.bg_go_you_black', 'YOU · BLACK');
     clockOppWho.textContent = t('bg.bg_go_engine_white', 'ENGINE · WHITE');
+  } else if (state.mode === 'ranked') {
+    clockMeWho.textContent = state.myIdx === 0 ? t('bj.you_black', 'You · Black') : t('bj.you_white', 'You · White');
+    clockOppWho.textContent = state.myIdx === 0 ? t('bj.opp_white', 'Opponent · White') : t('bj.opp_black', 'Opponent · Black');
   } else {
     clockMeWho.textContent = t('bj.black_p1', 'BLACK P1');
     clockOppWho.textContent = t('bj.white_p2', 'WHITE P2');
@@ -455,6 +531,7 @@ function placeLocal(i: number): boolean {
   const token = ++moveToken;
   renderBoard({ placed: i, captured, capturedColor: oppC });
   if (captured.length) window.setTimeout(() => { if (token === moveToken) renderBoard(); }, 300);
+  if (state.mode === 'ranked') sendWs({ type: 'move', i });
   afterMove();
   return true;
 }
@@ -467,7 +544,9 @@ function passLocal(): void {
   registerHash(state.go);                    // 🔴 pass 也是一次轮转，局面要登记
   state.moves.push(-1);
   state.clock = afterMoveClock(state.clock, mover);
+  playSfx('place');
   renderBoard();
+  if (state.mode === 'ranked') sendWs({ type: 'move', i: -1 });
   afterMove();
 }
 
@@ -479,6 +558,8 @@ function afterMove(): void {
     return;
   }
   if (state.mode === 'ai' && !state.over && !state.counting && state.go.toPlay === AI) scheduleAi();
+  // ranked：轮到对手时刷新 UI（棋钟高亮、轮次行）
+  if (state.mode === 'ranked') updateInfo();
 }
 
 /**
@@ -658,6 +739,12 @@ function cancelAiMove(): void {
 function finishByResign(): void {
   if (state.mode === 'ai') {
     endGame(t('bj.you_resigned', 'You resigned'), t('bj.by_resignation', 'by resignation'), 'resign', false);
+  } else if (state.mode === 'ranked') {
+    const mySide: Player = state.myIdx === 0 ? 1 : 2;
+    const winner = opponent(state.go.toPlay);
+    const humanWon = winner === mySide;
+    endGame(humanWon ? t('bg.bg_go_you_win', 'You win') : t('bg.bg_go_opp_wins', 'You lose'),
+      t('bj.by_resignation', 'by resignation'), 'resign', humanWon);
   } else {
     const winner = opponent(state.go.toPlay);
     endGame(winner === 1 ? t('bi.black_wins', 'Black wins') : t('bi.white_wins', 'White wins'),
@@ -671,6 +758,12 @@ function finishByTimeout(): void {
     const youTimedOut = loser === HUMAN;
     endGame(youTimedOut ? t('bg.bg_go_timeout_you', 'You ran out of time') : t('bg.bg_go_timeout_ai', 'Engine ran out of time'),
       t('bg.bg_go_byoyomi', 'by time (byoyomi)'), 'timeout', !youTimedOut);
+  } else if (state.mode === 'ranked') {
+    const mySide: Player = state.myIdx === 0 ? 1 : 2;
+    const winner = opponent(loser);
+    const humanWon = winner === mySide;
+    endGame(humanWon ? t('bg.bg_go_you_win', 'You win') : t('bg.bg_go_opp_wins', 'You lose'),
+      t('bg.bg_go_byoyomi', 'by time (byoyomi)'), 'timeout', humanWon);
   } else {
     const winner = opponent(loser);
     endGame(winner === 1 ? t('bi.black_wins', 'Black wins') : t('bi.white_wins', 'White wins'),
@@ -729,8 +822,16 @@ function newGame(): void {
   metaSizeEl.textContent = `${state.size}×${state.size}`;
   metaModeEl.textContent = state.mode === 'ai'
     ? `${t('bg.bg_go_vs', 'vs AI')} · ${state.level}`
-    : t('bj.pass_play', 'Pass & Play');
+    : state.mode === 'ranked'
+      ? t('bj.ranked_online', 'Ranked online')
+      : t('bj.pass_play', 'Pass & Play');
   resignBtn.textContent = t('bg.bg_go_resign', 'Resign');
+  // ranked 模式下保留 roomCode/myIdx/ws；其余模式隐藏聊天/邀请面板
+  if (state.mode !== 'ranked') {
+    chatEl.hidden = true;
+    chatToggleBtn.hidden = true;
+    inviteEl.hidden = true;
+  }
   showScreen('match');
   startClockLoop();
   renderBoard();
@@ -742,6 +843,15 @@ function doUndo(): void {
   // 🔴 2026-10-04：原守卫缺 state.counting —— 玩家可在数目阶段悔棋退掉双 pass，
   // 此时 counting 仍 true 但 passes 已退回 1，局面与数目阶段脱节、canHumanMove 永久 false。
   if (state.over || state.reviewAt !== null || state.counting || !state.history.length) return;
+  if (state.mode === 'ranked') {
+    sendWs({ type: 'takeback_request' });
+    toast(t('bj.takeback_requested', 'Takeback requested'));
+    return;
+  }
+  applyLocalUndo();
+}
+
+function applyLocalUndo(): void {
   let guard = 0;
   while (state.history.length > 0 && guard < state.size * state.size + 2) {
     state.go = state.history.pop()!;
@@ -782,6 +892,194 @@ function rebuildPosHashes(): void {
   state.posHashes = h;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   联机房间（WS）—— 参考 gomoku 实现
+   ══════════════════════════════════════════════════════════════ */
+function wsUrl(code: string, name: string): string {
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  return `${proto}//${location.host}/ws?code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}`;
+}
+
+function enterRankedRoom(code: string): void {
+  state.roomCode = code;
+  state.mode = 'ranked';
+  chatEl.hidden = false;
+  chatToggleBtn.hidden = false;
+  chatRoom.textContent = code;
+  chatLog.innerHTML = '';
+  toast('Room ' + code + ' — waiting for opponent');
+  let ws: WebSocket;
+  try { ws = new WebSocket(wsUrl(code, myName())); }
+  catch (e) { toast('Could not open room'); return; }
+  state.ws = ws;
+  ws.addEventListener('open', () => { chatRoom.textContent = code + ' · live'; });
+  ws.addEventListener('message', (ev) => {
+    let msg: Record<string, unknown>;
+    try { msg = JSON.parse(String(ev.data)); } catch { return; }
+    handleWs(msg);
+  });
+  ws.addEventListener('close', () => {
+    chatRoom.textContent = code + ' · offline';
+    if (state.screen === 'match' && !state.over) toast('Connection lost');
+  });
+  ws.addEventListener('error', () => { toast('Room unavailable'); });
+}
+
+async function startFriendRoom(): Promise<void> {
+  showScreen('match');
+  renderBoard();
+  const fail = () => {
+    toast('Could not open a friend room');
+    window.setTimeout(() => location.replace(MODE_PAGE), 900);
+  };
+  try {
+    const r = await fetch(API + '/api/gp/room?name=' + encodeURIComponent(myName()) + '&game=go', { credentials: 'include' });
+    const j = (await r.json()) as { ok?: boolean; code?: string };
+    const code = String((j && j.code) || '').toUpperCase();
+    if (!r.ok || !/^[A-Z2-9]{6}$/.test(code)) { fail(); return; }
+    enterRankedRoom(code);
+    inviteCodeEl.textContent = code;
+    inviteEl.hidden = false;
+  } catch (e) { fail(); }
+}
+
+function sendWs(obj: Record<string, unknown>): void {
+  const ws = state.ws;
+  if (!ws || ws.readyState !== WebSocket.OPEN) return;
+  try { ws.send(JSON.stringify(obj)); } catch (e) { /* ignore */ }
+}
+
+function handleWs(msg: Record<string, unknown>): void {
+  const ty = String(msg.type || '');
+  if (ty === 'state' || ty === 'start') {
+    const inner = (msg.state && typeof msg.state === 'object') ? (msg.state as Record<string, unknown>) : null;
+    if (typeof msg.you === 'number') state.myIdx = msg.you;
+    else if (inner && typeof inner.you === 'number') state.myIdx = inner.you;
+    const code = typeof msg.code === 'string' ? msg.code : (inner && typeof inner.code === 'string' ? inner.code : '');
+    if (code && state.roomCode !== code) {
+      state.roomCode = code;
+      chatRoom.textContent = code;
+    }
+    if (!state.over) newGame();
+    return;
+  }
+  if (ty === 'opponent_move') {
+    const i = typeof msg.i === 'number' ? msg.i : -1;
+    if (i >= 0) {
+      const before = state.go;
+      const r = playWithKo(before, i);
+      if (r.ok && r.state) {
+        const oppC: Player = opponent(before.toPlay);
+        state.history.push(before);
+        const captured = diffCaptures(before.board, r.state.board, oppC);
+        state.go = r.state;
+        state.moves.push(i);
+        state.clock = afterMoveClock(state.clock, before.toPlay);
+        playSfx('place');
+        renderBoard({ placed: i, captured, capturedColor: oppC });
+        afterMove();
+      }
+    } else {
+      // pass
+      const before = state.go;
+      state.history.push(before);
+      state.go = pass(before);
+      registerHash(state.go);
+      state.moves.push(-1);
+      state.clock = afterMoveClock(state.clock, before.toPlay);
+      playSfx('place');
+      renderBoard();
+      afterMove();
+    }
+    return;
+  }
+  if (ty === 'move_ack') {
+    if (msg.clock) syncServerClock(msg.clock as Record<string, number>);
+    return;
+  }
+  if (ty === 'clock_state') {
+    if (msg.clock) syncServerClock(msg.clock as Record<string, number>);
+    return;
+  }
+  if (ty === 'chat') {
+    addChat(String(msg.name || '—'), String(msg.text || ''), !!msg.emoji);
+    return;
+  }
+  if (ty === 'game_over') {
+    state.over = true;
+    stopClockLoop();
+    const kind = String(msg.kind || 'resign');
+    const iLost = !!msg.you_lost || state.sawGameOver;
+    if (kind === 'draw') {
+      endVerdict.textContent = t('bi.draw', 'Draw');
+      endVerdict.className = 'go-end-verdict is-draw';
+      endLine.textContent = t('bj.draw_agreed', 'Draw agreed');
+    } else if (iLost) {
+      endVerdict.textContent = t('bj.you_resigned', 'You resigned');
+      endVerdict.className = 'go-end-verdict is-loss';
+      endLine.textContent = t('bj.by_resignation', 'by resignation');
+    } else {
+      endVerdict.textContent = t('bj.opp_resigned', 'Opponent resigned');
+      endVerdict.className = 'go-end-verdict is-win';
+      endLine.textContent = t('bj.by_resignation', 'by resignation');
+    }
+    showScreen('end');
+    return;
+  }
+  if (ty === 'resign') {
+    state.over = true;
+    stopClockLoop();
+    endVerdict.textContent = t('bj.opp_resigned', 'Opponent resigned');
+    endVerdict.className = 'go-end-verdict is-win';
+    endLine.textContent = t('bj.by_resignation', 'by resignation');
+    showScreen('end');
+    return;
+  }
+  if (ty === 'takeback_request') { toast(t('bj.takeback_request', 'Opponent asks to take back')); return; }
+  if (ty === 'takeback_done') {
+    applyLocalUndo();
+    if (msg.clock) syncServerClock(msg.clock as Record<string, number>);
+    toast(t('bj.takeback_accepted', 'Takeback accepted'));
+    return;
+  }
+  if (ty === 'takeback_declined') { toast(t('bj.takeback_declined', 'Takeback declined')); return; }
+  if (ty === 'restart_notify') { if (!state.over) newGame(); return; }
+  if (ty === 'opponent_leave') { toast(t('bj.opp_left', 'Opponent left')); return; }
+  if (ty === 'error') { toast(String(msg.message || 'Room error')); return; }
+}
+
+function syncServerClock(_c: Record<string, number>): void {
+  // 本地 clock 结构与服务端不同：本地用 me/opp，服务端用 w/b。
+  // 简单处理：只更新剩余秒数的大致比例（go 本地棋钟独立运行，这里仅做参考）。
+  // 如需精确同步，可后续扩展。
+}
+
+function addChat(who: string, text: string, emoji: boolean): void {
+  const li = document.createElement('li');
+  li.className = 'go-chat-row';
+  li.innerHTML = `<b>${escapeHtml(who)}</b><span${emoji ? ' class="is-emoji"' : ''}>${escapeHtml(text)}</span>`;
+  chatLog.appendChild(li);
+  chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
+}
+
+function leaveRoom(): void {
+  if (state.ws) {
+    try { state.ws.close(); } catch (e) { /* ignore */ }
+    state.ws = null;
+  }
+  state.roomCode = null;
+  state.myIdx = null;
+  state.sawGameOver = false;
+  chatEl.hidden = true;
+  chatEl.classList.remove('is-open');
+  chatToggleBtn.hidden = true;
+  inviteEl.hidden = true;
+}
+
 function doResign(): void {
   if (state.over) return;
   if (!state.resignArmed) {
@@ -790,6 +1088,25 @@ function doResign(): void {
     window.setTimeout(() => {
       if (state.resignArmed && !state.over) { state.resignArmed = false; resignBtn.textContent = t('bg.bg_go_resign', 'Resign'); }
     }, 2600);
+    return;
+  }
+  if (state.mode === 'ranked') {
+    state.sawGameOver = true;
+    sendWs({ type: 'resign' });
+    // 服务端不回显时也要给玩家终局画面
+    if (state.ws && state.ws.readyState === WebSocket.OPEN) {
+      window.setTimeout(() => {
+        if (state.over) return;
+        state.over = true;
+        stopClockLoop();
+        endVerdict.textContent = t('bj.you_resigned', 'You resigned');
+        endVerdict.className = 'go-end-verdict is-loss';
+        endLine.textContent = t('bj.by_resignation', 'by resignation');
+        showScreen('end');
+      }, 1500);
+    } else {
+      finishByResign();
+    }
     return;
   }
   finishByResign();
@@ -952,6 +1269,7 @@ window.addEventListener('popstate', () => {
 function stayInGame(): void { leaveCard.hidden = true; }
 function exitMatchToLobby(): void {
   leaveCard.hidden = true;
+  leaveRoom();                    // 关 WS，避免离开后服务端还以为在线
   cancelAiMove();
   stopClockLoop();
   resetReplayUI();
@@ -1037,7 +1355,29 @@ $<HTMLButtonElement>('go-leave-stay').addEventListener('click', stayInGame);
 $<HTMLButtonElement>('go-leave-yes').addEventListener('click', exitMatchToLobby);
 $<HTMLButtonElement>('go-back-lobby').addEventListener('click', exitMatchToLobby);
 $<HTMLButtonElement>('go-end-lobby').addEventListener('click', exitMatchToLobby);
-$<HTMLButtonElement>('go-rematch').addEventListener('click', () => newGame());
+$<HTMLButtonElement>('go-rematch').addEventListener('click', () => {
+  if (state.mode === 'ranked') { sendWs({ type: 'restart' }); state.over = false; newGame(); return; }
+  newGame();
+});
+// ── 联机：聊天 / 邀请 / 再战 ──
+chatToggleBtn.addEventListener('click', () => {
+  const open = chatEl.classList.toggle('is-open');
+  chatToggleBtn.setAttribute('aria-expanded', String(open));
+});
+chatForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const text = chatInput.value.trim();
+  if (!text) return;
+  sendWs({ type: 'chat', text });
+  chatInput.value = '';
+});
+inviteCopyBtn.addEventListener('click', () => {
+  const code = state.roomCode || '';
+  const link = location.origin + '/b/go/' + code;
+  const done = () => toast(t('bj.link_copied', 'Invite link copied'));
+  const fail = () => toast('Copy failed — code ' + code);
+  try { navigator.clipboard.writeText(link).then(done, fail); } catch { fail(); }
+});
 // 🔴 2026-10-04：原代码 `showScreen('match'); enterReplay();` ——
 // review 从 end 屏跳到 match 屏进回放，但退出回放时 state.screen 仍是 'match'，
 // 而 state.over=true 使 match 屏所有控件失效，end 屏又因 showScreen('match')
@@ -1073,10 +1413,14 @@ document.addEventListener('keydown', (ev) => {
 /* ══════════════════════════════════════════════════════════════
    深链 / 启动
    ══════════════════════════════════════════════════════════════ */
+let pendingFriend = false;   // 深链 ?mode=friend：进好友房（异步建房，boot 里消费）
 function readMode(): void {
   const q = new URLSearchParams(location.search);
-  const m = q.get('mode');
-  state.mode = m === 'pass' ? 'pass' : 'ai';
+  const m = (q.get('mode') || '').toLowerCase();
+  if (m === 'pass') { state.mode = 'pass'; return; }
+  if (m === 'friend') { state.mode = 'ranked'; pendingFriend = true; return; }
+  // 默认 AI 模式（含 engine / ai / 留空）
+  state.mode = 'ai';
   // 三档 AI：medium（默认）/ hard / katago。旧深链 ?level=easy 不再被承认。
   const lv = q.get('level');
   if (lv === 'medium' || lv === 'hard' || lv === 'katago') state.level = lv;
@@ -1094,7 +1438,22 @@ function boot(): void {
   // 神经网络档：进页面就预热（5 MB 弱网下要几秒，越早开始越好），
   // 不要等玩家走完第一手才加载。
   if (state.mode === 'ai') startKatagoWarmup();
-  newGame();
+
+  // 深链优先级：?c= 邀请房 > ?mode=friend（gomoku 同款范式）。
+  // 两者都走 relay 模式：进房后服务端在双方到齐时回 'start'，handleWs 再 newGame 重置。
+  const code = inviteCode();
+  if (code) {
+    state.mode = 'ranked';
+    clearInviteParam();
+    showScreen('match');
+    renderBoard();                 // 先画空盘，等 WS 'start' 接管
+    enterRankedRoom(code);
+    toast(inviteIsHost() ? 'Room ' + code + ' created — waiting for your opponent' : 'Joining room ' + code);
+  } else if (pendingFriend) {
+    void startFriendRoom();        // 内部 showScreen + renderBoard + fetch 建房 + enterRankedRoom
+  } else {
+    newGame();                     // ai / pass → 本地开局
+  }
   // i18n 字典异步 fetch：ready/change 后重渲染，避免首帧裸 key（gomoku 同款坑）
   // 🔴 2026-10-04：go-resign 二次确认态由 JS 管，i18n:change 时仅当未 armed 才刷新文案。
   window.addEventListener('i18n:ready', () => { updateInfo(); syncSound(); if (!state.resignArmed) resignBtn.textContent = t('bg.bg_go_resign', 'Resign'); });

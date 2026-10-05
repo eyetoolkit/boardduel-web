@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:70,fallback:"en"};</script>
+  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:71,fallback:"en"};</script>
   <script src="/i18n/i18n.js?v=67"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -206,6 +206,7 @@
           <button type="button" class="go-btn" id="go-level" hidden data-i18n="bg.bg_go_level">Level</button>
           <button type="button" class="go-btn" id="go-situation" aria-pressed="false" data-i18n-aria-label="bg.bg_go_situation_aria" aria-label="Situation overlay" title="Situation">▦</button>
           <button type="button" class="go-btn" id="go-score-panel" aria-pressed="false" data-i18n-aria-label="bg.bg_go_score_panel_aria" aria-label="Score breakdown" title="Score">∑</button>
+          <button type="button" class="go-btn" id="go-chat-toggle" hidden data-i18n="bg.bg_gomoku_chat">Chat</button>
           <button type="button" class="go-btn is-danger" id="go-resign">Resign</button>
         </div>
 
@@ -251,6 +252,29 @@
               <button type="button" class="go-btn is-danger" id="go-leave-yes" data-i18n="bg.bg_go_leave">Leave</button>
             </div>
           </div>
+        </div>
+
+        <!-- 好友房邀请（建房后显示：房号 + 邀请链接） -->
+        <div class="go-invite" id="go-invite" hidden>
+          <div class="go-invite-h" data-i18n="bg.bg_gomoku_invite">Invite a friend</div>
+          <div class="go-invite-row">
+            <code class="go-invite-code" id="go-invite-code">------</code>
+            <button type="button" class="go-btn" id="go-invite-copy">Copy link</button>
+          </div>
+          <p class="go-invite-note">Send this code or link — your friend lands on the same board.</p>
+        </div>
+
+        <!-- 联机聊天（仅 ranked） -->
+        <div class="go-chat" id="go-chat" hidden>
+          <div class="go-chat-h">
+            <span id="go-chat-title">Room chat</span>
+            <span class="go-chat-room" id="go-chat-room"></span>
+          </div>
+          <ul class="go-chat-log" id="go-chat-log"></ul>
+          <form class="go-chat-form" id="go-chat-form">
+            <input type="text" id="go-chat-input" maxlength="140" placeholder="Say something…" autocomplete="off">
+            <button type="submit" class="go-btn">Send</button>
+          </form>
         </div>
 
         <button type="button" class="go-btn" id="go-back-lobby" data-i18n="bg.bg_go_back_lobby">Back to lobby</button>
