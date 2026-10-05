@@ -1537,15 +1537,17 @@ function boot(): void {
 // 残留2（2026-10-05）：字典异步到位后重绘 HUD——棋钟/轮次行文案不再以 key 名滞留
 window.addEventListener('i18n:change', () => { try { updateInfo(); } catch (e) { /* noop */ } });
 
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-else boot();
-
-// 裸访问（无 ?mode= / ?c= / ?room= / ?code=）→ 回模式大厅（两段式铁律）
-// 2026-10-05 残留1修复：?room=/?code= 是合法邀请参数（inviteCode() 兼容），
-// 此前被这里直接弹回大厅 —— 第三方/手写房间链接全部失效。
+// 🔴 2026-10-05 残留4修复：裸访问守卫必须在 boot() 之前执行！
+// 此前放在模块末尾（boot 派发之后），而 boot 进房分支的 clearInviteParam()
+// 会先删掉 URL 上的 ?code=/?room=，守卫随后看到"裸 URL"误判为裸访问 →
+// location.replace 弹回大厅。实测 ?code=/?room= 深链 100% 复现（gomoku 的
+// 守卫在 init 顶部所以没事 —— 教训：守卫必须先于一切会改 URL 的逻辑）。
 (function redirectBare(): void {
   const q = new URLSearchParams(location.search);
   if (q.get('mode') || q.get('c') || q.get('room') || q.get('code')) return;
   const sz = q.get('size');
   location.replace(sz ? `${MODE_PAGE}?size=${sz}` : MODE_PAGE);
 })();
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+else boot();
