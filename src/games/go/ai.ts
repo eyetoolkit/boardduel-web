@@ -100,8 +100,16 @@ export function bestMoveMedium(state: GoState, rng: () => number = Math.random, 
 /**
  * hard：α-β 搜索（search.ts）—— negamax + quiescence + 置换表 + 时间预算。
  * 超预算时回退到上一轮完整深度的最优手，绝不返回半算结果。
+ *
+ * 兜底：若 budgetMs < MEDIUM_MIN_MS（90），hard 预算不足只能跑到 depth 1，
+ * 反而不如 medium 的固定 depth 2——此时直接走 medium 行为，保证
+ * "hard ≥ medium" 的强度不变量对玩家成立（即使被外部代码错误调用）。
  */
+const MEDIUM_MIN_MS = 90;
 export function bestMoveHard(state: GoState, opts: AiOptions = {}): number {
+  if (opts.budgetMs !== undefined && opts.budgetMs < MEDIUM_MIN_MS) {
+    return bestMoveMedium(state);
+  }
   const res = searchBest(state, {
     depth: opts.depth,
     timeBudgetMs: opts.budgetMs,
