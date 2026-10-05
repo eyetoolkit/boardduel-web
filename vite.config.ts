@@ -38,21 +38,8 @@ const here = dirname(fileURLToPath(import.meta.url));
  *   ① 这里的 BETA_ONLY_INPUTS（决定页面是否产出）
  *   ② index.html 里围棋卡片的 data-stage="live" → "beta"（决定导航/首页是否可见）
  */
-const BETA_ONLY_INPUTS: Record<string, string> = {
-  // 围棋游戏页 + lobby
-  go: resolve(here, 'games/go/index.html'),
-  goLobby: resolve(here, 'games/go/lobby/index.html'),
-  // 中国象棋游戏页 + lobby
-  xiangqi: resolve(here, 'games/xiangqi/index.html'),
-  xiangqiLobby: resolve(here, 'games/xiangqi/lobby/index.html'),
-  // 围棋教程 6 页（规则 / 提子 / 劫与自杀 / 让子 / 数目终局）
-  howtoGo: resolve(here, 'how-to-play/go/index.html'),
-  howtoGoRules: resolve(here, 'how-to-play/go/rules/index.html'),
-  howtoGoCapture: resolve(here, 'how-to-play/go/capture/index.html'),
-  howtoGoKo: resolve(here, 'how-to-play/go/ko/index.html'),
-  howtoGoHandicap: resolve(here, 'how-to-play/go/handicap/index.html'),
-  howtoGoScoring: resolve(here, 'how-to-play/go/scoring/index.html'),
-};
+// BETA_ONLY_INPUTS 仅保留尚未上线的游戏；已上线的围棋/中国象棋（2026-10-05）已移到主 input
+const BETA_ONLY_INPUTS: Record<string, string> = {};
 
 const META_PROD = {
   TITLE: 'BoardDuel — play five classic boards online, free',
@@ -119,6 +106,19 @@ export default defineConfig({
         connect4Lobby: resolve(here, 'games/connect4/lobby/index.html'),
         reversiLobby: resolve(here, 'games/reversi/lobby/index.html'),
         chessLobby: resolve(here, 'games/chess/lobby/index.html'),
+        // 围棋（2026-10-05 上线主站：KataGo b6c96 神经网络 + 三档 temp）
+        go: resolve(here, 'games/go/index.html'),
+        goLobby: resolve(here, 'games/go/lobby/index.html'),
+        // 中国象棋（2026-10-05 上线主站：自研 αβ + 3 档 easy/medium/hard）
+        xiangqi: resolve(here, 'games/xiangqi/index.html'),
+        xiangqiLobby: resolve(here, 'games/xiangqi/lobby/index.html'),
+        // 围棋教程 6 页（hub + 规则/提子/劫与自杀/让子/数目终局）
+        howtoGo: resolve(here, 'how-to-play/go/index.html'),
+        howtoGoRules: resolve(here, 'how-to-play/go/rules/index.html'),
+        howtoGoCapture: resolve(here, 'how-to-play/go/capture/index.html'),
+        howtoGoKo: resolve(here, 'how-to-play/go/ko/index.html'),
+        howtoGoHandicap: resolve(here, 'how-to-play/go/handicap/index.html'),
+        howtoGoScoring: resolve(here, 'how-to-play/go/scoring/index.html'),
         // 4 篇玩法页
         howtoTictactoe: resolve(here, 'how-to-play/tictactoe/index.html'),
         howtoConnect4: resolve(here, 'how-to-play/connect4/index.html'),
