@@ -2354,7 +2354,7 @@
     "bg_go_lv_katago_t": "KataGo",
     "bg_go_lv_katago_s": "ニューラルネット、最強 — ~5 MB ロード",
     "bg_go_katago_loading": "KataGo モデルを読み込み中…",
-    "bg_go_katago_fallback": "KataGo を読み込めませんでした —— 投了するかページを更新してください",
+    "bg_go_katago_fallback": "KataGo を読み込めませんでした —— ランダム着手にフォールバック。ページを再読込してください",
     "bg_go_kg_downloading": "エンジンをダウンロード中",
     "bg_go_kg_preparing": "エンジンを準備中…",
     "bg_go_kg_once": "初回のみ、約5 MB",

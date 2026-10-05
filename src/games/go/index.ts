@@ -16,7 +16,7 @@ import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 import {
   initialState, play, pass, notation, opponent,
   scoreWithDead, toggleDeadGroup, resolveDead, hashPosition,
-  territoryByColor,
+  territoryByColor, legalMoves,
   type GoState, type Player, type DeadSet,
 } from './engine';
 import { renderGoBoardSVG, diffCaptures } from './render';
@@ -558,9 +558,12 @@ function applyAiMove(m: number): void {
   afterMove();
 }
 
-/** KataGo 不可用时的用户提示（不打断对局，只告知已降级）。 */
+/** KataGo 不可用时的用户提示（只 toast 一次，免得每手都弹）。 */
+let _aiFallbackNoteShown = false;
 function aiFallbackNote(err: string): void {
-  toast(t('bg.bg_go_katago_fallback', 'KataGo could not load — please resign or refresh the page') + ` (${err})`);
+  if (_aiFallbackNoteShown) return;
+  _aiFallbackNoteShown = true;
+  toast(t('bg.bg_go_katago_fallback', 'KataGo could not load — falling back to random play. Reload to retry.') + ` (${err})`);
 }
 
 /**
@@ -629,12 +632,18 @@ async function runKatagoTurn(): Promise<void> {
   } catch (e) {
     state.aiThinking = false;
     updateInfo();
-    // 加载失败不该让玩家卡死：toast 提示，让玩家继续（无规则 AI 兜底，规则档已下线）
+    // 加载失败不该让玩家卡死：toast 提示一次，并随机走一个合法点让游戏继续。
+    // 规则 AI 档已下线（方案 A 后），所以兜底改成"随机合法点"——玩家能继续下，
+    // AI 走法每手随机（按 easy 档语义更自然），等玩家手动刷新页面再恢复 KataGo。
     const msg = katagoStatus().error ?? String(e);
-    console.warn('[go] KataGo unavailable, cannot continue:', msg);
+    console.warn('[go] KataGo unavailable, falling back to random play:', msg);
     aiFallbackNote(msg);
-    // 让 AI 继续 pass（玩家可以选择认输或退出）
-    if (state.go === before && !state.over) applyAiMove(-1);
+    if (state.go === before && !state.over) {
+      const legal = legalMoves(before, { superko: true, history: state.posHashes });
+      // 没合法点（终局 / 全占）→ pass；否则随机挑一个
+      const m = legal.length > 0 ? legal[(Math.random() * legal.length) | 0] : -1;
+      applyAiMove(m);
+    }
   }
 }
 

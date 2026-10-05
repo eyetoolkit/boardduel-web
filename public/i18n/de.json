@@ -2332,7 +2332,7 @@
     "bg_go_lv_katago_t": "KataGo",
     "bg_go_lv_katago_s": "Neuronales Netz, am stärksten — lädt ~5 MB",
     "bg_go_katago_loading": "KataGo-Modell wird geladen…",
-    "bg_go_katago_fallback": "KataGo konnte nicht geladen werden — Aufgabe oder Seite neu laden",
+    "bg_go_katago_fallback": "KataGo konnte nicht geladen werden — Zufallsspiel als Ersatz. Seite neu laden.",
     "bg_go_kg_downloading": "Engine wird heruntergeladen",
     "bg_go_kg_preparing": "Engine wird vorbereitet…",
     "bg_go_kg_once": "einmalig, ~5 MB",

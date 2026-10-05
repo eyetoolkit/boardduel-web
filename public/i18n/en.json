@@ -2255,7 +2255,7 @@
     "bg_go_lv_katago_t": "KataGo",
     "bg_go_lv_katago_s": "neural net, strongest — loads ~5 MB",
     "bg_go_katago_loading": "Loading the KataGo model…",
-    "bg_go_katago_fallback": "KataGo could not load — please resign or refresh the page",
+    "bg_go_katago_fallback": "KataGo could not load — falling back to random play. Reload to retry.",
     "bg_go_kg_downloading": "Downloading the engine",
     "bg_go_kg_preparing": "Preparing the engine…",
     "bg_go_kg_once": "one-time, ~5 MB",

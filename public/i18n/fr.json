@@ -2331,7 +2331,7 @@
     "bg_go_lv_katago_t": "KataGo",
     "bg_go_lv_katago_s": "réseau de neurones, le plus fort — ~5 Mo",
     "bg_go_katago_loading": "Chargement du modèle KataGo…",
-    "bg_go_katago_fallback": "KataGo n'a pas pu être chargé — abandonnez ou actualisez la page",
+    "bg_go_katago_fallback": "KataGo n'a pas pu être chargé — jeu aléatoire de secours. Rechargez la page.",
     "bg_go_kg_downloading": "Téléchargement du moteur",
     "bg_go_kg_preparing": "Préparation du moteur…",
     "bg_go_kg_once": "une seule fois, ~5 Mo",

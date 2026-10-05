@@ -2303,7 +2303,7 @@
     "bg_go_lv_katago_t": "KataGo",
     "bg_go_lv_katago_s": "神经网络, 最强 —— 需加载 ~5 MB",
     "bg_go_katago_loading": "正在加载 KataGo 模型…",
-    "bg_go_katago_fallback": "KataGo 加载失败 —— 请认输或刷新页面",
+    "bg_go_katago_fallback": "KataGo 加载失败 —— 已降级为随机落子，刷新页面重试",
     "bg_go_kg_downloading": "正在下载引擎",
     "bg_go_kg_preparing": "正在准备引擎…",
     "bg_go_kg_once": "仅首次，约 5 MB",
