@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:51,fallback:"en"};</script>
-  <script src="/i18n/i18n.js?v=51"></script>
+  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:68,fallback:"en"};</script>
+  <script src="/i18n/i18n.js?v=68"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>How to play Go · BoardDuel</title>
@@ -18,6 +18,72 @@
 <link rel="preload" href="/fonts/space-grotesk-latin-700.woff2" as="font" type="font/woff2" crossorigin>
 <script>(function(){try{var t=localStorage.getItem('bd-theme2');if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}})();</script>
 </head>
+<body class="home-v2" data-page="howto">
+<div class="topbar">
+  <button class="burger" id="burger" aria-label="Open navigation" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="logo" href="/">Board<b>Duel</b></a>
+  <a class="btn-login" href="/games/go/lobby/">Play</a>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sb-top">
+    <a class="logo" href="/">Board<b>Duel</b></a>
+    <button class="sb-collapse" id="collapse" title="Collapse navigation" aria-label="Collapse navigation">&laquo;</button>
+  </div>
+  <div class="sb-login">
+    <a class="btn-login" href="/games/go/lobby/"><span>Play Go</span></a>
+    <button class="sb-theme" type="button" title="Toggle theme" aria-label="Toggle theme" aria-pressed="false">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13A8 8 0 1 1 11 4a6.5 6.5 0 0 0 9 9z"/></svg>
+    </button>
+  </div>
+  <nav class="sb-nav" aria-label="Site navigation">
+    <a class="nav-item" href="/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><label>Home</label>
+    </a>
+    <div class="nav-group">Play</div>
+    <a class="nav-item" href="/games/gomoku/lobby/">
+      <img class="mini" src="/games/gomoku/cover.svg" alt="" aria-hidden="true"><label>Gomoku</label>
+    </a>
+    <a class="nav-item" href="/games/tictactoe/lobby/">
+      <img class="mini" src="/games/tictactoe/cover.svg" alt="" aria-hidden="true"><label>Tic-Tac-Toe</label>
+    </a>
+    <a class="nav-item" href="/games/connect4/lobby/">
+      <img class="mini" src="/games/connect4/cover.svg" alt="" aria-hidden="true"><label>Connect 4</label>
+    </a>
+    <a class="nav-item" href="/games/reversi/lobby/">
+      <img class="mini" src="/games/reversi/cover.svg" alt="" aria-hidden="true"><label>Othello</label>
+    </a>
+    <a class="nav-item" href="/games/chess/lobby/">
+      <img class="mini" src="/games/chess/cover.svg" alt="" aria-hidden="true"><label>Chess</label>
+    </a>
+    <a class="nav-item" href="/games/checkers/lobby/">
+      <img class="mini" src="/games/checkers/cover.svg" alt="" aria-hidden="true"><label>Checkers</label>
+    </a>
+    <a class="nav-item active" href="/games/go/lobby/">
+      <img class="mini" src="/games/go/cover.svg?v=2" alt="" aria-hidden="true"><label>Go</label>
+    </a>
+    <a class="nav-item" href="/games/xiangqi/lobby/">
+      <img class="mini" src="/games/xiangqi/cover.svg?v=2" alt="" aria-hidden="true"><label>Xiangqi</label>
+    </a>
+<div class="nav-group">More</div>
+    <a class="nav-item" href="/rank/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3"/><path d="M7 5H4v2a3 3 0 0 0 3 3"/></svg><label>Leaderboard</label>
+    </a>
+    <a class="nav-item" href="/stats/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg><label>My stats</label>
+    </a>
+    <a class="nav-item" href="/how-to-play/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2z"/><path d="M8 7h7"/><path d="M8 11h7"/></svg><label>How to play</label>
+    </a>
+  </nav>
+  <div class="nav-foot">
+    <span class="lang-pill"><b>EN</b></span>
+    <span class="sb-copy">&copy; 2026</span>
+  </div>
+</aside>
 <main class="pp-main bd-main">
   <nav class="pp-crumb" aria-label="Breadcrumb"><a href="/">Home</a><span class="sep">/</span><a href="/how-to-play/">How to play</a><span class="sep">/</span><span>Go</span></nav>
   <h1 class="pp-h1">How to play Go</h1>
