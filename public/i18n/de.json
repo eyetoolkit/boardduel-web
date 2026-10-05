@@ -2440,6 +2440,7 @@
     "bg_gomoku_plies": "0 Züge",
     "bg_gomoku_invite": "Freund einladen",
     "bg_gomoku_close_hint": "Hinweistafel schließen",
+    "bg_gomoku_invite_qr_hint": "Zum Beitreten scannen",
     "bg_go_lv_katago_sub": "KataGo Neuronales Netz (b6c96) — am stärksten der drei",
     "go_opp_wins": "Du verlierst"
   },

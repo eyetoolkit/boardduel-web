@@ -104,6 +104,8 @@ const chatRoom = $<HTMLElement>('go-chat-room');
 const inviteEl = $<HTMLElement>('go-invite');
 const inviteCodeEl = $<HTMLElement>('go-invite-code');
 const inviteCopyBtn = $<HTMLButtonElement>('go-invite-copy');
+// P1-1：QR 邀请图，src 由 TS 在拿到房间码后注入 /api/qr
+const inviteQrImg = $<HTMLImageElement>('go-invite-qr-img');
 
 setupNav('gomoku');
 wireLobbyChrome();
@@ -187,7 +189,10 @@ function myName(): string {
    以免刷新页面时重复入房或与“返回大厅”语义打架。 */
 function inviteCode(): string {
   try {
-    const c = new URLSearchParams(location.search).get('c');
+    const q = new URLSearchParams(location.search);
+    // 兼容多种邀请参数名：?c=（本团长链，worker 302 落地）/
+    // ?room= / ?code=（第三方或手写的房间链接，评测报告 P0-2 实测被丢弃）
+    const c = q.get('c') || q.get('room') || q.get('code');
     if (!c) return '';
     return /^[A-Za-z0-9]{5,8}$/.test(c) ? c.toUpperCase() : '';
   } catch (e) {
@@ -526,8 +531,9 @@ function onCell(i: number): void {
     return;
   }
 
-  // 触屏两步落子：第一次只在本地显幽灵，第二次才真落
-  if (isTouch() && state.ghost !== i) {
+  // 触屏两步落子：第一次只在本地显幽灵，第二次才真落。
+  // 桌面鼠标（pointerType==='mouse'）单击即提交，不走预选 —— P1-3（评测实测桌面也要求双击）
+  if (isTouch() && state.ghost !== i && lastPointerType !== 'mouse') {
     state.ghost = i;
     legendEl.hidden = false;
     render();
@@ -1241,6 +1247,8 @@ function enterRankedRoom(code: string, isAi: boolean, aiName?: string): void {
 function showInvite(code: string): void {
   inviteCodeEl.textContent = code;
   inviteEl.hidden = false;
+  // P1-1：注入 QR 邀请图 src（带 size 参数，cb 防 CF 边缘缓存；浏览器原生 onerror 不阻塞 UI）
+  try { inviteQrImg.src = '/api/qr?game=gomoku&code=' + encodeURIComponent(code) + '&size=160&cb=' + Date.now(); } catch (e) { /* 图片缺失也别炸 */ }
   toast('Room ' + code + ' created — waiting for your friend');
 }
 
@@ -1474,6 +1482,11 @@ soundBtn.addEventListener('click', () => {
 // 不一定派发 pointer events，漏挂就等于漏解锁（表现为"没声音"）。 */
 const keepAudioAlive = (): void => unlockSfx();
 document.addEventListener('pointerdown', keepAudioAlive, { capture: true, passive: true });
+// 记录最近一次指针类型，用于 P1-3：桌面鼠标单击即落子（不走触屏预选）
+let lastPointerType: string = 'mouse';
+document.addEventListener('pointerdown', (e) => {
+  lastPointerType = (e as PointerEvent).pointerType || 'mouse';
+}, { passive: true });
 document.addEventListener('touchstart', keepAudioAlive, { capture: true, passive: true });
 document.addEventListener('mousedown', keepAudioAlive, { capture: true });
 // 回前台也试着拉一把（Android Chrome 上 resume 无需手势，能救回切后台的场景）

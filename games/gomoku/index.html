@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:70,fallback:"en"};</script>
+  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:71,fallback:"en"};</script>
   <script src="/i18n/i18n.js?v=67"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -240,12 +240,18 @@
           <ol class="go-recorder-list" id="go-recorder-list"></ol>
         </div>
 
-        <!-- 好友房邀请（建房后显示：房号 + 邀请链接） -->
+        <!-- 好友房邀请（建房后显示：房号 + 邀请链接 + QR 码） -->
         <div class="go-invite" id="go-invite" hidden>
           <div class="go-invite-h" data-i18n="bg.bg_gomoku_invite">Invite a friend</div>
           <div class="go-invite-row">
             <code class="go-invite-code" id="go-invite-code">------</code>
             <button type="button" class="go-btn" id="go-invite-copy">Copy link</button>
+          </div>
+          <div class="go-invite-qr">
+            <!-- P1-1（2026-10-05）：QR 由 worker /api/qr 服务端生成（避免内联 qrcode 库→CSP 风险）。
+                 src 在获得房间码时由 TS 注入；alt 既是 a11y 也作 fallback 文本。 -->
+            <img id="go-invite-qr-img" alt="QR code for invite link" width="160" height="160" decoding="async">
+            <span class="go-invite-qr-hint" data-i18n="bg.bg_gomoku_invite_qr_hint">Scan to join</span>
           </div>
           <p class="go-invite-note">Send this code or link — your friend lands on the same board.</p>
         </div>

@@ -167,6 +167,23 @@ body.home-v2 .go-invite-note {
   font-size: .74rem; color: var(--mute); margin-top: 8px; line-height: 1.45;
 }
 
+/* P1-1（2026-10-05）：QR 邀请图区，桌面与移动端都在邀请条下方居中显示 */
+body.home-v2 .go-invite-qr {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  margin-top: 10px;
+}
+body.home-v2 .go-invite-qr img {
+  width: 160px; height: 160px; border-radius: 10px;
+  background: #fff; padding: 6px;
+  border: 1px solid var(--line-2, #EEF1F5);
+}
+body.home-v2 .go-invite-qr-hint {
+  font-size: .72rem; color: var(--mute); letter-spacing: .04em;
+}
+@media (max-width: 899.5px) {
+  body.home-v2.bd-in-match .go-invite-qr img { width: 132px; height: 132px; }
+}
+
 /* ════════════════════════════════════════════════════════════
  * Ranked 排队遮罩（#go-queue 移到对局页，2026-10-03）
  * 全屏遮罩 + 居中面板，压在空棋盘上等匹配；旧内嵌大厅已删。
@@ -257,9 +274,9 @@ body.home-v2 #go-chat-toggle { display: none; }
   /* ranked 时 TS 解开 hidden → 按钮出现在底栏 */
   body.home-v2 #go-chat-toggle:not([hidden]) { display: block; }
 
-  /* ── 锁定视口：对局中整页不可滚动 ── */
+  /* ── 锁定视口：对局中整页不可滚动（矮视口可纵向滚动够到棋盘底，P1-2）── */
   body.home-v2.bd-in-match {
-    position: fixed; inset: 0; overflow: hidden;
+    position: fixed; inset: 0; overflow-y: auto;
   }
   body.home-v2.bd-in-match .topbar,
   body.home-v2.bd-in-match .sidebar,
@@ -271,7 +288,7 @@ body.home-v2 #go-chat-toggle { display: none; }
 
   body.home-v2.bd-in-match .bd-main {
     max-width: none; margin: 0; padding: 0;
-    height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
+    height: 100dvh; display: flex; flex-direction: column; overflow-y: auto;
   }
 
   /* ── 对局屏 = 三段纵向 ── */

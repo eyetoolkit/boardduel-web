@@ -2440,6 +2440,7 @@
     "bg_gomoku_plies": "0 jugadas",
     "bg_gomoku_invite": "Invitar a un amigo",
     "bg_gomoku_close_hint": "Cerrar panel de pistas",
+    "bg_gomoku_invite_qr_hint": "Escanea para unirte",
     "bg_go_lv_katago_sub": "KataGo red neuronal (b6c96) — la más fuerte de las tres",
     "go_opp_wins": "Pierdes"
   },
