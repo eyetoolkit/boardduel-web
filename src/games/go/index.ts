@@ -65,7 +65,7 @@ const END_DELAY_MS = 1500;
 const HUMAN: Player = 1;                              // 人类执黑先手
 const AI: Player = opponent(HUMAN);
 
-type Size = 9 | 13 | 19;
+type Size = 19;
 type Screen = 'match' | 'end';
 
 interface UIState {
@@ -112,8 +112,8 @@ interface UIState {
 const state: UIState = {
   screen: 'match',
   mode: 'ai',
-  level: 'katago',     // 唯一档：神经网络 AI（medium/hard 规则档已从 UI 移除）
-  size: 19,
+  level: 'medium',     // 默认档：αβ depth 2，玩家可切到 hard 或 katago
+  size: 19 as const,
   go: initialState(19),
   history: [],
   moves: [],
@@ -354,9 +354,9 @@ function onCountCell(i: number): void {
 
 /** 当前难度的显示名（三档） */
 function levelLabel(): string {
-  if (state.level === 'easy') return t('bg.bg_go_lv_easy_t', 'Novice');
-  if (state.level === 'hard') return t('bg.bg_go_lv_hard_t', 'Master');
-  return t('bg.bg_go_lv_medium_t', 'Adept');
+  if (state.level === 'hard') return t('bg.bg_go_lv_hard_t', 'Hard');
+  if (state.level === 'katago') return t('bg.bg_go_lv_katago_t', 'KataGo');
+  return t('bg.bg_go_lv_medium_t', 'Medium');
 }
 
 function updateInfo(): void {
@@ -704,8 +704,7 @@ function showScreen(s: Screen): void {
 /* ══════════════════════════════════════════════════════════════
    新局 / 悔棋 / 认输
    ══════════════════════════════════════════════════════════════ */
-function newGame(sz?: Size): void {
-  if (sz) state.size = sz;
+function newGame(): void {
   cancelAiMove();
   stopClockLoop();
   resetReplayUI();
@@ -728,9 +727,6 @@ function newGame(sz?: Size): void {
   metaModeEl.textContent = state.mode === 'ai'
     ? `${t('bg.bg_go_vs', 'vs AI')} · ${state.level}`
     : t('bj.pass_play', 'Pass & Play');
-  document.querySelectorAll<HTMLButtonElement>('#go-sizes button').forEach((b) => {
-    b.classList.toggle('is-cur', Number(b.dataset.size) === state.size);
-  });
   resignBtn.textContent = t('bg.bg_go_resign', 'Resign');
   showScreen('match');
   startClockLoop();
@@ -1012,11 +1008,6 @@ $<HTMLButtonElement>('go-count-clear').addEventListener('click', () => {
 
 /* 让子棋已下线（2026-10-04：用户决策）。原 #go-handicap 区块保留但隐藏以兼容旧 HTML 引用。 */
 
-$<HTMLElement>('go-sizes').addEventListener('click', (ev) => {
-  const b = (ev.target as HTMLElement).closest?.('button[data-size]') as HTMLButtonElement | null;
-  if (b) newGame(Number(b.dataset.size) as Size);
-});
-
 $<HTMLButtonElement>('go-replay').addEventListener('click', () => { state.reviewAt === null ? enterReplay() : exitReplay(); });
 $<HTMLButtonElement>('go-rp-first').addEventListener('click', () => { stopReplayAuto(); setReview(0); });
 $<HTMLButtonElement>('go-rp-prev').addEventListener('click', () => stepReview(-1));
@@ -1083,12 +1074,10 @@ function readMode(): void {
   const q = new URLSearchParams(location.search);
   const m = q.get('mode');
   state.mode = m === 'pass' ? 'pass' : 'ai';
-  // 2026-10-04：UI 只保留 katago 一档，但旧深链（?level=hard 等）仍要能进游戏，
-  // 否则玩家从收藏的链接进来会掉进「没选难度」的状态。
+  // 三档 AI：medium（默认）/ hard / katago。旧深链 ?level=easy 不再被承认。
   const lv = q.get('level');
-  if (lv === 'easy' || lv === 'medium' || lv === 'hard' || lv === 'katago') state.level = lv;
-  // 9 路 / 13 路已下线（模型只按 19 路调优过），旧深链统一落到 19 路而不是报错。
-  state.size = 19;
+  if (lv === 'medium' || lv === 'hard' || lv === 'katago') state.level = lv;
+  // 9/13 路已永久下线，所有对局都是 19 路。
 }
 
 function boot(): void {
