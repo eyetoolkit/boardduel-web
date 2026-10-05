@@ -495,7 +495,13 @@ function perfNow(): number {
 }
 
 export function search(state: GameState, level: Level, timeMs?: number): SearchResult {
-  const board = state.board;
+  // ⚠️ 关键：必须拷贝一份到本地。
+  // negamax/qsearch 内部用 makeMove/unmakeMove 原地改 board，配对正确，
+  // 但当超过时间预算抛 TIMEOUT 时，循环里"makeMove 之后、unmakeMove 之前"的栈直接
+  // 展开，unmakeMove 永远跑不到 → 原始 board 残留污染 → 后续 evaluate / legalMoves 全错。
+  // （实测：开局 10 步内 evaluate 从 0 跌到 -800+，AI 走出非法走法）
+  // 用本地副本做搜索，原始 state.board 永远不被改动。
+  const board = state.board.slice();
   const side = state.side;
   const lim = LIMITS[level];
   const ctx: Ctx = { nodes: 0, deadline: perfNow() + (timeMs ?? lim.time), tt: new Map(), path: new Set() };
