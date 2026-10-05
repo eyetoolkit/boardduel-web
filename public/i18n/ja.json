@@ -2386,7 +2386,7 @@
     "bg_go_you_win": "あなたの勝ち",
     "bg_go_ai_wins": "エンジンの勝ち",
     "bg_go_hero_h1": "石を囲む。<em>盤面を制す。</em>",
-    "bg_go_hero_sub": "19×19 盤のクラシック碁。7.5 コミの中国式数え + 秒読み。medium / hard / KataGo の三段 — またはパス＆プレイ。",
+    "bg_go_hero_sub": "19×19 盤のクラシック碁。7.5 コミの中国式数え + 秒読み。Casual / Standard / Sharp の三段 — またはパス＆プレイ。",
     "bg_go_chip_boards": "19×19 盤",
     "bg_go_chip_komi": "中国ルール · コミ7.5目",
     "bg_go_chip_nologin": "ログイン不要",

@@ -2335,7 +2335,7 @@
     "bg_go_you_win": "你赢了",
     "bg_go_ai_wins": "引擎获胜",
     "bg_go_hero_h1": "围住棋子，<em>占据整盘</em>",
-    "bg_go_hero_sub": "经典围棋 · 19×19 棋盘 · 中国规则数目 7.5 目贴目 · 中日棋钟读秒。三档 AI：休闲、大师、KataGo 神经网络，或同屏对弈。",
+    "bg_go_hero_sub": "经典围棋 · 19×19 棋盘 · 中国规则数目 7.5 目贴目 · 中日棋钟读秒。三档 AI：休闲、标准、强力，或同屏对弈。",
     "bg_go_chip_boards": "19×19 棋盘",
     "bg_go_chip_komi": "中国规则 · 贴 7.5 目",
     "bg_go_chip_nologin": "免登录开玩",

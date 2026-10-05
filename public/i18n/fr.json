@@ -2363,7 +2363,7 @@
     "bg_go_you_win": "Vous gagnez",
     "bg_go_ai_wins": "Le moteur gagne",
     "bg_go_hero_h1": "Encerclez les pierres. <em>Maîtrisez le goban.</em>",
-    "bg_go_hero_sub": "Go sur 19×19 — comptage chinois avec 7.5 komi et horloge byoyomi. Choisissez medium, hard ou KataGo — ou pass & play.",
+    "bg_go_hero_sub": "Go sur 19×19 — comptage chinois avec 7.5 komi et horloge byoyomi. Choisissez Casual, Standard ou Sharp — ou pass & play.",
     "bg_go_chip_boards": "Plateau 19×19",
     "bg_go_chip_komi": "Score chinois · 7,5 komi",
     "bg_go_chip_nologin": "Sans connexion",

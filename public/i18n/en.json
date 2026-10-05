@@ -2287,7 +2287,7 @@
     "bg_go_you_win": "You win",
     "bg_go_ai_wins": "Engine wins",
     "bg_go_hero_h1": "Surround the stones. <em>Own the board.</em>",
-    "bg_go_hero_sub": "Classic Go on 19×19 — Chinese scoring with 7.5 komi and a byoyomi clock. Pick medium, hard, or KataGo — or pass & play on one screen.",
+    "bg_go_hero_sub": "Classic Go on 19×19 — Chinese scoring with 7.5 komi and a byoyomi clock. Pick Casual, Standard, or Sharp — or pass & play on one screen.",
     "bg_go_chip_boards": "19×19 board",
     "bg_go_chip_komi": "Chinese scoring · 7.5 komi",
     "bg_go_chip_nologin": "No login to play",

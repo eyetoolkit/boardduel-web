@@ -2364,7 +2364,7 @@
     "bg_go_you_win": "Ganas",
     "bg_go_ai_wins": "Gana el motor",
     "bg_go_hero_h1": "Rodear las piedras. <em>Dominar el tablero.</em>",
-    "bg_go_hero_sub": "Go clásico en 19×19 — recuento chino con 7.5 komi y reloj byoyomi. Elige medium, hard o KataGo — o pass & play.",
+    "bg_go_hero_sub": "Go clásico en 19×19 — recuento chino con 7.5 komi y reloj byoyomi. Elige Casual, Standard o Sharp — o pass & play.",
     "bg_go_chip_boards": "Tablero 19×19",
     "bg_go_chip_komi": "Puntuación china · 7,5 komi",
     "bg_go_chip_nologin": "Sin registro",

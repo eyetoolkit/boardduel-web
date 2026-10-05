@@ -2364,7 +2364,7 @@
     "bg_go_you_win": "Du gewinnst",
     "bg_go_ai_wins": "Der Motor gewinnt",
     "bg_go_hero_h1": "Steine umringen. <em>Das Brett beherrschen.</em>",
-    "bg_go_hero_sub": "Klassisches Go auf 19×19 — chinesische Wertung mit 7.5 Komi und Byoyomi-Uhr. Wähle medium, hard oder KataGo — oder pass & play.",
+    "bg_go_hero_sub": "Klassisches Go auf 19×19 — chinesische Wertung mit 7.5 Komi und Byoyomi-Uhr. Wähle Casual, Standard oder Sharp — oder pass & play.",
     "bg_go_chip_boards": "19×19 Brett",
     "bg_go_chip_komi": "Chinesische Wertung · 7,5 Komi",
     "bg_go_chip_nologin": "Ohne Anmeldung",
