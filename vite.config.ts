@@ -42,17 +42,17 @@ const here = dirname(fileURLToPath(import.meta.url));
 const BETA_ONLY_INPUTS: Record<string, string> = {};
 
 const META_PROD = {
-  TITLE: 'BoardDuel — play five classic boards online, free',
-  DESC: 'Play Gomoku, Tic-Tac-Toe, Connect 4, Othello and Chess online for free. Live engines at several strengths, or pass-and-play with a friend on one screen. No login, no ads.',
-  OG_TITLE: 'BoardDuel — five boards, live engines',
-  OG_DESC: 'Gomoku, Tic-Tac-Toe, Connect 4, Othello and Chess — classic boards with live engines, free in your browser.',
+  TITLE: 'BoardDuel — play eight classic boards online, free',
+  DESC: 'Play Chess, Checkers, Xiangqi, Go, Gomoku, Tic-Tac-Toe, Connect 4 and Othello online for free. Live engines at several strengths, or pass-and-play with a friend on one screen. No login, no ads.',
+  OG_TITLE: 'BoardDuel — eight boards, live engines',
+  OG_DESC: 'Chess, Checkers, Xiangqi, Go, Gomoku, Tic-Tac-Toe, Connect 4 and Othello — classic boards with live engines, free in your browser.',
 };
 
 const META_BETA = {
-  TITLE: 'BoardDuel — five boards, five live engines',
-  DESC: 'Five classic board games, each with a live engine. Play Gomoku, Tic-Tac-Toe, Connect 4, Reversi and Chess against AI or a friend on one screen.',
-  OG_TITLE: 'BoardDuel — five boards, five live engines',
-  OG_DESC: 'Five classic board games, each with a live engine. Play Gomoku, Tic-Tac-Toe, Connect 4, Reversi and Chess against AI or a friend on one screen.',
+  TITLE: 'BoardDuel — eight boards, eight live engines',
+  DESC: 'Eight classic board games, each with a live engine. Play Chess, Checkers, Xiangqi, Go, Gomoku, Tic-Tac-Toe, Connect 4 and Othello against AI or a friend on one screen.',
+  OG_TITLE: 'BoardDuel — eight boards, eight live engines',
+  OG_DESC: 'Eight classic board games, each with a live engine. Play Chess, Checkers, Xiangqi, Go, Gomoku, Tic-Tac-Toe, Connect 4 and Othello against AI or a friend on one screen.',
 };
 
 const BLOCK = (stage: string) =>
