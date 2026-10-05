@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="xt xd">
+  <title id="xt">Xiangqi — BoardDuel</title>
+  <desc id="xd">Square indigo icon with a wooden Chinese chess board inside; a nine column by ten row grid shows the river between the two palaces, with two generals facing each other across the centre and a soft amber halo around the black general marking the last move.</desc>
+  <rect width="512" height="512" fill="#3730A3"/>
+  <!-- 米色棋盘（居中，9 列 10 行） -->
+  <rect x="80" y="56" width="352" height="400" rx="12" fill="#9C7B4A"/>
+  <rect x="90" y="66" width="332" height="380" rx="6" fill="#EFD9A8"/>
+  <!-- 9 列 10 行网格线（每格 ~37px × 38px） -->
+  <g stroke="#3D2C18" stroke-opacity=".65" stroke-width="2" fill="none">
+    <!-- 10 横线（y = 66 + i*42, i=0..9） -->
+    <path d="M90 66h332M90 108h332M90 150h332M90 192h332M90 234h332M90 276h332M90 318h332M90 360h332M90 402h332M90 444h332"/>
+    <!-- 9 竖线（连续） -->
+    <path d="M90 66v378M127 66v378M164 66v378M201 66v378M238 66v378M275 66v378M312 66v378M349 66v378M386 66v378M422 66v378"/>
+  </g>
+  <!-- 河界（中间两行空白 + 文字） -->
+  <text x="172" y="263" font-family="'STKaiti','KaiTi','Songti SC',serif" font-size="22" fill="#3D2C18" fill-opacity=".55" text-anchor="middle">楚 河</text>
+  <text x="340" y="263" font-family="'STKaiti','KaiTi','Songti SC',serif" font-size="22" fill="#3D2C18" fill-opacity=".55" text-anchor="middle">漢 界</text>
+  <!-- 九宫斜线（上宫：黑方将） -->
+  <g stroke="#3D2C18" stroke-opacity=".55" stroke-width="2" fill="none">
+    <path d="M201 108L238 145M238 108L201 145"/>
+    <path d="M275 108L312 145M312 108L275 145"/>
+  </g>
+  <!-- 九宫斜线（下宫：红方帅） -->
+  <g stroke="#3D2C18" stroke-opacity=".55" stroke-width="2" fill="none">
+    <path d="M201 405L238 372M238 405L201 372"/>
+    <path d="M275 405L312 372M312 405L275 372"/>
+  </g>
+  <!-- 红帅（红圆牌 + 红色"帅"字） -->
+  <g>
+    <circle cx="256" cy="372" r="26" fill="#F7E8C8" stroke="#C0392B" stroke-width="3"/>
+    <text x="256" y="372" dy="0.36em" text-anchor="middle" font-family="'STKaiti','KaiTi','Songti SC',serif" font-size="28" fill="#C0392B" font-weight="700">帅</text>
+  </g>
+  <!-- 黑将（白圆牌 + 黑色"将"字） -->
+  <g>
+    <circle cx="256" cy="145" r="26" fill="#F7E8C8" stroke="#1B212A" stroke-width="3"/>
+    <text x="256" y="145" dy="0.36em" text-anchor="middle" font-family="'STKaiti','KaiTi','Songti SC',serif" font-size="28" fill="#1B212A" font-weight="700">将</text>
+    <!-- 最后手高亮：黑将外围 -->
+    <circle cx="256" cy="145" r="34" fill="none" stroke="#F59E0B" stroke-width="4" fill-opacity="0"/>
+  </g>
+</svg>
