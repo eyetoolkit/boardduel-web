@@ -22,12 +22,11 @@
 /games/two048/ / 302
 /games/two048 / 302
 
-# ─── 2026-09-20 下线游戏（othello/checkers/mathlink15）的旧 URL 重定向 ───
+# ─── 2026-09-20 下线游戏（othello/mathlink15）的旧 URL 重定向 ───
+# checkers 已于 2026-10-05 重新上线（/games/checkers/），原 301 旧规则已移除。
 # 注：bulls 与 two048 已于更早时间下线/迁移，规则见上方（本段不再重复，避免 first-match 冲突）
 /games/othello/* /games/reversi/ 301
 /games/othello /games/reversi/ 301
-/games/checkers/* / 301
-/games/checkers / 301
 /games/mathlink15/* / 301
 /games/mathlink15 / 301
 /how-to-play/othello/* /games/reversi/ 301
