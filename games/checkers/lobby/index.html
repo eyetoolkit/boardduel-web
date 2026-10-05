@@ -42,18 +42,6 @@
 <!-- ═══════════ 图标库：tictactoe cover + 5 个模式卡 SVG symbol（与全站 lobby 同款占位） ═══════════ -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
 <defs>
-  <symbol id="cv-tictactoe" viewBox="0 0 512 512">
-    <rect width="512" height="512" fill="#4F46E5"/>
-    <rect x="56" y="56" width="118" height="118" rx="27" fill="#22C55E"/>
-    <rect x="197" y="56" width="118" height="118" rx="27" fill="#FFFFFF"/>
-    <rect x="338" y="56" width="118" height="118" rx="27" fill="#FFFFFF"/>
-    <rect x="56" y="197" width="118" height="118" rx="27" fill="#FFFFFF"/>
-    <rect x="197" y="197" width="118" height="118" rx="27" fill="#22C55E"/>
-    <rect x="338" y="197" width="118" height="118" rx="27" fill="#FFFFFF"/>
-    <rect x="56" y="338" width="118" height="118" rx="27" fill="#FFFFFF"/>
-    <rect x="197" y="338" width="118" height="118" rx="27" fill="#FFFFFF"/>
-    <rect x="338" y="338" width="118" height="118" rx="27" fill="#22C55E"/>
-  </symbol>
   <symbol id="mi-engine" viewBox="0 0 24 24">
     <rect x="4.5" y="7" width="15" height="11" rx="3" fill="none" stroke="#fff" stroke-width="1.6"/>
     <circle cx="9" cy="12" r="1.1" fill="#fff"/>
@@ -111,15 +99,31 @@
     <a class="nav-item" href="/"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><label style="cursor:inherit">Home</label></a>
     <span class="nav-item is-disabled" aria-disabled="true" style="opacity:.5;cursor:default" title="Coming soon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg><label style="cursor:inherit">Coin Shop 🪙</label></span>
     <div class="nav-group">All games</div>
-    <a class="nav-item" href="/games/gomoku/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-tictactoe"/></svg><label style="cursor:inherit">Gomoku</label></a>
-    <a class="nav-item" href="/games/tictactoe/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-tictactoe"/></svg><label style="cursor:inherit">Tic-Tac-Toe</label></a>
-    <a class="nav-item" href="/games/connect4/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-tictactoe"/></svg><label style="cursor:inherit">Connect 4</label></a>
-    <a class="nav-item" href="/games/reversi/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-tictactoe"/></svg><label style="cursor:inherit">Othello</label></a>
-    <a class="nav-item" href="/games/chess/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-tictactoe"/></svg><label style="cursor:inherit">Chess</label></a>
-    <a class="nav-item active" href="/games/checkers/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-tictactoe"/></svg><label style="cursor:inherit">Checkers</label></a>
-    <a class="nav-item" href="/games/go/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-tictactoe"/></svg><label style="cursor:inherit">Go</label></a>
-    <a class="nav-item" href="/games/xiangqi/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-tictactoe"/></svg><label style="cursor:inherit">Xiangqi</label></a>
-    <div class="nav-group">Help</div>
+    <a class="nav-item" href="/games/gomoku/lobby/">
+      <img class="mini" src="/games/gomoku/cover.svg" alt="" aria-hidden="true"><label>Gomoku</label>
+    </a>
+    <a class="nav-item" href="/games/tictactoe/lobby/">
+      <img class="mini" src="/games/tictactoe/cover.svg" alt="" aria-hidden="true"><label>Tic-Tac-Toe</label>
+    </a>
+    <a class="nav-item" href="/games/connect4/lobby/">
+      <img class="mini" src="/games/connect4/cover.svg" alt="" aria-hidden="true"><label>Connect 4</label>
+    </a>
+    <a class="nav-item" href="/games/reversi/lobby/">
+      <img class="mini" src="/games/reversi/cover.svg" alt="" aria-hidden="true"><label>Othello</label>
+    </a>
+    <a class="nav-item" href="/games/chess/lobby/">
+      <img class="mini" src="/games/chess/cover.svg" alt="" aria-hidden="true"><label>Chess</label>
+    </a>
+    <a class="nav-item active" href="/games/checkers/lobby/">
+      <img class="mini" src="/games/checkers/cover.svg" alt="" aria-hidden="true"><label>Checkers</label>
+    </a>
+    <a class="nav-item" href="/games/go/lobby/">
+      <img class="mini" src="/games/go/cover.svg?v=2" alt="" aria-hidden="true"><label>Go</label>
+    </a>
+    <a class="nav-item" href="/games/xiangqi/lobby/">
+      <img class="mini" src="/games/xiangqi/cover.svg?v=2" alt="" aria-hidden="true"><label>Xiangqi</label>
+    </a>
+<div class="nav-group">Help</div>
     <a class="nav-item" href="#howTitle"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></svg><label style="cursor:inherit">How to play</label></a>
   </nav>
   <div class="nav-foot">
@@ -132,7 +136,7 @@
 
   <section class="g-hero">
     <div class="wrap">
-      <span class="gcover" aria-hidden="true"><svg role="img" aria-label="Checkers"><use href="#cv-tictactoe"/></svg></span>
+      <span class="gcover" aria-hidden="true"><img src="/games/checkers/cover.svg" alt=""></span>
       <h1>Hop them all. <em>Crown your king.</em></h1>
       <p class="sub" data-i18n="bg.bg_checkers_lobby_hero_sub">Classic 8&times;8 English Draughts &mdash; against a three-level engine, or pass &amp; play on one screen with a friend.</p>
       <div class="chips">

@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:38,fallback:"en"};</script>
-  <script src="/i18n/i18n.js?v=38"></script>
+  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:68,fallback:"en"};</script>
+  <script src="/i18n/i18n.js?v=67"></script>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#241C4D" />
@@ -42,44 +42,6 @@
 <!-- ═══════════ 图标库：gomoku cover + 5 个模式卡 SVG symbol（与 MathDuel 24-game lobby 同源结构） ═══════════ -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
 <defs>
-  <symbol id="cv-gomoku" viewBox="0 0 512 512">
-    <rect width="512" height="512" fill="#241C4D"/>
-    <g fill="#FFFFFF" fill-opacity="0.16">
-      <rect x="57" y="57" width="69" height="69" rx="16"/>
-      <rect x="139" y="57" width="69" height="69" rx="16"/>
-      <rect x="221" y="57" width="69" height="69" rx="16"/>
-      <rect x="303" y="57" width="69" height="69" rx="16"/>
-      <rect x="385" y="57" width="69" height="69" rx="16"/>
-      <rect x="57" y="139" width="69" height="69" rx="16"/>
-      <rect x="139" y="139" width="69" height="69" rx="16"/>
-      <rect x="221" y="139" width="69" height="69" rx="16"/>
-      <rect x="303" y="139" width="69" height="69" rx="16"/>
-      <rect x="385" y="139" width="69" height="69" rx="16"/>
-      <rect x="57" y="221" width="69" height="69" rx="16"/>
-      <rect x="139" y="221" width="69" height="69" rx="16"/>
-      <rect x="221" y="221" width="69" height="69" rx="16"/>
-      <rect x="303" y="221" width="69" height="69" rx="16"/>
-      <rect x="385" y="221" width="69" height="69" rx="16"/>
-      <rect x="57" y="303" width="69" height="69" rx="16"/>
-      <rect x="139" y="303" width="69" height="69" rx="16"/>
-      <rect x="221" y="303" width="69" height="69" rx="16"/>
-      <rect x="303" y="303" width="69" height="69" rx="16"/>
-      <rect x="385" y="303" width="69" height="69" rx="16"/>
-      <rect x="57" y="385" width="69" height="69" rx="16"/>
-      <rect x="139" y="385" width="69" height="69" rx="16"/>
-      <rect x="221" y="385" width="69" height="69" rx="16"/>
-      <rect x="303" y="385" width="69" height="69" rx="16"/>
-      <rect x="385" y="385" width="69" height="69" rx="16"/>
-    </g>
-    <rect x="385" y="385" width="69" height="69" rx="16" fill="#F59E0B"/>
-    <g fill="#1E1B39">
-      <circle cx="92" cy="275" r="17"/>
-      <circle cx="174" cy="275" r="17"/>
-      <circle cx="256" cy="275" r="17"/>
-      <circle cx="338" cy="275" r="17"/>
-    </g>
-    <circle cx="420" cy="420" r="17" fill="#1E1B39"/>
-  </symbol>
   <!-- 5 个模式卡图标（24×24 viewBox，纯白线 + 紫罗兰方块背景由 .mi 提供） -->
   <symbol id="mi-engine" viewBox="0 0 24 24">
     <!-- 机器人头：圆角方框 + 两眼 + 微笑 + 触角 -->
@@ -143,12 +105,31 @@
     <a class="nav-item" href="/"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><label style="cursor:inherit">Home</label></a>
     <span class="nav-item is-disabled" aria-disabled="true" style="opacity:.5;cursor:default" title="Coming soon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg><label style="cursor:inherit">Coin Shop 🪙</label></span>
     <div class="nav-group">All games</div>
-    <a class="nav-item active" href="/games/gomoku/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-gomoku"/></svg><label style="cursor:inherit">Gomoku</label></a>
-    <a class="nav-item" href="/games/tictactoe/" data-stage="live"><svg class="mini" aria-hidden="true"><use href="#cv-gomoku"/></svg><label style="cursor:inherit">Tic-Tac-Toe</label></a>
-    <a class="nav-item" href="/games/connect4/" data-stage="live"><svg class="mini" aria-hidden="true"><use href="#cv-gomoku"/></svg><label style="cursor:inherit">Connect 4</label></a>
-    <a class="nav-item" href="/games/reversi/" data-stage="live"><svg class="mini" aria-hidden="true"><use href="#cv-gomoku"/></svg><label style="cursor:inherit">Othello</label></a>
-    <a class="nav-item" href="/games/chess/" data-stage="live"><svg class="mini" aria-hidden="true"><use href="#cv-gomoku"/></svg><label style="cursor:inherit">Chess</label></a>
-    <div class="nav-group">Help</div>
+    <a class="nav-item active" href="/games/gomoku/lobby/">
+      <img class="mini" src="/games/gomoku/cover.svg" alt="" aria-hidden="true"><label>Gomoku</label>
+    </a>
+    <a class="nav-item" href="/games/tictactoe/lobby/">
+      <img class="mini" src="/games/tictactoe/cover.svg" alt="" aria-hidden="true"><label>Tic-Tac-Toe</label>
+    </a>
+    <a class="nav-item" href="/games/connect4/lobby/">
+      <img class="mini" src="/games/connect4/cover.svg" alt="" aria-hidden="true"><label>Connect 4</label>
+    </a>
+    <a class="nav-item" href="/games/reversi/lobby/">
+      <img class="mini" src="/games/reversi/cover.svg" alt="" aria-hidden="true"><label>Othello</label>
+    </a>
+    <a class="nav-item" href="/games/chess/lobby/">
+      <img class="mini" src="/games/chess/cover.svg" alt="" aria-hidden="true"><label>Chess</label>
+    </a>
+    <a class="nav-item" href="/games/checkers/lobby/">
+      <img class="mini" src="/games/checkers/cover.svg" alt="" aria-hidden="true"><label>Checkers</label>
+    </a>
+    <a class="nav-item" href="/games/go/lobby/">
+      <img class="mini" src="/games/go/cover.svg?v=2" alt="" aria-hidden="true"><label>Go</label>
+    </a>
+    <a class="nav-item" href="/games/xiangqi/lobby/">
+      <img class="mini" src="/games/xiangqi/cover.svg?v=2" alt="" aria-hidden="true"><label>Xiangqi</label>
+    </a>
+<div class="nav-group">Help</div>
     <a class="nav-item" href="#howTitle"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></svg><label style="cursor:inherit">How to play</label></a>
   </nav>
   <div class="nav-foot">
@@ -162,7 +143,7 @@
   <!-- 游戏 Hero -->
   <section class="g-hero">
     <div class="wrap">
-      <span class="gcover" aria-hidden="true"><svg role="img" aria-label="Gomoku"><use href="#cv-gomoku"/></svg></span>
+      <span class="gcover" aria-hidden="true"><img src="/games/gomoku/cover.svg" alt=""></span>
       <h1 data-i18n-html="bl.bl_gomoku_hero_h1">Line up five. <em>Win the duel.</em></h1>
       <p class="sub" data-i18n="bm.bm_gomoku_hero_sub">Classic Gomoku on a standard 15&times;15 board &mdash; against a three-level engine, a live rival, a friend in a private room, or pass &amp; play on one screen.</p>
       <div class="chips">
