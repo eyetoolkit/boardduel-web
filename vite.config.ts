@@ -112,6 +112,9 @@ export default defineConfig({
         // 中国象棋（2026-10-05 上线主站：自研 αβ + 3 档 easy/medium/hard）
         xiangqi: resolve(here, 'games/xiangqi/index.html'),
         xiangqiLobby: resolve(here, 'games/xiangqi/lobby/index.html'),
+        // 西洋跳棋 / Checkers（2026-10-05 上线主站：自研 αβ + 3 档 easy/medium/hard，强制吃子 / 连跳 / 升王）
+        checkers: resolve(here, 'games/checkers/index.html'),
+        checkersLobby: resolve(here, 'games/checkers/lobby/index.html'),
         // 围棋教程 6 页（hub + 规则/提子/劫与自杀/让子/数目终局）
         howtoGo: resolve(here, 'how-to-play/go/index.html'),
         howtoGoRules: resolve(here, 'how-to-play/go/rules/index.html'),

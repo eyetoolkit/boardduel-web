@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:68,fallback:"en"};</script>
+  <script src="/i18n/i18n.js?v=67"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#241C4D" />
+<title>Checkers — Choose Your Mode · BoardDuel</title>
+<meta name="description" content="Play Checkers your way: against the engine in three levels, or pass &amp; play on one screen with a friend. Same 8×8 board — only the opponent changes." />
+  <link rel="canonical" href="https://boardduel.com/games/checkers/lobby/" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+<link rel="manifest" href="/manifest.webmanifest" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="BoardDuel" />
+<meta property="og:url" content="https://boardduel.com/games/checkers/lobby/" />
+<meta property="og:image" content="https://boardduel.com/og-image.svg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Checkers — Choose Your Mode · BoardDuel" />
+<meta property="og:title" content="Checkers — Choose Your Mode · BoardDuel" />
+<meta property="og:description" content="Play Checkers against the engine, with a friend on one screen, or join the upcoming tournament." />
+  <meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Checkers — Choose Your Mode · BoardDuel" />
+<meta name="twitter:description" content="Checkers: engine, pass &amp; play, or tournament." />
+  <meta name="twitter:image" content="https://boardduel.com/og-image.svg" />
+<link rel="alternate" hreflang="en" href="https://boardduel.com/games/checkers/lobby/" />
+<link rel="alternate" hreflang="x-default" href="https://boardduel.com/games/checkers/lobby/" />
+<link rel="preload" href="/fonts/space-grotesk-latin-400.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="/fonts/space-grotesk-latin-700.woff2" as="font" type="font/woff2" crossorigin />
+<script>(function(){try{var t=localStorage.getItem("bd-theme2");if(t==="dark"){document.documentElement.setAttribute("data-theme","dark");}}catch(e){}})();</script>
+<script type="module" crossorigin src="/src/games/checkers/lobby.ts"></script>
+<link rel="stylesheet" href="/src/styles/tokens.css">
+<link rel="stylesheet" href="/src/styles/chrome.css">
+<link rel="stylesheet" crossorigin href="/src/styles/home-papergames.css">
+<link rel="stylesheet" crossorigin href="/src/styles/gomoku-lobby.css">
+</head>
+<body class="home-v2">
+
+<!-- ═══════════ 图标库：tictactoe cover + 5 个模式卡 SVG symbol（与全站 lobby 同款占位） ═══════════ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+  <symbol id="cv-tictactoe" viewBox="0 0 512 512">
+    <rect width="512" height="512" fill="#4F46E5"/>
+    <rect x="56" y="56" width="118" height="118" rx="27" fill="#22C55E"/>
+    <rect x="197" y="56" width="118" height="118" rx="27" fill="#FFFFFF"/>
+    <rect x="338" y="56" width="118" height="118" rx="27" fill="#FFFFFF"/>
+    <rect x="56" y="197" width="118" height="118" rx="27" fill="#FFFFFF"/>
+    <rect x="197" y="197" width="118" height="118" rx="27" fill="#22C55E"/>
+    <rect x="338" y="197" width="118" height="118" rx="27" fill="#FFFFFF"/>
+    <rect x="56" y="338" width="118" height="118" rx="27" fill="#FFFFFF"/>
+    <rect x="197" y="338" width="118" height="118" rx="27" fill="#FFFFFF"/>
+    <rect x="338" y="338" width="118" height="118" rx="27" fill="#22C55E"/>
+  </symbol>
+  <symbol id="mi-engine" viewBox="0 0 24 24">
+    <rect x="4.5" y="7" width="15" height="11" rx="3" fill="none" stroke="#fff" stroke-width="1.6"/>
+    <circle cx="9" cy="12" r="1.1" fill="#fff"/>
+    <circle cx="15" cy="12" r="1.1" fill="#fff"/>
+    <path d="M9.5 15.4c.8.7 4.2.7 5 0" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/>
+    <path d="M12 7V4.6M9.8 4.6h4.4" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="mi-friend" viewBox="0 0 24 24">
+    <path d="M3.5 11.2L12 3.8l8.5 7.4V19c0 .8-.7 1.5-1.5 1.5h-13C5.2 20.5 4.5 19.8 4.5 19V11.2z" fill="#fff"/>
+    <rect x="9.5" y="14" width="5" height="6.5" rx=".5" fill="#7C3AED"/>
+    <rect x="6.5" y="12.5" width="2.5" height="2.5" rx=".3" fill="#7C3AED"/>
+    <rect x="15" y="12.5" width="2.5" height="2.5" rx=".3" fill="#7C3AED"/>
+  </symbol>
+  <symbol id="mi-random" viewBox="0 0 24 24">
+    <path d="M13.6 3L5 13.6h5.2l-1.4 7.4L19 10.4h-5.2L13.6 3z" fill="#fff"/>
+  </symbol>
+  <symbol id="mi-pass" viewBox="0 0 24 24">
+    <circle cx="8" cy="9" r="3.4" fill="#fff"/>
+    <path d="M2.6 20a5.4 5.4 0 0 1 10.8 0z" fill="#fff"/>
+    <circle cx="17" cy="10" r="2.8" fill="#F59E0B"/>
+    <path d="M13 20.4a4.6 4.6 0 0 1 9.2 0z" fill="#F59E0B"/>
+  </symbol>
+  <symbol id="mi-master" viewBox="0 0 24 24">
+    <path d="M7 4.5h10v7a5 5 0 0 1-10 0v-7z" fill="#fff"/>
+    <path d="M7 6.5H4.5C3.7 6.5 3 7.2 3 8v1.2c0 2 1.6 3.6 3.6 3.6M17 6.5h2.5c.8 0 1.5.7 1.5 1.5v1.2c0 2-1.6 3.6-3.6 3.6" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+    <rect x="10.5" y="18" width="3" height="2.4" rx=".4" fill="#fff"/>
+    <rect x="7.5" y="20.5" width="9" height="1.6" rx=".6" fill="#fff"/>
+  </symbol>
+</defs>
+</svg>
+
+<!-- ═══════════ 移动端顶栏 ═══════════ -->
+<div class="topbar">
+  <button class="burger" id="burger" aria-label="Open navigation" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="logo" href="/">Board<b>Duel</b></a>
+  <a class="btn-login" href="/games/checkers/?mode=ai" style="flex:none;padding:8px 18px">Play now</a>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<!-- ═══════════ 侧边导航（Checkers 高亮） ═══════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-top">
+    <a class="logo" href="/">Board<b>Duel</b></a>
+    <button class="sb-collapse" id="collapse" title="Collapse navigation" aria-label="Collapse navigation">&laquo;</button>
+  </div>
+  <div class="sb-login">
+    <a class="btn-login" href="/games/checkers/?mode=ai"><span>Play now</span></a>
+    <button class="sb-theme" title="Toggle theme" aria-label="Toggle theme">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20 13A8 8 0 1 1 11 4a6.5 6.5 0 0 0 9 9z"/></svg>
+    </button>
+  </div>
+  <nav class="sb-nav" aria-label="Site navigation">
+    <a class="nav-item" href="/"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><label style="cursor:inherit">Home</label></a>
+    <span class="nav-item is-disabled" aria-disabled="true" style="opacity:.5;cursor:default" title="Coming soon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg><label style="cursor:inherit">Coin Shop 🪙</label></span>
+    <div class="nav-group">All games</div>
+    <a class="nav-item" href="/games/gomoku/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-tictactoe"/></svg><label style="cursor:inherit">Gomoku</label></a>
+    <a class="nav-item" href="/games/tictactoe/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-tictactoe"/></svg><label style="cursor:inherit">Tic-Tac-Toe</label></a>
+    <a class="nav-item" href="/games/connect4/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-tictactoe"/></svg><label style="cursor:inherit">Connect 4</label></a>
+    <a class="nav-item" href="/games/reversi/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-tictactoe"/></svg><label style="cursor:inherit">Othello</label></a>
+    <a class="nav-item" href="/games/chess/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-tictactoe"/></svg><label style="cursor:inherit">Chess</label></a>
+    <a class="nav-item active" href="/games/checkers/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-tictactoe"/></svg><label style="cursor:inherit">Checkers</label></a>
+    <a class="nav-item" href="/games/go/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-tictactoe"/></svg><label style="cursor:inherit">Go</label></a>
+    <a class="nav-item" href="/games/xiangqi/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-tictactoe"/></svg><label style="cursor:inherit">Xiangqi</label></a>
+    <div class="nav-group">Help</div>
+    <a class="nav-item" href="#howTitle"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></svg><label style="cursor:inherit">How to play</label></a>
+  </nav>
+  <div class="nav-foot">
+    <span class="sb-copy">&copy; 2026</span>
+  </div>
+</aside>
+
+<!-- ═══════════ 主区 ═══════════ -->
+<main class="main">
+
+  <section class="g-hero">
+    <div class="wrap">
+      <span class="gcover" aria-hidden="true"><svg role="img" aria-label="Checkers"><use href="#cv-tictactoe"/></svg></span>
+      <h1>Hop them all. <em>Crown your king.</em></h1>
+      <p class="sub" data-i18n="bg.bg_checkers_lobby_hero_sub">Classic 8&times;8 English Draughts &mdash; against a three-level engine, or pass &amp; play on one screen with a friend.</p>
+      <div class="chips">
+        <span class="chip"><span class="dot"></span><span data-i18n="bm.bm_chip_pass_play">AI &middot; Pass &amp; Play</span></span>
+        <span class="chip"><span class="dot"></span><span data-i18n="bm.bm_chip_no_login">No login to play</span></span>
+        <span class="chip"><span class="dot"></span><span>8&times;8 board</span></span>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap lobby-grid">
+    <section aria-labelledby="modesTitle">
+      <h2 class="sec-h" id="modesTitle" data-i18n-html="bl.bl_modes_h2">Choose your mode<small data-i18n="bl.bl_modes_h2_small">Tap a card to jump straight in.</small></h2>
+      <div class="modes" id="modeGrid">
+        <a class="mode" href="/games/checkers/?mode=ai" data-mode="ai">
+          <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-engine"/></svg></div>
+          <div class="mt" data-i18n="bm.bm_mt_engine">Play the Engine</div>
+        </a>
+        <a class="mode" href="/games/checkers/?mode=ai" data-mode="friend">
+          <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-friend"/></svg></div>
+          <div class="mt" data-i18n="bm.bm_mt_friend">Friend Room</div>
+        </a>
+        <a class="mode" href="/games/checkers/?mode=ai" data-mode="random">
+          <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-random"/></svg></div>
+          <div class="mt" data-i18n="bm.bm_mt_random">Random Match</div>
+        </a>
+        <a class="mode" href="/games/checkers/?mode=pass" data-mode="pass">
+          <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-pass"/></svg></div>
+          <div class="mt" data-i18n="bm.bm_mt_pass">Pass &amp; Play</div>
+        </a>
+        <a class="mode" href="/games/checkers/?mode=ai" data-mode="master">
+          <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-master"/></svg></div>
+          <div class="mt" data-i18n="bm.bm_mt_ai_master">vs AI Master</div>
+        </a>
+        <div class="mode soon" aria-disabled="true">
+          <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-master"/></svg></div>
+          <div class="mt" data-i18n="bm.bm_mt_tournament">Tournament</div>
+          <span class="soon-pill" data-i18n="bl.bl_soon_pill">SOON</span>
+        </div>
+      </div>
+    </section>
+
+    <aside class="side">
+      <section class="panel" aria-labelledby="ladTitle">
+        <h3 id="ladTitle" data-i18n="bm.bm_reversi_ladder_title">Othello Elo ladder</h3>
+        <p class="pnote">Top 10% this week &middot; weekly reset keeps it honest.</p>
+        <div id="rankRows" aria-live="polite">
+          <div class="rank-empty">Loading the standings&hellip;</div>
+        </div>
+        <a class="btn btn-violet block" href="/rank/" style="margin-top:12px" data-i18n="bl.bl_panel_rank_btn">Full leaderboard</a>
+      </section>
+
+      <section class="panel" aria-labelledby="roomTitle">
+        <h3 id="roomTitle" data-i18n="bl.bl_panel_room_title">Start a friend room</h3>
+        <p class="pnote" data-i18n="bl.bl_panel_room_note">Private room, 6-character code. Your code and link appear once the room is open.</p>
+        <label class="field" for="roomInput">
+          <span data-i18n="bl.bl_panel_room_label">Have a code? Join it</span>
+          <input id="roomInput" type="text" maxlength="6" placeholder="K7Q2R" autocomplete="off" spellcheck="false">
+        </label>
+        <div class="btn-row">
+          <a class="btn btn-violet" href="/games/checkers/?mode=ai" id="createRoom" data-i18n="bl.bl_panel_room_create">Create a room</a>
+          <button class="btn btn-ghost" id="joinRoom" type="button" data-i18n="bl.bl_panel_room_join">Join</button>
+        </div>
+        <p class="err" id="roomErr" role="alert"></p>
+      </section>
+    </aside>
+  </div>
+
+  <section class="how wrap" aria-labelledby="howTitle">
+    <h2 class="sec-h" id="howTitle">How to play<small>Move diagonally, jump to capture, and reach the far row to crown a king.</small></h2>
+    <div class="how-grid">
+      <div class="step"><span class="sn">1</span><b data-i18n="bg.bg_checkers_lobby_s1_t">Diagonal moves</b><span data-i18n="bg.bg_checkers_lobby_s1_b">Pieces slide one square diagonally forward. Kings move in any diagonal direction.</span></div>
+      <div class="step"><span class="sn">2</span><b data-i18n="bg.bg_checkers_lobby_s2_t">Forced captures</b><span data-i18n="bg.bg_checkers_lobby_s2_b">If a jump is available you must take it &mdash; and keep jumping if more jumps follow in the same turn.</span></div>
+      <div class="step"><span class="sn">3</span><b data-i18n="bg.bg_checkers_lobby_s3_t">Crown a king</b><span data-i18n="bg.bg_checkers_lobby_s3_b">Reach the opponent's back row and your man becomes a king, flying both forward and backward.</span></div>
+      <div class="step"><span class="sn">4</span><b data-i18n="bg.bg_checkers_lobby_s4_t">Win the board</b><span data-i18n="bg.bg_checkers_lobby_s4_b">Capture every enemy piece, or leave your opponent with no legal move.</span></div>
+    </div>
+  </section>
+</main>
+
+<!-- ═══════════ 页脚 ═══════════ -->
+<footer class="site-footer main">
+  <div class="wrap">
+    <div class="sf-title">Explore the Duel family</div>
+    <div class="sf-matrix">
+      <a class="sf-item current" href="https://boardduel.com"><span class="pip" style="background:#E5484D"></span>BoardDuel &middot; Board &amp; Card Games</a>
+      <a class="sf-item" href="https://numeriduel.com"><span class="pip" style="background:#F59E0B"></span>MathDuel &middot; Math Puzzle Games</a>
+      <a class="sf-item" href="https://memoryduel.com"><span class="pip" style="background:#4F46E5"></span>MemoryDuel &middot; Knowledge Battles</a>
+    </div>
+    <div class="sf-links">
+      <a href="/about/">About</a><a href="/contact/">Contact</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/">All games</a>
+    </div>
+    <div class="sf-copy">&copy; 2026 BoardDuel &middot; Pure static &middot; Privacy-first &middot; Free to play</div>
+  </div>
+</footer>
+<script src="/i18n/lang-switcher.js?v=37" defer></script>
+</body>
+</html>

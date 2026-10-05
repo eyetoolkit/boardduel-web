@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- 西洋跳棋 arena 范式 · 精简版（AI + Pass & Play，不含联机/回放） -->
+  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:68,fallback:"en"};</script>
+  <script src="/i18n/i18n.js?v=67"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#F4F5F9">
+<title>Checkers — BoardDuel</title>
+<meta name="description" content="Checkers — 8×8 English Draughts. Hop your pieces, crown a king, capture the board. Three engine levels.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="BoardDuel">
+<meta property="og:title" content="Checkers — BoardDuel">
+<meta property="og:description" content="Checkers — 8×8 English Draughts. Crown kings and capture the board against a three-level engine.">
+<meta property="og:url" content="https://boardduel.com/games/checkers/">
+<link rel="canonical" href="https://boardduel.com/games/checkers/">
+<link rel="alternate" hreflang="en" href="https://boardduel.com/games/checkers/">
+<link rel="alternate" hreflang="x-default" href="https://boardduel.com/games/checkers/">
+<link rel="stylesheet" href="/src/styles/tokens.css">
+<link rel="stylesheet" href="/src/styles/chrome.css">
+<link rel="stylesheet" href="/src/styles/boardduel.css">
+<link rel="stylesheet" href="/src/styles/arena-paper.css">
+<link rel="stylesheet" href="/src/styles/reversi-paper.css">
+<script>(function(){try{var t=localStorage.getItem('bd-theme2');if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}})();</script>
+<link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/space-grotesk-latin-700.woff2" as="font" type="font/woff2" crossorigin>
+</head>
+<body class="home-v2">
+
+<div class="topbar">
+  <button class="burger" id="burger" aria-label="Open navigation" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="logo" href="/">Board<b>Duel</b></a>
+  <a class="btn-login" href="/games/checkers/lobby/">Play now</a>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sb-top">
+    <a class="logo" href="/">Board<b>Duel</b></a>
+    <button class="sb-collapse" id="collapse" title="Collapse navigation" aria-label="Collapse navigation">&laquo;</button>
+  </div>
+  <div class="sb-login">
+    <a class="btn-login" href="/games/checkers/lobby/"><span>Play now</span></a>
+    <button class="sb-theme" type="button" title="Toggle theme" aria-label="Toggle theme" aria-pressed="false">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20 13A8 8 0 1 1 11 4a6.5 6.5 0 0 0 9 9z"/></svg>
+    </button>
+  </div>
+  <nav class="sb-nav" aria-label="Site navigation">
+    <a class="nav-item" href="/">
+      <svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><label>Home</label>
+    </a>
+    <div class="nav-group">Play</div>
+    <a class="nav-item" href="/games/gomoku/lobby/">
+      <img class="mini" src="/games/gomoku/cover.svg" alt="" aria-hidden="true"><label>Gomoku</label>
+    </a>
+    <a class="nav-item" href="/games/tictactoe/lobby/">
+      <img class="mini" src="/games/tictactoe/cover.svg" alt="" aria-hidden="true"><label>Tic-Tac-Toe</label>
+    </a>
+    <a class="nav-item" href="/games/connect4/lobby/">
+      <img class="mini" src="/games/connect4/cover.svg" alt="" aria-hidden="true"><label>Connect 4</label>
+    </a>
+    <a class="nav-item" href="/games/reversi/lobby/">
+      <img class="mini" src="/games/reversi/cover.svg" alt="" aria-hidden="true"><label>Othello</label>
+    </a>
+    <a class="nav-item" href="/games/chess/lobby/">
+      <img class="mini" src="/games/chess/cover.svg" alt="" aria-hidden="true"><label>Chess</label>
+    </a>
+    <a class="nav-item active" href="/games/checkers/lobby/">
+      <img class="mini" src="/games/checkers/cover.svg" alt="" aria-hidden="true"><label>Checkers</label>
+    </a>
+    <a class="nav-item" href="/games/go/lobby/">
+      <img class="mini" src="/games/go/cover.svg" alt="" aria-hidden="true"><label>Go</label>
+    </a>
+    <a class="nav-item" href="/games/xiangqi/lobby/">
+      <img class="mini" src="/games/xiangqi/cover.svg" alt="" aria-hidden="true"><label>Xiangqi</label>
+    </a>
+    <div class="nav-group">More</div>
+    <a class="nav-item" href="/rank/">
+      <svg viewBox="0 0 24 24"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3"/><path d="M7 5H4v2a3 3 0 0 0 3 3"/></svg><label>Leaderboard</label>
+    </a>
+    <a class="nav-item" href="/stats/">
+      <svg viewBox="0 0 24 24"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg><label>My stats</label>
+    </a>
+    <a class="nav-item" href="/shop/">
+      <svg viewBox="0 0 24 24"><path d="M4 8h16l-1 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><label>Shop</label>
+    </a>
+    <a class="nav-item" href="/how-to-play/checkers/">
+      <svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2z"/><path d="M8 7h7"/><path d="M8 11h7"/></svg><label>How to play</label>
+    </a>
+  </nav>
+  <div class="nav-foot">
+    <span class="lang-pill"><b>EN</b></span>
+    <span class="sb-copy">&copy; 2026</span>
+  </div>
+</aside>
+
+<main class="bd-main">
+
+  <header class="bd-hero">
+    <h1>Checkers<span class="bd-dot">.</span> <span class="bd-hero-sub">Hop, capture, and crown your king.</span></h1>
+    <p class="bd-lead">Classic 8&times;8 English Draughts. Diagonal moves, forced captures, and kings that fly both ways. Play the engine at three levels, or pass &amp; play with a friend.</p>
+    <div class="bd-game-meta">
+      <span><b>8&times;8</b> board</span>
+      <span><b>3</b> engine levels</span>
+      <span><b>forced</b> captures</span>
+      <span><b>no login</b></span>
+    </div>
+  </header>
+
+  <section id="ck-match" hidden>
+
+    <div class="go-clocks" id="go-clocks">
+      <div class="go-clock is-active" id="go-clock-me">
+        <span class="go-avatar go-avatar-me" aria-hidden="true"><svg viewBox="0 0 40 40" role="img" aria-label="Player avatar"><defs><clipPath id="gav-me-ck"><circle cx="20" cy="20" r="20"/></clipPath></defs><circle cx="20" cy="20" r="20" fill="#E5484D"/><g clip-path="url(#gav-me-ck)"><circle cx="20" cy="15.6" r="6.4" fill="#fff" opacity=".93"/><path d="M7 36c1.6-6.6 6.7-10.2 13-10.2S31.4 29.4 33 36z" fill="#fff" opacity=".93"/></g></svg></span>
+        <span class="go-clock-who" id="go-clock-me-who" data-i18n="bg.bg_checkers_you_red">YOU · RED</span>
+        <span class="go-clock-time" id="ck-clock-me-time">0:00</span>
+      </div>
+      <div class="go-clock" id="go-clock-opp">
+        <span class="go-avatar go-avatar-opp" aria-hidden="true"><svg viewBox="0 0 40 40" role="img" aria-label="Opponent avatar"><defs><clipPath id="gav-opp-ck"><circle cx="20" cy="20" r="20"/></clipPath></defs><circle cx="20" cy="20" r="20" fill="#1E1B39"/><g clip-path="url(#gav-opp-ck)"><rect x="11" y="15" width="18" height="13" rx="4" fill="#fff" opacity=".93"/><circle cx="16.6" cy="21" r="1.9" fill="#0B7F85"/><circle cx="23.4" cy="21" r="1.9" fill="#0B7F85"/><path d="M20 15v-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><circle cx="20" cy="9.6" r="1.9" fill="#fff"/></g></svg></span>
+        <span class="go-clock-who" id="go-clock-opp-who" data-i18n="bg.bg_checkers_engine_black">ENGINE · BLACK</span>
+        <span class="go-clock-time" id="ck-clock-opp-time">0:00</span>
+      </div>
+    </div>
+
+    <div class="bd-play">
+      <div class="bd-board-wrap">
+        <div id="bd-board" class="go-board ck-board"></div>
+      </div>
+
+      <aside class="bd-side">
+        <div class="go-status-card">
+          <div class="go-status-row"><span data-i18n="bg.bg_checkers_turn">Turn</span><b id="ck-turn" class="go-turn-you" data-i18n="bg.bg_checkers_you_red_lc">You · Red</b></div>
+          <div class="go-status-row"><span data-i18n="bg.bg_checkers_mode">Mode</span><b id="ck-mode-v">vs engine</b></div>
+          <div class="go-status-row"><span data-i18n="bg.bg_checkers_pieces">Pieces</span><b id="ck-score">12 · 12</b></div>
+        </div>
+
+        <div class="go-controls">
+          <button type="button" class="go-btn go-icon-btn go-sound" id="ck-sound" aria-pressed="true" data-i18n-aria-label="bg.bg_checkers_sound_on" aria-label="Sound on" title="Sound">
+            <svg class="ico-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.4L12.5 19V5L7.4 9.5H4z"/><path d="M15.8 9.4a4.2 4.2 0 0 1 0 5.2"/><path d="M18.4 7a7.6 7.6 0 0 1 0 10"/></svg>
+            <svg class="ico-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.4L12.5 19V5L7.4 9.5H4z"/><path d="M16.5 10l4.5 4"/><path d="M21 10l-4.5 4"/></svg>
+          </button>
+          <button type="button" class="go-btn" id="ck-undo" data-i18n="bg.bg_checkers_undo">Undo</button>
+          <button type="button" class="go-btn" id="ck-level" hidden data-i18n="bg.bg_checkers_level">Level</button>
+          <button type="button" class="go-btn is-danger" id="ck-resign" data-i18n="bg.bg_checkers_resign">Resign</button>
+        </div>
+
+        <div class="go-levelcard" id="ck-levelcard" hidden>
+          <div class="go-level-panel">
+            <div class="go-hintcard-h">
+              <span data-i18n="bg.bg_checkers_level">Level</span>
+              <button type="button" id="ck-level-close" aria-label="Close">×</button>
+            </div>
+            <div class="go-level-opts">
+              <button type="button" class="go-level-opt" data-level="easy"><b data-i18n="bg.bg_checkers_lv1">Casual</b><span data-i18n="bg.bg_checkers_lv1_sub">level 1 · light engine, occasional slips</span></button>
+              <button type="button" class="go-level-opt" data-level="medium"><b data-i18n="bg.bg_checkers_lv2">Challenger</b><span data-i18n="bg.bg_checkers_lv2_sub">level 2 · search depth 5, solid tactics</span></button>
+              <button type="button" class="go-level-opt" data-level="hard"><b data-i18n="bg.bg_checkers_lv3">Expert</b><span data-i18n="bg.bg_checkers_lv3_sub">level 3 · search depth 7, king-aware</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="go-levelcard go-leavecard" id="ck-leavecard" hidden>
+          <div class="go-level-panel">
+            <div class="go-hintcard-h">
+              <span data-i18n="bg.bg_checkers_leave_title">Leave the game?</span>
+              <button type="button" id="ck-leave-close" data-i18n-aria-label="bg.bg_checkers_leave_close" aria-label="Cancel">×</button>
+            </div>
+            <p class="go-leave-note" data-i18n="bg.bg_checkers_leave_note">This game is still in progress — leaving now loses it.</p>
+            <div class="go-leave-acts">
+              <button type="button" class="go-btn is-primary" id="ck-leave-stay" data-i18n="bg.bg_checkers_stay">Keep playing</button>
+              <button type="button" class="go-btn is-danger" id="ck-leave-yes" data-i18n="bg.bg_checkers_leave">Leave</button>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="go-btn" id="ck-back-lobby" data-i18n="bg.bg_checkers_back_lobby">Back to lobby</button>
+      </aside>
+    </div>
+  </section>
+
+  <section id="ck-end" hidden>
+    <div class="go-endbar" id="ck-endbar">
+      <div class="go-end-main">
+        <span class="go-end-verdict" id="ck-end-verdict">You win</span>
+        <span class="go-end-line" id="ck-end-line">—</span>
+      </div>
+      <div class="go-end-acts">
+        <button type="button" class="go-btn is-primary" id="ck-rematch" data-i18n="common.play_again">Play Again</button>
+        <button type="button" class="go-btn" id="ck-end-lobby" data-i18n="bg.bg_checkers_back_lobby">Back to lobby</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="bd-how">
+    Move diagonally forward; jump over an adjacent enemy to capture it, and keep jumping if you can.
+    Captures are <b>forced</b> — if a jump is available you must take it. Reach the far row to crown a <b>king</b> (moves both ways).
+    Win by capturing every enemy piece, or by leaving your opponent with no legal move.
+  </div>
+
+  <div class="bd-foot">
+  <span>© 2026 BoardDuel · free to play · privacy-first</span>
+  <span><a href="/">Home</a></span>
+</div>
+</main>
+<script type="module" src="/src/games/checkers/index.ts"></script>
+<script src="/i18n/lang-switcher.js?v=37" defer></script>
+</body>
+</html>

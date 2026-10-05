@@ -1,0 +1,521 @@
+/**
+ * BoardDuel · Checkers (English Draughts, 8×8) · 精简 arena 范式
+ * ------------------------------------------------------------
+ * MVP 范围：AI 三档 + Pass & Play（联机/回放后置）。
+ * 交互：点己方棋子 → 高亮其所有合法落点（含连跳最终落点）→ 点落点执行整条连跳。
+ * 规则由 ./engine.ts 保证（强制吃子 / 连跳 / 升变 / 无步判负）。
+ */
+import {
+  setupNav, startTimer, stopTimer, createTimer, fmtClock,
+  toast, type Mode,
+} from '../game-core';
+import { wireLobbyChrome } from '../../lobby-chrome';
+import {
+  initialBoard, cloneBoard, moves, applyMove, bestMove, countPieces,
+  type Board as CBoard, type Player as CPlayer, type Difficulty as CDifficulty, type Move,
+  EMPTY, colorOf, isKing, SIZE,
+} from './engine';
+import { modeFromUrl, syncModeCardUI } from '../shared';
+import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
+
+/* ====================== 棋盘常量 ====================== */
+const SLOT = 540;
+const PAD = 16;
+const CELL = (SLOT - 2 * PAD) / SIZE;
+
+/* ====================== DOM 引用 ====================== */
+const boardEl = document.getElementById('bd-board') as HTMLDivElement;
+const turnEl = document.getElementById('ck-turn') as HTMLElement;
+const scoreEl = document.getElementById('ck-score') as HTMLElement;
+const modeEl = document.getElementById('ck-mode-v') as HTMLElement;
+const undoBtn = document.getElementById('ck-undo') as HTMLButtonElement;
+const resignBtn = document.getElementById('ck-resign') as HTMLButtonElement;
+const levelBtn = document.getElementById('ck-level') as HTMLButtonElement;
+const levelCard = document.getElementById('ck-levelcard') as HTMLElement;
+const levelClose = document.getElementById('ck-level-close') as HTMLButtonElement;
+const soundBtn = document.getElementById('ck-sound') as HTMLButtonElement;
+const matchEl = document.getElementById('ck-match') as HTMLElement;
+const endEl = document.getElementById('ck-end') as HTMLElement;
+const endVerdict = document.getElementById('ck-end-verdict') as HTMLElement;
+const endLine = document.getElementById('ck-end-line') as HTMLElement;
+const rematchBtn = document.getElementById('ck-rematch') as HTMLButtonElement;
+const endLobbyBtn = document.getElementById('ck-end-lobby') as HTMLButtonElement;
+const leaveCard = document.getElementById('ck-leavecard') as HTMLElement;
+const leaveClose = document.getElementById('ck-leave-close') as HTMLButtonElement;
+const leaveStay = document.getElementById('ck-leave-stay') as HTMLButtonElement;
+const leaveYes = document.getElementById('ck-leave-yes') as HTMLButtonElement;
+const backLobbyBtn = document.getElementById('ck-back-lobby') as HTMLButtonElement;
+const clockMeTime = document.getElementById('ck-clock-me-time') as HTMLElement;
+const clockMeCard = document.getElementById('go-clock-me') as HTMLElement;
+const clockOppCard = document.getElementById('go-clock-opp') as HTMLElement;
+
+setupNav('checkers');
+
+/* ====================== 状态 ====================== */
+type UIState = {
+  screen: 'match' | 'end';
+  mode: Mode;
+  level: CDifficulty;
+  board: CBoard;
+  player: CPlayer;     // 当前轮到谁（1 红 / 2 黑）
+  lastMove: number;    // 最后落点（琥珀高亮）
+  over: boolean;
+  selected: number;    // 已选中的己方棋子（-1 无）
+  legal: Move[];       // 当前 player 的全部合法走法（含强制吃子约束）
+  history: { board: CBoard; player: CPlayer; lastMove: number }[];
+  sinceCapture: number; // 连续无吃子步数（达 40 判和）
+  timer: ReturnType<typeof createTimer>;
+  aiThinking: boolean;
+};
+const HUMAN: CPlayer = 1;   // 玩家执红（先手）
+const ENGINE: CPlayer = 2;  // 引擎执黑
+
+const state: UIState = {
+  screen: 'match',
+  mode: 'ai',
+  level: 'medium',
+  board: initialBoard(),
+  player: HUMAN,
+  lastMove: -1,
+  over: false,
+  selected: -1,
+  legal: [],
+  history: [],
+  sinceCapture: 0,
+  timer: createTimer(),
+  aiThinking: false,
+};
+
+const MODE_PAGE = '/games/checkers/lobby/';
+const AI_THINK_MS: Record<CDifficulty, number> = { easy: 360, medium: 560, hard: 760 };
+
+/* ====================== 工具 ====================== */
+function rowCol(i: number): [number, number] { return [Math.floor(i / SIZE), i % SIZE]; }
+function cx(i: number): number { const [, c] = rowCol(i); return PAD + c * CELL + CELL / 2; }
+function cy(i: number): number { const [r] = rowCol(i); return PAD + r * CELL + CELL / 2; }
+
+/* ====================== 渲染 ====================== */
+function render(): void {
+  const b = state.board;
+
+  // 棋盘格（深浅交替）
+  let cells = '';
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      const dark = (r + c) % 2 === 1;
+      const x = PAD + c * CELL;
+      const y = PAD + r * CELL;
+      cells += `<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" fill="${dark ? '#C9A27E' : '#F3EEE2'}"/>`;
+    }
+  }
+
+  // 选中 / 目标高亮
+  let hl = '';
+  const myTurn = !state.over && (state.mode === 'pass' || (state.mode === 'ai' && state.player === HUMAN)) && !state.aiThinking;
+  if (myTurn) {
+    if (state.selected >= 0) {
+      // 该子的合法落点
+      hl += `<circle cx="${cx(state.selected)}" cy="${cy(state.selected)}" r="${CELL * 0.46}" fill="none" stroke="#F59E0B" stroke-width="4"/>`;
+      for (const m of state.legal) {
+        if (m.from !== state.selected) continue;
+        hl += `<circle cx="${cx(m.to)}" cy="${cy(m.to)}" r="${CELL * 0.28}" fill="#F59E0B" opacity="0.85"/>`;
+        if (m.captures.length > 0) {
+          hl += `<circle cx="${cx(m.to)}" cy="${cy(m.to)}" r="${CELL * 0.40}" fill="none" stroke="#F59E0B" stroke-width="3"/>`;
+        }
+      }
+    } else {
+      // 提示有走法的己方棋子
+      const froms = new Set(state.legal.map((m) => m.from));
+      for (const f of froms) {
+        hl += `<circle cx="${cx(f)}" cy="${cy(f)}" r="${CELL * 0.34}" fill="none" stroke="#F59E0B" stroke-width="2" opacity="0.6"/>`;
+      }
+    }
+  }
+
+  // 最后一手
+  let last = '';
+  if (state.lastMove >= 0) {
+    last += `<rect x="${PAD + (state.lastMove % SIZE) * CELL}" y="${PAD + Math.floor(state.lastMove / SIZE) * CELL}" width="${CELL}" height="${CELL}" fill="none" stroke="#F59E0B" stroke-width="3" opacity="0.9"/>`;
+  }
+
+  // 棋子
+  let pieces = '';
+  for (let i = 0; i < SIZE * SIZE; i++) {
+    const v = b[i];
+    if (v === EMPTY) continue;
+    const isRed = colorOf(v) === 1;
+    const px = cx(i), py = cy(i);
+    const fill = isRed ? '#E5484D' : '#1E1B39';
+    const stroke = isRed ? '#9B2C28' : '#000000';
+    pieces += `<circle cx="${px}" cy="${py}" r="${CELL * 0.40}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`;
+    if (isKing(v)) {
+      // 王：金环 + 中心金点
+      pieces += `<circle cx="${px}" cy="${py}" r="${CELL * 0.40}" fill="none" stroke="#F5C518" stroke-width="4"/>`;
+      pieces += `<circle cx="${px}" cy="${py}" r="${CELL * 0.13}" fill="#F5C518"/>`;
+    }
+  }
+
+  // 命中区
+  let hits = '';
+  if (myTurn) {
+    const targets = new Set<number>();
+    if (state.selected >= 0) {
+      for (const m of state.legal) if (m.from === state.selected) targets.add(m.to);
+    } else {
+      for (const m of state.legal) targets.add(m.from);
+    }
+    for (const t of targets) {
+      const [r, c] = rowCol(t);
+      hits += `<g class="ck-cell" data-i="${t}" style="cursor:pointer"><rect x="${PAD + c * CELL}" y="${PAD + r * CELL}" width="${CELL}" height="${CELL}" fill="transparent"/></g>`;
+    }
+  }
+
+  boardEl.innerHTML = `<svg viewBox="0 0 ${SLOT} ${SLOT}" aria-label="Checkers board">
+    <rect x="0" y="0" width="${SLOT}" height="${SLOT}" fill="#FBF7EF" rx="14"/>
+    <rect x="${PAD}" y="${PAD}" width="${SLOT - 2 * PAD}" height="${SLOT - 2 * PAD}" fill="none" stroke="rgba(124,58,237,.25)" stroke-width="1.2"/>
+    ${cells}${hl}${last}${pieces}${hits}
+  </svg>`;
+  boardEl.querySelectorAll<SVGGElement>('.ck-cell').forEach((g) => {
+    g.addEventListener('click', () => onCell(Number(g.dataset.i)));
+  });
+
+  // 计分
+  const red = countPieces(b, 1);
+  const black = countPieces(b, 2);
+  scoreEl.textContent = `${red} · ${black}`;
+  renderHud();
+  renderClockHud();
+}
+
+function renderHud(): void {
+  const thinking = !state.over && state.aiThinking && state.mode === 'ai' && state.player === ENGINE;
+  let label: string;
+  if (state.over) label = window.t('bi.game_over');
+  else if (state.mode === 'pass') label = state.player === HUMAN ? window.t('bg.bg_checkers_you_red_lc') : window.t('bg.bg_checkers_pass_black_lc');
+  else label = state.player === HUMAN
+    ? window.t('bg.bg_checkers_you_red_lc')
+    : (thinking ? 'Engine · ' + window.t('status.thinking') : window.t('bg.bg_checkers_engine_black_lc'));
+  turnEl.textContent = label;
+  turnEl.className = 'go-turn-you' + (thinking ? ' is-thinking' : '');
+
+  const lvName = state.level === 'easy' ? window.t('bg.bg_checkers_lv1') :
+    state.level === 'medium' ? window.t('bg.bg_checkers_lv2') : window.t('bg.bg_checkers_lv3');
+  modeEl.textContent = state.mode === 'ai'
+    ? window.t('bi.vs_ai_prefix') + ' ' + lvName
+    : window.t('bi.pass_play');
+}
+
+function renderClockHud(): void {
+  if (state.mode === 'ai') {
+    clockMeCard.classList.toggle('is-active', !state.over && state.player === HUMAN && !state.aiThinking);
+    clockOppCard.classList.toggle('is-active', !state.over && (state.player === ENGINE || state.aiThinking));
+  } else {
+    clockMeCard.classList.toggle('is-active', false);
+    clockOppCard.classList.toggle('is-active', false);
+  }
+}
+
+/* ====================== 走子交互 ====================== */
+function onCell(i: number): void {
+  if (state.over || state.aiThinking) return;
+  if (state.mode === 'ai' && state.player !== HUMAN) return;
+
+  // 已选中且点中一个合法落点 → 执行走法
+  if (state.selected >= 0) {
+    const m = state.legal.find((x) => x.from === state.selected && x.to === i);
+    if (m) { doMove(m); return; }
+  }
+  // 否则尝试选中一个己方有走法的棋子
+  if (state.legal.some((x) => x.from === i)) {
+    state.selected = i;
+    render();
+    return;
+  }
+  state.selected = -1;
+  render();
+}
+
+function pushHistory(): void {
+  state.history.push({ board: cloneBoard(state.board), player: state.player, lastMove: state.lastMove });
+}
+
+function doMove(m: Move): void {
+  pushHistory();
+  state.board = applyMove(state.board, m);
+  state.lastMove = m.to;
+  state.selected = -1;
+  state.sinceCapture = m.captures.length > 0 ? 0 : state.sinceCapture + 1;
+  playSfx('place');
+  afterMove();
+}
+
+function afterMove(): void {
+  // 胜负判定：当前方无子或无合法步 → 对方胜
+  if (countPieces(state.board, state.player) === 0 || moves(state.board, state.player).length === 0) {
+    state.over = true;
+    state.selected = -1;
+    stopTimer(state.timer);
+    render();
+    finish(state.player === HUMAN ? ENGINE : HUMAN);
+    return;
+  }
+  // 无吃子 40 步判和
+  if (state.sinceCapture >= 40) {
+    state.over = true;
+    state.selected = -1;
+    stopTimer(state.timer);
+    render();
+    finish(0);
+    return;
+  }
+  // 切换回合
+  state.player = state.player === 1 ? 2 : 1;
+  state.legal = moves(state.board, state.player);
+  render();
+  if (state.mode === 'ai' && state.player === ENGINE && !state.over) {
+    aiMove();
+  }
+}
+
+/* ====================== AI ====================== */
+let aiTimer = 0;
+function cancelAiMove(): void {
+  if (aiTimer) { clearTimeout(aiTimer); aiTimer = 0; }
+  state.aiThinking = false;
+}
+function aiMove(): void {
+  if (aiTimer) clearTimeout(aiTimer);
+  state.aiThinking = true;
+  render();
+  const base = AI_THINK_MS[state.level] ?? AI_THINK_MS.medium;
+  const jitter = Math.round(base * (Math.random() * 0.24 - 0.12));
+  aiTimer = window.setTimeout(() => {
+    aiTimer = 0;
+    state.aiThinking = false;
+    if (state.over || state.screen !== 'match' || state.player !== ENGINE) { render(); return; }
+    const m = bestMove(state.board, ENGINE, state.level);
+    if (!m) {
+      // 引擎无步 → 玩家胜
+      state.over = true;
+      stopTimer(state.timer);
+      render();
+      finish(HUMAN);
+      return;
+    }
+    doMove(m);
+  }, Math.max(160, base + jitter));
+}
+
+/* ====================== 终局 ====================== */
+function finish(winner: CPlayer | 0): void {
+  let verdict: string;
+  if (winner === 0) verdict = window.t('bi.draw');
+  else if (state.mode === 'ai') verdict = winner === HUMAN ? window.t('bi.you_win') : window.t('bi.ai_wins');
+  else verdict = winner === HUMAN ? window.t('bg.bg_checkers_red_wins') : window.t('bg.bg_checkers_black_wins');
+
+  const red = countPieces(state.board, 1);
+  const black = countPieces(state.board, 2);
+  endVerdict.textContent = verdict;
+  endVerdict.className = 'go-end-verdict ' + (winner === 0 ? 'is-draw' : (winner === HUMAN ? 'is-win' : 'is-loss'));
+  endLine.textContent = `${window.t('bg.bg_checkers_pieces')} ${red} · ${black}`;
+  playSfx(winner === HUMAN ? 'win' : winner === 0 ? 'place' : 'lose');
+  toast(verdict);
+  if (endScreenTimer) window.clearTimeout(endScreenTimer);
+  endScreenTimer = window.setTimeout(() => {
+    if (state.over && state.screen === 'match') showScreen('end');
+  }, 1200);
+}
+
+let endScreenTimer = 0;
+
+/* ====================== 难度键 ====================== */
+levelBtn.addEventListener('click', () => {
+  if (state.mode !== 'ai') return;
+  levelCard.hidden = false;
+  levelCard.querySelectorAll<HTMLButtonElement>('.go-level-opt').forEach((b) => {
+    b.classList.toggle('is-cur', b.dataset.level === state.level);
+  });
+});
+levelClose.addEventListener('click', () => { levelCard.hidden = true; });
+levelCard.addEventListener('click', (e) => { if (e.target === levelCard) levelCard.hidden = true; });
+levelCard.querySelectorAll<HTMLButtonElement>('.go-level-opt').forEach((b) => {
+  b.addEventListener('click', () => {
+    const lv = b.dataset.level as CDifficulty;
+    levelCard.hidden = true;
+    if (state.mode !== 'ai' || lv === state.level) return;
+    state.level = lv;
+    toast(window.t('bj.engine_set_to', { level: lv.toUpperCase() }));
+    newGame();
+  });
+});
+
+/* ====================== 音效键 ====================== */
+function refreshSoundBtn(): void {
+  soundBtn.classList.toggle('is-off', !sfxOn());
+  soundBtn.setAttribute('aria-pressed', sfxOn() ? 'true' : 'false');
+  soundBtn.setAttribute('aria-label', window.t(sfxOn() ? 'bg.bg_checkers_sound_on' : 'bg.bg_checkers_sound_off'));
+  soundBtn.setAttribute('title', window.t(sfxOn() ? 'bg.bg_checkers_sound_on' : 'bg.bg_checkers_sound_off'));
+}
+soundBtn.addEventListener('click', () => {
+  setSfx(!sfxOn());
+  refreshSoundBtn();
+  if (sfxOn()) playSfx('place');
+});
+
+/* ====================== 退出守卫 ====================== */
+let backGuard = false;
+let backLeaving = false;
+let pendingLobbyNav = false;
+function armBackGuard(): void {
+  if (backGuard) return;
+  history.pushState({ ckGuard: 1 }, '', location.href);
+  backGuard = true;
+}
+function disarmBackGuard(): void {
+  if (!backGuard) return;
+  backGuard = false;
+  pendingLobbyNav = false;
+}
+window.addEventListener('popstate', () => {
+  if (backLeaving) { backLeaving = false; return; }
+  if (!backGuard) return;
+  history.pushState({ ckGuard: 1 }, '', location.href);
+  if (state.screen === 'match' && !state.over) {
+    leaveCard.hidden = false;
+  } else {
+    disarmBackGuard();
+    if (state.screen === 'match') location.replace(MODE_PAGE);
+  }
+});
+function exitMatchToLobby(): void {
+  leaveCard.hidden = true;
+  cancelAiMove();
+  if (backGuard) {
+    backLeaving = true;
+    backGuard = false;
+    pendingLobbyNav = true;
+    try { history.back(); } catch (e) { location.replace(MODE_PAGE); }
+    setTimeout(() => {
+      if (pendingLobbyNav) { pendingLobbyNav = false; backLeaving = false; location.replace(MODE_PAGE); }
+    }, 600);
+  } else {
+    location.replace(MODE_PAGE);
+  }
+}
+leaveClose.addEventListener('click', () => { leaveCard.hidden = true; });
+leaveStay.addEventListener('click', () => { leaveCard.hidden = true; });
+leaveYes.addEventListener('click', exitMatchToLobby);
+backLobbyBtn.addEventListener('click', exitMatchToLobby);
+
+/* ====================== 结算页三键 ====================== */
+rematchBtn.addEventListener('click', newGame);
+endLobbyBtn.addEventListener('click', exitMatchToLobby);
+
+/* ====================== 屏幕切换 ====================== */
+function showScreen(s: 'match' | 'end'): void {
+  state.screen = s;
+  matchEl.hidden = s !== 'match';
+  endEl.hidden = s !== 'end';
+  if (s === 'match') document.body.classList.add('bd-in-match');
+  else document.body.classList.remove('bd-in-match');
+  render();
+}
+
+/* ====================== 新局 ====================== */
+function newGame(): void {
+  cancelAiMove();
+  state.board = initialBoard();
+  state.player = HUMAN;
+  state.lastMove = -1;
+  state.over = false;
+  state.selected = -1;
+  state.history = [];
+  state.sinceCapture = 0;
+  state.aiThinking = false;
+  state.legal = moves(state.board, state.player);
+  startTimer(state.timer, (ms) => { clockMeTime.textContent = fmtClock(ms); });
+  levelBtn.hidden = state.mode !== 'ai';
+  showScreen('match');
+  armBackGuard();
+}
+
+/* ====================== 撤销 / 认输 ====================== */
+function undo(): void {
+  if (state.over) return;
+  cancelAiMove();
+  if (state.history.length === 0) return;
+  const last = state.history.pop()!;
+  state.board = last.board;
+  state.player = last.player;
+  state.lastMove = last.lastMove;
+  state.selected = -1;
+  // AI 模式：再多退一步，回到玩家决策前
+  if (state.mode === 'ai' && state.history.length >= 1) {
+    const prev = state.history.pop()!;
+    state.board = prev.board;
+    state.player = prev.player;
+    state.lastMove = prev.lastMove;
+  }
+  state.legal = moves(state.board, state.player);
+  render();
+}
+
+let resignArmed = false;
+let resignTimer = 0;
+function resign(): void {
+  if (state.over) return;
+  if (!resignArmed) {
+    resignArmed = true;
+    resignBtn.textContent = window.t('bj.confirm_resign');
+    resignBtn.classList.add('is-confirm');
+    resignTimer = window.setTimeout(() => {
+      resignArmed = false;
+      resignBtn.textContent = window.t('bj.resign');
+      resignBtn.classList.remove('is-confirm');
+    }, 2200);
+    return;
+  }
+  clearTimeout(resignTimer);
+  resignArmed = false;
+  resignBtn.textContent = window.t('bj.resign');
+  resignBtn.classList.remove('is-confirm');
+  state.over = true;
+  cancelAiMove();
+  stopTimer(state.timer);
+  finish(state.mode === 'ai' ? ENGINE : (state.player === HUMAN ? ENGINE : HUMAN));
+}
+undoBtn.addEventListener('click', undo);
+resignBtn.addEventListener('click', resign);
+
+/* ====================== 模式与深链 ====================== */
+const _initialMode: Mode = modeFromUrl('ai');
+state.mode = _initialMode;
+syncModeCardUI(state.mode);
+
+/* ====================== 启动 ====================== */
+document.querySelectorAll<HTMLButtonElement>('.bd-mode-card').forEach((b) => {
+  b.addEventListener('click', () => {
+    if (b.classList.contains('is-disabled')) return;
+    const m = b.dataset.mode as Mode;
+    if (m === 'human') { toast('Online match coming soon'); return; }
+    state.mode = m;
+    syncModeCardUI(m);
+    newGame();
+  });
+});
+
+const keepAlive = () => { unlockSfx(); };
+window.addEventListener('pointerdown', keepAlive, { capture: true, passive: true });
+window.addEventListener('touchstart', keepAlive, { capture: true, passive: true });
+window.addEventListener('mousedown', keepAlive, { capture: true, passive: true });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) unlockSfx(); });
+refreshSoundBtn();
+wireLobbyChrome();
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && state.screen === 'match') exitMatchToLobby();
+});
+
+newGame();
+// i18n 字典异步 fetch 兜底
+setTimeout(() => render(), 250);
