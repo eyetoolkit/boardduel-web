@@ -26,24 +26,25 @@ import { searchBest } from './search.ts';
 /**
  * 难度档位。
  *
- * 🆕 2026-10-04：面向玩家的档位改成三档 **medium / hard / katago**，
- * 去掉了原来的 easy（随机）——它对任何有基本判断力的玩家都没有挑战性。
- * 第三档 `katago` 是 b6c96 神经网络，**不走这个同步入口**：
- * 它要下载 TF.js + 3.7 MB 权重、前向是异步的，见 katago.ts。
+ * 🆕 2026-10-05：三档 AI 全部走**同一个神经网络** (KataGo b6c96)，
+ * 仅通过**采样温度 temp** 拉开棋力：
+ *   - easy:   temp=1.0 （接近均匀采样，故意走弱）
+ *   - medium: temp=0.30 （默认，少量随机）
+ *   - hard:   temp=0    （argmax，永远选网络最推荐）
  *
- * 注意 `bestMoveEasy` 仍导出，供测试与 legacy 路径使用（tests/go-ai*.test.ts
- * 大量引用），只是不再是玩家可选的档位。
+ * 三档共享一个神经网络模型（b6c96, 3.8 MB），无 MCTS、无 αβ 搜索，
+ * 真正的棋力差来自「温度控制随机度」。
  */
 export type Difficulty = 'easy' | 'medium' | 'hard' | 'katago';
 
-/** 玩家在 UI 上能选的三档（easy 已从 UI 移除）。 */
-export type UiDifficulty = 'medium' | 'hard' | 'katago';
+/** 玩家在 UI 上能选的三档。 */
+export type UiDifficulty = 'easy' | 'medium' | 'hard';
 
-export const UI_DIFFICULTIES: readonly UiDifficulty[] = ['medium', 'hard', 'katago'];
+export const UI_DIFFICULTIES: readonly UiDifficulty[] = ['easy', 'medium', 'hard'];
 
 /** 该档位是否走神经网络（异步）路径。 */
 export function isNeural(d: Difficulty): boolean {
-  return d === 'katago';
+  return d === 'easy' || d === 'medium' || d === 'hard' || d === 'katago';
 }
 
 export interface AiOptions {

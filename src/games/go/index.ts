@@ -21,7 +21,7 @@ import {
 } from './engine';
 import { renderGoBoardSVG, diffCaptures } from './render';
 import { bestMoveAny, isNeural, type Difficulty } from './ai';
-import { bestMoveKatago, warmupKatago, katagoStatus } from './katago';
+import { bestMoveKatago, warmupKatago, katagoStatus, TEMP_BY_DIFFICULTY } from './katago';
 import { initialClock, tickClock, afterMoveClock, formatClock, type ClockState } from './clock';
 
 setupNav('go');
@@ -32,24 +32,17 @@ const boardEl = $<HTMLDivElement>('bd-board');
 const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
 const MODE_PAGE = '/games/go/lobby/';
-// 思考节奏：hard 是 2-ply 搜索，比 medium 慢，故给更长思考时间（避免"秒落"显得假）
-// 思考节奏：easy 纯随机（几乎瞬时），medium/hard 走 α-β 搜索
-const AI_THINK_MS: Record<Difficulty, number> = { easy: 420, medium: 700, hard: 900, katago: 260 };
+// 思考节奏：所有 AI 档位都走神经网络 KataGo b6c96（单次前向 ≈ 16ms WebGL / 1s CPU），
+// AI_THINK_MS 只控制"假装在思考"的 UI 延迟，避免网络下秒落显得机械。
+const AI_THINK_MS: Record<Difficulty, number> = { easy: 420, medium: 600, hard: 900, katago: 260 };
 
 /**
- * 🆕 W6：hard/medium 的**搜索时间预算**（ms）。
+ * 🆕 2026-10-05：围棋三档 AI 全部走 KataGo b6c96 神经网络（不同 temp 区分棋力），
+ * 不再有 αβ 同步搜索路径——`bestMoveKatago` 异步调用，预算由前向耗时决定。
  *
- * 🔴 关键约束：搜索是**同步**跑的（bestMove 在主线程），预算 = 真实 UI 卡顿时间。
- * 必须与 AI_THINK_MS 协调：动画播完后再卡 budget ms。
- * 取 350ms 是权衡结果：9 路 depth 3~4 能在预算内跑完，桌面不卡手；
- * 且搜索在 depth 2 之后收益趋平（实测 depth2/3/4 选点几乎一致），
- * 再加预算只烧时间不涨棋力。移动端若仍卡，可下调或改走 Web Worker。
- *
- * katago 档**不用这个预算**（走神经网络，思考时间由前向耗时决定）：
- * 实测真机 WebGL 15.6 ms/手、CPU 回退 1022 ms/手，故给 260ms 的"起手延迟"，
- * 之后 await 前向即可。
+ * WebGL 实测 15.6ms/手 → UI 延迟 260ms 让开局有"思考"感。
+ * CPU 回退 ~1s/手 → UI 延迟适当延长以避免网络抖动。
  */
-const AI_BUDGET_MS: Record<Difficulty, number> = { easy: 0, medium: 160, hard: 350, katago: 0 };
 
 /**
  * 🆕 W6：hard/medium 的**搜索时间预算**（ms）。
@@ -517,13 +510,12 @@ function scheduleAi(): void {
       return;
     }
     if (isNeural(state.level)) {
-      // 异步：等待模型加载 + 前向
+      // 异步：神经网络（easy/medium/hard 全走 KataGo 同网络，仅 temp 区分）
       void runKatagoTurn();
       return;
     }
-    // 到这里必定是规则档（katago 已在上面 return），但 TS 仍看到全联合类型，
-    // 故用 bestMoveAny —— 它对 katago 会明确抛错而非静默降级。
-    const m = bestMoveAny(state.go, state.level, { budgetMs: AI_BUDGET_MS[state.level] });
+    // 理论上不会到达（所有 UI 档位都是 isNeural），兜底走规则档（向后兼容）
+    const m = bestMoveAny(state.go, state.level);
     applyAiMove(m);
   }, delay);
 }
@@ -568,7 +560,7 @@ function applyAiMove(m: number): void {
 
 /** KataGo 不可用时的用户提示（不打断对局，只告知已降级）。 */
 function aiFallbackNote(err: string): void {
-  toast(t('bg.bg_go_katago_fallback', 'KataGo could not load, playing at Master level instead') + ` (${err})`);
+  toast(t('bg.bg_go_katago_fallback', 'KataGo could not load — please resign or refresh the page') + ` (${err})`);
 }
 
 /**
@@ -621,7 +613,9 @@ async function runKatagoTurn(): Promise<void> {
   // 但 AI 是在「等待前那一刻」的合法点集上决策的（这才是它该看到的局面）。
   const hashSnapshot = new Set(state.posHashes);
   try {
-    const m = await bestMoveKatago(before, state.size, movesSnapshot, undefined, undefined, hashSnapshot);
+    // 按档位传 temp（easy/medium/hard 共享同一 KataGo 网络，仅温度不同）
+    const temp = TEMP_BY_DIFFICULTY[state.level as 'easy' | 'medium' | 'hard'];
+    const m = await bestMoveKatago(before, state.size, movesSnapshot, temp, undefined, hashSnapshot);
     // 等待期间玩家可能已经退出/悔棋/重开/进回放 —— 丢弃这一手
     // 🔴 2026-10-04：补 state.reviewAt 守卫（与 scheduleAi 对齐）。
     // 否则进回放期间 KataGo 解出手 → 落在被回放覆盖的盘面上（state.go 已不对应 before）。
@@ -635,12 +629,12 @@ async function runKatagoTurn(): Promise<void> {
   } catch (e) {
     state.aiThinking = false;
     updateInfo();
-    // 加载失败不该让玩家卡死：降级到 hard 规则档走一手，并说明原因
+    // 加载失败不该让玩家卡死：toast 提示，让玩家继续（无规则 AI 兜底，规则档已下线）
     const msg = katagoStatus().error ?? String(e);
-    console.warn('[go] KataGo unavailable, falling back to hard:', msg);
+    console.warn('[go] KataGo unavailable, cannot continue:', msg);
     aiFallbackNote(msg);
-    const m = bestMoveAny(before, 'hard', { budgetMs: AI_BUDGET_MS.hard });
-    if (state.go === before && !state.over) applyAiMove(m);
+    // 让 AI 继续 pass（玩家可以选择认输或退出）
+    if (state.go === before && !state.over) applyAiMove(-1);
   }
 }
 

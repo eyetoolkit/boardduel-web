@@ -24,8 +24,16 @@ const BASE = '/games/go';
 const TFJS = `${BASE}/lib`;
 const MODEL = `${BASE}/model/b6c96.bin.gz`;
 
-/** 采样温度。实测 0.30 时 KataGo 在 9×9 上 6/6 胜 W6 hard。 */
-const DEFAULT_TEMP = 0.30;
+/** 采样温度档位映射（用户可调）。
+ *  easy=1.0 （接近均匀采样，故意走弱）· medium=0.30 默认 · hard=0 argmax 最强。
+ *  同一神经网络，不同温度 → 单一模型实现三档棋力。
+ */
+export const TEMP_BY_DIFFICULTY: Record<'easy' | 'medium' | 'hard', number> = {
+  easy: 1.0,
+  medium: 0.30,
+  hard: 0.0,
+};
+const DEFAULT_TEMP = TEMP_BY_DIFFICULTY.medium;
 
 type Tf = any;
 
