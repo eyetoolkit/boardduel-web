@@ -61,7 +61,20 @@ export function myUuid(): string {
   return m ? decodeURIComponent(m[1]) : '';
 }
 export function myName(): string {
-  return 'Player';
+  // 🔴 不能写死 'Player'：服务端 resolveIdx 会按 name 复用座位，
+  // 两个匿名玩家同名会被分进同一座位（双方都执黑、互不走子）——2026-10-05 PvP 实测。
+  // 生成一次后持久化到 localStorage，保证同一浏览器刷新/重连名字稳定。
+  try {
+    const KEY = 'bd_nick';
+    let n = localStorage.getItem(KEY);
+    if (!n) {
+      n = 'Player-' + Math.random().toString(36).slice(2, 6);
+      localStorage.setItem(KEY, n);
+    }
+    return n;
+  } catch {
+    return 'Player-' + Math.random().toString(36).slice(2, 6);
+  }
 }
 
 export function wsUrl(code: string, name: string): string {

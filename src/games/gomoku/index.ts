@@ -28,6 +28,8 @@ import {
 import { isClassroom, reportRound, ensureStudentCode, urlRoomCode } from '../../shared/teacher-track';
 // 2026-10-03：落子音效（WebAudio 合成，跨页记住开关）
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
+// 2026-10-05：持久随机昵称（防止匿名玩家同名被服务端分进同一座位）
+import { myName as ocMyName } from '../online-core';
 
 const SLOT = 600;                 // SVG viewBox 边长
 const MARGIN = 4;                 // 外留白（仅容纳外框描边 + 阴影，尽量贴边）
@@ -172,7 +174,8 @@ const API = (() => {
 })();
 
 function myName(): string {
-  return 'Player';
+  // 共享联机模块的持久随机昵称（防止匿名玩家同名撞座，详见 online-core.myName）
+  return ocMyName();
 }
 
 /* ─── 邀请深链 ───
