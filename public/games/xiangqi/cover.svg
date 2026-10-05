@@ -1,40 +1,145 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="xt xd">
   <title id="xt">Xiangqi — BoardDuel</title>
-  <desc id="xd">Square indigo icon with a wooden Chinese chess board inside; a nine column by ten row grid shows the river between the two palaces, with two generals facing each other across the centre and a soft amber halo around the black general marking the last move.</desc>
+  <desc id="xd">Square indigo icon with a nine by nine white tile grid; a faint river runs across the middle with two generals facing each other, the black general on an amber tile marking the last move.</desc>
+
   <rect width="512" height="512" fill="#3730A3"/>
-  <!-- 米色棋盘（居中，9 列 10 行） -->
-  <rect x="80" y="56" width="352" height="400" rx="12" fill="#9C7B4A"/>
-  <rect x="90" y="66" width="332" height="380" rx="6" fill="#EFD9A8"/>
-  <!-- 9 列 10 行网格线（每格 ~37px × 38px） -->
-  <g stroke="#3D2C18" stroke-opacity=".65" stroke-width="2" fill="none">
-    <!-- 10 横线（y = 66 + i*42, i=0..9） -->
-    <path d="M90 66h332M90 108h332M90 150h332M90 192h332M90 234h332M90 276h332M90 318h332M90 360h332M90 402h332M90 444h332"/>
-    <!-- 9 竖线（连续） -->
-    <path d="M90 66v378M127 66v378M164 66v378M201 66v378M238 66v378M275 66v378M312 66v378M349 66v378M386 66v378M422 66v378"/>
+  <g fill="#FFFFFF" fill-opacity="0.16">
+    <rect x="29" y="29" width="38" height="38" rx="9"/>
+    <rect x="81" y="29" width="38" height="38" rx="9"/>
+    <rect x="133" y="29" width="38" height="38" rx="9"/>
+    <rect x="185" y="29" width="38" height="38" rx="9"/>
+    <rect x="237" y="29" width="38" height="38" rx="9"/>
+    <rect x="289" y="29" width="38" height="38" rx="9"/>
+    <rect x="341" y="29" width="38" height="38" rx="9"/>
+    <rect x="393" y="29" width="38" height="38" rx="9"/>
+    <rect x="445" y="29" width="38" height="38" rx="9"/>
+    <rect x="29" y="81" width="38" height="38" rx="9"/>
+    <rect x="81" y="81" width="38" height="38" rx="9"/>
+    <rect x="133" y="81" width="38" height="38" rx="9"/>
+    <rect x="185" y="81" width="38" height="38" rx="9"/>
+    <rect x="237" y="81" width="38" height="38" rx="9"/>
+    <rect x="289" y="81" width="38" height="38" rx="9"/>
+    <rect x="341" y="81" width="38" height="38" rx="9"/>
+    <rect x="393" y="81" width="38" height="38" rx="9"/>
+    <rect x="445" y="81" width="38" height="38" rx="9"/>
+    <rect x="29" y="133" width="38" height="38" rx="9"/>
+    <rect x="81" y="133" width="38" height="38" rx="9"/>
+    <rect x="133" y="133" width="38" height="38" rx="9"/>
+    <rect x="185" y="133" width="38" height="38" rx="9"/>
+    <rect x="237" y="133" width="38" height="38" rx="9"/>
+    <rect x="289" y="133" width="38" height="38" rx="9"/>
+    <rect x="341" y="133" width="38" height="38" rx="9"/>
+    <rect x="393" y="133" width="38" height="38" rx="9"/>
+    <rect x="445" y="133" width="38" height="38" rx="9"/>
+    <rect x="29" y="185" width="38" height="38" rx="9"/>
+    <rect x="81" y="185" width="38" height="38" rx="9"/>
+    <rect x="133" y="185" width="38" height="38" rx="9"/>
+    <rect x="185" y="185" width="38" height="38" rx="9"/>
+    <rect x="237" y="185" width="38" height="38" rx="9"/>
+    <rect x="289" y="185" width="38" height="38" rx="9"/>
+    <rect x="341" y="185" width="38" height="38" rx="9"/>
+    <rect x="393" y="185" width="38" height="38" rx="9"/>
+    <rect x="445" y="185" width="38" height="38" rx="9"/>
+    <rect x="29" y="237" width="38" height="38" rx="9"/>
+    <rect x="81" y="237" width="38" height="38" rx="9"/>
+    <rect x="133" y="237" width="38" height="38" rx="9"/>
+    <rect x="185" y="237" width="38" height="38" rx="9"/>
+    <rect x="237" y="237" width="38" height="38" rx="9"/>
+    <rect x="289" y="237" width="38" height="38" rx="9"/>
+    <rect x="341" y="237" width="38" height="38" rx="9"/>
+    <rect x="393" y="237" width="38" height="38" rx="9"/>
+    <rect x="445" y="237" width="38" height="38" rx="9"/>
+    <rect x="29" y="289" width="38" height="38" rx="9"/>
+    <rect x="81" y="289" width="38" height="38" rx="9"/>
+    <rect x="133" y="289" width="38" height="38" rx="9"/>
+    <rect x="185" y="289" width="38" height="38" rx="9"/>
+    <rect x="237" y="289" width="38" height="38" rx="9"/>
+    <rect x="289" y="289" width="38" height="38" rx="9"/>
+    <rect x="341" y="289" width="38" height="38" rx="9"/>
+    <rect x="393" y="289" width="38" height="38" rx="9"/>
+    <rect x="445" y="289" width="38" height="38" rx="9"/>
+    <rect x="29" y="341" width="38" height="38" rx="9"/>
+    <rect x="81" y="341" width="38" height="38" rx="9"/>
+    <rect x="133" y="341" width="38" height="38" rx="9"/>
+    <rect x="185" y="341" width="38" height="38" rx="9"/>
+    <rect x="237" y="341" width="38" height="38" rx="9"/>
+    <rect x="289" y="341" width="38" height="38" rx="9"/>
+    <rect x="341" y="341" width="38" height="38" rx="9"/>
+    <rect x="393" y="341" width="38" height="38" rx="9"/>
+    <rect x="445" y="341" width="38" height="38" rx="9"/>
+    <rect x="29" y="393" width="38" height="38" rx="9"/>
+    <rect x="81" y="393" width="38" height="38" rx="9"/>
+    <rect x="133" y="393" width="38" height="38" rx="9"/>
+    <rect x="185" y="393" width="38" height="38" rx="9"/>
+    <rect x="237" y="393" width="38" height="38" rx="9"/>
+    <rect x="289" y="393" width="38" height="38" rx="9"/>
+    <rect x="341" y="393" width="38" height="38" rx="9"/>
+    <rect x="393" y="393" width="38" height="38" rx="9"/>
+    <rect x="445" y="393" width="38" height="38" rx="9"/>
+    <rect x="29" y="445" width="38" height="38" rx="9"/>
+    <rect x="81" y="445" width="38" height="38" rx="9"/>
+    <rect x="133" y="445" width="38" height="38" rx="9"/>
+    <rect x="185" y="445" width="38" height="38" rx="9"/>
+    <rect x="237" y="445" width="38" height="38" rx="9"/>
+    <rect x="289" y="445" width="38" height="38" rx="9"/>
+    <rect x="341" y="445" width="38" height="38" rx="9"/>
+    <rect x="393" y="445" width="38" height="38" rx="9"/>
+    <rect x="445" y="445" width="38" height="38" rx="9"/>
   </g>
-  <!-- 河界（中间两行空白 + 文字） -->
-  <text x="172" y="263" font-family="'STKaiti','KaiTi','Songti SC',serif" font-size="22" fill="#3D2C18" fill-opacity=".55" text-anchor="middle">楚 河</text>
-  <text x="340" y="263" font-family="'STKaiti','KaiTi','Songti SC',serif" font-size="22" fill="#3D2C18" fill-opacity=".55" text-anchor="middle">漢 界</text>
-  <!-- 九宫斜线（上宫：黑方将） -->
-  <g stroke="#3D2C18" stroke-opacity=".55" stroke-width="2" fill="none">
-    <path d="M201 108L238 145M238 108L201 145"/>
-    <path d="M275 108L312 145M312 108L275 145"/>
-  </g>
-  <!-- 九宫斜线（下宫：红方帅） -->
-  <g stroke="#3D2C18" stroke-opacity=".55" stroke-width="2" fill="none">
-    <path d="M201 405L238 372M238 405L201 372"/>
-    <path d="M275 405L312 372M312 405L275 372"/>
-  </g>
-  <!-- 红帅（红圆牌 + 红色"帅"字） -->
+  <rect x="237" y="29" width="38" height="38" rx="9" fill="#F59E0B"/>
+  <line x1="48" y1="256" x2="464" y2="256" stroke="#FFFFFF" stroke-opacity="0.22" stroke-width="3"/>
   <g>
-    <circle cx="256" cy="372" r="26" fill="#F7E8C8" stroke="#C0392B" stroke-width="3"/>
-    <text x="256" y="372" dy="0.36em" text-anchor="middle" font-family="'STKaiti','KaiTi','Songti SC',serif" font-size="28" fill="#C0392B" font-weight="700">帅</text>
+    <path d="M152 48L360 101.19999999999999M360 48L152 101.19999999999999" stroke="#FFFFFF" stroke-opacity="0.22" stroke-width="2" fill="none"/>
+    <path d="M152 410.8L360 464.0M360 410.8L152 464.0" stroke="#FFFFFF" stroke-opacity="0.22" stroke-width="2" fill="none"/>
   </g>
-  <!-- 黑将（白圆牌 + 黑色"将"字） -->
+  <!-- black side discs -->
   <g>
-    <circle cx="256" cy="145" r="26" fill="#F7E8C8" stroke="#1B212A" stroke-width="3"/>
-    <text x="256" y="145" dy="0.36em" text-anchor="middle" font-family="'STKaiti','KaiTi','Songti SC',serif" font-size="28" fill="#1B212A" font-weight="700">将</text>
-    <!-- 最后手高亮：黑将外围 -->
-    <circle cx="256" cy="145" r="34" fill="none" stroke="#F59E0B" stroke-width="4" fill-opacity="0"/>
+    <circle cx="256" cy="48" r="15" fill="#1E1B39"/>
+    <circle cx="256" cy="48" r="10" fill="none" stroke="#F7E8C8" stroke-width="2"/>
+    <circle cx="152" cy="48" r="15" fill="#1E1B39"/>
+    <circle cx="152" cy="48" r="10" fill="none" stroke="#F7E8C8" stroke-width="2"/>
+    <circle cx="360" cy="48" r="15" fill="#1E1B39"/>
+    <circle cx="360" cy="48" r="10" fill="none" stroke="#F7E8C8" stroke-width="2"/>
+    <circle cx="100" cy="48" r="15" fill="#1E1B39"/>
+    <circle cx="100" cy="48" r="10" fill="none" stroke="#F7E8C8" stroke-width="2"/>
+    <circle cx="412" cy="48" r="15" fill="#1E1B39"/>
+    <circle cx="412" cy="48" r="10" fill="none" stroke="#F7E8C8" stroke-width="2"/>
+    <circle cx="48" cy="48" r="15" fill="#1E1B39"/>
+    <circle cx="48" cy="48" r="10" fill="none" stroke="#F7E8C8" stroke-width="2"/>
+    <circle cx="464" cy="48" r="15" fill="#1E1B39"/>
+    <circle cx="464" cy="48" r="10" fill="none" stroke="#F7E8C8" stroke-width="2"/>
+    <circle cx="100" cy="204" r="15" fill="#1E1B39"/>
+    <circle cx="100" cy="204" r="10" fill="none" stroke="#F7E8C8" stroke-width="2"/>
+    <circle cx="152" cy="204" r="15" fill="#1E1B39"/>
+    <circle cx="152" cy="204" r="10" fill="none" stroke="#F7E8C8" stroke-width="2"/>
+    <circle cx="360" cy="204" r="15" fill="#1E1B39"/>
+    <circle cx="360" cy="204" r="10" fill="none" stroke="#F7E8C8" stroke-width="2"/>
+    <circle cx="412" cy="204" r="15" fill="#1E1B39"/>
+    <circle cx="412" cy="204" r="10" fill="none" stroke="#F7E8C8" stroke-width="2"/>
+  </g>
+  <!-- red side discs -->
+  <g>
+    <circle cx="256" cy="464" r="15" fill="#DC2626"/>
+    <circle cx="256" cy="464" r="10" fill="none" stroke="#F7E8C8" stroke-width="2"/>
+    <circle cx="152" cy="464" r="15" fill="#DC2626"/>
+    <circle cx="152" cy="464" r="10" fill="none" stroke="#F7E8C8" stroke-width="2"/>
+    <circle cx="360" cy="464" r="15" fill="#DC2626"/>
+    <circle cx="360" cy="464" r="10" fill="none" stroke="#F7E8C8" stroke-width="2"/>
+    <circle cx="100" cy="464" r="15" fill="#DC2626"/>
+    <circle cx="100" cy="464" r="10" fill="none" stroke="#F7E8C8" stroke-width="2"/>
+    <circle cx="412" cy="464" r="15" fill="#DC2626"/>
+    <circle cx="412" cy="464" r="10" fill="none" stroke="#F7E8C8" stroke-width="2"/>
+    <circle cx="48" cy="464" r="15" fill="#DC2626"/>
+    <circle cx="48" cy="464" r="10" fill="none" stroke="#F7E8C8" stroke-width="2"/>
+    <circle cx="464" cy="464" r="15" fill="#DC2626"/>
+    <circle cx="464" cy="464" r="10" fill="none" stroke="#F7E8C8" stroke-width="2"/>
+    <circle cx="100" cy="308" r="15" fill="#DC2626"/>
+    <circle cx="100" cy="308" r="10" fill="none" stroke="#F7E8C8" stroke-width="2"/>
+    <circle cx="152" cy="308" r="15" fill="#DC2626"/>
+    <circle cx="152" cy="308" r="10" fill="none" stroke="#F7E8C8" stroke-width="2"/>
+    <circle cx="360" cy="308" r="15" fill="#DC2626"/>
+    <circle cx="360" cy="308" r="10" fill="none" stroke="#F7E8C8" stroke-width="2"/>
+    <circle cx="412" cy="308" r="15" fill="#DC2626"/>
+    <circle cx="412" cy="308" r="10" fill="none" stroke="#F7E8C8" stroke-width="2"/>
   </g>
 </svg>
