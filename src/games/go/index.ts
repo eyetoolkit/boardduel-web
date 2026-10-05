@@ -109,6 +109,13 @@ interface UIState {
   myIdx: number | null;
   /** 联机：本地是否已发起/收到 game_over（区分“我认输” vs “对手认输”） */
   sawGameOver: boolean;
+  /**
+   * 联机：对局是否已真正开始（收到 'start' 或 state.roomStatus==='playing'）。
+   * 🔴 2026-10-05：没有这个守卫，房主在对手进房前就能落子——本地棋盘走了、
+   * 服务端拒绝（对局未开始），等对手进房 'start' 广播一来 newGame() 又清盘，
+   * 造成「我下的子凭空消失」的错觉。
+   */
+  rankedLive: boolean;
 }
 
 const state: UIState = {
@@ -135,6 +142,7 @@ const state: UIState = {
   roomCode: null,
   myIdx: null,
   sawGameOver: false,
+  rankedLive: false,
 };
 
 /* ══════════════════════════════════════════════════════════════
@@ -171,7 +179,9 @@ function myName(): string {
 /* ─── 邀请深链 ─── */
 function inviteCode(): string {
   try {
-    const c = new URLSearchParams(location.search).get('c');
+    const q = new URLSearchParams(location.search);
+    // 🔴 2026-10-05：兼容 ?c= / ?room= / ?code=（gomoku 同款；第三方/手写邀请链接不再被丢）
+    const c = q.get('c') || q.get('room') || q.get('code');
     if (!c) return '';
     return /^[A-Za-z0-9]{5,8}$/.test(c) ? c.toUpperCase() : '';
   } catch (e) { return ''; }
@@ -185,6 +195,8 @@ function clearInviteParam(): void {
     const u = new URL(location.href);
     u.searchParams.delete('c');
     u.searchParams.delete('vs');
+    u.searchParams.delete('room');
+    u.searchParams.delete('code');
     const q = u.searchParams.toString();
     history.replaceState(null, '', u.pathname + (q ? '?' + q : '') + u.hash);
   } catch (e) { /* noop */ }
@@ -343,6 +355,9 @@ function canHumanMove(): boolean {
   if (state.aiThinking) return false;
   if (state.mode === 'ai') return state.go.toPlay === HUMAN;
   if (state.mode === 'ranked') {
+    // 🔴 2026-10-05：对局未真正开始（对手没进房）不允许落子——否则本地走了、
+    //   服务端拒了、'start' 一来又被清盘，玩家看到「子凭空消失」。
+    if (!state.rankedLive) return false;
     if (state.myIdx === null) return false;
     const mySide: Player = state.myIdx === 0 ? 1 : 2;
     return state.go.toPlay === mySide;
@@ -759,6 +774,9 @@ function finishByTimeout(): void {
     endGame(youTimedOut ? t('bg.bg_go_timeout_you', 'You ran out of time') : t('bg.bg_go_timeout_ai', 'Engine ran out of time'),
       t('bg.bg_go_byoyomi', 'by time (byoyomi)'), 'timeout', !youTimedOut);
   } else if (state.mode === 'ranked') {
+    // 🔴 2026-10-05：本地超时必须通知服务端结算（否则对手端棋局永远继续，两端失步）。
+    //   走 resign → 服务端 settleAndBroadcast(winner=对手) → 对手收到 game_over。
+    sendWs({ type: 'resign' });
     const mySide: Player = state.myIdx === 0 ? 1 : 2;
     const winner = opponent(loser);
     const humanWon = winner === mySide;
@@ -920,6 +938,7 @@ function enterRankedRoom(code: string): void {
   });
   ws.addEventListener('close', () => {
     chatRoom.textContent = code + ' · offline';
+    state.rankedLive = false;
     if (state.screen === 'match' && !state.over) toast('Connection lost');
   });
   ws.addEventListener('error', () => { toast('Room unavailable'); });
@@ -960,10 +979,21 @@ function handleWs(msg: Record<string, unknown>): void {
       state.roomCode = code;
       chatRoom.textContent = code;
     }
-    if (!state.over) newGame();
+    // 对局真正开始：'start' 广播或 state.roomStatus==='playing'
+    const roomStatus = inner ? String(inner.roomStatus || '') : '';
+    if (ty === 'start' || roomStatus === 'playing') state.rankedLive = true;
+    // 🔴 2026-10-05：state 快照若带着法历史（服务端 relayGoMoves），按历史重放恢复棋盘，
+    //   而不是无脑 newGame() 清盘 —— 否则刷新/重连后棋盘直接清空（实测异常根因）。
+    //   moves 为空（未开局/刚开局）→ 正常 newGame()；已终局则不动。
+    if (state.over) return;
+    const mv = (inner && Array.isArray(inner.moves) ? inner.moves : (Array.isArray(msg.moves) ? msg.moves : null)) as number[] | null;
+    if (mv && mv.length) rebuildFromServer(mv);
+    else newGame();
     return;
   }
   if (ty === 'opponent_move') {
+    // 终局/数目确认/回放中不再受理对手着法（防乱序消息污染棋盘）
+    if (state.over || state.counting || state.reviewAt !== null) return;
     const i = typeof msg.i === 'number' ? msg.i : -1;
     if (i >= 0) {
       const before = state.go;
@@ -1006,22 +1036,36 @@ function handleWs(msg: Record<string, unknown>): void {
     return;
   }
   if (ty === 'game_over') {
+    // 🔴 2026-10-05：服务端 game_over 实际字段是 { winner: 座位号|'draw', reason }，
+    //   没有 you_lost/kind 字段 —— 旧代码读 you_lost 永远 undefined，胜负全靠
+    //   sawGameOver 碰运气（刷新过页面的一方胜负显示必错）。改为 winner 对比 myIdx。
     state.over = true;
+    state.sawGameOver = true;
     stopClockLoop();
-    const kind = String(msg.kind || 'resign');
-    const iLost = !!msg.you_lost || state.sawGameOver;
-    if (kind === 'draw') {
+    const reason = String(msg.reason || 'resign');
+    const w = msg.winner;
+    if (w === 'draw') {
       endVerdict.textContent = t('bi.draw', 'Draw');
       endVerdict.className = 'go-end-verdict is-draw';
       endLine.textContent = t('bj.draw_agreed', 'Draw agreed');
-    } else if (iLost) {
-      endVerdict.textContent = t('bj.you_resigned', 'You resigned');
-      endVerdict.className = 'go-end-verdict is-loss';
-      endLine.textContent = t('bj.by_resignation', 'by resignation');
     } else {
-      endVerdict.textContent = t('bj.opp_resigned', 'Opponent resigned');
-      endVerdict.className = 'go-end-verdict is-win';
-      endLine.textContent = t('bj.by_resignation', 'by resignation');
+      const iLost = (typeof w === 'number' && state.myIdx !== null)
+        ? w !== state.myIdx
+        : !!msg.you_lost;
+      const line = reason === 'timeout'
+        ? t('bg.bg_go_byoyomi', 'by time (byoyomi)')
+        : reason === 'opponent_left'
+          ? t('bj.opp_left', 'Opponent left')
+          : t('bj.by_resignation', 'by resignation');
+      if (reason === 'resign') {
+        endVerdict.textContent = iLost ? t('bj.you_resigned', 'You resigned') : t('bj.opp_resigned', 'Opponent resigned');
+      } else if (reason === 'timeout') {
+        endVerdict.textContent = iLost ? t('bg.bg_go_timeout_you', 'You ran out of time') : t('bg.bg_go_you_win', 'You win');
+      } else {
+        endVerdict.textContent = iLost ? t('bg.bg_go_opp_wins', 'You lose') : t('bg.bg_go_you_win', 'You win');
+      }
+      endVerdict.className = 'go-end-verdict ' + (iLost ? 'is-loss' : 'is-win');
+      endLine.textContent = line;
     }
     showScreen('end');
     return;
@@ -1043,7 +1087,7 @@ function handleWs(msg: Record<string, unknown>): void {
     return;
   }
   if (ty === 'takeback_declined') { toast(t('bj.takeback_declined', 'Takeback declined')); return; }
-  if (ty === 'restart_notify') { if (!state.over) newGame(); return; }
+  if (ty === 'restart_notify') { state.over = false; newGame(); return; }
   if (ty === 'opponent_leave') { toast(t('bj.opp_left', 'Opponent left')); return; }
   if (ty === 'error') { toast(String(msg.message || 'Room error')); return; }
 }
@@ -1052,6 +1096,34 @@ function syncServerClock(_c: Record<string, number>): void {
   // 本地 clock 结构与服务端不同：本地用 me/opp，服务端用 w/b。
   // 简单处理：只更新剩余秒数的大致比例（go 本地棋钟独立运行，这里仅做参考）。
   // 如需精确同步，可后续扩展。
+}
+
+/**
+ * 🔴 2026-10-05：按服务端着法历史重放恢复棋盘（刷新/重连后调用）。
+ * 先 newGame() 清盘，再逐手重放（不转发、不出声）；最后把棋钟轮到当前行棋方。
+ */
+function rebuildFromServer(moves: number[]): void {
+  newGame();
+  for (const m of moves) {
+    if (m < 0) {
+      state.history.push(state.go);
+      state.go = pass(state.go);
+      registerHash(state.go);
+      state.moves.push(-1);
+    } else {
+      const r = playWithKo(state.go, m);
+      if (r.ok && r.state) {
+        state.history.push(state.go);
+        state.go = r.state;
+        state.moves.push(m);
+      }
+      // 历史里的非法手（理论不该有）：跳过，保持后续重放尽力对齐
+    }
+  }
+  state.clock = { ...state.clock, toPlay: state.go.toPlay };
+  ghost = -1;
+  renderBoard();
+  updateInfo();
 }
 
 function addChat(who: string, text: string, emoji: boolean): void {
@@ -1074,6 +1146,7 @@ function leaveRoom(): void {
   state.roomCode = null;
   state.myIdx = null;
   state.sawGameOver = false;
+  state.rankedLive = false;
   chatEl.hidden = true;
   chatEl.classList.remove('is-open');
   chatToggleBtn.hidden = true;
