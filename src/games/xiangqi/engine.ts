@@ -482,10 +482,12 @@ function searchRoot(board: Int8Array, side: Side, depth: number, alpha: number, 
 }
 
 export type Level = 'easy' | 'medium' | 'hard';
+// 调难度阶梯: easy 2→3, medium 4→5, hard 6 保持(实测 depth 7 在开局 3-8 秒/手且 8s 不够, 浏览器不可行)
+// time 预算覆盖实测开销: easy depth 3 单步 17-92ms → 200ms; medium depth 5 单步 145-247ms (稳跑) → 1000ms; hard depth 6 单步 ~2s → 3000ms
 const LIMITS: Record<Level, { maxDepth: number; time: number; rand: boolean }> = {
-  easy: { maxDepth: 2, time: 350, rand: true },
-  medium: { maxDepth: 4, time: 800, rand: false },
-  hard: { maxDepth: 6, time: 1600, rand: false },
+  easy:   { maxDepth: 3, time:   200, rand: true  },
+  medium: { maxDepth: 5, time:  1000, rand: false },
+  hard:   { maxDepth: 6, time:  3000, rand: false },
 };
 
 export interface SearchResult { move: Move | null; score: number; nodes: number; depth: number; }

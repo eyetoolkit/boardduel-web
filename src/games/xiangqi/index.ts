@@ -412,7 +412,7 @@ function afterMove(): void {
 /* ======================
  * AI 思考节奏
  * ====================== */
-const AI_THINK_MS: Record<Difficulty, number> = { easy: 500, medium: 800, hard: 1200 };
+const AI_THINK_MS: Record<Difficulty, number> = { easy: 250, medium: 500, hard: 1000 };
 let aiTimer = 0;
 
 function cancelAiMove(): void {
