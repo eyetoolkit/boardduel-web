@@ -2364,6 +2364,8 @@
     "bg_gomoku_invite": "Invite a friend",
     "bg_gomoku_close_hint": "Close hint board",
     "bg_gomoku_invite_qr_hint": "Scan to join",
+    "bg_invite_copy": "Copy link",
+    "bg_invite_note": "Send this code or link — your friend lands on the same board.",
     "bg_go_lv_katago_sub": "KataGo neural net (b6c96) — strongest of the three",
     "go_opp_wins": "You lose"
   },

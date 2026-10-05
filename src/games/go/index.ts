@@ -1534,13 +1534,18 @@ function boot(): void {
   setTimeout(() => { updateInfo(); syncSound(); if (!state.resignArmed) resignBtn.textContent = t('bg.bg_go_resign', 'Resign'); }, 250);
 }
 
+// 残留2（2026-10-05）：字典异步到位后重绘 HUD——棋钟/轮次行文案不再以 key 名滞留
+window.addEventListener('i18n:change', () => { try { updateInfo(); } catch (e) { /* noop */ } });
+
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
 else boot();
 
-// 裸访问（无 ?mode= / ?c=）→ 回模式大厅（两段式铁律）
+// 裸访问（无 ?mode= / ?c= / ?room= / ?code=）→ 回模式大厅（两段式铁律）
+// 2026-10-05 残留1修复：?room=/?code= 是合法邀请参数（inviteCode() 兼容），
+// 此前被这里直接弹回大厅 —— 第三方/手写房间链接全部失效。
 (function redirectBare(): void {
   const q = new URLSearchParams(location.search);
-  if (q.get('mode') || q.get('c')) return;
+  if (q.get('mode') || q.get('c') || q.get('room') || q.get('code')) return;
   const sz = q.get('size');
   location.replace(sz ? `${MODE_PAGE}?size=${sz}` : MODE_PAGE);
 })();

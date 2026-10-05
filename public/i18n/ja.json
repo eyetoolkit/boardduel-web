@@ -2463,6 +2463,8 @@
     "bg_gomoku_invite": "フレンドを招待",
     "bg_gomoku_close_hint": "ヒント盤を閉じる",
     "bg_gomoku_invite_qr_hint": "スキャンで参加",
+    "bg_invite_copy": "リンクをコピー",
+    "bg_invite_note": "このコードかリンクを友だちに送ってください——開くと同じ盤面です。",
     "bg_go_lv_katago_sub": "KataGo ニューラルネット (b6c96) —— 三段中最強",
     "go_opp_wins": "あなたの負け"
   },

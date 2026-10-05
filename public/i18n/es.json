@@ -2441,6 +2441,8 @@
     "bg_gomoku_invite": "Invitar a un amigo",
     "bg_gomoku_close_hint": "Cerrar panel de pistas",
     "bg_gomoku_invite_qr_hint": "Escanea para unirte",
+    "bg_invite_copy": "Copiar enlace",
+    "bg_invite_note": "Envía este código o enlace: tu amigo entra al mismo tablero.",
     "bg_go_lv_katago_sub": "KataGo red neuronal (b6c96) — la más fuerte de las tres",
     "go_opp_wins": "Pierdes"
   },

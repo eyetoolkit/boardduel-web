@@ -31,10 +31,12 @@ export interface OnlineHandlers {
   onPassNotify?: (msg: OnlineMsg) => void;
 }
 
-/** 读取 ?c= 房间码（worker /b/<game>/<CODE> 会 302 到 ?c=<CODE>） */
+/** 读取 ?c= 房间码（worker /b/<game>/<CODE> 会 302 到 ?c=<CODE>）
+ *  2026-10-05 残留1同类修复：兼容 ?room= / ?code=（第三方/手写房间链接此前被丢弃） */
 export function inviteCode(): string {
   try {
-    const c = new URLSearchParams(location.search).get('c');
+    const q = new URLSearchParams(location.search);
+    const c = q.get('c') || q.get('room') || q.get('code');
     if (!c) return '';
     return /^[A-Za-z0-9]{5,8}$/.test(c) ? c.toUpperCase() : '';
   } catch {
@@ -42,11 +44,13 @@ export function inviteCode(): string {
   }
 }
 
-/** 清掉 ?c= / ?vs=，保留其它查询参数（如语言） */
+/** 清掉 ?c= / ?room= / ?code= / ?vs=，保留其它查询参数（如语言） */
 export function clearInviteParam(): void {
   try {
     const u = new URL(location.href);
     u.searchParams.delete('c');
+    u.searchParams.delete('room');
+    u.searchParams.delete('code');
     u.searchParams.delete('vs');
     const q = u.searchParams.toString();
     history.replaceState(null, '', u.pathname + (q ? '?' + q : '') + u.hash);

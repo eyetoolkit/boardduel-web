@@ -31,6 +31,7 @@ import {
   type OnlineState, type OnlineMsg,
 } from '../online-core';
 import { modeFromUrl, syncModeCardUI } from '../shared';
+import { openFriendRoom } from '../friend-room';
 import { reportRound, isClassroom, urlRoomCode, ensureStudentCode } from '../../shared/teacher-track';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 
@@ -798,8 +799,37 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// 初始：根据 URL ?mode= 起局；?c= 进好友房
+// 初始：根据 URL ?mode= 起局；?c=/?room=/?code= 进好友房；?mode=friend 建房
 const ic = inviteCode();
+const wantsFriend = (() => {
+  try { return (new URLSearchParams(location.search).get('mode') || '').toLowerCase() === 'friend'; }
+  catch (e) { return false; }
+})();
+
+/* ── 好友房：建房 → 房码 + QR + 邀请链接（2026-10-05 补齐，参考 gomoku）──
+   此前大厅「Friend Room」卡是假入口（指向 ?mode=ai），游戏页无建房逻辑。 */
+function roomHandlers(code: string) {
+  return {
+    onConnect: () => { newGame(); toast('Connected · room ' + code); },
+    onOpponentMove: handleWs,
+    onStart: () => newGame(),
+    onRestart: () => newGame(),
+    onOpponentLeave: () => toast('Opponent left'),
+    onGameOver: handleWs,
+  };
+}
+
+function startFriendRoom(): void {
+  state.mode = 'online';   // 先置 online：空盘等友期间不排 AI 落子（enterRoom 会再置一次）
+  newGame();                       // showScreen('match') + 空盘
+  void openFriendRoom('tictactoe', 'tt', {
+    enter: (code) => {
+      enterRoom(state as OnlineState, code, roomHandlers(code));
+      refreshChat();
+    },
+    onFail: () => { window.setTimeout(() => { location.replace(MODE_PAGE); }, 1400); },
+  });
+}
 
 // i18n 字典是异步 fetch 的；renderHud 在 newGame() 里会调 window.t，
 // 此时可能字典还没到（返回原始 key）。字典到位后重 render 一次。
@@ -815,16 +845,11 @@ if (ic) {
     ? ensureStudentCode(ic)
     : Promise.resolve(null);
   (classroomHook || Promise.resolve()).then(() => {
-    enterRoom(state as OnlineState, ic, {
-      onConnect: () => { newGame(); toast('Connected · room ' + ic); },
-      onOpponentMove: handleWs,
-      onStart: () => newGame(),
-      onRestart: () => newGame(),
-      onOpponentLeave: () => toast('Opponent left'),
-      onGameOver: handleWs,
-    });
+    enterRoom(state as OnlineState, ic, roomHandlers(ic));
     refreshChat();
   });
+} else if (wantsFriend) {
+  startFriendRoom();
 } else {
   newGame();
 }

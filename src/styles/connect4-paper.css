@@ -140,6 +140,45 @@ body.home-v2 .go-leave-acts .go-btn { flex: 1; min-height: 42px; }
 
 /* 移动端沉浸对局 */
 body.home-v2 #c4-chat-toggle { display: none; }
+
+/* ── 好友房邀请条（2026-10-05 补齐五款好友对战；样式与 gomoku-paper 同源）── */
+body.home-v2 .go-invite { padding: 12px 14px; margin-bottom: 12px; }
+body.home-v2 .go-invite[hidden] { display: none; }
+body.home-v2 .go-invite-h {
+  font-weight: 700; font-size: .78rem; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--mute); margin-bottom: 8px;
+}
+body.home-v2 .go-invite-row { display: flex; align-items: center; gap: 8px; }
+body.home-v2 .go-invite-code {
+  flex: 1; min-width: 0; text-align: center;
+  font-family: var(--disp); font-weight: 700; font-size: 1.12rem;
+  letter-spacing: .22em; padding: 8px 4px; border-radius: 10px;
+  background: var(--ember-soft); color: var(--ember-dim);
+  border: 1px dashed rgba(245, 158, 11, .55);
+}
+body.home-v2 .go-invite-note {
+  font-size: .74rem; color: var(--mute); margin-top: 8px; line-height: 1.45;
+}
+body.home-v2 .go-invite-qr {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  margin-top: 10px;
+}
+body.home-v2 .go-invite-qr img {
+  width: 160px; height: 160px; border-radius: 10px;
+  background: #fff; padding: 6px;
+  border: 1px solid var(--line-2, #EEF1F5);
+}
+body.home-v2 .go-invite-qr-hint {
+  font-size: .72rem; color: var(--mute); letter-spacing: .04em;
+}
+
+/* 移动端：邀请条出现在棋盘与操作行之间（此前整体 display:none，二维码在手机上永远看不到） */
+@media (max-width: 899.5px) {
+  body.home-v2.bd-in-match .go-invite { order: 2; margin: 0; }
+  body.home-v2.bd-in-match .go-invite[hidden] { display: none; }
+  body.home-v2.bd-in-match .go-invite-qr img { width: 132px; height: 132px; }
+}
+
 @media (max-width: 899.5px) {
   body.home-v2 #c4-chat-toggle:not([hidden]) { display: block; }
 
@@ -217,8 +256,7 @@ body.home-v2 #c4-chat-toggle { display: none; }
   }
 
   body.home-v2.bd-in-match .go-status-card,
-  body.home-v2.bd-in-match .go-recorder,
-  body.home-v2.bd-in-match .go-invite { display: none; }
+  body.home-v2.bd-in-match .go-recorder { display: none; }
 
   body.home-v2.bd-in-match .go-replaybar { order: 4; margin: 0; }
   body.home-v2.bd-in-match .go-replaybar[hidden] { display: none; }

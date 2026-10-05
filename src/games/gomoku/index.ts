@@ -1600,12 +1600,18 @@ function applyDeepLink(): void {
   location.replace(MODE_PAGE);
 }
 
+// 残留2（2026-10-05）：字典异步到位后重绘 HUD——否则 bj.you_black 等
+// 以 key 名泄漏在棋钟/轮次行上且不再更新（Vela 回归实测）。
+window.addEventListener('i18n:change', () => { try { renderHud(); } catch (e) { /* noop */ } });
+
 (function init(): void {
-  // 裸访问 /games/gomoku/（不带 ?mode= / ?c=）一律回模式选择页：
+  // 裸访问 /games/gomoku/（不带 ?mode= / ?c= / ?room= / ?code=）一律回模式选择页：
   // 模式选择已由 lobby 两段式负责，这里只保留深链战场，杜绝"又一个选择页"的干扰。
+  // 2026-10-05 残留1修复：?room=/?code= 是合法邀请参数（inviteCode() 兼容），
+  // 此前被这里直接弹回大厅 —— 第三方/手写房间链接全部失效（Vela 回归实测）。
   {
     const q = new URLSearchParams(location.search);
-    if (!q.get('mode') && !q.get('c')) {
+    if (!q.get('mode') && !q.get('c') && !q.get('room') && !q.get('code')) {
       location.replace(MODE_PAGE);
       return;
     }

@@ -2440,6 +2440,8 @@
     "bg_gomoku_invite": "Inviter un ami",
     "bg_gomoku_close_hint": "Fermer le panneau d’indices",
     "bg_gomoku_invite_qr_hint": "Scannez pour rejoindre",
+    "bg_invite_copy": "Copier le lien",
+    "bg_invite_note": "Envoyez ce code ou ce lien — votre ami arrive sur le même plateau.",
     "bg_go_lv_katago_sub": "KataGo réseau neuronal (b6c96) — le plus fort des trois",
     "go_opp_wins": "Vous perdez"
   },

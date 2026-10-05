@@ -29,6 +29,7 @@ import {
   type OnlineState, type OnlineMsg,
 } from '../online-core';
 import { modeFromUrl, syncModeCardUI } from '../shared';
+import { openFriendRoom } from '../friend-room';
 import { reportRound, isClassroom, urlRoomCode, ensureStudentCode } from '../../shared/teacher-track';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 
@@ -780,20 +781,41 @@ document.addEventListener('keydown', (e) => {
 });
 
 const ic = inviteCode();
+const wantsFriend = (() => {
+  try { return (new URLSearchParams(location.search).get('mode') || '').toLowerCase() === 'friend'; }
+  catch (e) { return false; }
+})();
+
+/* ── 好友房：建房 → 房码 + QR + 邀请链接（2026-10-05 补齐，参考 gomoku）── */
+function roomHandlers(code: string) {
+  return {
+    onConnect: () => { newGame(); toast('Connected · room ' + code); maybeAutoPass(); },
+    onOpponentPlace: handleWs,
+    onPassNotify: handleWs,
+    onStart: () => newGame(),
+    onRestart: () => newGame(),
+    onOpponentLeave: () => toast('Opponent left'),
+    onGameOver: handleWs,
+  };
+}
+
+function startFriendRoom(): void {
+  state.mode = 'online';   // 先置 online：空盘等友期间不排 AI 落子（enterRoom 会再置一次）
+  newGame();
+  void openFriendRoom('reversi', 'rv', {
+    enter: (code) => { enterRoom(state as OnlineState, code, roomHandlers(code)); },
+    onFail: () => { window.setTimeout(() => { location.replace(MODE_PAGE); }, 1400); },
+  });
+}
+
 if (ic) {
   clearInviteParam();
   const classroomHook = isClassroom() && urlRoomCode() === ic ? ensureStudentCode(ic) : Promise.resolve(null);
   (classroomHook || Promise.resolve()).then(() => {
-    enterRoom(state as OnlineState, ic, {
-      onConnect: () => { newGame(); toast('Connected · room ' + ic); maybeAutoPass(); },
-      onOpponentPlace: handleWs,
-      onPassNotify: handleWs,
-      onStart: () => newGame(),
-      onRestart: () => newGame(),
-      onOpponentLeave: () => toast('Opponent left'),
-      onGameOver: handleWs,
-    });
+    enterRoom(state as OnlineState, ic, roomHandlers(ic));
   });
+} else if (wantsFriend) {
+  startFriendRoom();
 } else {
   newGame();
 }
