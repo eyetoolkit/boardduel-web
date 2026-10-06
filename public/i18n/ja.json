@@ -2465,6 +2465,8 @@
     "bg_gomoku_invite_qr_hint": "スキャンで参加",
     "bg_invite_copy": "リンクをコピー",
     "bg_invite_note": "このコードかリンクを友だちに送ってください——開くと同じ盤面です。",
+    "bg_checkers_online_you": "あなたの番",
+    "bg_checkers_online_opp": "相手の番",
     "bg_go_lv_katago_sub": "KataGo ニューラルネット (b6c96) —— 三段中最強",
     "go_opp_wins": "あなたの負け"
   },

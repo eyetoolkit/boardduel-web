@@ -2443,6 +2443,8 @@
     "bg_gomoku_invite_qr_hint": "Escanea para unirte",
     "bg_invite_copy": "Copiar enlace",
     "bg_invite_note": "Envía este código o enlace: tu amigo entra al mismo tablero.",
+    "bg_checkers_online_you": "Tu turno",
+    "bg_checkers_online_opp": "Turno del rival",
     "bg_go_lv_katago_sub": "KataGo red neuronal (b6c96) — la más fuerte de las tres",
     "go_opp_wins": "Pierdes"
   },

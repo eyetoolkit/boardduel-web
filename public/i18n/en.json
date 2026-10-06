@@ -2366,6 +2366,8 @@
     "bg_gomoku_invite_qr_hint": "Scan to join",
     "bg_invite_copy": "Copy link",
     "bg_invite_note": "Send this code or link — your friend lands on the same board.",
+    "bg_checkers_online_you": "Your turn",
+    "bg_checkers_online_opp": "Opponent's turn",
     "bg_go_lv_katago_sub": "KataGo neural net (b6c96) — strongest of the three",
     "go_opp_wins": "You lose"
   },

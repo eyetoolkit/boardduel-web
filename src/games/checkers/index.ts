@@ -13,10 +13,15 @@ import { wireLobbyChrome } from '../../lobby-chrome';
 import {
   initialBoard, cloneBoard, moves, applyMove, bestMove, countPieces,
   type Board as CBoard, type Player as CPlayer, type Difficulty as CDifficulty, type Move,
-  EMPTY, colorOf, isKing, SIZE,
+  EMPTY, colorOf, isKing, SIZE, RED_MAN, BLACK_MAN,
 } from './engine';
 import { modeFromUrl, syncModeCardUI } from '../shared';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
+import {
+  enterRoom, sendWs, inviteCode, clearInviteParam,
+  type OnlineState, type OnlineMsg,
+} from '../online-core';
+import { openFriendRoom } from '../friend-room';
 
 /* ====================== 棋盘常量 ====================== */
 const SLOT = 540;
@@ -66,6 +71,9 @@ type UIState = {
   sinceCapture: number; // 连续无吃子步数（达 40 判和）
   timer: ReturnType<typeof createTimer>;
   aiThinking: boolean;
+  ws: WebSocket | null;
+  roomCode: string | null;
+  myIdx: number | null;
 };
 const HUMAN: CPlayer = 1;   // 玩家执红（先手）
 const ENGINE: CPlayer = 2;  // 引擎执黑
@@ -84,6 +92,9 @@ const state: UIState = {
   sinceCapture: 0,
   timer: createTimer(),
   aiThinking: false,
+  ws: null,
+  roomCode: null,
+  myIdx: null,
 };
 
 const MODE_PAGE = '/games/checkers/lobby/';
@@ -111,7 +122,11 @@ function render(): void {
 
   // 选中 / 目标高亮
   let hl = '';
-  const myTurn = !state.over && (state.mode === 'pass' || (state.mode === 'ai' && state.player === HUMAN)) && !state.aiThinking;
+  const myTurn = !state.over && (
+    state.mode === 'pass' ||
+    (state.mode === 'ai' && state.player === HUMAN) ||
+    (state.mode === 'online' && onlineMyTurn())
+  ) && !state.aiThinking;
   if (myTurn) {
     if (state.selected >= 0) {
       // 该子的合法落点
@@ -192,6 +207,9 @@ function renderHud(): void {
   let label: string;
   if (state.over) label = window.t('bi.game_over');
   else if (state.mode === 'pass') label = state.player === HUMAN ? window.t('bg.bg_checkers_you_red_lc') : window.t('bg.bg_checkers_pass_black_lc');
+  else if (state.mode === 'online') label = onlineMyTurn()
+    ? window.t('bg.bg_checkers_online_you')
+    : window.t('bg.bg_checkers_online_opp');
   else label = state.player === HUMAN
     ? window.t('bg.bg_checkers_you_red_lc')
     : (thinking ? 'Engine · ' + window.t('status.thinking') : window.t('bg.bg_checkers_engine_black_lc'));
@@ -219,6 +237,7 @@ function renderClockHud(): void {
 function onCell(i: number): void {
   if (state.over || state.aiThinking) return;
   if (state.mode === 'ai' && state.player !== HUMAN) return;
+  if (state.mode === 'online' && !onlineMyTurn()) return;
 
   // 已选中且点中一个合法落点 → 执行走法
   if (state.selected >= 0) {
@@ -246,6 +265,10 @@ function doMove(m: Move): void {
   state.selected = -1;
   state.sinceCapture = m.captures.length > 0 ? 0 : state.sinceCapture + 1;
   playSfx('place');
+  if (state.mode === 'online' && state.ws) {
+    // 结构化走子原样发给服务端（games-room.js 按 {from,target,caps,kinged} 转发）
+    sendWs(state as OnlineState, { type: 'move', mv: moveToWire(m), by: state.myIdx ?? 0 });
+  }
   afterMove();
 }
 
@@ -425,7 +448,7 @@ function showScreen(s: 'match' | 'end'): void {
 function newGame(): void {
   cancelAiMove();
   state.board = initialBoard();
-  state.player = HUMAN;
+  state.player = state.mode === 'online' ? (((state.myIdx ?? 0) + 1) as CPlayer) : HUMAN;
   state.lastMove = -1;
   state.over = false;
   state.selected = -1;
@@ -482,14 +505,89 @@ function resign(): void {
   state.over = true;
   cancelAiMove();
   stopTimer(state.timer);
-  finish(state.mode === 'ai' ? ENGINE : (state.player === HUMAN ? ENGINE : HUMAN));
+  finish(state.mode === 'online'
+    ? (state.player === 1 ? 2 : 1)
+    : state.mode === 'ai' ? ENGINE : (state.player === HUMAN ? ENGINE : HUMAN));
 }
 undoBtn.addEventListener('click', undo);
 resignBtn.addEventListener('click', resign);
 
+/* ====================== 联机（好友房） ====================== */
+function onlineMyTurn(): boolean {
+  return state.myIdx !== null && state.player === (state.myIdx + 1);
+}
+
+/** 本地 Move -> 服务端结构化走子（games-room.js 原样转发为 opponent_move） */
+function moveToWire(m: Move): { from: { r: number; c: number }; target: { r: number; c: number }; caps: number[]; kinged: boolean } {
+  const fr = Math.floor(m.from / SIZE), fc = m.from % SIZE;
+  const tr = Math.floor(m.to / SIZE), tc = m.to % SIZE;
+  const piece = state.board[m.from];
+  const kinged = !isKing(piece) && ((piece === RED_MAN && tr === 0) || (piece === BLACK_MAN && tr === 7));
+  return { from: { r: fr, c: fc }, target: { r: tr, c: tc }, caps: m.captures.slice(), kinged };
+}
+
+/** 接收对手走子 / 开局 / 终局广播（参考 tictactoe handleWs） */
+function handleWs(msg: OnlineMsg): void {
+  const t = String(msg.type || '');
+  if (t === 'opponent_move') {
+    const mv = msg.mv as { from?: { r: number; c: number }; target?: { r: number; c: number }; caps?: number[] } | undefined;
+    if (mv && mv.from && mv.target) {
+      const m: Move = {
+        from: mv.from.r * SIZE + mv.from.c,
+        to: mv.target.r * SIZE + mv.target.c,
+        captures: Array.isArray(mv.caps) ? mv.caps.slice() : [],
+        path: [],
+      };
+      pushHistory();
+      state.board = applyMove(state.board, m);
+      state.lastMove = m.to;
+      state.selected = -1;
+      state.sinceCapture = m.captures.length > 0 ? 0 : state.sinceCapture + 1;
+      playSfx('place');
+      afterMove();
+    }
+  } else if (t === 'start' || t === 'restart_notify') {
+    newGame();
+  } else if (t === 'opponent_leave') {
+    toast('Opponent left');
+  } else if (t === 'game_over') {
+    state.over = true;
+    stopTimer(state.timer);
+    render();
+  }
+}
+
+function roomHandlers(code: string) {
+  return {
+    onConnect: () => { newGame(); toast('Connected · room ' + code); },
+    onOpponentMove: handleWs,
+    onStart: () => newGame(),
+    onRestart: () => newGame(),
+    onOpponentLeave: () => toast('Opponent left'),
+    onGameOver: handleWs,
+  };
+}
+
+function startFriendRoom(): void {
+  state.mode = 'online';   // 先置 online：空盘等友期间不排 AI 落子
+  newGame();
+  void openFriendRoom('checkers', 'ck', {
+    enter: (code) => {
+      enterRoom(state as OnlineState, code, roomHandlers(code));
+    },
+    onFail: () => { window.setTimeout(() => { location.replace(MODE_PAGE); }, 1400); },
+  });
+}
+
+const ic = inviteCode();
+const wantsFriend = (() => {
+  try { return (new URLSearchParams(location.search).get('mode') || '').toLowerCase() === 'friend'; }
+  catch { return false; }
+})();
+
 /* ====================== 模式与深链 ====================== */
 const _initialMode: Mode = modeFromUrl('ai');
-state.mode = _initialMode;
+state.mode = ic || wantsFriend ? 'online' : _initialMode;
 syncModeCardUI(state.mode);
 
 /* ====================== 启动 ====================== */
@@ -516,6 +614,16 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && state.screen === 'match') exitMatchToLobby();
 });
 
-newGame();
+/* 2026-10-06 补齐：?c=/?room=/?code= 进好友房；?mode=friend 建房；否则 ai/pass 起局
+   （此前 checkers 完全无在线：大厅 4 张卡是假入口，前端零 WebSocket 代码） */
+if (ic) {
+  state.mode = 'online';
+  enterRoom(state as OnlineState, ic, roomHandlers(ic));
+  clearInviteParam();
+} else if (wantsFriend) {
+  startFriendRoom();
+} else {
+  newGame();
+}
 // i18n 字典异步 fetch 兜底
 setTimeout(() => render(), 250);

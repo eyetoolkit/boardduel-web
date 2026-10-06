@@ -2414,6 +2414,8 @@
     "bg_gomoku_invite_qr_hint": "扫码加入",
     "bg_invite_copy": "复制链接",
     "bg_invite_note": "把这串房码或链接发给好友——打开就是同一张棋盘。",
+    "bg_checkers_online_you": "你走",
+    "bg_checkers_online_opp": "对手走",
     "bg_go_lv_katago_sub": "KataGo 神经网络 (b6c96) —— 三档中最强",
     "go_opp_wins": "你输了"
   },

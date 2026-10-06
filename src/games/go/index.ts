@@ -251,6 +251,7 @@ const chatRoom = $<HTMLElement>('go-chat-room');
 const inviteEl = $<HTMLElement>('go-invite');
 const inviteCodeEl = $<HTMLElement>('go-invite-code');
 const inviteCopyBtn = $<HTMLButtonElement>('go-invite-copy');
+const inviteQrImg = $<HTMLImageElement>('go-invite-qr');
 const scorePanelBtn = $<HTMLButtonElement>('go-score-panel');
 const scorePanel = $<HTMLElement>('go-scorepanel');
 const scorePanelBody = $<HTMLElement>('go-scorepanel-body');
@@ -958,6 +959,10 @@ async function startFriendRoom(): Promise<void> {
     if (!r.ok || !/^[A-Z2-9]{6}$/.test(code)) { fail(); return; }
     enterRankedRoom(code);
     inviteCodeEl.textContent = code;
+    try {
+      // 2026-10-06 修复：go 邀请面板此前缺二维码 <img>，API 出图正常但页面不渲染
+      inviteQrImg.src = '/api/qr?game=go&code=' + encodeURIComponent(code) + '&size=160&cb=' + Date.now();
+    } catch (e) { /* 二维码缺失也不阻塞建房 */ }
     inviteEl.hidden = false;
   } catch (e) { fail(); }
 }
