@@ -574,6 +574,14 @@ function resign(): void {
   resignArmed = false;
   resignBtn.textContent = window.t('bj.resign');
   resignBtn.classList.remove('is-confirm');
+  // 🔴 2026-10-06：联机认输必须通知服务端，此前这里只 finish() 本地收尾。
+  //   后果与 connect4 修掉的那个一模一样（connect4/index.ts:548 的注释记录了
+  //   「那一批只补了 chess/xiangqi/tictactoe，checkers 被漏掉」）：
+  //   对手永远不知情、服务端 status 停在 'playing'、**无 Elo 无金币结算**、
+  //   房间不收尾，且认输后再战会被服务端的局中守卫拒掉。
+  if (state.mode === 'online' && state.ws) {
+    sendWs(state as OnlineState, { type: 'resign' });
+  }
   state.over = true;
   cancelAiMove();
   stopTimer(state.timer);

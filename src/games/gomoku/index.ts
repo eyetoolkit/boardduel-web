@@ -763,8 +763,14 @@ function startClockTick(): void {
     const now = performance.now();
     const dt = (now - clockTicker.last) / 1000;
     clockTicker.last = now;
-    // 暂停态（复盘/终局/未开局）只推进 last，不扣时间
+    // 暂停态（复盘/终局/未开局）只推进 last，不扣时间。
+    // 🔴 2026-10-06：联机且对手不在（未进房 / 已离开 / 已断线）也要停表 ——
+    //   与 go 的 clockFrozen() 同义。少了这一条：不轮到自己时下面走 else 分支去扣
+    //   `clock.b`，而「不轮到自己」在联机里等于「对手不在」，于是断线期间
+    //   **玩家自己的棋钟在空转烧光**（go 早在 2026-10-05 用
+    //   `if (state.mode === 'ranked' && !state.rankedLive) return true` 堵过）。
     if (state.over || state.reviewAt !== null || state.screen !== 'match') return;
+    if (state.mode === 'ranked' && !state.roomLive) return;
     if (!state.clock || dt <= 0) return;
     if (isMyTurn()) state.clock.w = Math.max(0, state.clock.w - dt);
     else state.clock.b = Math.max(0, state.clock.b - dt);
@@ -1270,7 +1276,33 @@ function wsUrl(code: string, name: string): string {
   return `${proto}//${location.host}/ws?code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}`;
 }
 
-function enterRankedRoom(code: string, isAi: boolean, aiName?: string): void {
+/* 断线重连（2026-10-06）—— 参数与 online-core 一致：4 次，0.6→1.2→2.4→4.8s。
+   服务端宽限 60s（games-room.js:47）。此前一次都没试：移动端瞬时抖动直接毁掉一局棋。 */
+const RECONNECT_MAX = 4;
+const RECONNECT_BASE_MS = 600;
+
+function scheduleReconnect(code: string, isAi: boolean, aiName: string | undefined, dead: WebSocket): void {
+  // 主动离场：leaveRoom 已把 state.ws 置 null，此时不该再连回来。
+  if (state.ws !== dead) return;
+  state.ws = null;
+  let tries = 0;
+  const step = (): void => {
+    if (state.roomCode !== code) return;
+    if (tries >= RECONNECT_MAX) {
+      toast('Connection lost — share room code ' + code + ' to resume');
+      return;
+    }
+    const delay = RECONNECT_BASE_MS * Math.pow(2, tries);
+    tries += 1;
+    window.setTimeout(() => {
+      if (state.roomCode !== code) return;
+      enterRankedRoom(code, isAi, aiName, { attempt: tries });
+    }, delay);
+  };
+  step();
+}
+
+function enterRankedRoom(code: string, isAi: boolean, aiName?: string, opts: { attempt?: number } = {}): void {
   if (state.pollTimer) { clearTimeout(state.pollTimer); state.pollTimer = null; }
   queueEl.hidden = true;
   setQueuingUI(false);
@@ -1285,19 +1317,25 @@ function enterRankedRoom(code: string, isAi: boolean, aiName?: string): void {
   // 与 online-core 同理：pid cookie 必须在握手请求里就位，否则服务端 getAuthUuid
   // 返回空 uuid，这一局既不计 Elo 也不发币（详见 online-core ensureAccount 注释）。
   // gomoku 自带手写 WS，不走 online-core 的 connect()，所以这里要自己等一次。
-  void ensureAccount().then(() => openRankedSocket(code));
+  void ensureAccount().then(() => openRankedSocket(code, isAi, aiName, opts.attempt || 0));
 }
 
-function openRankedSocket(code: string): void {
+function openRankedSocket(code: string, isAi: boolean, aiName: string | undefined, attempt: number): void {
   if (state.roomCode !== code) return;   // 等 cookie 期间已退出/换房
   let ws: WebSocket;
   try {
-    ws = new WebSocket(wsUrl(code, myName()));
+    // rejoin=1 让服务端确定性地认出「这是重连」（它不再靠 socket 数或 readyState 猜）。
+    const base = wsUrl(code, myName());
+    ws = new WebSocket(attempt > 0 ? `${base}&rejoin=1` : base);
   } catch (e) {
     toast('Could not open room');
     return;
   }
   state.ws = ws;
+  // 🔴 换连接就复位再战回声闸：旧连接 armed=true 时断掉，没人清它，
+  //   之后**对手**点「再战」，本机会把对手那份 restart_notify 当成自己的回声吞掉
+  //   —— 对手以为开了新局，本机停在旧局。与 online-core 的同款复位。
+  restartEchoArmed = false;
 
   ws.addEventListener('open', () => {
     chatRoom.textContent = code + window.t('bj.chat_live');
@@ -1308,8 +1346,18 @@ function openRankedSocket(code: string): void {
     handleWs(msg);
   });
   ws.addEventListener('close', () => {
+    // 🔴 2026-10-06：断线必须锁盘 + 停钟，此前这里只改聊天条文字。
+    //   roomLive 只被 applyRoomState / opponent_leave 改，close 不改 →
+    //   网络一抖 isMyTurn 仍为 true、棋钟照走，玩家能点出一堆「落子」，
+    //   而 sendWs 在 readyState !== OPEN 时静默丢弃 —— 宽限期内变成对手
+    //   永远看不到的幽灵子，且看起来像己方在连走（与 opponent_leave 的注释同义）。
     chatRoom.textContent = code + window.t('bj.chat_offline');
+    if (state.mode === 'ranked') {
+      state.roomLive = false;
+      render();
+    }
     if (state.screen === 'match' && !state.over) toast('Connection lost');
+    scheduleReconnect(code, isAi, aiName, ws);
   });
   ws.addEventListener('error', () => { toast('Room unavailable'); });
 }

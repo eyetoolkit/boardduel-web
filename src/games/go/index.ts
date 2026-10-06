@@ -984,7 +984,34 @@ function wsUrl(code: string, name: string): string {
   return `${proto}//${location.host}/ws?code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}`;
 }
 
-function enterRankedRoom(code: string): void {
+/* 断线重连（2026-10-06）—— 与 online-core 同参数：0.6→1.2→2.4→4.8s，共约 9s。
+   服务端断线宽限 60s（games-room.js:47），4 次足够覆盖移动端瞬时抖动。
+   此前 go/gomoku 一次都没试：切地铁/进电梯回来房间就没了，得重新建房。 */
+const RECONNECT_MAX = 4;
+const RECONNECT_BASE_MS = 600;
+
+function scheduleReconnect(code: string, dead: WebSocket): void {
+  // 主动离场：leaveRoom 已把 state.ws 置 null，此时不该再连回来。
+  if (state.ws !== dead) return;
+  state.ws = null;
+  let tries = 0;
+  const step = (): void => {
+    if (state.roomCode !== code) return;        // 已离场/换房
+    if (tries >= RECONNECT_MAX) {
+      toast('Connection lost — share room code ' + code + ' to resume');
+      return;
+    }
+    const delay = RECONNECT_BASE_MS * Math.pow(2, tries);
+    tries += 1;
+    window.setTimeout(() => {
+      if (state.roomCode !== code) return;
+      enterRankedRoom(code, { attempt: tries });
+    }, delay);
+  };
+  step();
+}
+
+function enterRankedRoom(code: string, opts: { attempt?: number } = {}): void {
   state.roomCode = code;
   state.mode = 'ranked';
   chatEl.hidden = false;
@@ -995,15 +1022,24 @@ function enterRankedRoom(code: string): void {
   // 与 online-core 同理：pid cookie 必须在握手请求里就位，否则服务端 getAuthUuid
   // 返回空 uuid，这一局既不计 Elo 也不发币（详见 online-core ensureAccount 注释）。
   // go 自带手写 WS，不走 online-core 的 connect()，所以这里要自己等一次。
-  void ensureAccount().then(() => openRankedSocket(code));
+  void ensureAccount().then(() => openRankedSocket(code, opts.attempt || 0));
 }
 
-function openRankedSocket(code: string): void {
+function openRankedSocket(code: string, attempt: number): void {
   if (state.roomCode !== code) return;   // 等 cookie 期间已退出/换房
   let ws: WebSocket;
-  try { ws = new WebSocket(wsUrl(code, myName())); }
+  try {
+    // rejoin=1 让服务端确定性地认出「这是重连」（它不再靠 socket 数或 readyState 猜）。
+    const base = wsUrl(code, myName());
+    ws = new WebSocket(attempt > 0 ? `${base}&rejoin=1` : base);
+  }
   catch (e) { toast('Could not open room'); return; }
   state.ws = ws;
+  // 🔴 换了一条连接，之前那次 restart 的回声就永远等不到了（断线时序最典型的死锁）：
+  //   旧连接上 restartEchoArmed 还是 true 时 socket 断掉，没人清它。之后**对手**点
+  //   「再战」，服务端无差别广播 restart_notify，本机却当成自己的回声吞掉 ——
+  //   对手以为开了新局，本机棋盘停在旧局。与 online-core 的同款复位。
+  restartEchoArmed = false;
   ws.addEventListener('open', () => { chatRoom.textContent = code + ' · live'; });
   ws.addEventListener('message', (ev) => {
     let msg: Record<string, unknown>;
@@ -1013,7 +1049,11 @@ function openRankedSocket(code: string): void {
   ws.addEventListener('close', () => {
     chatRoom.textContent = code + ' · offline';
     state.rankedLive = false;
+    stopClockLoop();
+    renderBoard();
+    updateInfo();
     if (state.screen === 'match' && !state.over) toast('Connection lost');
+    scheduleReconnect(code, ws);
   });
   ws.addEventListener('error', () => { toast('Room unavailable'); });
 }
