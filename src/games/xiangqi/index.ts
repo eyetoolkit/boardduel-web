@@ -393,6 +393,47 @@ function renderClockHud(): void {
 /* ======================
  * 落子
  * ====================== */
+/**
+ * 按服务端下发的着法历史重放恢复棋盘（刷新/重连后用）。
+ * 服务端从 2026-10-06 起为 xiangqi 维护 relayMoves 并随 join 帧下发；
+ * 此前中局刷新只能拿到空盘。重放期间不发消息、不出声。
+ */
+function rebuildFromServer(moves: { from?: unknown; to?: unknown }[]): void {
+  cancelAiMove();
+  let g = createGame();
+  const replayed: Move[] = [];
+  for (const m of moves) {
+    const from = typeof m.from === 'number' ? m.from : Number(m.from);
+    const to = typeof m.to === 'number' ? m.to : Number(m.to);
+    if (!Number.isInteger(from) || !Number.isInteger(to)) continue;
+    if (from < 0 || from > 89 || to < 0 || to > 89) continue;
+    if (!g.board[from]) continue;
+    const mv: Move = { from, to, cap: g.board[to] };
+    g = applyMove(g, mv);              // 象棋的 applyMove 返回新状态，不就地改
+    replayed.push(mv);
+  }
+  state.gs = g;
+  state.moves = replayed;
+  state.history = [];
+  state.selected = -1;
+  state.lastMove = replayed.length ? replayed[replayed.length - 1] : null;
+  state.over = false;
+  state.reviewAt = null;
+  rebuildArbiter();                    // 重复局面/长将计数要跟着重放一起重建
+  resetReplayUI();
+  render();
+}
+
+/** 从 state 帧取服务端着法历史并重放；两种 state 形状都要认；已有本地着法则不重复应用。 */
+function applyServerMoves(m: OnlineMsg): void {
+  const inner = (m.state && typeof m.state === 'object') ? (m.state as OnlineMsg) : null;
+  const mv = Array.isArray(m.moves) ? m.moves
+    : (inner && Array.isArray(inner.moves) ? inner.moves : null);
+  if (!mv || !mv.length) return;
+  if (state.moves.length) return;
+  rebuildFromServer(mv as { from?: unknown; to?: unknown }[]);
+}
+
 function doMove(m: Move): void {
   state.history.push(cloneState(state.gs));
   state.moves.push(m);
@@ -957,7 +998,7 @@ function roomHandlers(code: string) {
     // 服务端对「第二人加入」和「重连」广播的是同一个 start（games-room.js:267-310），
     // 无条件 newGame() 会让中途刷新把**没刷新的对手**那盘真实中局也一起清空。
     onStart: (m: OnlineMsg) => { if (!state.moves.length) newGame(); applyRoomState(m, true); },
-    onState: (m: OnlineMsg) => applyRoomState(m, false),
+    onState: (m: OnlineMsg) => { applyServerMoves(m); applyRoomState(m, false); },
     onRestart: () => newGame(),
     onOpponentLeave: () => { state.roomLive = false; toast('Opponent left'); render(); },
     // 断线：online-core 已把 roomLive 置 false，这里锁盘并给一句可见提示

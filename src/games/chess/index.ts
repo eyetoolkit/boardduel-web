@@ -375,6 +375,54 @@ function renderClockHud(): void {
 /* ======================
  * 落子
  * ====================== */
+/**
+ * 按服务端下发的着法历史重放恢复棋盘（刷新/重连后用）。
+ * 服务端从 2026-10-06 起为 chess 维护 relayMoves 并随 join 帧下发；
+ * 此前中局刷新只能拿到空盘 —— 自己这边丢就算了，问题是**没刷新的对手也会被
+ * 服务端的 start 广播带着一起清盘**，对局静默回到开局。
+ * 重放期间不发消息、不出声，也不动时钟。
+ */
+function rebuildFromServer(moves: { from?: unknown; to?: unknown; promotion?: unknown }[]): void {
+  cancelAiMove();
+  const gs = initialState();
+  const replayed: CMove[] = [];
+  for (const m of moves) {
+    const from = algToSq(String(m.from));
+    const to = algToSq(String(m.to));
+    if (from < 0 || to < 0) continue;
+    const promo = typeof m.promotion === 'string' ? (m.promotion as CPiece) : undefined;
+    const piece = gs.board[from];
+    if (!piece || piece === '.') continue;
+    const mv: CMove = { from, to, piece, promo };
+    applyMove(gs, mv);
+    replayed.push(mv);
+  }
+  state.gs = gs;
+  state.moves = replayed;
+  state.history = [];
+  state.selected = -1;
+  state.lastMove = replayed.length ? replayed[replayed.length - 1] : null;
+  state.over = false;
+  state.reviewAt = null;
+  resetReplayUI();
+  render();
+}
+
+/**
+ * 从 state 帧里取服务端着法历史并重放。
+ * 帧有两种形状：中继的扁平 {type:'state',you,code,roomStatus,players,moves}
+ * 与判棋模式的嵌套 {type:'state',state:{...}}，两种都要认。
+ * 已有本地着法时不重放（正常对弈中 state 帧会反复下发，避免重复应用）。
+ */
+function applyServerMoves(m: OnlineMsg): void {
+  const inner = (m.state && typeof m.state === 'object') ? (m.state as OnlineMsg) : null;
+  const mv = Array.isArray(m.moves) ? m.moves
+    : (inner && Array.isArray(inner.moves) ? inner.moves : null);
+  if (!mv || !mv.length) return;
+  if (state.moves.length) return;
+  rebuildFromServer(mv as { from?: unknown; to?: unknown; promotion?: unknown }[]);
+}
+
 function doMove(m: CMove): void {
   state.history.push(cloneState(state.gs));
   state.moves.push(m);
@@ -908,7 +956,7 @@ function roomHandlers(code: string) {
     // 服务端对「第二人加入」和「重连」广播的是同一个 start（games-room.js:267-310），
     // 无条件 newGame() 会让中途刷新把**没刷新的对手**那盘真实中局也一起清空。
     onStart: (m: OnlineMsg) => { if (!state.moves.length) newGame(); applyRoomState(m, true); },
-    onState: (m: OnlineMsg) => applyRoomState(m, false),
+    onState: (m: OnlineMsg) => { applyServerMoves(m); applyRoomState(m, false); },
     onRestart: () => newGame(),
     onOpponentLeave: () => { state.roomLive = false; toast('Opponent left'); render(); },
     // 断线：online-core 已把 roomLive 置 false，这里锁盘并给一句可见提示

@@ -590,6 +590,52 @@ function onlineMyTurn(): boolean {
   return state.roomLive && state.myIdx !== null && state.player === (state.myIdx + 1);
 }
 
+/**
+ * 按服务端下发的着法历史重放恢复棋盘（刷新/重连后用）。
+ * 着法格式与服务端 relayMoves 一致：{ mv: { from:{r,c}, target:{r,c}, caps, kinged } }。
+ * sinceCapture（连续无吃子步数，达 40 判和）必须一起重算，否则重连后和棋判定会错。
+ */
+function rebuildFromServer(hist: { mv?: { from?: { r?: number; c?: number }; target?: { r?: number; c?: number }; caps?: number[] } }[]): void {
+  cancelAiMove();
+  let board = initialBoard();
+  let player: CPlayer = HUMAN;
+  let sinceCapture = 0;
+  for (const w of hist) {
+    const mv = w && w.mv;
+    if (!mv || !mv.from || !mv.target) continue;
+    const fr = Number(mv.from.r), fc = Number(mv.from.c);
+    const tr = Number(mv.target.r), tc = Number(mv.target.c);
+    if (!Number.isInteger(fr) || !Number.isInteger(tr)) continue;
+    if (fr < 0 || fr >= SIZE || fc < 0 || fc >= SIZE || tr < 0 || tr >= SIZE || tc < 0 || tc >= SIZE) continue;
+    const from = fr * SIZE + fc;
+    const to = tr * SIZE + tc;
+    if (!board[from]) continue;
+    const captures = Array.isArray(mv.caps) ? mv.caps.slice() : [];
+    board = applyMove(board, { from, to, captures, path: [] } as Move);
+    sinceCapture = captures.length > 0 ? 0 : sinceCapture + 1;
+    player = (player === RED_MAN ? BLACK_MAN : RED_MAN) as CPlayer;
+  }
+  state.board = board;
+  state.player = player;
+  state.sinceCapture = sinceCapture;
+  state.lastMove = -1;
+  state.selected = -1;
+  state.history = [];
+  state.over = false;
+  state.legal = moves(board, player as CPlayer);
+  render();
+}
+
+/** 从 state 帧取服务端着法历史并重放；两种 state 形状都要认；已有本地着法则不重复应用。 */
+function applyServerMoves(m: OnlineMsg): void {
+  const inner = (m.state && typeof m.state === 'object') ? (m.state as OnlineMsg) : null;
+  const mv = Array.isArray(m.moves) ? m.moves
+    : (inner && Array.isArray(inner.moves) ? inner.moves : null);
+  if (!mv || !mv.length) return;
+  if (state.history.length) return;
+  rebuildFromServer(mv as Parameters<typeof rebuildFromServer>[0]);
+}
+
 /** 本地 Move -> 服务端结构化走子（games-room.js 原样转发为 opponent_move） */
 function moveToWire(m: Move): { from: { r: number; c: number }; target: { r: number; c: number }; caps: number[]; kinged: boolean } {
   const fr = Math.floor(m.from / SIZE), fc = m.from % SIZE;
@@ -676,7 +722,7 @@ function roomHandlers(code: string) {
     onConnect: () => { newGame(); toast('Connected · room ' + code); },
     onOpponentMove: handleWs,
     onStart: (m: OnlineMsg) => { newGame(); applyRoomState(m, true); },
-    onState: (m: OnlineMsg) => applyRoomState(m, false),
+    onState: (m: OnlineMsg) => { applyServerMoves(m); applyRoomState(m, false); },
     onOpponentLeave: () => { state.roomLive = false; toast('Opponent left'); render(); },
     // 断线：online-core 已把 roomLive 置 false，这里锁盘并给一句可见提示
     onDisconnect: () => { toast(window.t('match.disconnected')); render(); },

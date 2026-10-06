@@ -308,6 +308,44 @@ function renderClockHud(): void {
 /* ======================
  * 落子
  * ====================== */
+/**
+ * 按服务端下发的着法历史重放恢复棋盘（刷新/重连后用）。
+ * 着法格式 {i:格号}；onlineMyTurn 按 filledCount 推回合，重放后自动对回来。
+ */
+function rebuildFromServer(moves: { i?: unknown }[]): void {
+  cancelAiMove();
+  const board = emptyBoard();
+  const replayed: number[] = [];
+  let player: TPlayer = 1;
+  for (const m of moves) {
+    const i = typeof m.i === 'number' ? m.i : Number(m.i);
+    if (!Number.isInteger(i) || i < 0 || i > 8) continue;
+    if (board[i] !== 0) continue;
+    board[i] = player;
+    replayed.push(i);
+    player = (player === 1 ? 2 : 1);
+  }
+  state.board = board;
+  state.moves = replayed;
+  state.history = [];
+  state.player = player;
+  state.over = false;
+  state.reviewAt = null;
+  state.sawGameOver = false;
+  resetReplayUI();
+  render();
+}
+
+/** 从 state 帧取服务端着法历史并重放；两种 state 形状都要认；已有本地着法则不重复应用。 */
+function applyServerMoves(m: OnlineMsg): void {
+  const inner = (m.state && typeof m.state === 'object') ? (m.state as OnlineMsg) : null;
+  const mv = Array.isArray(m.moves) ? m.moves
+    : (inner && Array.isArray(inner.moves) ? inner.moves : null);
+  if (!mv || !mv.length) return;
+  if (state.moves.length) return;
+  rebuildFromServer(mv as { i?: unknown }[]);
+}
+
 function placeLocal(i: number, p: TPlayer): void {
   state.board[i] = p;
   state.moves.push(i);
@@ -934,7 +972,7 @@ function roomHandlers(code: string) {
     // 服务端对「第二人加入」和「重连」广播的是同一个 start（games-room.js:267-310），
     // 无条件 newGame() 会让中途刷新把**没刷新的对手**那盘真实中局也一起清空。
     onStart: (m: OnlineMsg) => { if (!state.moves.length) newGame(); applyRoomState(m, true); },
-    onState: (m: OnlineMsg) => applyRoomState(m, false),
+    onState: (m: OnlineMsg) => { applyServerMoves(m); applyRoomState(m, false); },
     onRestart: () => newGame(),
     onOpponentLeave: () => { state.roomLive = false; toast('Opponent left'); render(); },
     // 断线：online-core 已把 roomLive 置 false，这里锁盘并给一句可见提示
