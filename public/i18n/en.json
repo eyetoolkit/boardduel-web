@@ -2464,7 +2464,8 @@
     "bg_share_system": "💬 Share",
     "bg_share_save_image": "🖼 Save invite card",
     "bg_share_result": "Share result",
-    "bg_checkers_not_your_turn": "Not your turn yet"
+    "bg_checkers_not_your_turn": "Not your turn yet",
+    "bg_common_waiting_opponent": "Waiting for opponent…"
   },
   "bk": {
     "bk_blog_tag_brain": "Brain Training",

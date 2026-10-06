@@ -138,6 +138,10 @@ type UIState = {
   reviewAt: number | null;       // 复盘回看位置（null = 看最新）
   ws: WebSocket | null;          // ranked 联机
   roomCode: string | null;
+  /** 对手已进房（2026-10-06）：false 时棋盘锁定、棋钟不走、对手侧显示「等待中」 */
+  roomLive: boolean;
+  /** 对手昵称，服务端 start/state 广播带来 */
+  oppName: string | null;
   myIdx: number | null;          // ranked: 0/1
   pollTimer: number | null;
   matchId: string | null;
@@ -165,6 +169,8 @@ const state: UIState = {
   reviewAt: null,
   ws: null,
   roomCode: null,
+  roomLive: false,
+  oppName: null,
   myIdx: null,
   pollTimer: null,
   matchId: null,
@@ -426,12 +432,34 @@ function isTouch(): boolean {
   return window.matchMedia('(hover: none)').matches;
 }
 
+/** 吸收服务端房间状态（state / start），驱动等待态与启钟。
+ *  gomoku 的 WS 是本文件自建的（enterRankedRoom），不走 online-core.enterRoom，
+ *  所以这里按同样的约定就地解析。 */
+function applyRoomState(msg: Record<string, unknown>, viaStart: boolean): void {
+  if (state.mode !== 'ranked') return;
+  const inner = (msg.state && typeof msg.state === 'object') ? msg.state as Record<string, unknown> : null;
+  const status = String((inner?.roomStatus ?? msg.roomStatus) as string || '');
+  const live = viaStart || status === 'playing';
+  const wasLive = state.roomLive;
+  state.roomLive = live;
+  const players = (inner?.players ?? msg.players) as { idx?: number; name?: string }[] | undefined;
+  if (Array.isArray(players) && players.length >= 2) {
+    const other = players.find((p) => p && p.idx !== state.myIdx);
+    if (other?.name) state.oppName = other.name;
+  }
+  if (live && !wasLive) startClockTick();
+  render();
+}
+
 function isMyTurn(): boolean {
   if (state.over) return false;
   if (state.mode === 'ai') return state.turn === 1;
   if (state.mode === 'pass') return true;
   // ranked：由服务端转发的走子方决定
   if (state.myIdx === null) return false;
+  // 2026-10-06：对手没进房时棋盘锁定。否则本地走了、服务端拒、
+  // 'start' 一来又被清盘，玩家看到「子凭空消失」（与 go 的 rankedLive 同义）。
+  if (!state.roomLive) return false;
   const mySide: GPlayer = state.myIdx === 0 ? 1 : 2;
   return state.turn === mySide;
 }
@@ -472,7 +500,10 @@ function renderHud(): void {
   // 棋钟
   if (state.mode === 'ranked') {
     clockMeWho.textContent = (state.myIdx === 0 ? window.t('bj.you_black') : window.t('bj.you_white'));
-    clockOppWho.textContent = (state.myIdx === 0 ? window.t('bj.opp_white') : window.t('bj.opp_black'));
+    // 2026-10-06：没进房显示「等待中」，进房后显示真实昵称（服务端 start 带 players）
+    clockOppWho.textContent = state.roomLive && state.oppName
+      ? state.oppName
+      : window.t('bg.bg_common_waiting_opponent');
   } else if (state.mode === 'ai') {
     clockMeWho.textContent = window.t('bj.you_black');
     clockOppWho.textContent = window.t('bj.engine_white');
@@ -1110,7 +1141,9 @@ function newGame(): void {
   startTimer(state.timer, () => { /* 棋钟走 state.clock，这里不再重复计时 */ });
   // ⚠️ 必须在这里就启动棋钟：旧实现只在 afterMove() 里启动，
   //    导致新开局后第一手落子前棋钟是静止的（实测 10:00 不动）。
-  startClockTick();
+  // 2026-10-06 例外：ranked 模式对手没进房时不启钟，由 applyRoomState 在
+  //    收到 start 后再启动（行业通行：等对手期间不计时）。
+  if (state.mode !== 'ranked' || state.roomLive) startClockTick();
   // 对 AI 提和没有意义 —— 隐藏 Draw；其余模式（联机 / 同屏双人）显示
   drawBtn.hidden = state.mode === 'ai';
   // 难度键只属于 AI 对局（ranked / pass 换档无意义），离场时顺带收起浮层
@@ -1326,12 +1359,14 @@ function handleWs(msg: Record<string, unknown>): void {
       chatRoom.textContent = code;
     }
     if (!state.over) newGame();
+    applyRoomState(msg, false);
     return;
   }
   if (t === 'start') {
     // 2026-10-06：对手进房 → 邀请卡片自动收起（延迟 9s，给对方扫码留时间）
     onOpponentJoined('go');
     if (!state.over) newGame();
+    applyRoomState(msg, true);
     return;
   }
   if (t === 'opponent_move') {

@@ -2464,7 +2464,8 @@
     "bg_share_system": "💬 Compartir",
     "bg_share_save_image": "🖼 Guardar tarjeta",
     "bg_share_result": "Compartir resultado",
-    "bg_checkers_not_your_turn": "Todavía no es tu turno"
+    "bg_checkers_not_your_turn": "Todavía no es tu turno",
+    "bg_common_waiting_opponent": "Esperando al rival…"
   },
   "bk": {
     "bk_blog_tag_brain": "Entrenamiento cerebral",

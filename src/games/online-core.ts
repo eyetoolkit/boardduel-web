@@ -21,7 +21,8 @@ export type OnlineMsg = Record<string, unknown>;
 
 export interface OnlineHandlers {
   onConnect?: (myIdx: number, code: string) => void;
-  onStart?: () => void;
+  /** 第二人进房广播。带 players（对手昵称），见 applyRoomState 那类用法。 */
+  onStart?: (msg: OnlineMsg) => void;
   onOpponentMove?: (msg: OnlineMsg) => void;
   onOpponentPlace?: (msg: OnlineMsg) => void;
   onState?: (msg: OnlineMsg) => void;
@@ -32,6 +33,36 @@ export interface OnlineHandlers {
   /** 服务端拒绝（illegal_move / not_your_turn / 对方未连接…）。
    *  可选：未提供时该消息被忽略，行为与此前一致。 */
   onError?: (msg: OnlineMsg) => void;
+}
+
+/* ═══════════ 联机等待态（2026-10-06）═══════════
+ * 服务端 `state` 消息带 roomStatus（waiting / playing）与 players（含真实昵称），
+ * 第二人加入时广播 `start`。此前这些信息被各棋种整体丢弃，导致建房后：
+ *   ① 计时器在对手没进来时就开跑
+ *   ② 对手侧时钟写着「引擎 · XX」（根本没有引擎）
+ *   ③ 没人时也能落子 → 本地走了、服务端拒、start 一来清盘 →「子凭空消失」
+ * ③ 早在 10-05 由 go 站用 rankedLive 单独堵过，其余棋种没跟上，这里统一收敛。
+ * 行业通行做法（lichess / chess.com / 通用好友房）一致：等对手期间棋盘锁定、时钟不走。
+ */
+
+/** state 消息有两种形状：{you,code,game,roomStatus,players} 与 {state:{...}}。
+ *  这里统一取出内层对象，避免各棋种各写一遍形状判断。 */
+export function stateBody(msg: OnlineMsg): OnlineMsg {
+  const inner = (msg.state && typeof msg.state === 'object') ? msg.state as OnlineMsg : null;
+  return inner ?? msg;
+}
+
+/** 房间是否已有对手（真正开局）。仅靠 roomStatus 判断，不猜座位映射。 */
+export function roomLiveFromState(msg: OnlineMsg): boolean {
+  return String(stateBody(msg).roomStatus || '') === 'playing';
+}
+
+/** 从 state 消息解出对手昵称；人数不足返回 null。 */
+export function opponentNameFromState(msg: OnlineMsg, myIdx: number | null): string | null {
+  const players = stateBody(msg).players as { idx?: number; name?: string }[] | undefined;
+  if (!Array.isArray(players) || players.length < 2) return null;
+  const other = players.find((p) => p && p.idx !== myIdx && p.idx !== undefined);
+  return other?.name || null;
 }
 
 /** 读取 ?c= 房间码（worker /b/<game>/<CODE> 会 302 到 ?c=<CODE>）
@@ -131,7 +162,7 @@ export function enterRoom(state: OnlineState, code: string, handlers: OnlineHand
       return;
     }
     if (t === 'start') {
-      handlers.onStart?.();
+      handlers.onStart?.(msg);
       return;
     }
     if (t === 'opponent_move') {

@@ -2462,7 +2462,8 @@
     "bg_share_system": "💬 分享",
     "bg_share_save_image": "🖼 保存邀请卡",
     "bg_share_result": "分享战绩",
-    "bg_checkers_not_your_turn": "还没轮到你"
+    "bg_checkers_not_your_turn": "还没轮到你",
+    "bg_common_waiting_opponent": "等待对手加入…"
   },
   "bk": {
     "bk_blog_tag_brain": "脑力训练",

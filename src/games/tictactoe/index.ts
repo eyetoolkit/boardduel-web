@@ -28,6 +28,7 @@ import {
 } from './engine';
 import {
   enterRoom, sendWs, inviteCode, clearInviteParam,
+  roomLiveFromState, opponentNameFromState,
   type OnlineState, type OnlineMsg,
 } from '../online-core';
 import { modeFromUrl, syncModeCardUI } from '../shared';
@@ -86,6 +87,7 @@ const clockMeTime = document.getElementById('go-clock-me-time') as HTMLElement;
 void chatRoom;
 const clockMeCard = document.getElementById('go-clock-me') as HTMLElement;
 const clockOppCard = document.getElementById('go-clock-opp') as HTMLElement;
+const clockOppWho = document.getElementById('go-clock-opp-who') as HTMLElement;
 
 setupNav('tictactoe');
 
@@ -115,6 +117,10 @@ type UIState = {
   /** WebSocket 联机 */
   ws: WebSocket | null;
   roomCode: string | null;
+  /** 对手已进房（2026-10-06）：false 时棋盘锁定、计时不走、对手侧显示「等待中」 */
+  roomLive: boolean;
+  /** 对手昵称，服务端 start/state 广播带来 */
+  oppName: string | null;
   myIdx: number | null;
   sawGameOver: boolean;
 };
@@ -134,6 +140,8 @@ const state: UIState = {
   replayPlaying: false,
   ws: null,
   roomCode: null,
+  roomLive: false,
+  oppName: null,
   myIdx: null,
   sawGameOver: false,
 };
@@ -267,9 +275,13 @@ function renderClockHud(): void {
     clockOppCard.classList.toggle('is-active', false);
   } else {
     // online
-    const myTurn = state.myIdx !== null && state.player === (state.myIdx === 0 ? 1 : 2);
+    const myTurn = state.roomLive && state.myIdx !== null && state.player === (state.myIdx === 0 ? 1 : 2);
     clockMeCard.classList.toggle('is-active', !state.over && myTurn);
-    clockOppCard.classList.toggle('is-active', !state.over && !myTurn);
+    clockOppCard.classList.toggle('is-active', !state.over && !myTurn && state.roomLive);
+    // 联机：对手侧不能一直写「引擎」。没进房显示「等待中」，进房后显示真实昵称。
+    clockOppWho.textContent = state.roomLive && state.oppName
+      ? state.oppName
+      : window.t('bg.bg_common_waiting_opponent');
   }
 }
 
@@ -715,7 +727,10 @@ function newGame(): void {
   state.moves = [];
   state.aiThinking = false;
   state.sawGameOver = false;
-  startTimer(state.timer, (ms) => { clockMeTime.textContent = fmtClock(ms); });
+  // 联机：对手没进房时不启钟（2026-10-06）。由 applyRoomState 在 start 到达时再启动。
+  if (state.mode !== 'online' || state.roomLive) {
+    startTimer(state.timer, (ms) => { clockMeTime.textContent = fmtClock(ms); });
+  }
   // 模式键可见性
   levelBtn.hidden = state.mode !== 'ai';
   showScreen('match');
@@ -727,6 +742,7 @@ function newGame(): void {
  * 联机
  * ====================== */
 function onlineMyTurn(): boolean {
+  if (!state.roomLive) return false;   // 对手没进房：棋盘锁定
   if (state.myIdx === null) return false;
   return filledCount(state.board) % 2 === state.myIdx;
 }
@@ -834,13 +850,27 @@ const wantsFriend = (() => {
 
 /* ── 好友房：建房 → 房码 + QR + 邀请链接（2026-10-05 补齐，参考 gomoku）──
    此前大厅「Friend Room」卡是假入口（指向 ?mode=ai），游戏页无建房逻辑。 */
+/** 吸收服务端房间状态（state / start），驱动等待态与启钟。 */
+function applyRoomState(msg: OnlineMsg, viaStart: boolean): void {
+  const live = viaStart || roomLiveFromState(msg);
+  const wasLive = state.roomLive;
+  state.roomLive = live;
+  const name = opponentNameFromState(msg, state.myIdx);
+  if (name) state.oppName = name;
+  if (live && !wasLive) {
+    startTimer(state.timer, (ms) => { clockMeTime.textContent = fmtClock(ms); });
+  }
+  render();
+}
+
 function roomHandlers(code: string) {
   return {
     onConnect: () => { newGame(); toast('Connected · room ' + code); },
     onOpponentMove: handleWs,
-    onStart: () => newGame(),
+    onStart: (m: OnlineMsg) => { newGame(); applyRoomState(m, true); },
+    onState: (m: OnlineMsg) => applyRoomState(m, false),
     onRestart: () => newGame(),
-    onOpponentLeave: () => toast('Opponent left'),
+    onOpponentLeave: () => { state.roomLive = false; toast('Opponent left'); render(); },
     onGameOver: handleWs,
   };
 }

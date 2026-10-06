@@ -22,6 +22,7 @@ import { modeFromUrl, syncModeCardUI } from '../shared';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 import {
   enterRoom, sendWs, inviteCode, clearInviteParam,
+  roomLiveFromState, opponentNameFromState,
   type OnlineState, type OnlineMsg,
 } from '../online-core';
 import { openFriendRoom } from '../friend-room';
@@ -54,6 +55,8 @@ const leaveStay = document.getElementById('ck-leave-stay') as HTMLButtonElement;
 const leaveYes = document.getElementById('ck-leave-yes') as HTMLButtonElement;
 const backLobbyBtn = document.getElementById('ck-back-lobby') as HTMLButtonElement;
 const clockMeTime = document.getElementById('ck-clock-me-time') as HTMLElement;
+const clockMeWho = document.getElementById('go-clock-me-who') as HTMLElement;
+const clockOppWho = document.getElementById('go-clock-opp-who') as HTMLElement;
 const clockMeCard = document.getElementById('go-clock-me') as HTMLElement;
 const clockOppCard = document.getElementById('go-clock-opp') as HTMLElement;
 
@@ -77,6 +80,10 @@ type UIState = {
   ws: WebSocket | null;
   roomCode: string | null;
   myIdx: number | null;
+  /** 对手已进房（2026-10-06）：false 时棋盘锁定、计时不走、对手侧显示「等待中」 */
+  roomLive: boolean;
+  /** 对手昵称，服务端 start/state 广播带来 */
+  oppName: string | null;
 };
 const HUMAN: CPlayer = 1;   // 玩家执红（先手）
 const ENGINE: CPlayer = 2;  // 引擎执黑
@@ -98,6 +105,8 @@ const state: UIState = {
   ws: null,
   roomCode: null,
   myIdx: null,
+  roomLive: false,
+  oppName: null,
 };
 
 const MODE_PAGE = '/games/checkers/lobby/';
@@ -233,6 +242,13 @@ function renderClockHud(): void {
   } else {
     clockMeCard.classList.toggle('is-active', false);
     clockOppCard.classList.toggle('is-active', false);
+  }
+  // 联机：对手侧不能一直写「引擎」。没进房显示「等待中」，进房后显示真实昵称。
+  if (state.mode === 'online') {
+    clockOppWho.textContent = state.roomLive && state.oppName
+      ? state.oppName
+      : window.t('bg.bg_common_waiting_opponent');
+    clockMeWho.textContent = window.t('bg.bg_checkers_you_red');
   }
 }
 
@@ -491,7 +507,10 @@ function newGame(): void {
   state.sinceCapture = 0;
   state.aiThinking = false;
   state.legal = moves(state.board, state.player);
-  startTimer(state.timer, (ms) => { clockMeTime.textContent = fmtClock(ms); });
+  // 联机：对手没进房时不启钟（2026-10-06）。由 applyRoomState 在 start 到达时再启动。
+  if (state.mode !== 'online' || state.roomLive) {
+    startTimer(state.timer, (ms) => { clockMeTime.textContent = fmtClock(ms); });
+  }
   levelBtn.hidden = state.mode !== 'ai';
   showScreen('match');
   armBackGuard();
@@ -548,8 +567,9 @@ undoBtn.addEventListener('click', undo);
 resignBtn.addEventListener('click', resign);
 
 /* ====================== 联机（好友房） ====================== */
+/** 对手已进房才轮到本方：对手没来之前棋盘锁定（与 go 的 rankedLive 同义） */
 function onlineMyTurn(): boolean {
-  return state.myIdx !== null && state.player === (state.myIdx + 1);
+  return state.roomLive && state.myIdx !== null && state.player === (state.myIdx + 1);
 }
 
 /** 本地 Move -> 服务端结构化走子（games-room.js 原样转发为 opponent_move） */
@@ -559,6 +579,21 @@ function moveToWire(m: Move): { from: { r: number; c: number }; target: { r: num
   const piece = state.board[m.from];
   const kinged = !isKing(piece) && ((piece === RED_MAN && tr === 0) || (piece === BLACK_MAN && tr === 7));
   return { from: { r: fr, c: fc }, target: { r: tr, c: tc }, caps: m.captures.slice(), kinged };
+}
+
+/** 吸收服务端的房间状态（state / start），驱动等待态与启钟。
+ *  收到 start 表示对手已进房：此时才开表、才允许落子。 */
+function applyRoomState(msg: OnlineMsg, viaStart: boolean): void {
+  const live = viaStart || roomLiveFromState(msg);
+  const wasLive = state.roomLive;
+  state.roomLive = live;
+  const name = opponentNameFromState(msg, state.myIdx);
+  if (name) state.oppName = name;
+  if (live && !wasLive) {
+    // 双方到齐才启钟（chess.com 式）。此前 newGame 已把棋钟归零，这里接着走。
+    startTimer(state.timer, (ms) => { clockMeTime.textContent = fmtClock(ms); });
+  }
+  render();
 }
 
 /** 接收对手走子 / 开局 / 终局广播（参考 tictactoe handleWs） */
@@ -603,9 +638,10 @@ function roomHandlers(code: string) {
   return {
     onConnect: () => { newGame(); toast('Connected · room ' + code); },
     onOpponentMove: handleWs,
-    onStart: () => newGame(),
+    onStart: (m: OnlineMsg) => { newGame(); applyRoomState(m, true); },
+    onState: (m: OnlineMsg) => applyRoomState(m, false),
+    onOpponentLeave: () => { state.roomLive = false; toast('Opponent left'); render(); },
     onRestart: () => newGame(),
-    onOpponentLeave: () => toast('Opponent left'),
     onGameOver: handleWs,
     // 服务端在 2026-10-06 起强制轮次；被拒时给出可读原因，而不是静默无反应
     onError: (m: OnlineMsg) => {
