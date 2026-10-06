@@ -1,7 +1,10 @@
 /**
- * BoardDuel · Checkers (English Draughts, 8×8) · 精简 arena 范式
+ * BoardDuel · Checkers (English Draughts, 8×8) · arena 范式
  * ------------------------------------------------------------
- * MVP 范围：AI 三档 + Pass & Play（联机/回放后置）。
+ * 范围：AI 三档 + Pass & Play + 在线好友房（回放后置）。
+ * 联机：大厅「Friend Room」/「Create a room」→ ?mode=friend 建房，
+ *       邀请短链 /b/checkers/<CODE> → ?c=<CODE> 进房，
+ *       走子以 {from,target,caps,kinged} 结构化转发（games-room.js relay 模式）。
  * 交互：点己方棋子 → 高亮其所有合法落点（含连跳最终落点）→ 点落点执行整条连跳。
  * 规则由 ./engine.ts 保证（强制吃子 / 连跳 / 升变 / 无步判负）。
  */
@@ -272,7 +275,14 @@ function doMove(m: Move): void {
   afterMove();
 }
 
-function afterMove(): void {
+/**
+ * 一步走完后的收尾。
+ * @param nextPlayer 下一手方。联机收到 opponent_move 时必须显式传入：
+ *   本方 state.player 早已停在「等自己走」的值上，再无条件翻转会把回合推给
+ *   对手，双方同时显示「对手走」且都无子可走（2026-10-06 实测）。
+ *   本地走子不传，走默认翻转。
+ */
+function afterMove(nextPlayer?: CPlayer): void {
   // 胜负判定：当前方无子或无合法步 → 对方胜
   if (countPieces(state.board, state.player) === 0 || moves(state.board, state.player).length === 0) {
     state.over = true;
@@ -292,7 +302,7 @@ function afterMove(): void {
     return;
   }
   // 切换回合
-  state.player = state.player === 1 ? 2 : 1;
+  state.player = nextPlayer ?? (state.player === 1 ? 2 : 1);
   state.legal = moves(state.board, state.player);
   render();
   if (state.mode === 'ai' && state.player === ENGINE && !state.over) {
@@ -563,13 +573,20 @@ function handleWs(msg: OnlineMsg): void {
         captures: Array.isArray(mv.caps) ? mv.caps.slice() : [],
         path: [],
       };
+      // 走子前先记下对手颜色：afterMove() 的胜负判定读 state.player，
+      // 不先对齐就会拿本方的子去判「无子判负」。
+      // colorOf 对空格返回 0，这里兜底成黑方，保证类型与运行时都不越界。
+      const oppColor = (colorOf(state.board[m.from]) === 1 ? 1 : 2) as CPlayer;
       pushHistory();
+      // 把当前方对齐到刚走子的对手，判定与收尾才落在正确的一方
+      state.player = oppColor;
       state.board = applyMove(state.board, m);
       state.lastMove = m.to;
       state.selected = -1;
       state.sinceCapture = m.captures.length > 0 ? 0 : state.sinceCapture + 1;
       playSfx('place');
-      afterMove();
+      // 对手走完 → 轮到本方（英式跳棋黑先红后，颜色在 1/2 间交替）
+      afterMove(oppColor === 1 ? 2 : 1);
     }
   } else if (t === 'start' || t === 'restart_notify') {
     newGame();
