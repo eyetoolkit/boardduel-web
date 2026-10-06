@@ -152,6 +152,23 @@
           <button type="button" class="go-btn is-danger" id="ch-resign" data-i18n="bj.resign">Resign</button>
         </div>
 
+        <!-- 兵到底线升变：原先没有这个选择器，点击直接取 find() 的第一个候选（永远是后），
+             玩家无法升变为车/象/马，而棋盘上又画着四个重叠的落点圆点，像是给了选择。 -->
+        <div class="go-levelcard" id="ch-promocard" hidden>
+          <div class="go-level-panel">
+            <div class="go-hintcard-h">
+              <span data-i18n="bg.bg_chess_promote">Pawn promotion</span>
+              <button type="button" id="ch-promo-close" aria-label="Close">×</button>
+            </div>
+            <div class="go-level-opts" id="ch-promo-opts">
+              <button type="button" class="go-level-opt" data-promo="q"><b data-i18n="bg.bg_chess_promo_q">Queen</b></button>
+              <button type="button" class="go-level-opt" data-promo="r"><b data-i18n="bg.bg_chess_promo_r">Rook</b></button>
+              <button type="button" class="go-level-opt" data-promo="b"><b data-i18n="bg.bg_chess_promo_b">Bishop</b></button>
+              <button type="button" class="go-level-opt" data-promo="n"><b data-i18n="bg.bg_chess_promo_n">Knight</b></button>
+            </div>
+          </div>
+        </div>
+
         <div class="go-replaybar" id="ch-replaybar" hidden>
           <div class="go-rp-row">
             <button type="button" class="go-rp-btn" id="ch-rp-first" data-i18n-aria-label="bg.bg_chess_rp_first" aria-label="First move"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5v14"/><path d="M19 5.5l-9 6.5 9 6.5z"/></svg></button>

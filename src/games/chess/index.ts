@@ -60,6 +60,9 @@ const modeEl = document.getElementById('ch-mode-v') as HTMLElement;
 const undoBtn = document.getElementById('ch-undo') as HTMLButtonElement;
 const resignBtn = document.getElementById('ch-resign') as HTMLButtonElement;
 const levelBtn = document.getElementById('ch-level') as HTMLButtonElement;
+const promoCard = document.getElementById('ch-promocard') as HTMLElement;
+const promoClose = document.getElementById('ch-promo-close') as HTMLButtonElement;
+const promoOpts = document.getElementById('ch-promo-opts') as HTMLElement;
 const levelCard = document.getElementById('ch-levelcard') as HTMLElement;
 const levelClose = document.getElementById('ch-level-close') as HTMLButtonElement;
 const replayBtn = document.getElementById('ch-replay') as HTMLButtonElement;
@@ -111,6 +114,8 @@ type UIState = {
   timer: ReturnType<typeof createTimer>;
   aiThinking: boolean;
   reviewAt: number | null;
+  /** 升变选择器是否打开。打开期间棋盘不可点，避免在选子未定时误落。 */
+  promoOpen: boolean;
   replayPlaying: boolean;
   ws: WebSocket | null;
   roomCode: string | null;
@@ -135,6 +140,7 @@ const state: UIState = {
   timer: createTimer(),
   aiThinking: false,
   reviewAt: null,
+  promoOpen: false,
   replayPlaying: false,
   ws: null,
   roomCode: null,
@@ -216,6 +222,7 @@ function render(): void {
       : state.mode === 'online' ? state.roomLive && state.gs.turn === myColor()   // 对手没进房：棋盘锁定
         : humanSide() === state.gs.turn)
     && state.reviewAt === null
+    && !state.promoOpen        // 升变选择器打开时锁盘，避免选子未定时误落
     && !state.aiThinking;
 
   // 棋盘格（浅色）
@@ -297,8 +304,12 @@ function render(): void {
         state.selected = state.selected === n ? -1 : n; // 再点同一个子 = 取消选中
         render();
       } else if (to !== undefined && from !== undefined) {
-        const m = legalMoves(state.gs).find((mm) => mm.from === Number(from) && mm.to === Number(to));
-        if (m) doMove(m);
+        // 兵到底线会一次生成 4 个候选（Q/R/B/N，见 engine.ts:293 的 for 循环）。
+        // 原先 find() 取第一个 —— 永远���后，玩家无法升变为车/象/马，而棋盘上又画着
+        // 四个重叠的落点圆点，看着像给了选择。改为多解时弹选择器。
+        const cands = legalMoves(state.gs).filter((mm) => mm.from === Number(from) && mm.to === Number(to));
+        if (cands.length === 1) doMove(cands[0]);
+        else if (cands.length > 1) openPromoPicker(cands);
       }
     });
   });
@@ -307,6 +318,23 @@ function render(): void {
   lastEl.textContent = lm ? notation(lm) : '—';
   renderHud();
   renderClockHud();
+}
+
+/** 兵升变选择器。关掉时恢复棋盘可点，避免弹层开着时还能落子。 */
+let promoCands: CMove[] = [];
+
+function openPromoPicker(cands: CMove[]): void {
+  promoCands = cands;
+  promoCard.hidden = false;
+  state.promoOpen = true;
+  render();
+}
+
+function closePromoPicker(): void {
+  promoCands = [];
+  promoCard.hidden = true;
+  state.promoOpen = false;
+  render();
 }
 
 function renderHud(): void {
@@ -756,6 +784,26 @@ leaveYes.addEventListener('click', exitMatchToLobby);
 backLobbyBtn.addEventListener('click', exitMatchToLobby);
 
 /* ======================
+ * 兵升变选择器
+ * ====================== */
+promoClose.addEventListener('click', closePromoPicker);
+// 点遮罩空白处取消；四个选项点完即落子
+promoCard.addEventListener('click', (e) => { if (e.target === promoCard) closePromoPicker(); });
+promoOpts.addEventListener('click', (e) => {
+  const b = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-promo]');
+  if (!b) return;
+  const want = b.dataset.promo;
+  // 候选里找同兵种的那一个（Q/R/B/N 存在 Move.promo 里，用大写）
+  const pick = promoCands.find((m) => String(m.promo || '').toLowerCase() === want) || promoCands[0];
+  closePromoPicker();
+  if (pick) doMove(pick);
+});
+// Esc 取消，避免弹层开着时没有出口
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && state.promoOpen) { e.stopPropagation(); closePromoPicker(); }
+}, true);
+
+/* ======================
  * 结算页三键
  * ====================== */
 rematchBtn.addEventListener('click', () => {
@@ -816,6 +864,11 @@ function showScreen(s: 'match' | 'end'): void {
 function newGame(): void {
   cancelAiMove();
   resetReplayUI();
+  // 再战/悔棋/退出都可能发生在升变选择器开着时，必须一并收掉，
+  // 否则弹层会留在屏幕上盖住新局（这里直接清字段，不走 closePromoPicker 免得二次 render）
+  promoCands = [];
+  promoCard.hidden = true;
+  state.promoOpen = false;
   state.gs = initialState() as CS;
   state.selected = -1;
   state.lastMove = null;
