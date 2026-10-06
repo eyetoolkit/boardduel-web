@@ -202,7 +202,8 @@
     "create_room_fail": "Raumerstellung fehlgeschlagen",
     "disconnected_alert": "Verbindung zum Gegner getrennt",
     "invalid_code": "6-stelligen Code eingeben",
-    "match_fail": "Matchmaking fehlgeschlagen, bitte erneut versuchen"
+    "match_fail": "Matchmaking fehlgeschlagen, bitte erneut versuchen",
+    "matchmaking": "Suche einen echten Gegner…"
   },
   "home": {
     "badge": "🎮 Brettspiel-Arena",
@@ -468,7 +469,12 @@
     "player2": "Spieler 2",
     "opp": "Gegner",
     "white": "Weiß",
-    "white_turn": "Weiß am Zug"
+    "white_turn": "Weiß am Zug",
+    "player": {
+      "player1": "Spieler 1",
+      "player2": "Spieler 2",
+      "you_tag": "(du)"
+    }
   },
   "status": {
     "your_turn": "Dein Zug",
@@ -887,7 +893,8 @@
     "email_desc": "<a href=\"mailto:mathduel@foxmail.com\">mathduel@foxmail.com</a> — Wir werden innerhalb von 24 Stunden antworten.",
     "feedback_title": "🐛 Feedback-Inhalt",
     "feedback_desc": "Bitte einschließen: gespieltes Spiel, Problembeschreibung, Schritte zum Reproduzieren, Gerät/Browser-Info um uns zu helfen.",
-    "footer": "© 2026 Board Duel · Brettspiel-Kämpfe"
+    "footer": "© 2026 Board Duel · Brettspiel-Kämpfe",
+    "Title": "Kontakt · BoardDuel"
   },
   "terms": {
     "title": "Nutzungsbedingungen · Board Duel",

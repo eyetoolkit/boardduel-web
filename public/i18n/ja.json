@@ -202,7 +202,8 @@
     "create_room_fail": "ルーム作成に失敗しました",
     "disconnected_alert": "相手との接続が切れました",
     "invalid_code": "6桁のルームコードを入力",
-    "match_fail": "マッチングに失敗しました。もう一度お試しください"
+    "match_fail": "マッチングに失敗しました。もう一度お試しください",
+    "matchmaking": "実際の選手を探しています…"
   },
   "home": {
     "badge": "🎮 ボードゲームアリーナ",
@@ -468,7 +469,12 @@
     "player2": "プレイヤー2",
     "opp": "相手",
     "white": "白",
-    "white_turn": "白の手番"
+    "white_turn": "白の手番",
+    "player": {
+      "player1": "プレイヤー 1",
+      "player2": "プレイヤー 2",
+      "you_tag": "（あなた）"
+    }
   },
   "status": {
     "your_turn": "Your ターン",
@@ -758,7 +764,8 @@
     "faq_diff": "How do I choose the AI 難易度?",
     "faq_diff_a": "初級：初心者向けランダム＋シンプルヒューリスティック。普通：評価＋浅い探索。中級：脅威空間探索。上級：上級者向けの局所最適手。",
     "faq_undo": "Can I 元に戻す a move?",
-    "faq_undo_a": "はい — 盤を長押しするか「元に戻す」ボタンをタップすると一手戻せます。"
+    "faq_undo_a": "はい — 盤を長押しするか「元に戻す」ボタンをタップすると一手戻せます。",
+    "How_to_play": "遊び方"
   },
   "connect4": {
     "your": "あなたが先手",
@@ -886,7 +893,8 @@
     "email_desc": "<a href=\"mailto:mathduel@foxmail.com\">mathduel@foxmail.com</a> — 24 時間以内にご返信いたします。",
     "feedback_title": "🐛 フィードバック Content",
     "feedback_desc": "ご報告の際は次の項目を明記してください：プレイしたゲーム、問題の内容、再現手順、デバイス／ブラウザ情報。",
-    "footer": "© 2026 Board デュエル · Board Battles"
+    "footer": "© 2026 Board デュエル · Board Battles",
+    "Title": "お問い合わせ · BoardDuel"
   },
   "terms": {
     "title": "利用規約 · Board デュエル",
@@ -1675,29 +1683,6 @@
     "gamelist_connect4_desc": "駒を落として四つ並べる",
     "gamelist_checkers_desc": "Must-capture チェッカー on 8x8 board",
     "gamelist_tictactoe_desc": "3×3のクラシック、三つ並べる"
-  },
-  "﻿": {
-    "404": {
-      "title": "ページが見つかりません"
-    },
-    "home": {
-      "redesign_leaderboard_desc": "世界中のプレイヤーと競争",
-      "footer": "© 2026 BoardDuel · 広告なし · 追跡なし"
-    },
-    "chess": {
-      "to_move": "の手番"
-    },
-    "connect4": {
-      "faq_mobile": "モバイル対応ですか？"
-    },
-    "shop": {
-      "flame": "炎"
-    },
-    "bd_about_2": "広告なし、追跡なし",
-    "bd_games_chess_4": "10分",
-    "contact": {
-      "email_desc": "<a href=\"mailto:mathduel@foxmail.com\">mathduel@foxmail.com</a> — 24時間以内にご返信いたします。"
-    }
   },
   "home_v2": {
     "play_now": "今すぐプレイ",

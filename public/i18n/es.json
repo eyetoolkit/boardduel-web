@@ -202,7 +202,8 @@
     "create_room_fail": "Error al crear sala",
     "disconnected_alert": "Desconectado del rival",
     "invalid_code": "Ingresa un código de 6 dígitos",
-    "match_fail": "Emparejamiento fallido, inténtalo de nuevo"
+    "match_fail": "Emparejamiento fallido, inténtalo de nuevo",
+    "matchmaking": "Buscando un rival real…"
   },
   "home": {
     "badge": "🎮 Arena de juegos de mesa",
@@ -468,7 +469,12 @@
     "player2": "Jugador 2",
     "opp": "Oponente",
     "white": "Blanco",
-    "white_turn": "Turno de las blancas"
+    "white_turn": "Turno de las blancas",
+    "player": {
+      "player1": "Jugador 1",
+      "player2": "Jugador 2",
+      "you_tag": "(tú)"
+    }
   },
   "status": {
     "your_turn": "Tu turno",
@@ -758,7 +764,8 @@
     "faq_diff": "¿Cómo elegir la dificultad de la IA?",
     "faq_diff_a": "Fácil: aleatorio + heurísticas simples para principiantes. Normal: puntuación + búsqueda superficial. Medio: búsqueda de espacio de amenazas. Difícil: juego óptimo local para jugadores avanzados.",
     "faq_undo": "¿Puedo deshacer movimientos?",
-    "faq_undo_a": "Sí — mantén presionado el tablero o clica el botón de deshacer para volver un movimiento."
+    "faq_undo_a": "Sí — mantén presionado el tablero o clica el botón de deshacer para volver un movimiento.",
+    "How_to_play": "Cómo se juega"
   },
   "connect4": {
     "your": "Tú mueves primero",

@@ -5,7 +5,9 @@
     "h1": "Page Not Found",
     "p": "The page you are looking for does not exist or has been removed.",
     "btn_home": "← Back to Home",
-    "btn_back": "Go Back"
+    "btn_back": "Go Back",
+    "title_msg": "Page not found",
+    "message": "The page you visited does not exist or has been removed."
   },
   "_meta": {
     "lang": "en",
@@ -51,7 +53,12 @@
     "game_sudoku": "Sudoku",
     "main_navigation": "Main navigation",
     "stats": "Stats",
-    "register": "Register"
+    "register": "Register",
+    "games": "Games",
+    "shop": "Shop",
+    "leaderboard": "Leaderboard",
+    "blog": "Blog",
+    "help": "Help"
   },
   "sidebar": {
     "group_games": "Games",
@@ -139,7 +146,13 @@
     "new_password_label": "New password (at least 8 characters)",
     "confirm_password_label": "Confirm new password",
     "confirm_password_placeholder": "Re-enter",
-    "set_new_password": "Set new password"
+    "set_new_password": "Set new password",
+    "signin": "Sign in",
+    "signup": "Sign up",
+    "signout": "Sign out",
+    "username": "Username",
+    "continue": "Continue",
+    "reset_password": "Reset password"
   },
   "toast": {
     "game_tip": "Click the board to start. Good luck!"
@@ -189,7 +202,8 @@
     "create_room_fail": "Failed to create room",
     "disconnected_alert": "Disconnected from opponent",
     "invalid_code": "Enter a 6-digit room code",
-    "match_fail": "Matchmaking failed, try again"
+    "match_fail": "Matchmaking failed, try again",
+    "matchmaking": "Finding a real player…"
   },
   "home": {
     "badge": "🎮 Board game arena",
@@ -312,7 +326,16 @@
     "redesign_features_ai_desc": "Three AI difficulty levels — from beginner to advanced. Start anytime, no waiting.",
     "redesign_account_default_nickname": "Guest Player",
     "redesign_hero_cta_rank": "🏆 View Ranking",
-    "redesign_footer_terms": "Terms"
+    "redesign_footer_terms": "Terms",
+    "heading": "BoardDuel · Classic Duels",
+    "intro": "Challenge board game lovers worldwide — free, no sign-up, no ads.",
+    "cta_start": "Start a duel",
+    "boardduel_name": "BoardDuel · Board Games",
+    "mathduel_name": "MathDuel · Math Duels",
+    "memoryduel_name": "MemoryDuel · Knowledge Battles",
+    "badge_classic": "★ Classic",
+    "badge_hot": "★ HOT",
+    "badge_new": "★ NEW"
   },
   "feature": {
     "account": "Independent accounts",
@@ -329,7 +352,14 @@
     "sudoku": "Sudoku",
     "sudoku6": "6×6 Sudoku",
     "killer": "Killer Sudoku",
-    "pyramid": "Pyramid"
+    "pyramid": "Pyramid",
+    "ai": "vs AI",
+    "engine": "vs AI",
+    "friend": "Friend Room",
+    "pass": "Pass & Play",
+    "random": "Random Match",
+    "solo": "Solo Practice",
+    "tournament": "Tournament"
   },
   "account": {
     "title": "👤 My Account",
@@ -383,7 +413,8 @@
     "hell": "⭐⭐⭐⭐ Hell",
     "medium": "Medium",
     "normal": "Normal",
-    "standard": "⭐⭐ Standard"
+    "standard": "⭐⭐ Standard",
+    "expert": "Expert"
   },
   "common": {
     "undo": "Undo",
@@ -418,7 +449,15 @@
     "processing": "Processing...",
     "got_it": "Got it!",
     "network_error": "Network error, please retry!",
-    "login": "Log in"
+    "login": "Log in",
+    "all": "All",
+    "delete": "Delete",
+    "filter": "Filter",
+    "next": "Next",
+    "none": "None",
+    "save": "Save",
+    "search": "Search",
+    "select": "Select"
   },
   "player": {
     "you": "You",
@@ -430,7 +469,12 @@
     "player2": "Player 2",
     "opp": "Opponent",
     "white": "White",
-    "white_turn": "White to move"
+    "white_turn": "White to move",
+    "player": {
+      "player1": "Player 1",
+      "player2": "Player 2",
+      "you_tag": "(you)"
+    }
   },
   "status": {
     "your_turn": "Your turn",
@@ -466,7 +510,8 @@
     "special3_term": "Promotion",
     "special3": "A pawn reaching the last rank automatically promotes to a queen.",
     "coach_title": "Learning Coach",
-    "coach_desc": "Click a piece to highlight all legal moves; after each move, AI gives a bilingual tip to help you understand the position."
+    "coach_desc": "Click a piece to highlight all legal moves; after each move, AI gives a bilingual tip to help you understand the position.",
+    "meta": "♞ · 3 AI levels"
   },
   "game_tictactoe": {
     "name": "Tic-Tac-Toe",
@@ -479,7 +524,8 @@
     "tip2": "Defend first: block immediately when the opponent has two in a row.",
     "tip3": "Double threat: create two lines one move from winning so the opponent can't block both.",
     "ai_title": "AI Difficulty",
-    "ai_desc": "Easy: random moves. Normal: heuristic + blocks threats. Hard: minimax + perfect play (with optimal play the first player can always force a draw)."
+    "ai_desc": "Easy: random moves. Normal: heuristic + blocks threats. Hard: minimax + perfect play (with optimal play the first player can always force a draw).",
+    "meta": "⭕✖️ · Classic 3×3"
   },
   "game_gomoku": {
     "name": "Gomoku",
@@ -492,7 +538,8 @@
     "tip2": "Defend first: block immediately when the opponent has four in a row (unless you can form an even stronger threat).",
     "tip3": "Control key points: grab the center and star points early to expand your territory.",
     "ai_title": "AI Difficulty",
-    "ai_desc": "Easy: random + simple heuristics. Normal: scoring + shallow search. Hard: threat-space search + locally optimal play."
+    "ai_desc": "Easy: random + simple heuristics. Normal: scoring + shallow search. Hard: threat-space search + locally optimal play.",
+    "meta": "⚫⚪ · Classic 15×15"
   },
   "game_connect4": {
     "name": "Connect 4",
@@ -505,7 +552,8 @@
     "tip2": "Build a double threat: create two lines both one move from winning.",
     "tip3": "Defend the height: block above the opponent's develop-ing line before they win.",
     "ai_title": "AI Difficulty",
-    "ai_desc": "Easy: random. Normal: immediate win/block + window scoring. Hard: depth-limited negamax + heuristic ordering."
+    "ai_desc": "Easy: random. Normal: immediate win/block + window scoring. Hard: depth-limited negamax + heuristic ordering.",
+    "meta": "🔴🔵 · Gravity drop"
   },
   "game_othello": {
     "name": "Othello",
@@ -518,7 +566,8 @@
     "tip2": "Avoid giving corners: don't force yourself into the square next to a corner.",
     "tip3": "Fewer flips can be better: flipping many at once exposes weak side; pros trade quantity for stability.",
     "ai_title": "AI Difficulty",
-    "ai_desc": "Easy: random. Normal: positional weights + flip balance. Hard: depth-limited negamax + mobility/frontier weights."
+    "ai_desc": "Easy: random. Normal: positional weights + flip balance. Hard: depth-limited negamax + mobility/frontier weights.",
+    "meta": "⚫⚪ · Flip game"
   },
   "game_checkers": {
     "name": "Checkers",
@@ -533,7 +582,8 @@
     "ai_title": "AI Difficulty",
     "ai_desc": "Easy: random + simple heuristics. Normal: scoring + shallow search. Hard: deep search + capture quiescence.",
     "coach_desc": "Click a piece to highlight all legal moves; after each move, AI gives a bilingual tip to help you understand the position.",
-    "coach_title": "Learning Coach"
+    "coach_title": "Learning Coach",
+    "meta": "⛀ · Mandatory capture"
   },
   "chess": {
     "hint": "Hint",
@@ -714,7 +764,8 @@
     "skill3_title": "3. Control Key Points",
     "skills": "Key Skills",
     "what_is": "What is Gomoku?",
-    "what_is_desc": "Gomoku (Five in a Row) is a classic two-player strategy game popular across East Asia. Black and white alternate placing stones on a 15×15 board; the first to line up five horizontally, vertically or diagonally wins. The rules are simple but the strategy runs deep — a minute to learn, a lifetime to master."
+    "what_is_desc": "Gomoku (Five in a Row) is a classic two-player strategy game popular across East Asia. Black and white alternate placing stones on a 15×15 board; the first to line up five horizontally, vertically or diagonally wins. The rules are simple but the strategy runs deep — a minute to learn, a lifetime to master.",
+    "How_to_play": "How to play"
   },
   "connect4": {
     "your": "You go first",
@@ -842,7 +893,8 @@
     "email_desc": "<a href=\"mailto:mathduel@foxmail.com\">mathduel@foxmail.com</a> — We will respond within 24 hours.",
     "feedback_title": "🐛 Feedback Content",
     "feedback_desc": "Please include: game played, problem description, steps to reproduce, device/browser info to help us locate the issue.",
-    "footer": "© 2026 Board Duel · Board Battles"
+    "footer": "© 2026 Board Duel · Board Battles",
+    "Title": "Contact Us · BoardDuel"
   },
   "terms": {
     "title": "Terms of Service · Board Duel",
@@ -916,7 +968,10 @@
     "userid_label": "🆔 User ID",
     "regtime_label": "📅 Registration Time",
     "unavailable": "Stats temporarily unavailable",
-    "footer": "© 2026 Board Duel"
+    "footer": "© 2026 Board Duel",
+    "play": "Games played",
+    "win_rate": "Win rate",
+    "best": "Best result"
   },
   "shop": {
     "title": "Skin Shop · Board Duel",
@@ -943,7 +998,12 @@
     "crown": "Crown",
     "starlight": "Starlight",
     "x15": "1.5× Points",
-    "x2": "2× Points"
+    "x2": "2× Points",
+    "balance": "Current balance",
+    "purchase": "Buy",
+    "confirm_buy": "Confirm purchase?",
+    "history": "Purchase history",
+    "not_enough": "Not enough coins"
   },
   "membership": {
     "title": "Membership Center · BoardDuel",
@@ -1034,7 +1094,25 @@
     "what_is_desc": "Checkers (Draughts) is one of the world's oldest board games, dating back to ancient Egypt around 3000 BC. It is played only on the dark squares of an 8×8 board, with 12 pieces per side. Pieces move diagonally and capture by jumping over opponents. Win by capturing all enemy pieces or leaving your opponent with no moves.",
     "win_condition": "Winning Condition",
     "win_condition_desc": "You win by capturing all of your opponent's pieces or leaving them without a legal move.",
-    "ai_level": "Medium · 2-ply search + material/position eval"
+    "ai_level": "Medium · 2-ply search + material/position eval",
+    "black": "Black",
+    "white": "White",
+    "black_turn": "Black's turn",
+    "white_turn": "White's turn",
+    "your_turn": "Your turn",
+    "you_black": "You are ⛀, move first",
+    "you_white": "You are ⛂",
+    "you_win": "You win!",
+    "opponent_win": "Opponent wins!",
+    "draw": "Draw!",
+    "game_over": "Game Over",
+    "cpu_thinking": "AI is thinking...",
+    "waiting": "Waiting for opponent...",
+    "restart": "Play Again",
+    "select_piece": "Select a piece to move",
+    "multi_capture": "Multi-capture!",
+    "jump_capture": "Nice jump capture!",
+    "king_promoted": "Promoted to King!"
   },
   "meta": {
     "og_locale": "en_US",
@@ -1595,7 +1673,13 @@
     "games": "games",
     "points": "pts",
     "my_rank": "My rank: ",
-    "empty": "No rankings yet — play a round!"
+    "empty": "No rankings yet — play a round!",
+    "title": "Leaderboard · BoardDuel",
+    "subtitle": "See where you rank among players worldwide.",
+    "your_rank": "Your rank",
+    "top10": "Top 10%",
+    "season_ends": "Season ends",
+    "refresh": "Refresh"
   },
   "pyramid": {
     "hint": "Tap 3 cells in order to form an equation"
@@ -2501,5 +2585,23 @@
     "bk2_p40": "<strong>For older adults:</strong> Both types show cognitive benefits. Board games add valuable social interaction; puzzles provide calming solo practice",
     "bk2_p41": "<strong>For busy people:</strong> Quick puzzles (5-10 min) fit easily into a lunch break; board games may require longer dedicated sessions",
     "bk2_p_intro": "At the most fundamental level, board games and puzzle games differ in how they present challenge:"
+  },
+  "error": {
+    "conflict": "Conflict",
+    "forbidden": "Access denied",
+    "network": "Network error",
+    "not_found": "Not found",
+    "server": "Server error",
+    "timeout": "Request timed out",
+    "unauthorized": "Not authorized",
+    "unknown": "Unknown error",
+    "validation": "Invalid data"
+  },
+  "teacher": {
+    "title": "For Teachers · BoardDuel",
+    "subtitle": "Create classes, invite students, and track their results.",
+    "create_class": "Create class",
+    "invite_code": "Invite code",
+    "no_class": "No classes yet"
   }
 }
