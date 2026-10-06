@@ -2369,7 +2369,10 @@
     "bg_checkers_online_you": "Your turn",
     "bg_checkers_online_opp": "Opponent's turn",
     "bg_go_lv_katago_sub": "KataGo neural net (b6c96) — strongest of the three",
-    "go_opp_wins": "You lose"
+    "go_opp_wins": "You lose",
+    "bg_invite_close": "Close",
+    "bg_invite_room_code": "Room code",
+    "bg_invite_copy_code": "Copy"
   },
   "bk": {
     "bk_blog_tag_brain": "Brain Training",

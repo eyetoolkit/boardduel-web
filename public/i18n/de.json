@@ -2446,7 +2446,10 @@
     "bg_checkers_online_you": "Du bist dran",
     "bg_checkers_online_opp": "Gegner ist dran",
     "bg_go_lv_katago_sub": "KataGo Neuronales Netz (b6c96) — am stärksten der drei",
-    "go_opp_wins": "Du verlierst"
+    "go_opp_wins": "Du verlierst",
+    "bg_invite_close": "Schließen",
+    "bg_invite_room_code": "Raumcode",
+    "bg_invite_copy_code": "Kopieren"
   },
   "bk": {
     "bk_blog_tag_brain": "Gehirntraining",

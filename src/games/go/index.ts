@@ -14,6 +14,9 @@ import { setupNav, toast } from '../game-core';
 import { wireLobbyChrome } from '../../lobby-chrome';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 import { myName as ocMyName } from '../online-core';
+// 2026-10-06：好友房邀请卡片（全屏遮罩弹窗，范式抄 MathDuel 24-game share-overlay）
+import { mountInviteCard, showInviteCard, onOpponentJoined } from '../invite-card';
+import '../../styles/invite-card.css';
 import {
   initialState, play, pass, notation, opponent,
   scoreWithDead, toggleDeadGroup, resolveDead, hashPosition,
@@ -249,9 +252,8 @@ const chatForm = $<HTMLFormElement>('go-chat-form');
 const chatInput = $<HTMLInputElement>('go-chat-input');
 const chatRoom = $<HTMLElement>('go-chat-room');
 const inviteEl = $<HTMLElement>('go-invite');
-const inviteCodeEl = $<HTMLElement>('go-invite-code');
 const inviteCopyBtn = $<HTMLButtonElement>('go-invite-copy');
-const inviteQrImg = $<HTMLImageElement>('go-invite-qr');
+mountInviteCard('go', 'go', 'Go · 19×19');
 const scorePanelBtn = $<HTMLButtonElement>('go-score-panel');
 const scorePanel = $<HTMLElement>('go-scorepanel');
 const scorePanelBody = $<HTMLElement>('go-scorepanel-body');
@@ -958,12 +960,11 @@ async function startFriendRoom(): Promise<void> {
     const code = String((j && j.code) || '').toUpperCase();
     if (!r.ok || !/^[A-Z2-9]{6}$/.test(code)) { fail(); return; }
     enterRankedRoom(code);
-    inviteCodeEl.textContent = code;
-    try {
-      // 2026-10-06 修复：go 邀请面板此前缺二维码 <img>，API 出图正常但页面不渲染
-      inviteQrImg.src = '/api/qr?game=go&code=' + encodeURIComponent(code) + '&size=160&cb=' + Date.now();
-    } catch (e) { /* 二维码缺失也不阻塞建房 */ }
-    inviteEl.hidden = false;
+    // 2026-10-06：改弹全屏邀请卡片（范式抄 MathDuel 24-game share-overlay）。
+    // 原 .go-invite 是侧栏内联面板，移动端 .bd-side 是 display:contents
+    // 会被摊平成裸流 —— 二维码直接铺在棋盘下方、房码被挤出视口。
+    if (inviteEl) inviteEl.hidden = true;
+    showInviteCard('go', 'go', code);
   } catch (e) { fail(); }
 }
 
@@ -987,6 +988,8 @@ function handleWs(msg: Record<string, unknown>): void {
     // 对局真正开始：'start' 广播或 state.roomStatus==='playing'
     const roomStatus = inner ? String(inner.roomStatus || '') : '';
     if (ty === 'start' || roomStatus === 'playing') state.rankedLive = true;
+    // 2026-10-06：对手进房 → 邀请卡片自动收起（延迟 9s，给对方扫码留时间）
+    if (ty === 'start' || roomStatus === 'playing') onOpponentJoined('go');
     // 🔴 2026-10-05：state 快照若带着法历史（服务端 relayGoMoves），按历史重放恢复棋盘，
     //   而不是无脑 newGame() 清盘 —— 否则刷新/重连后棋盘直接清空（实测异常根因）。
     //   moves 为空（未开局/刚开局）→ 正常 newGame()；已终局则不动。

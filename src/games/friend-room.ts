@@ -11,7 +11,12 @@
  *   · QR：  /api/qr?game=<id>&code=<CODE>&size=160（服务端 SVG，
  *           免前端 6KB qrcode 库 → 无 CSP wasm 风险）
  *
- * 面板 DOM 由本模块注入 aside.bd-side（聊天块之前），
+ * 2026-10-06 改造：面板 DOM 原本注入 aside.bd-side，但移动端对局页
+ * 有 `body.bd-in-match .bd-side { display: contents }`，面板被摊平成
+ * 裸流 —— 扫码图铺在棋盘下方、房码被挤出视口（用户 10-06 实测截图）。
+ * 现改为全屏遮罩弹窗卡片（范式抄 MathDuel 24-game 的 .share-overlay），
+ * 挂在 body 上，避开侧栏摊平。详见 ./invite-card.ts。
+ *
  * data-i18n 交给 i18n.js 的 MutationObserver（R-2）自动翻译。
  *
  * 🔴 红线（2026-10-05 19:58 实践）：JS 全权管理 textContent 的元素
@@ -20,65 +25,28 @@
  */
 import { myName } from './online-core';
 import { showBoardDuelToast as toast } from './shared';
+import { mountInviteCard, showInviteCard } from './invite-card';
+import '../styles/invite-card.css';
 
-export interface InvitePanel {
-  root: HTMLDivElement;
-  codeEl: HTMLElement;
-  copyBtn: HTMLButtonElement;
-  qrImg: HTMLImageElement;
-}
+export type { InviteCard } from './invite-card';
+export { mountInviteCard, showInviteCard };
+export { hideInviteCard as closeInviteCard, onOpponentJoined } from './invite-card';
 
-const panels = new Map<string, InvitePanel>();
+/** 各游戏展示名（卡片副标题） */
+const GAME_LABEL: Record<string, string> = {
+  tictactoe: 'Tic-Tac-Toe',
+  connect4: 'Connect Four',
+  reversi: 'Reversi',
+  chess: 'Chess',
+  checkers: 'Checkers',
+  xiangqi: 'Xiangqi',
+  gomoku: 'Gomoku',
+  go: 'Go',
+};
 
-/** 向侧栏注入邀请面板（幂等；插在 .go-chat 之前，无聊天块则追加到末尾） */
-export function mountInvitePanel(prefix: string, game: string): InvitePanel {
-  const existing = panels.get(prefix);
-  if (existing && existing.root.isConnected) return existing;
-
-  const root = document.createElement('div');
-  root.className = 'go-invite';
-  root.id = prefix + '-invite';
-  root.hidden = true;
-  root.innerHTML = `
-    <div class="go-invite-h" data-i18n="bg.bg_gomoku_invite">Invite a friend</div>
-    <div class="go-invite-row">
-      <code class="go-invite-code" id="${prefix}-invite-code">------</code>
-      <button type="button" class="go-btn" id="${prefix}-invite-copy" data-i18n="bg.bg_invite_copy">Copy link</button>
-    </div>
-    <div class="go-invite-qr">
-      <img id="${prefix}-invite-qr-img" alt="QR code for invite link" width="160" height="160" decoding="async">
-      <span class="go-invite-qr-hint" data-i18n="bg.bg_gomoku_invite_qr_hint">Scan to join</span>
-    </div>
-    <p class="go-invite-note" data-i18n="bg.bg_invite_note">Send this code or link — your friend lands on the same board.</p>`;
-
-  const side = document.querySelector('aside.bd-side') || document.body;
-  const chat = side.querySelector('.go-chat');
-  side.insertBefore(root, chat); // chat 为 null 时等价 appendChild
-
-  const panel: InvitePanel = {
-    root,
-    codeEl: root.querySelector('#' + prefix + '-invite-code') as HTMLElement,
-    copyBtn: root.querySelector('#' + prefix + '-invite-copy') as HTMLButtonElement,
-    qrImg: root.querySelector('#' + prefix + '-invite-qr-img') as HTMLImageElement,
-  };
-
-  const copyLink = (): string => location.origin + '/b/' + game + '/' + (panel.codeEl.textContent || '');
-
-  panel.copyBtn.addEventListener('click', () => {
-    const text = copyLink();
-    const code = panel.codeEl.textContent || '';
-    const done = () => toast('Invite link copied');
-    const fail = () => toast('Copy failed — code ' + code);
-    try {
-      void navigator.clipboard.writeText(text).then(done, fail);
-    } catch (e) {
-      fail();
-    }
-  });
-
-  panels.set(prefix, panel);
-  return panel;
-}
+/** 旧 API 兼容别名：现在是弹窗卡片 */
+export const mountInvitePanel = mountInviteCard;
+export const showInvite = showInviteCard;
 
 /** 建房：成功返回 6 位房码，失败返回 null（网络/限流/非法响应一律 null） */
 export async function createFriendRoom(game: string): Promise<string | null> {
@@ -96,20 +64,8 @@ export async function createFriendRoom(game: string): Promise<string | null> {
   }
 }
 
-/** 面板亮出：房码 + QR + （复制按钮已就绪） */
-export function showInvite(prefix: string, game: string, code: string): void {
-  const p = panels.get(prefix);
-  if (!p) return;
-  p.codeEl.textContent = code;
-  try {
-    // cb 防 CF 边缘缓存；浏览器原生 onerror 不阻塞 UI
-    p.qrImg.src = '/api/qr?game=' + encodeURIComponent(game) + '&code=' + encodeURIComponent(code) + '&size=160&cb=' + Date.now();
-  } catch (e) { /* 图片缺失也别炸 */ }
-  p.root.hidden = false;
-}
-
 /**
- * 一站式建房流程：进对局页空盘 → 建房 → 进房 → 亮邀请面板。
+ * 一站式建房流程：进对局页空盘 → 建房 → 进房 → 弹出邀请卡片。
  * 失败不静默：toast 提示 + onFail（各游戏自定，通常回模式大厅）。
  */
 export async function openFriendRoom(
@@ -117,7 +73,7 @@ export async function openFriendRoom(
   prefix: string,
   opts: { enter: (code: string) => void; onFail: () => void },
 ): Promise<void> {
-  mountInvitePanel(prefix, game);
+  mountInviteCard(prefix, game, GAME_LABEL[game] || game);
   const code = await createFriendRoom(game);
   if (!code) {
     toast('Could not open a friend room — check your connection');
@@ -125,6 +81,5 @@ export async function openFriendRoom(
     return;
   }
   opts.enter(code);
-  showInvite(prefix, game, code);
-  toast('Room ' + code + ' created — waiting for your friend');
+  showInviteCard(prefix, game, code);
 }

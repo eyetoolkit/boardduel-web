@@ -30,6 +30,9 @@ import { isClassroom, reportRound, ensureStudentCode, urlRoomCode } from '../../
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 // 2026-10-05：持久随机昵称（防止匿名玩家同名被服务端分进同一座位）
 import { myName as ocMyName } from '../online-core';
+// 2026-10-06：好友房邀请卡片（全屏遮罩弹窗，范式抄 MathDuel 24-game share-overlay）
+import { mountInviteCard, showInviteCard, onOpponentJoined } from '../invite-card';
+import '../../styles/invite-card.css';
 
 const SLOT = 600;                 // SVG viewBox 边长
 const MARGIN = 4;                 // 外留白（仅容纳外框描边 + 阴影，尽量贴边）
@@ -101,11 +104,13 @@ const chatLog = $<HTMLUListElement>('go-chat-log');
 const chatForm = $<HTMLFormElement>('go-chat-form');
 const chatInput = $<HTMLInputElement>('go-chat-input');
 const chatRoom = $<HTMLElement>('go-chat-room');
+// 2026-10-06：邀请面板改为全屏遮罩弹窗卡片（原 .go-invite 侧栏内联，
+// 移动端 .bd-side 是 display:contents → 被摊平，扫码图铺在棋盘下方）。
+// 范式抄 MathDuel 24-game 的 .share-overlay。
+const inviteCard = mountInviteCard('go', 'gomoku', 'Gomoku · 15×15');
 const inviteEl = $<HTMLElement>('go-invite');
-const inviteCodeEl = $<HTMLElement>('go-invite-code');
 const inviteCopyBtn = $<HTMLButtonElement>('go-invite-copy');
-// P1-1：QR 邀请图，src 由 TS 在拿到房间码后注入 /api/qr
-const inviteQrImg = $<HTMLImageElement>('go-invite-qr-img');
+void inviteCard; // 卡片已挂载（幂等），此处仅持引用防止 tree-shake 掉挂载调用
 
 setupNav('gomoku');
 wireLobbyChrome();
@@ -1243,16 +1248,17 @@ function enterRankedRoom(code: string, isAi: boolean, aiName?: string): void {
 
 /* ─── 好友房：建房 → 拿码 → 以房主身份进房 ───
    房号必须由后端 /api/gp/room 生成：/ws 只认 KV 里已存在的房间，
-   前端自造码会被 worker 拒掉。短链 /b/gomoku/<CODE> 由 worker 302 到 ?c=<CODE>。 */
+   前端自造码会被 worker 拒掉。短链 /b/gomoku/<CODE> 由 worker 302 到 ?c=<CODE>。
+   2026-10-06：改为弹全屏邀请卡片（房码 + 短链 + 二维码）。 */
+
 function showInvite(code: string): void {
-  inviteCodeEl.textContent = code;
-  inviteEl.hidden = false;
-  // P1-1：注入 QR 邀请图 src（带 size 参数，cb 防 CF 边缘缓存；浏览器原生 onerror 不阻塞 UI）
-  try { inviteQrImg.src = '/api/qr?game=gomoku&code=' + encodeURIComponent(code) + '&size=160&cb=' + Date.now(); } catch (e) { /* 图片缺失也别炸 */ }
-  toast('Room ' + code + ' created — waiting for your friend');
+  // 兼容旧 DOM（若有）：同步隐藏侧栏内联面板，避免与卡片重复显示
+  if (inviteEl) inviteEl.hidden = true;
+  showInviteCard('go', 'gomoku', code);
 }
 
-inviteCopyBtn.addEventListener('click', () => {
+inviteCopyBtn?.addEventListener('click', () => {
+  // 卡片自带复制按钮；此处仅为旧 DOM 兜底
   const code = state.roomCode || '';
   const link = location.origin + '/b/gomoku/' + code;
   try {
@@ -1313,6 +1319,8 @@ function handleWs(msg: Record<string, unknown>): void {
     return;
   }
   if (t === 'start') {
+    // 2026-10-06：对手进房 → 邀请卡片自动收起（延迟 9s，给对方扫码留时间）
+    onOpponentJoined('go');
     if (!state.over) newGame();
     return;
   }

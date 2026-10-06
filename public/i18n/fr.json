@@ -2445,7 +2445,10 @@
     "bg_checkers_online_you": "À vous de jouer",
     "bg_checkers_online_opp": "Tour de l'adversaire",
     "bg_go_lv_katago_sub": "KataGo réseau neuronal (b6c96) — le plus fort des trois",
-    "go_opp_wins": "Vous perdez"
+    "go_opp_wins": "Vous perdez",
+    "bg_invite_close": "Fermer",
+    "bg_invite_room_code": "Code de salon",
+    "bg_invite_copy_code": "Copier"
   },
   "bk": {
     "bk_blog_tag_brain": "Entraînement cérébral",

@@ -1,0 +1,145 @@
+/* ============================================================
+ * BoardDuel · 好友房邀请卡片（2026-10-06）
+ * ------------------------------------------------------------
+ * 范式抄自 MathDuel 24-game 的 .share-overlay / .share-card：
+ *   fixed inset:0 遮罩 + 居中白卡 + ✕ 关闭 + 点击遮罩关闭。
+ * 皮肤用 BoardDuel 的 paper 主题（白卡 + 软靛影 + 圆角16），
+ * 不用 mathduel 的深蓝，避免两站气质割裂。
+ *
+ * 🔴 挂 body 而非 .bd-side：移动端 .bd-side 是 display:contents，
+ *    挂侧栏会被摊平成裸流（这正是 10-06 用户截图的故障形态）。
+ * ============================================================ */
+
+.go-invite-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000; /* 高于 toast 与棋盘浮层 */
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(30, 27, 57, .55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.go-invite-overlay.show { display: flex; }
+.go-invite-overlay[hidden] { display: none !important; }
+
+/* 打开时锁背景滚动（移动端尤其重要：否则卡片跟手一起滚） */
+body.bd-invite-open { overflow: hidden; }
+
+.go-invite-card {
+  width: 100%;
+  max-width: 360px;
+  max-height: 92vh;
+  overflow-y: auto;
+  background: #FFFFFF;
+  border: 1px solid #E3E6F0;
+  border-radius: 16px;
+  padding: 20px 18px 18px;
+  box-shadow: 0 2px 4px rgba(30, 27, 57, .06), 0 18px 40px -16px rgba(30, 27, 57, .30);
+  text-align: center;
+  animation: go-invite-in .22s cubic-bezier(.34, 1.4, .64, 1) both;
+}
+@keyframes go-invite-in {
+  from { opacity: 0; transform: translateY(14px) scale(.96); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .go-invite-card { animation: none; }
+}
+
+/* ── 头部 ── */
+.go-invite-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 2px;
+}
+.go-invite-title {
+  margin: 0; font-weight: 700; font-size: 1.05rem; color: #1E1B39;
+  letter-spacing: -.01em;
+}
+.go-invite-x {
+  border: 0; background: #F1F2F7; color: #5B6079;
+  width: 32px; height: 32px; border-radius: 9px;
+  font-size: .95rem; line-height: 1; cursor: pointer;
+}
+.go-invite-x:hover { background: #E3E6F0; color: #1E1B39; }
+
+.go-invite-game {
+  font-size: .74rem; color: #5B6079; letter-spacing: .04em;
+  margin-bottom: 14px;
+}
+
+/* ── 二维码 ── */
+.go-invite-qr {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  margin-bottom: 16px;
+}
+.go-invite-qr img {
+  width: 200px; height: 200px;
+  border-radius: 12px; background: #fff; padding: 8px;
+  border: 1px solid #E3E6F0;
+}
+.go-invite-qr-hint { font-size: .76rem; color: #5B6079; letter-spacing: .04em; }
+
+/* ── 房码 ── */
+.go-invite-codebox {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 10px;
+}
+.go-invite-code-l {
+  font-size: .68rem; color: #5B6079; letter-spacing: .06em;
+  text-transform: uppercase; white-space: nowrap;
+}
+.go-invite-code {
+  flex: 1; min-width: 0; text-align: center;
+  font-family: var(--disp, system-ui), ui-monospace, monospace;
+  font-weight: 700; font-size: 1.2rem; letter-spacing: .2em;
+  padding: 9px 4px; border-radius: 10px;
+  background: #FEF6E7; color: #B45309;
+  border: 1px dashed rgba(245, 158, 11, .6);
+}
+
+/* ── 短链 ── */
+.go-invite-linkbox { display: flex; gap: 8px; margin-bottom: 12px; }
+.go-invite-link {
+  flex: 1; min-width: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .74rem; color: #5B6079;
+  padding: 9px 10px; border-radius: 10px;
+  border: 1px solid #E3E6F0; background: #F8F9FC;
+  text-overflow: ellipsis;
+}
+.go-invite-sm { flex: 0 0 auto; white-space: nowrap; }
+
+.go-invite-note {
+  font-size: .74rem; color: #5B6079; line-height: 1.45;
+  margin: 0; padding-top: 12px; border-top: 1px solid #EEF1F5;
+}
+
+/* ── 窄屏收紧 ── */
+@media (max-width: 380px) {
+  .go-invite-card { max-width: 100%; padding: 18px 14px 16px; }
+  .go-invite-qr img { width: 172px; height: 172px; }
+}
+
+/* ── 暗色皮肤 ── */
+html[data-theme="dark"] .go-invite-overlay { background: rgba(6, 6, 18, .68); }
+html[data-theme="dark"] .go-invite-card {
+  background: #1A1B2E; border-color: #2C2E45;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .35), 0 18px 40px -16px rgba(0, 0, 0, .6);
+}
+html[data-theme="dark"] .go-invite-title { color: #F4F5F9; }
+html[data-theme="dark"] .go-invite-game,
+html[data-theme="dark"] .go-invite-code-l,
+html[data-theme="dark"] .go-invite-note,
+html[data-theme="dark"] .go-invite-qr-hint { color: #9AA0BE; }
+html[data-theme="dark"] .go-invite-x { background: #24263C; color: #9AA0BE; }
+html[data-theme="dark"] .go-invite-x:hover { background: #2F3150; color: #F4F5F9; }
+html[data-theme="dark"] .go-invite-code {
+  background: #33260E; color: #FBBF24; border-color: rgba(251, 191, 36, .45);
+}
+html[data-theme="dark"] .go-invite-link {
+  background: #15162A; border-color: #2C2E45; color: #9AA0BE;
+}
+html[data-theme="dark"] .go-invite-note { border-top-color: #2C2E45; }
