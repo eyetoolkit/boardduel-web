@@ -24,6 +24,7 @@ import {
   enterRoom, sendWs, inviteCode, clearInviteParam,
   roomLiveFromState, opponentNameFromState,
   type OnlineState, type OnlineMsg,
+  isMoveRejected,
 } from '../online-core';
 import { openFriendRoom } from '../friend-room';
 
@@ -682,7 +683,7 @@ function roomHandlers(code: string) {
     // 服务端在 2026-10-06 起强制轮次；被拒时回滚 + 给出可读原因，而不是静默无反应
     onError: (m: OnlineMsg) => {
       const code = String((m.code as string) || (m.message as string) || '');
-      rollbackRejected();
+      if (isMoveRejected(m)) rollbackRejected();
       if (code === 'not_your_turn') toast(window.t('bg.bg_checkers_not_your_turn'));
       else if (code) toast(code);
     },

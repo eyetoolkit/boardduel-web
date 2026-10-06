@@ -39,6 +39,38 @@ export interface OnlineHandlers {
   onError?: (msg: OnlineMsg) => void;
 }
 
+/**
+ * 与「刚落的那一手被拒」无关的 error —— 这些到达时不能回滚本地棋盘。
+ *
+ * 判定依据是服务端错误码的性质划分：
+ *   · 走子合法性（→ 该回滚）：illegal_move / not_your_turn / bad_move /
+ *     reversi-core 的「还没轮到你」「落子越界」「该位置无效」/
+ *     connect4-core 的「该列已满」「列号无效」/「对局已结束」…
+ *   · 连接·会话·协议（→ 不该回滚）：下面这张表
+ *
+ * ⚠️ takeback_unavailable 必须在表里：联机点「悔棋」时服务端会回这个 error，
+ *   若当成走子被拒就会把玩家真实的一手撤掉（比原 bug 更糟）。
+ * 表内容对齐 games-room.js 的全部 err(...) 调用点与两个 core 的 error 字段。
+ */
+const NON_MOVE_ERRORS = new Set([
+  'bad_msg',
+  'takeback_unavailable',
+  'pass_unavailable',
+  'has_move',
+  '未知玩家',
+  '对方未连接',
+  '需两名玩家',
+  '对局未开始',
+  '对局未开始，需两名玩家',
+]);
+
+/** 这条 error 是否代表「刚发出去的那一步被服务端拒绝」→ 该回滚本地乐观落子。 */
+export function isMoveRejected(msg: OnlineMsg): boolean {
+  const code = String((msg.code as string) || (msg.message as string) || '');
+  if (!code) return false;
+  return !NON_MOVE_ERRORS.has(code);
+}
+
 /* ═══════════ 联机再战回声闸（2026-10-06）═══════════
  * 服务端 restart 是无差别广播：发起方自己也会收到 restart_notify
  * （games-room.js:698 中继模式 / :704 判棋模式）。而发起方在发送那一刻

@@ -30,6 +30,7 @@ import {
   enterRoom, sendWs, inviteCode, clearInviteParam,
   roomLiveFromState, opponentNameFromState,
   type OnlineState, type OnlineMsg,
+  isMoveRejected,
 } from '../online-core';
 import { modeFromUrl, syncModeCardUI } from '../shared';
 import { openFriendRoom } from '../friend-room';
@@ -900,7 +901,7 @@ function roomHandlers(code: string) {
     onGameOver: handleWs,
     onError: (m: OnlineMsg) => {
       const c = String((m.code as string) || (m.message as string) || '');
-      rollbackRejected();
+      if (isMoveRejected(m)) rollbackRejected();
       if (c) toast(c);
     },
   };

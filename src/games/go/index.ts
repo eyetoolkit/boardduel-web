@@ -13,7 +13,7 @@
 import { setupNav, toast } from '../game-core';
 import { wireLobbyChrome } from '../../lobby-chrome';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
-import { myName as ocMyName, opponentNameFromState } from '../online-core';
+import { myName as ocMyName, opponentNameFromState, isMoveRejected } from '../online-core';
 // 2026-10-06：好友房邀请卡片（全屏遮罩弹窗，范式抄 MathDuel 24-game share-overlay）
 import { mountInviteCard, showInviteCard, onOpponentJoined } from '../invite-card';
 import '../../styles/invite-card.css';
@@ -1138,7 +1138,7 @@ function handleWs(msg: Record<string, unknown>): void {
   // 把往返窗口内刚落下的一子擦掉。
   if (ty === 'restart_notify') { if (restartEchoArmed) { restartEchoArmed = false; return; } state.over = false; newGame(); return; }
   if (ty === 'opponent_leave') { toast(t('bj.opp_left', 'Opponent left')); return; }
-  if (ty === 'error') { rollbackRejected(); toast(String(msg.message || 'Room error')); return; }
+  if (ty === 'error') { if (isMoveRejected(msg)) rollbackRejected(); toast(String(msg.message || 'Room error')); return; }
 }
 
 function syncServerClock(_c: Record<string, number>): void {

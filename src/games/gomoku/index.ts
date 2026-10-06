@@ -29,7 +29,7 @@ import { isClassroom, reportRound, ensureStudentCode, urlRoomCode } from '../../
 // 2026-10-03：落子音效（WebAudio 合成，跨页记住开关）
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 // 2026-10-05：持久随机昵称（防止匿名玩家同名被服务端分进同一座位）
-import { myName as ocMyName } from '../online-core';
+import { myName as ocMyName, isMoveRejected } from '../online-core';
 // 2026-10-06：好友房邀请卡片（全屏遮罩弹窗，范式抄 MathDuel 24-game share-overlay）
 import { mountInviteCard, showInviteCard, onOpponentJoined } from '../invite-card';
 import '../../styles/invite-card.css';
@@ -1464,7 +1464,7 @@ function handleWs(msg: Record<string, unknown>): void {
     return;
   }
   if (t === 'opponent_leave') { toast('Opponent left'); return; }
-  if (t === 'error') { rollbackRejected(); toast(String(msg.message || 'Room error')); return; }
+  if (t === 'error') { if (isMoveRejected(msg)) rollbackRejected(); toast(String(msg.message || 'Room error')); return; }
 }
 
 function pickMoveIndex(msg: Record<string, unknown>): number {
