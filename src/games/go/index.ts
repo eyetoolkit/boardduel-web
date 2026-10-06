@@ -1228,26 +1228,34 @@ function renderScorePanel(): void {
   const sign = (n: number) => n > 0 ? '+' + n.toFixed(1) : n.toFixed(1);
   // 行：黑 / 白 / 差（已含 KOMI；scoreWithDead 把 +7.5 加到白上）
   const diff = sc.black - sc.white;
+  // 🔴 2026-10-06 P1 修复（round3 审计 P1-1）：侧栏三格用 data-i18n，不用 JS 字符串拼接。
+  //   原因：i18n.js 的 applyLiterals() 扫描叶子节点做 LITERALS 精确文本匹配，
+  //   而 LITERALS 表里有裸中文 "差" → coins.deficit。日语下 coins.deficit =「不足額」，
+  //   于是 renderScorePanel 注入的「差」被 MutationObserver 改写成「不足額」
+  //   （日语用户 = 意义完全错误，且每次重渲染复发）。
+  //   改走 data-i18n 路径后由 applyToDOM 主动翻译，绕开 applyLiterals 的字面量表。
   scorePanelBody.innerHTML = `
     <tr>
-      <td class="go-scorepanel-side go-scorepanel-b">${t('bj.black_p1', 'Black')}</td>
+      <td class="go-scorepanel-side go-scorepanel-b" data-i18n="bj.black_p1">Black</td>
       <td>${sc.blackStones}</td>
       <td>${sc.blackTerritory}</td>
       <td><b>${sc.black.toFixed(1)}</b></td>
     </tr>
     <tr>
-      <td class="go-scorepanel-side go-scorepanel-w">${t('bj.white_p2', 'White')}</td>
+      <td class="go-scorepanel-side go-scorepanel-w" data-i18n="bj.white_p2">White</td>
       <td>${sc.whiteStones}</td>
       <td>${sc.whiteTerritory}</td>
       <td><b>${sc.white.toFixed(1)}</b></td>
     </tr>
     <tr>
-      <td class="go-scorepanel-side">${t('bg.bg_go_score_diff', 'Diff')}</td>
+      <td class="go-scorepanel-side" data-i18n="bg.bg_go_score_diff" data-i18n-skip>Diff</td>
       <td></td>
       <td></td>
       <td><b class="${diff > 0 ? 'go-scorepanel-b' : diff < 0 ? 'go-scorepanel-w' : ''}">${sign(diff)}</b></td>
     </tr>
   `;
+  // innerHTML 直接赋值会新增 data-i18n 节点，主动触发一次翻译（否则要等下一轮 observer）
+  try { window.i18n?.applyToDOM?.(scorePanelBody); } catch (e) { /* i18n 未就绪则保留英文 fallback */ }
   // KOMI 提示：白 +7.5 贴目已在 score.white 里算进，这里只解释给玩家看。
   scorePanelKomi.textContent = `${t('bg.bg_go_komi', 'komi')} 7.5`;
 }

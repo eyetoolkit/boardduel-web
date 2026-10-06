@@ -502,6 +502,15 @@ var LITERALS = {"玩家": "account.default_player", "昵称必须是字符串": 
       var el = els[i];
       var tag = (el.tagName || '').toUpperCase();
       if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'CODE' || tag === 'NOSCRIPT') continue;
+      // data-i18n-skip：显式豁免 applyLiterals 的字面量表重译。
+      //   场景：节点已带 data-i18n（由 applyToDOM 主动翻译），但译文恰好
+      //   等于某个 LITERALS 裸中文键 —— 典型是围棋点目面板的「差」：
+      //   ja.json 的 bg_go_score_diff 曾误填中文「差」，而 LITERALS 有
+      //   "差" → coins.deficit，于是日语下被二次改写成「不足額」
+      //   （意思完全错：deficit=金额不足，与围棋「差分」无关）。
+      //   带 data-i18n 的节点由 applyToDOM 负责，applyLiterals 不该插手。
+      if (el.getAttribute && el.getAttribute('data-i18n-skip') !== null) continue;
+      if (el.closest && el.closest('[data-i18n-skip]')) continue;
       if (!el.children.length) {
         // 叶子节点：整段文本精确命中 LITERALS
         var txt = (el.textContent || '').trim();
