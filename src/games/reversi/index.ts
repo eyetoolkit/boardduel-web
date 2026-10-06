@@ -801,9 +801,26 @@ function handleWs(msg: OnlineMsg): void {
   } else if (t === 'opponent_leave') {
     toast('Opponent left');
   } else if (t === 'game_over') {
+    // 原先只 render()：对端收到服务端结算后没有任何结果呈现，也不会弹结算屏。
+    // 与 chess/xiangqi/tictactoe 同批补上（那一批漏了 connect4/reversi）。
+    // 字段口径对齐 games-room.js:1030 settleAndBroadcast：{ winner: 座位号|'draw', reason }
     state.over = true;
+    state.sawGameOver = true;
     stopTimer(state.timer);
+    const reason = String(msg.reason || 'resign');
+    const w = msg.winner;
+    if (w === 'draw') {
+      endVerdict.textContent = window.t('bi.draw');
+      endVerdict.className = 'go-end-verdict is-draw';
+      endLine.textContent = window.t('bj.draw_agreed');
+    } else {
+      const iLost = (typeof w === 'number' && state.myIdx !== null) ? w !== state.myIdx : false;
+      endVerdict.textContent = iLost ? window.t('bj.you_resigned') : window.t('bj.opp_resigned');
+      endVerdict.className = 'go-end-verdict ' + (iLost ? 'is-loss' : 'is-win');
+      endLine.textContent = reason === 'opponent_left' ? window.t('bj.opp_left') : window.t('bj.by_resignation');
+    }
     render();
+    scheduleEndScreen();
   }
 }
 
