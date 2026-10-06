@@ -249,6 +249,9 @@ function renderClockHud(): void {
       ? state.oppName
       : window.t('bg.bg_common_waiting_opponent');
     clockMeWho.textContent = window.t('bg.bg_checkers_you_red');
+  } else {
+    // 非联机模式：原先靠 data-i18n 兜底，摘掉属性后由 JS 显式设回
+    clockOppWho.textContent = window.t('bg.bg_checkers_engine_black');
   }
 }
 

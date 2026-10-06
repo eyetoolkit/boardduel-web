@@ -368,6 +368,9 @@ function renderClockHud(): void {
     clockOppWho.textContent = state.roomLive && state.oppName
       ? state.oppName
       : window.t('bg.bg_common_waiting_opponent');
+  } else {
+    // 非联机模式：原先靠 data-i18n 兜底，摘掉属性后由 JS 显式设回
+    clockOppWho.textContent = window.t('bg.bg_xq_engine_black');
   }
 }
 

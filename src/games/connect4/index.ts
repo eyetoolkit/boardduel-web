@@ -263,11 +263,14 @@ function renderClockHud(): void {
     const myTurn = state.roomLive && state.myIdx !== null && state.player === (state.myIdx === 0 ? 1 : 2);
     clockMeCard.classList.toggle('is-active', !state.over && myTurn);
     clockOppCard.classList.toggle('is-active', !state.over && !myTurn && state.roomLive);
-    // 联机：对手侧不能一直写「引擎」。没进房显示「等待中」，进房后显示真实昵称。
-    clockOppWho.textContent = state.roomLive && state.oppName
-      ? state.oppName
-      : window.t('bg.bg_common_waiting_opponent');
   }
+  // 对手侧标签统一在此设置（原先靠 data-i18n，但 i18n 的 MutationObserver
+  // 会把 JS 设的文案覆盖回去，2026-10-06 已摘掉该节点的 data-i18n）：
+  //   联机 → 未开局「等待中…」，开局后显示服务端带来的真实昵称
+  //   其余 → 引擎 / 玩家 2 的固定名
+  clockOppWho.textContent = state.mode === 'online'
+    ? (state.roomLive && state.oppName ? state.oppName : window.t('bg.bg_common_waiting_opponent'))
+    : window.t('bg.bg_connect4_engine_teal');
 }
 
 /* ======================
