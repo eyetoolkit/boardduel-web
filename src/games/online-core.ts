@@ -159,11 +159,38 @@ export function clearInviteParam(): void {
   }
 }
 
-/** 我的 UUID（沿用站点通用 pid cookie / Account 模块） */
+/** 我的 UUID（沿用站点通用 pid cookie / Account 模块）
+ *  ⚠️ pid cookie 是 HttpOnly（sites/boardduel/index.js:30），document.cookie 永远读不到，
+ *     所以这个函数恒返回 ''，全项目也没有任何调用方。真正的身份由服务端在
+ *     WS 握手时用 cookie 验签推导（index.js:759 getAuthUuid，fail-closed）。
+ *     保留导出仅为不破坏潜在引用；要拿身份请走 /api/account/me 的响应。 */
 export function myUuid(): string {
   const m = document.cookie.match(/(?:^|;\s*)pid=([^;\s]+)/);
   return m ? decodeURIComponent(m[1]) : '';
 }
+
+/**
+ * 确保 pid cookie 已落地，再开 WS。
+ *
+ * 为什么必须有这一步（2026-10-06 实测）：邀请链接直达 /games/xxx/?c=CODE 会在
+ * 页面刚解析完就 enterRoom，而棋盘页**从不**调 /api/account/me —— 无头浏览器实测
+ * WS 握手请求头里 `Cookie` 是空的。服务端 getAuthUuid 因此返回 ''，DO 拿到的 uuid 为空：
+ *   · settleElo 走 `withUuid.length !== 2 → skipped:'no_uuid'`（stores/elo.js:26-29）
+ *   · 发币循环 `if (!p || !p.uuid) continue`（games-room.js:1055）
+ *   → 邀请链接进来的对局**既没有 Elo 也没有金币**，座位还只能靠 bd_nick 认领。
+ *
+ * 这里 await 的是一次 /api/account/me（无 cookie 时服务端会现签发 pid），
+ * 全页共享同一个 promise，因此只有首次连接会多等一个 RTT，重连不受影响。
+ */
+let accountReady: Promise<unknown> | null = null;
+export function ensureAccount(): Promise<unknown> {
+  if (!accountReady) {
+    accountReady = fetch('/api/account/me', { credentials: 'include' })
+      .catch(() => null);   // 拿不到身份也不能挡住玩家进房，服务端会按匿名处理
+  }
+  return accountReady;
+}
+
 export function myName(): string {
   // 🔴 不能写死 'Player'：服务端 resolveIdx 会按 name 复用座位，
   // 两个匿名玩家同名会被分进同一座位（双方都执黑、互不走子）——2026-10-05 PvP 实测。
@@ -225,8 +252,24 @@ export function enterRoom(state: OnlineState, code: string, handlers: OnlineHand
   connect(state, code, handlers, 0, nick);
 }
 
-/** 建立一条连接并挂分发。attempt>0 表示这是断线后的重连尝试。 */
+/** 建立一条连接并挂分发。attempt>0 表示这是断线后的重连尝试。
+ *  首次连接会先等 ensureAccount()：pid cookie 必须在握手请求里就位，
+ *  否则服务端拿不到 uuid，这一局既不计 Elo 也不发币（详见 ensureAccount 注释）。 */
 function connect(state: OnlineState, code: string, handlers: OnlineHandlers, attempt: number, nick: string): void {
+  void readyForSocket(attempt).then(() => openSocket(state, code, handlers, attempt, nick));
+}
+
+/** 首连等身份 cookie，重连直接放行（cookie 早已就位，再等只是白等一个 RTT）。 */
+function readyForSocket(attempt: number): Promise<unknown> {
+  return attempt > 0 ? Promise.resolve(null) : ensureAccount();
+}
+
+function openSocket(state: OnlineState, code: string, handlers: OnlineHandlers, attempt: number, nick: string): void {
+  // 等身份 cookie 期间玩家可能已经退出/换房（七款棋的 leaveRoom 都会把
+  // roomCode 置 null）。不查就直接开 socket，会留下一条没人管的悬挂连接：
+  // leaveRoom 当时 state.ws 还是 null，没东西可关，而 close 回调里
+  // `state.ws !== ws` 又成立，不会触发任何清理。
+  if (state.roomCode !== code) return;
   let ws: WebSocket;
   try {
     ws = new WebSocket(wsUrl(code, nick, attempt > 0));

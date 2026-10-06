@@ -13,7 +13,7 @@
 import { setupNav, toast } from '../game-core';
 import { wireLobbyChrome } from '../../lobby-chrome';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
-import { myName as ocMyName, opponentNameFromState, isMoveRejected } from '../online-core';
+import { myName as ocMyName, opponentNameFromState, isMoveRejected, ensureAccount } from '../online-core';
 // 2026-10-06：好友房邀请卡片（全屏遮罩弹窗，范式抄 MathDuel 24-game share-overlay）
 import { mountInviteCard, showInviteCard, onOpponentJoined } from '../invite-card';
 import '../../styles/invite-card.css';
@@ -992,6 +992,14 @@ function enterRankedRoom(code: string): void {
   chatRoom.textContent = code;
   chatLog.innerHTML = '';
   toast('Room ' + code + ' — waiting for opponent');
+  // 与 online-core 同理：pid cookie 必须在握手请求里就位，否则服务端 getAuthUuid
+  // 返回空 uuid，这一局既不计 Elo 也不发币（详见 online-core ensureAccount 注释）。
+  // go 自带手写 WS，不走 online-core 的 connect()，所以这里要自己等一次。
+  void ensureAccount().then(() => openRankedSocket(code));
+}
+
+function openRankedSocket(code: string): void {
+  if (state.roomCode !== code) return;   // 等 cookie 期间已退出/换房
   let ws: WebSocket;
   try { ws = new WebSocket(wsUrl(code, myName())); }
   catch (e) { toast('Could not open room'); return; }
