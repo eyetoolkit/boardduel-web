@@ -762,8 +762,7 @@
     "skill3_title": "3. 控制要点",
     "skills": "关键技巧",
     "what_is": "什么是五子棋？",
-    "what_is_desc": "五子棋（连珠）是流行于东亚的经典双人策略游戏。双方在 15×15 棋盘上交替落子，先在横、竖或斜方向连成五子者获胜。规则简单但策略极深——是一分钟学会、一生难精通的游戏。",
-    "How_to_play": "玩法说明"
+    "what_is_desc": "五子棋（连珠）是流行于东亚的经典双人策略游戏。双方在 15×15 棋盘上交替落子，先在横、竖或斜方向连成五子者获胜。规则简单但策略极深——是一分钟学会、一生难精通的游戏。"
   },
   "connect4": {
     "your": "你先",
@@ -891,8 +890,7 @@
     "email_desc": "<a href=\"mailto:mathduel@foxmail.com\">mathduel@foxmail.com</a> — 我们会在 24 小时内处理。",
     "feedback_title": "🐛 反馈内容",
     "feedback_desc": "请尽量包含：所玩游戏、问题描述、操作步骤、设备/浏览器型号，方便我们定位。",
-    "footer": "© 2026 Board Duel · 棋盘对决",
-    "Title": "联系我们 · BoardDuel"
+    "footer": "© 2026 Board Duel · 棋盘对决"
   },
   "terms": {
     "title": "使用条款 · Board Duel",

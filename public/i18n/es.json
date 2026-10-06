@@ -764,8 +764,7 @@
     "faq_diff": "¿Cómo elegir la dificultad de la IA?",
     "faq_diff_a": "Fácil: aleatorio + heurísticas simples para principiantes. Normal: puntuación + búsqueda superficial. Medio: búsqueda de espacio de amenazas. Difícil: juego óptimo local para jugadores avanzados.",
     "faq_undo": "¿Puedo deshacer movimientos?",
-    "faq_undo_a": "Sí — mantén presionado el tablero o clica el botón de deshacer para volver un movimiento.",
-    "How_to_play": "Cómo se juega"
+    "faq_undo_a": "Sí — mantén presionado el tablero o clica el botón de deshacer para volver un movimiento."
   },
   "connect4": {
     "your": "Tú mueves primero",
@@ -883,7 +882,6 @@
     "footer": "© 2026 Board Duel · Batallas de mesa · Sin anuncios · Sin seguimiento"
   },
   "contact": {
-    "Title": "Contáctanos · Board Duel",
     "meta_desc": "Contáctanos - Sitio de batallas de juegos de mesa Board Duel.",
     "nav_home": "Inicio",
     "nav_about": "Acerca de",

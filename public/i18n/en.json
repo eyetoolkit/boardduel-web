@@ -764,8 +764,7 @@
     "skill3_title": "3. Control Key Points",
     "skills": "Key Skills",
     "what_is": "What is Gomoku?",
-    "what_is_desc": "Gomoku (Five in a Row) is a classic two-player strategy game popular across East Asia. Black and white alternate placing stones on a 15×15 board; the first to line up five horizontally, vertically or diagonally wins. The rules are simple but the strategy runs deep — a minute to learn, a lifetime to master.",
-    "How_to_play": "How to play"
+    "what_is_desc": "Gomoku (Five in a Row) is a classic two-player strategy game popular across East Asia. Black and white alternate placing stones on a 15×15 board; the first to line up five horizontally, vertically or diagonally wins. The rules are simple but the strategy runs deep — a minute to learn, a lifetime to master."
   },
   "connect4": {
     "your": "You go first",
@@ -893,8 +892,7 @@
     "email_desc": "<a href=\"mailto:mathduel@foxmail.com\">mathduel@foxmail.com</a> — We will respond within 24 hours.",
     "feedback_title": "🐛 Feedback Content",
     "feedback_desc": "Please include: game played, problem description, steps to reproduce, device/browser info to help us locate the issue.",
-    "footer": "© 2026 Board Duel · Board Battles",
-    "Title": "Contact Us · BoardDuel"
+    "footer": "© 2026 Board Duel · Board Battles"
   },
   "terms": {
     "title": "Terms of Service · Board Duel",

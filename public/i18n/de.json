@@ -746,7 +746,6 @@
     "rule2": "Steine auf Schnittpunkte platzieren — Steine bewegen sich nie",
     "rule3": "Erster mit fünf in einer Reihe gewinnt",
     "rule4": "Optionale globale verbotene Züge (doppelte Drei, doppelte Vier, Überlinie)",
-    "How_to_play": "Spielanleitung",
     "play1": "Modus wählen: KI / Freund / Zufallsspiel",
     "play2": "Klicke auf Brettpunkte, um Steine zu platzieren, Schwarz zuerst",
     "play3": "Gegnerische Züge beobachten, 2-3 Züge vorhersagen",
@@ -893,8 +892,7 @@
     "email_desc": "<a href=\"mailto:mathduel@foxmail.com\">mathduel@foxmail.com</a> — Wir werden innerhalb von 24 Stunden antworten.",
     "feedback_title": "🐛 Feedback-Inhalt",
     "feedback_desc": "Bitte einschließen: gespieltes Spiel, Problembeschreibung, Schritte zum Reproduzieren, Gerät/Browser-Info um uns zu helfen.",
-    "footer": "© 2026 Board Duel · Brettspiel-Kämpfe",
-    "Title": "Kontakt · BoardDuel"
+    "footer": "© 2026 Board Duel · Brettspiel-Kämpfe"
   },
   "terms": {
     "title": "Nutzungsbedingungen · Board Duel",

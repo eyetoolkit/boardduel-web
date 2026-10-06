@@ -764,8 +764,7 @@
     "faq_diff": "Comment choisir la difficulté de l'IA ?",
     "faq_diff_a": "Facile : aléatoire + heuristiques simples pour débutants. Normal : notation + recherche superficielle. Moyen : recherche d'espace de menaces. Difficile : jeu localement optimal pour joueurs avancés.",
     "faq_undo": "Puis-je annuler des coups ?",
-    "faq_undo_a": "Oui — maintenez le plateau ou cliquez sur le bouton d'annulation pour revenir d'un coup.",
-    "How_to_play": "Comment jouer"
+    "faq_undo_a": "Oui — maintenez le plateau ou cliquez sur le bouton d'annulation pour revenir d'un coup."
   },
   "connect4": {
     "your": "Vous jouez en premier",
@@ -893,8 +892,7 @@
     "email_desc": "<a href=\"mailto:mathduel@foxmail.com\">mathduel@foxmail.com</a> — Nous répondrons dans les 24 heures.",
     "feedback_title": "🐛 Contenu des commentaires",
     "feedback_desc": "Veuillez inclure: jeu joué, description du problème, étapes pour reproduire, info appareil/navigateur pour nous aider à localiser.",
-    "footer": "© 2026 Board Duel · Batailles de société",
-    "Title": "Contact · BoardDuel"
+    "footer": "© 2026 Board Duel · Batailles de société"
   },
   "terms": {
     "title": "Conditions d'utilisation · Board Duel",

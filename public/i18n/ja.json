@@ -764,8 +764,7 @@
     "faq_diff": "How do I choose the AI 難易度?",
     "faq_diff_a": "初級：初心者向けランダム＋シンプルヒューリスティック。普通：評価＋浅い探索。中級：脅威空間探索。上級：上級者向けの局所最適手。",
     "faq_undo": "Can I 元に戻す a move?",
-    "faq_undo_a": "はい — 盤を長押しするか「元に戻す」ボタンをタップすると一手戻せます。",
-    "How_to_play": "遊び方"
+    "faq_undo_a": "はい — 盤を長押しするか「元に戻す」ボタンをタップすると一手戻せます。"
   },
   "connect4": {
     "your": "あなたが先手",
@@ -893,8 +892,7 @@
     "email_desc": "<a href=\"mailto:mathduel@foxmail.com\">mathduel@foxmail.com</a> — 24 時間以内にご返信いたします。",
     "feedback_title": "🐛 フィードバック Content",
     "feedback_desc": "ご報告の際は次の項目を明記してください：プレイしたゲーム、問題の内容、再現手順、デバイス／ブラウザ情報。",
-    "footer": "© 2026 Board デュエル · Board Battles",
-    "Title": "お問い合わせ · BoardDuel"
+    "footer": "© 2026 Board デュエル · Board Battles"
   },
   "terms": {
     "title": "利用規約 · Board デュエル",
