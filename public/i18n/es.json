@@ -2409,6 +2409,7 @@
     "bg_go_count_hint": "Toca un grupo de piedras enemigas para marcarlas como muertas. Luego confirma la puntuación.",
     "bg_go_count_hint_ai": "Marca los grupos muertos del motor y confirma. Tú juegas con negras (primero).",
     "bg_go_count_only_enemy": "Solo puedes marcar piedras enemigas como muertas.",
+    "bg_go_count_wait": "Esperando a que tu oponente confirme la cuenta…",
     "bg_go_count_b": "Negras",
     "bg_go_count_w": "Blancas",
     "bg_go_count_clear": "Reiniciar",

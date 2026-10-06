@@ -2409,6 +2409,7 @@
     "bg_go_count_hint": "Touchez un groupe de pierres adverses pour les marquer comme mortes. Puis confirmez le score.",
     "bg_go_count_hint_ai": "Marquez les groupes morts du moteur puis confirmez. Vous jouez les noirs (premier).",
     "bg_go_count_only_enemy": "Vous ne pouvez marquer que les pierres adverses.",
+    "bg_go_count_wait": "En attente de la confirmation de votre adversaire…",
     "bg_go_count_b": "Noirs",
     "bg_go_count_w": "Blancs",
     "bg_go_count_clear": "Réinitialiser",

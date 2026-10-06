@@ -2409,6 +2409,7 @@
     "bg_go_count_hint": "相手の石を丸で囲んで死子にしてから数えます。",
     "bg_go_count_hint_ai": "エンジンの死子を選んでから確認してください。あなたは黒（先手）です。",
     "bg_go_count_only_enemy": "相手の石だけを死子にできます。",
+    "bg_go_count_wait": "相手の数目確認を待っています…",
     "bg_go_count_b": "黒",
     "bg_go_count_w": "白",
     "bg_go_count_clear": "リセット",

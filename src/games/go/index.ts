@@ -81,6 +81,7 @@ interface UIState {
   resignArmed: boolean;
   endScheduled: boolean;
   counting: boolean;               // 终局数目确认阶段
+  countPending: boolean;           // 联机：已提交本方标记，等对手确认
   dead: DeadSet;                   // 玩家标定的「对方死子」下标
   /**
    * 「形势」叠加层：玩家主动点「形势」按钮时为 true，把每个空位按归属染色；
@@ -139,6 +140,7 @@ const state: UIState = {
   resignArmed: false,
   endScheduled: false,
   counting: false,
+  countPending: false,
   dead: new Set(),
   showSituation: false,
   showScorePanel: false,
@@ -375,7 +377,10 @@ function canHumanMove(): boolean {
    终局数目确认（双 pass 后进入；玩家标对方死子 → 确认结算）
    ══════════════════════════════════════════════════════════════ */
 function enterCounting(): void {
+  // 联机下座位未知时不能进入：结算要把结果归到某一方，myIdx 为 null 会无从判定。
+  if (state.mode === 'ranked' && state.myIdx === null) return;
   state.counting = true;
+  state.countPending = false;
   state.dead = new Set();
   stopClockLoop();
   document.body.classList.add('bd-counting');
@@ -395,9 +400,27 @@ function syncCount(): void {
   countW.textContent = String(sc.white);
 }
 
-/** 确认数目 → 终局结算 */
+/** 确认数目 → 终局结算。
+ *  联机（ranked）**不再就地结算**：把本方标出的「对方死子」提交给服务端，
+ *  等双方都提交后由 count_ready 下发两端的集合，取并集再算分。
+ *  两方标的是不同的子（黑标白 / 白标黑），集合天然互补，所以并集无歧义、
+ *  两端算出的比分必然相同 —— 此前不交换、就地各算各的，比分可能不同且谁都不作数。 */
 function confirmCount(): void {
-  const sc = scoreWithDead(state.go, state.dead);
+  if (state.mode === 'ranked') {
+    // 座位未知时无法把结果归到正确的一方，先别收
+    if (state.myIdx === null) return;
+    state.countPending = true;
+    sendWs({ type: 'count_submit', dead: [...state.dead] });
+    $('go-count-hint').textContent = t('bg.bg_go_count_wait', 'Waiting for your opponent to confirm the count…');
+    renderBoard();
+    return;
+  }
+  finishCounting(new Set(state.dead));
+}
+
+/** 用「双方标记的并集」结算（两端各自算，结果必然一致） */
+function finishCounting(dead: Set<number>): void {
+  const sc = scoreWithDead(state.go, dead);
   let verdict: string;
   let humanWon = false;
   if (state.mode === 'ai') {
@@ -411,8 +434,16 @@ function confirmCount(): void {
     verdict = sc.winner === 1 ? t('bi.black_wins', 'Black wins') : t('bi.white_wins', 'White wins');
   }
   const line = `${sc.black} – ${sc.white} · ${t('bg.bg_go_komi', 'komi')} 7.5`;
+  state.countPending = false;
   exitCounting();
   endGame(verdict, line, 'score', humanWon);
+  // 联机：败方（或和棋）向服务端宣告结果，触发正常结算与房间收尾。
+  // 胜方不发 —— 与现有「认输由败方发起」的约定一致，避免重复 settle。
+  // 座位映射与上面一致：seat 0 = 黑(1)，seat 1 = 白(2)。
+  if (state.mode === 'ranked' && state.myIdx !== null && !humanWon) {
+    const winnerSeat: 0 | 1 | 'draw' = sc.winner === 1 ? 0 : sc.winner === 2 ? 1 : 'draw';
+    sendWs({ type: 'count_finish', winner: winnerSeat });
+  }
 }
 function exitCounting(): void {
   state.counting = false;
@@ -1141,6 +1172,17 @@ function handleWs(msg: Record<string, unknown>): void {
   // go 自带 WS、不走 online-core 的 sendWs，再战回声闸自己上闩。
   // 服务端 restart 无差别广播，发起方也会收到自己那份；不吞的话回声会
   // 把往返窗口内刚落下的一子擦掉。
+  // go 终局数目：双方标记都到齐 → 取并集结算（两端各自算，结果必然一致）
+  if (ty === 'count_ready') {
+    const d = Array.isArray(msg.dead) ? msg.dead : null;
+    if (!d || !Array.isArray(d[0]) || !Array.isArray(d[1])) return;
+    if (state.over) return;
+    const union = new Set<number>();
+    for (const n of [...d[0], ...d[1]]) if (typeof n === 'number') union.add(n);
+    state.dead = union;
+    finishCounting(union);
+    return;
+  }
   if (ty === 'restart_notify') { if (restartEchoArmed) { restartEchoArmed = false; return; } state.over = false; newGame(); return; }
   // 对手离开后必须锁盘（canHumanMove 靠 rankedLive 判）。不锁的话玩家还能继续落子，
   // 而这些子投不出去 —— 宽限期内变成对手永远看不到的幽灵子。

@@ -2409,6 +2409,7 @@
     "bg_go_count_hint": "Tap a group of enemy stones to mark them dead. Then confirm the score.",
     "bg_go_count_hint_ai": "Mark the engine's dead groups, then confirm. You play Black (first).",
     "bg_go_count_only_enemy": "You can only mark enemy stones dead.",
+    "bg_go_count_wait": "Waiting for your opponent to confirm the count…",
     "bg_go_count_b": "Black",
     "bg_go_count_w": "White",
     "bg_go_count_clear": "Reset",
