@@ -211,14 +211,20 @@ const RECONNECT_BASE_MS = 600;
 export function enterRoom(state: OnlineState, code: string, handlers: OnlineHandlers): void {
   state.roomCode = code;
   state.mode = 'online';
-  connect(state, code, handlers, 0);
+  // 🔴 身份只解析一次，之后所有重连复用它。
+  //   localStorage 是**同源共享**的（不按标签页隔离）：多开一个页面、或任何地方
+  //   改了 bd_nick，重连时 myName() 就会读到**另一个身份** —— 重连落到别人的座位，
+  //   轻则自己视角错乱，重则把在线玩家顶掉（2026-10-06 实测抓到：重连 URL 带的是
+  //   另一个标签页写的昵称，seat 0 的玩家被接到 seat 1）。
+  const nick = myName();
+  connect(state, code, handlers, 0, nick);
 }
 
 /** 建立一条连接并挂分发。attempt>0 表示这是断线后的重连尝试。 */
-function connect(state: OnlineState, code: string, handlers: OnlineHandlers, attempt: number): void {
+function connect(state: OnlineState, code: string, handlers: OnlineHandlers, attempt: number, nick: string): void {
   let ws: WebSocket;
   try {
-    ws = new WebSocket(wsUrl(code, myName(), attempt > 0));
+    ws = new WebSocket(wsUrl(code, nick, attempt > 0));
   } catch {
     return;
   }
@@ -306,7 +312,7 @@ function connect(state: OnlineState, code: string, handlers: OnlineHandlers, att
     const delay = RECONNECT_BASE_MS * Math.pow(2, attempt);
     window.setTimeout(() => {
       if (state.ws !== ws) return;        // 期间已离开房间/已被别的连接取代
-      connect(state, code, handlers, attempt + 1);
+      connect(state, code, handlers, attempt + 1, nick);   // nick 固定传下去，不重读 localStorage
     }, delay);
   };
 
