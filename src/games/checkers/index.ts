@@ -607,6 +607,12 @@ function roomHandlers(code: string) {
     onRestart: () => newGame(),
     onOpponentLeave: () => toast('Opponent left'),
     onGameOver: handleWs,
+    // 服务端在 2026-10-06 起强制轮次；被拒时给出可读原因，而不是静默无反应
+    onError: (m: OnlineMsg) => {
+      const code = String((m.code as string) || (m.message as string) || '');
+      if (code === 'not_your_turn') toast(window.t('bg.bg_checkers_not_your_turn'));
+      else if (code) toast(code);
+    },
   };
 }
 

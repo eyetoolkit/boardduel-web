@@ -2463,7 +2463,8 @@
     "bg_share_save": "⬇ Bild speichern",
     "bg_share_system": "💬 Teilen",
     "bg_share_save_image": "🖼 Einladungskarte speichern",
-    "bg_share_result": "Ergebnis teilen"
+    "bg_share_result": "Ergebnis teilen",
+    "bg_checkers_not_your_turn": "Du bist noch nicht am Zug"
   },
   "bk": {
     "bk_blog_tag_brain": "Gehirntraining",

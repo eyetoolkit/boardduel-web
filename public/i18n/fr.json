@@ -2463,7 +2463,8 @@
     "bg_share_save": "⬇ Enregistrer l’image",
     "bg_share_system": "💬 Partager",
     "bg_share_save_image": "🖼 Enregistrer la carte",
-    "bg_share_result": "Partager le résultat"
+    "bg_share_result": "Partager le résultat",
+    "bg_checkers_not_your_turn": "Ce n'est pas encore votre tour"
   },
   "bk": {
     "bk_blog_tag_brain": "Entraînement cérébral",

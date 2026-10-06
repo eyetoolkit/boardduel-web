@@ -29,6 +29,9 @@ export interface OnlineHandlers {
   onOpponentLeave?: () => void;
   onRestart?: () => void;
   onPassNotify?: (msg: OnlineMsg) => void;
+  /** 服务端拒绝（illegal_move / not_your_turn / 对方未连接…）。
+   *  可选：未提供时该消息被忽略，行为与此前一致。 */
+  onError?: (msg: OnlineMsg) => void;
 }
 
 /** 读取 ?c= 房间码（worker /b/<game>/<CODE> 会 302 到 ?c=<CODE>）
@@ -153,6 +156,12 @@ export function enterRoom(state: OnlineState, code: string, handlers: OnlineHand
     }
     if (t === 'pass_notify') {
       handlers.onPassNotify?.(msg);
+      return;
+    }
+    if (t === 'error') {
+      // 服务端拒绝（越界 / not_your_turn / 房间已满…）。
+      // 此前没有这个分支，被拒的消息被静默丢弃 —— 用户表现为「点了没反应」。
+      handlers.onError?.(msg);
       return;
     }
   });

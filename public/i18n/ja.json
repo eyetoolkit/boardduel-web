@@ -2463,7 +2463,8 @@
     "bg_share_save": "⬇ 画像を保存",
     "bg_share_system": "💬 共有",
     "bg_share_save_image": "🖼 招待カードを保存",
-    "bg_share_result": "結果を共有"
+    "bg_share_result": "結果を共有",
+    "bg_checkers_not_your_turn": "まだあなたの番ではありません"
   },
   "bk": {
     "bk_blog_tag_brain": "脳トレ",
