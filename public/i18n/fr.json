@@ -2474,7 +2474,8 @@
     "bg_share_result": "Partager le résultat",
     "bg_checkers_not_your_turn": "Ce n'est pas encore votre tour",
     "bg_common_waiting_opponent": "En attente de l'adversaire…",
-    "bg_common_move_rejected": "Coup refusé — le serveur ne l’a pas accepté"
+    "bg_common_move_rejected": "Coup refusé — le serveur ne l’a pas accepté",
+    "bg_common_reconnect_failed": "Connexion perdue — reconnexion impossible. Salle {code} : partagez ce code pour reprendre la partie."
   },
   "bk": {
     "bk_blog_tag_brain": "Entraînement cérébral",

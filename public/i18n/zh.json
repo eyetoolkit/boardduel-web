@@ -2472,7 +2472,8 @@
     "bg_share_result": "分享战绩",
     "bg_checkers_not_your_turn": "还没轮到你",
     "bg_common_waiting_opponent": "等待对手加入…",
-    "bg_common_move_rejected": "走子被拒 —— 服务端未接受这一步"
+    "bg_common_move_rejected": "走子被拒 —— 服务端未接受这一步",
+    "bg_common_reconnect_failed": "连接已断开，重连失败。房间 {code}：把这个码发给对方即可继续这局。"
   },
   "bk": {
     "bk_blog_tag_brain": "脑力训练",

@@ -51,6 +51,11 @@ export interface OnlineHandlers {
    * 各游戏的 rebuildFromServer 会在那里把棋盘恢复好。
    */
   onReconnect?: () => void;
+  /**
+   * 重连次数用尽仍失败。棋盘会一直保持锁定（这是对的——服务端状态未知），
+   * 所以这里必须给玩家一条出路：把房号带出去，对手（或自己）可以重新拉人。
+   */
+  onReconnectFailed?: (code: string) => void;
 }
 
 /**
@@ -230,6 +235,12 @@ function connect(state: OnlineState, code: string, handlers: OnlineHandlers, att
   }
   state.ws = ws;
 
+  // 🔴 换了一条连接，之前那次 restart 的回声就**永远等不到了**（断线时序最典型的死锁）：
+  //   旧连接上 armed 还是 true 时 socket 断掉，没人清它。之后**对手**点「再战」，
+  //   服务端无差别广播 restart_notify，本机却把它当成自己的回声吞掉 —— 对手以为开了
+  //   新局，本机棋盘停在旧局。任何新连接（含首次）都要先把闸复位。
+  restartEcho.armed = false;
+
   ws.addEventListener('open', () => {
     if (attempt > 0) handlers.onReconnect?.();
   });
@@ -308,7 +319,12 @@ function connect(state: OnlineState, code: string, handlers: OnlineHandlers, att
   //   重连成功后会重发 join state（带中继着法历史），前端 rebuildFromServer 负责恢复棋盘。
   //   `state.ws !== ws` 这道闸同时挡住了主动退出：各游戏 leaveRoom 会先把 state.ws 置 null。
   const scheduleReconnect = () => {
-    if (attempt >= RECONNECT_MAX) return;
+    if (attempt >= RECONNECT_MAX) {
+      // 放弃之前必须交代一句：否则玩家只看到「连接已断开」+ 一块永远锁死的棋盘，
+      // 既不知道重连已经放弃，也没有任何出路。带上房号，对手能凭它重新拉人。
+      handlers.onReconnectFailed?.(code);
+      return;
+    }
     const delay = RECONNECT_BASE_MS * Math.pow(2, attempt);
     window.setTimeout(() => {
       if (state.ws !== ws) return;        // 期间已离开房间/已被别的连接取代

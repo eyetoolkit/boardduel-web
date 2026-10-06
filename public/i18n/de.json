@@ -2474,7 +2474,8 @@
     "bg_share_result": "Ergebnis teilen",
     "bg_checkers_not_your_turn": "Du bist noch nicht am Zug",
     "bg_common_waiting_opponent": "Warten auf Gegner…",
-    "bg_common_move_rejected": "Zug abgelehnt – der Server hat ihn nicht akzeptiert"
+    "bg_common_move_rejected": "Zug abgelehnt – der Server hat ihn nicht akzeptiert",
+    "bg_common_reconnect_failed": "Verbindung verloren — Wiederverbindung fehlgeschlagen. Raum {code}: Teile diesen Code, um die Partie fortzusetzen."
   },
   "bk": {
     "bk_blog_tag_brain": "Gehirntraining",

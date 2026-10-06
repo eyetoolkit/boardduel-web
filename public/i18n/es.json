@@ -2474,7 +2474,8 @@
     "bg_share_result": "Compartir resultado",
     "bg_checkers_not_your_turn": "Todavía no es tu turno",
     "bg_common_waiting_opponent": "Esperando al rival…",
-    "bg_common_move_rejected": "Movimiento rechazado: el servidor no lo aceptó"
+    "bg_common_move_rejected": "Movimiento rechazado: el servidor no lo aceptó",
+    "bg_common_reconnect_failed": "Conexión perdida: no se pudo reconectar. Sala {code}: comparte este código para retomar la partida."
   },
   "bk": {
     "bk_blog_tag_brain": "Entrenamiento cerebral",

@@ -1011,6 +1011,8 @@ function roomHandlers(code: string) {
     // 且 newGame 顺带重置时钟/历史。onState 会用服务端着法把局面补齐。
     onConnect: () => { if (!state.moves.length) newGame(); toast('Connected · room ' + code); },
     onReconnect: () => { toast('Reconnected'); render(); },
+    // 重连次数用尽：棋盘保持锁定（服务端状态未知，不能瞎走），但必须给一句出路
+    onReconnectFailed: (c: string) => { toast(window.t('bg.bg_common_reconnect_failed', { code: c }), 9000); render(); },
     onOpponentMove: handleWs,
     // 服务端对「第二人加入」和「重连」广播的是同一个 start（games-room.js:267-310），
     // 无条件 newGame() 会让中途刷新把**没刷新的对手**那盘真实中局也一起清空。

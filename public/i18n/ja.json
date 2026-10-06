@@ -2474,7 +2474,8 @@
     "bg_share_result": "結果を共有",
     "bg_checkers_not_your_turn": "まだあなたの番ではありません",
     "bg_common_waiting_opponent": "相手を待っています…",
-    "bg_common_move_rejected": "着手が拒否されました — サーバーが受け付けませんでした"
+    "bg_common_move_rejected": "着手が拒否されました — サーバーが受け付けませんでした",
+    "bg_common_reconnect_failed": "接続が切断され、再接続に失敗しました。部屋 {code}：このコードを共有すると再開できます。"
   },
   "bk": {
     "bk_blog_tag_brain": "脳トレ",

@@ -722,6 +722,8 @@ function roomHandlers(code: string) {
     // 重连也会再走 onConnect。清盘会让重连瞬间本地局面被抹掉、顺带重置时钟与历史。
     onConnect: () => { if (!state.history.length) newGame(); toast('Connected · room ' + code); },
     onReconnect: () => { toast('Reconnected'); render(); },
+    // 重连次数用尽：棋盘保持锁定（服务端状态未知，不能瞎走），但必须给一句出路
+    onReconnectFailed: (c: string) => { toast(window.t('bg.bg_common_reconnect_failed', { code: c }), 9000); render(); },
     onOpponentMove: handleWs,
     onStart: (m: OnlineMsg) => { newGame(); applyRoomState(m, true); },
     onState: (m: OnlineMsg) => { applyServerMoves(m); applyRoomState(m, false); },

@@ -2474,7 +2474,8 @@
     "bg_share_result": "Share result",
     "bg_checkers_not_your_turn": "Not your turn yet",
     "bg_common_waiting_opponent": "Waiting for opponent…",
-    "bg_common_move_rejected": "Move rejected — the server did not accept it"
+    "bg_common_move_rejected": "Move rejected — the server did not accept it",
+    "bg_common_reconnect_failed": "Connection lost — could not reconnect. Room {code}: share this code to resume the game."
   },
   "bk": {
     "bk_blog_tag_brain": "Brain Training",

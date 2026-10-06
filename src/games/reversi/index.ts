@@ -916,6 +916,8 @@ function roomHandlers(code: string) {
     onConnect: () => { if (!state.moves.length) newGame(); toast('Connected · room ' + code); maybeAutoPass(); },
 
     onReconnect: () => { toast('Reconnected'); render(); },
+    // 重连次数用尽：棋盘保持锁定（服务端状态未知，不能瞎走），但必须给一句出路
+    onReconnectFailed: (c: string) => { toast(window.t('bg.bg_common_reconnect_failed', { code: c }), 9000); render(); },
     onOpponentPlace: handleWs,
     onPassNotify: handleWs,
     onStart: (m: OnlineMsg) => { newGame(); applyRoomState(m, true); },
