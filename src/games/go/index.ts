@@ -451,10 +451,18 @@ function finishCounting(dead: Set<number>): void {
   state.countPending = false;
   exitCounting();
   endGame(verdict, line, 'score', humanWon);
-  // 联机：败方（或和棋）向服务端宣告结果，触发正常结算与房间收尾。
-  // 胜方不发 —— 与现有「认输由败方发起」的约定一致，避免重复 settle。
+  // 联机：**双方都**向服务端申报结果。
+  // 2026-10-06 修正：此前约定是「败方（或和棋）单方申报，胜方不发」，
+  // 而服务端 count_finish 已改为要求双方申报且一致（防止客户端单方伪造胜方，
+  // 服务端没有 go 引擎无法自行算分）。只让败方发的话，goFinish[胜方] 永远是
+  // null，围棋所有非和棋局都卡在「对局未结束」，永远等不到结算。
+  //
+  // 双方之所以必然一致：finishCounting 收到的 dead 是**服务端 count_ready 广播的
+  // 并集**，两端对同一份并集跑同一个 scoreWithDead，结果相同。
+  // 若两端算出不同胜方，服务端会判 count_result_mismatch 并拒绝结算 —— 那正是
+  // 这道守卫想抓的情况。
   // 座位映射与上面一致：seat 0 = 黑(1)，seat 1 = 白(2)。
-  if (state.mode === 'ranked' && state.myIdx !== null && !humanWon) {
+  if (state.mode === 'ranked' && state.myIdx !== null) {
     const winnerSeat: 0 | 1 | 'draw' = sc.winner === 1 ? 0 : sc.winner === 2 ? 1 : 'draw';
     sendWs({ type: 'count_finish', winner: winnerSeat });
   }
