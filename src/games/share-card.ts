@@ -241,6 +241,10 @@ function mount(): HTMLDivElement {
 
   document.body.appendChild(el);
 
+  // 这个弹窗是首次 openShareCard() 时才挂上的，页面启动那遍 applyToDOM 扫不到它。
+  // i18n.js 的 MutationObserver 有 60ms 防抖兜底，但这里主动补一次，避免读到未翻译文案。
+  try { window.i18n?.applyToDOM(el); } catch { /* i18n 未就绪时交给 observer */ }
+
   const q = <T extends Element>(role: string) => el.querySelector(`.bd-share-card [data-role="${role}"]`) as T;
 
   el.addEventListener('click', (e) => { if (e.target === el) closeShareCard(); });
