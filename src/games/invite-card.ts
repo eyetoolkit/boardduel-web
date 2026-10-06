@@ -21,6 +21,8 @@
  */
 
 import { showBoardDuelToast as toast } from './shared';
+import '../styles/invite-card.css';
+import '../styles/share-card.css';
 
 export interface InviteCard {
   root: HTMLDivElement;
@@ -75,6 +77,8 @@ export function mountInviteCard(prefix: string, game: string, label: string): In
         <input class="go-invite-link" data-role="link" readonly aria-label="Invite link">
         <button type="button" class="go-btn go-invite-sm" data-role="copy-link" data-i18n="bg.bg_invite_copy">Copy link</button>
       </div>
+
+      <button type="button" class="go-btn go-invite-card-btn" data-role="make-card" data-i18n="bg.bg_share_save_image">🖼 Save invite card</button>
 
       <p class="go-invite-note" data-i18n="bg.bg_invite_note">Send this code or link — your friend lands on the same board.</p>
     </div>`;
@@ -134,6 +138,17 @@ export function mountInviteCard(prefix: string, game: string, label: string): In
     const c = codeEl.textContent.trim();
     void copy(c, 'Room code copied', 'Copy failed');
     flash(copyCodeBtn, '✅ Copied', 'Copy');
+  });
+
+  // 「保存邀请卡」→ 打开 Canvas 绘制的大图分享卡片（MathDuel 范式）
+  // 延迟引入避免 invite-card → share-card 的循环依赖
+  q<HTMLButtonElement>('make-card').addEventListener('click', async () => {
+    const c = codeEl.textContent.trim();
+    if (!c || c === '------') { toast('Room code not ready yet'); return; }
+    const m = await import('./share-card');
+    hideInviteCard(prefix);
+    // game 是 worker 用的 id（决定 /b/<game>/<CODE>），label 是展示名 —— 别搞混
+    m.shareInvite(game, label || game, c);
   });
 
   // 点遮罩空白处关闭（点卡片本体不关）

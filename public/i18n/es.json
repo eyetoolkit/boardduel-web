@@ -2454,7 +2454,16 @@
     "go_opp_wins": "Pierdes",
     "bg_invite_close": "Cerrar",
     "bg_invite_room_code": "Código de sala",
-    "bg_invite_copy_code": "Copiar"
+    "bg_invite_copy_code": "Copiar",
+    "bg_share_title": "Compartir",
+    "bg_share_close": "Cerrar",
+    "bg_share_qr_hint": "📱 <b>Escanea o toca el enlace</b><br>Invita a un amigo a tu tablero",
+    "bg_share_link": "Enlace para compartir",
+    "bg_share_copy": "📋 Copiar",
+    "bg_share_save": "⬇ Guardar imagen",
+    "bg_share_system": "💬 Compartir",
+    "bg_share_save_image": "🖼 Guardar tarjeta",
+    "bg_share_result": "Compartir resultado"
   },
   "bk": {
     "bk_blog_tag_brain": "Entrenamiento cerebral",

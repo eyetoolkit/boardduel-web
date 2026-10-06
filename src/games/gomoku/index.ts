@@ -667,11 +667,21 @@ function finish(winner: GPlayer, line: number[] | null): void {
   endVerdict.textContent = verdict;
   endVerdict.className = 'go-end-verdict ' + (verdict.includes('win') && !verdict.includes('lose') ? 'is-win' : 'is-loss');
   endLine.textContent = lineText || '—';
+  // 2026-10-06：把本局数据留给「分享结果」卡片（终局时快照，避免之后被悔棋改写）
+  lastResult = {
+    youWin: verdict.includes('win') && !verdict.includes('lose'),
+    moves: state.moves.length,
+    durationSec: state.timer ? Math.max(1, Math.round((Date.now() - state.timer.startedAt) / 1000)) : 0,
+    mode: state.mode,
+  };
   playSfx(verdict.includes('win') && !verdict.includes('lose') ? 'win' : 'lose');
   // 不再瞬间跳结算：先看 1.5s 胜局盘面（获胜连线高亮），再自动进结算页
   scheduleEndScreen();
   toast(verdict + (lineText ? ' · ' + lineText : ''));
 }
+
+/** 上一局的战果（终局时快照），供 share-card 取用 */
+let lastResult: { youWin: boolean; moves: number; durationSec: number; mode: string } | null = null;
 
 /** 终局后先停在棋盘上 1.5s，让玩家看清最后一手和获胜连线，再进结算页
  *  （此前 AI 落完最后一子瞬间跳结算，最后一手根本看不到 —— 用户反馈）。
@@ -1545,6 +1555,23 @@ rematchBtn.addEventListener('click', () => {
 /* "Review moves" = 进入完整棋谱回放（从头自动播放，可暂停/拖动/逐手） */
 reviewBtn.addEventListener('click', enterReplay);
 endLobbyBtn.addEventListener('click', exitMatchToLobby);
+
+/* 2026-10-06：分享结果 → Canvas 大图卡片（MathDuel 范式，可保存 PNG / 系统分享） */
+$<HTMLButtonElement>('go-share')?.addEventListener('click', async () => {
+  if (!lastResult) { toast('Finish a game first'); return; }
+  const m = await import('../share-card');
+  const link = state.roomCode
+    ? location.origin + '/b/gomoku/' + state.roomCode
+    : location.origin + '/games/gomoku/';
+  m.shareResult('Gomoku · 15×15', {
+    youWin: lastResult.youWin,
+    moves: lastResult.moves,
+    durationSec: lastResult.durationSec,
+    link,
+    qrGame: state.roomCode ? 'gomoku' : undefined,
+    tone: lastResult.youWin ? 'wood' : 'indigo',
+  });
+});
 
 chatForm.addEventListener('submit', (e) => {
   e.preventDefault();

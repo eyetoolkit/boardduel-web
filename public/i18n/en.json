@@ -2454,7 +2454,16 @@
     "go_opp_wins": "You lose",
     "bg_invite_close": "Close",
     "bg_invite_room_code": "Room code",
-    "bg_invite_copy_code": "Copy"
+    "bg_invite_copy_code": "Copy",
+    "bg_share_title": "Share",
+    "bg_share_close": "Close",
+    "bg_share_qr_hint": "📱 <b>Scan or tap the link</b><br>Invite a friend to your board",
+    "bg_share_link": "Share link",
+    "bg_share_copy": "📋 Copy",
+    "bg_share_save": "⬇ Save Image",
+    "bg_share_system": "💬 Share",
+    "bg_share_save_image": "🖼 Save invite card",
+    "bg_share_result": "Share result"
   },
   "bk": {
     "bk_blog_tag_brain": "Brain Training",

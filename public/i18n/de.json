@@ -2454,7 +2454,16 @@
     "go_opp_wins": "Du verlierst",
     "bg_invite_close": "Schließen",
     "bg_invite_room_code": "Raumcode",
-    "bg_invite_copy_code": "Kopieren"
+    "bg_invite_copy_code": "Kopieren",
+    "bg_share_title": "Teilen",
+    "bg_share_close": "Schließen",
+    "bg_share_qr_hint": "📱 <b>Scannen oder Link antippen</b><br>Lade einen Freund auf dein Brett ein",
+    "bg_share_link": "Freigabelink",
+    "bg_share_copy": "📋 Kopieren",
+    "bg_share_save": "⬇ Bild speichern",
+    "bg_share_system": "💬 Teilen",
+    "bg_share_save_image": "🖼 Einladungskarte speichern",
+    "bg_share_result": "Ergebnis teilen"
   },
   "bk": {
     "bk_blog_tag_brain": "Gehirntraining",

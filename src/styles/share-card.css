@@ -1,0 +1,133 @@
+/* ============================================================
+ * BoardDuel · 分享卡片弹窗（2026-10-06）
+ * ------------------------------------------------------------
+ * 范式抄 MathDuel 24-game 的 .share-overlay / .share-card：
+ * 全屏遮罩 + 居中卡片 + Canvas 大图 + 复制/保存/系统分享。
+ * 配色沿用 BoardDuel paper 主题（白卡 + 靛影 + 圆角 24）。
+ * ============================================================ */
+
+.bd-share-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483100; /* 高于邀请卡片 */
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(30, 27, 57, .58);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  overflow-y: auto;
+}
+.bd-share-overlay.show { display: flex; }
+.bd-share-overlay[hidden] { display: none !important; }
+
+.bd-share-card {
+  width: 100%;
+  max-width: 400px;
+  max-height: 92vh;
+  overflow-y: auto;
+  background: #FFFFFF;
+  border: 1px solid #E3E6F0;
+  border-radius: 24px;
+  padding: 20px 18px 18px;
+  box-shadow: 0 2px 4px rgba(30, 27, 57, .06), 0 24px 60px -20px rgba(30, 27, 57, .40);
+  animation: bd-share-in .26s cubic-bezier(.34, 1.4, .64, 1) both;
+}
+@keyframes bd-share-in {
+  from { opacity: 0; transform: translateY(16px) scale(.95); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) { .bd-share-card { animation: none; } }
+
+/* ── 头部 ── */
+.bd-share-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
+}
+.bd-share-title {
+  margin: 0; font-weight: 700; font-size: 1.1rem; color: #1E1B39;
+  letter-spacing: -.01em;
+}
+.bd-share-x {
+  border: 0; background: #F1F2F7; color: #5B6079;
+  width: 34px; height: 34px; border-radius: 10px;
+  font-size: 1rem; line-height: 1; cursor: pointer;
+}
+.bd-share-x:hover { background: #E3E6F0; color: #1E1B39; }
+
+/* ── Canvas 大图 ── */
+.bd-share-canvas-wrap {
+  display: flex; justify-content: center;
+  margin-bottom: 14px;
+  background: #F8F9FC;
+  border-radius: 16px;
+  padding: 10px;
+}
+.bd-share-canvas {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(30, 27, 57, .12);
+}
+
+/* ── 二维码行 ── */
+.bd-share-qr-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; margin-bottom: 12px;
+  background: #F8F9FC;
+  border: 1px solid #EEF1F5;
+  border-radius: 14px;
+}
+.bd-share-qr {
+  width: 76px; height: 76px; flex: 0 0 auto;
+  border-radius: 10px; background: #fff; padding: 4px;
+  border: 1px solid #E3E6F0;
+  object-fit: contain;
+}
+.bd-share-qr-txt {
+  font-size: .78rem; color: #5B6079; line-height: 1.5;
+}
+.bd-share-qr-txt b { color: #1E1B39; font-weight: 700; }
+
+/* ── 链接行 ── */
+.bd-share-url-row {
+  display: flex; gap: 8px; margin-bottom: 10px;
+}
+.bd-share-url {
+  flex: 1; min-width: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .74rem; color: #5B6079;
+  padding: 9px 10px; border-radius: 10px;
+  border: 1px solid #E3E6F0; background: #F8F9FC;
+  text-overflow: ellipsis;
+}
+
+/* ── 操作行 ── */
+.bd-share-actions { display: flex; gap: 8px; }
+.bd-share-sm { flex: 1; white-space: nowrap; }
+
+/* ── 窄屏 ── */
+@media (max-width: 380px) {
+  .bd-share-card { max-width: 100%; padding: 18px 14px 16px; border-radius: 20px; }
+  .bd-share-canvas { max-width: 240px; }
+  .bd-share-actions { flex-wrap: wrap; }
+}
+
+/* ── 暗色 ── */
+html[data-theme="dark"] .bd-share-overlay { background: rgba(6, 6, 18, .72); }
+html[data-theme="dark"] .bd-share-card {
+  background: #1A1B2E; border-color: #2C2E45;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .35), 0 24px 60px -20px rgba(0, 0, 0, .7);
+}
+html[data-theme="dark"] .bd-share-title { color: #F4F5F9; }
+html[data-theme="dark"] .bd-share-x { background: #24263C; color: #9AA0BE; }
+html[data-theme="dark"] .bd-share-x:hover { background: #2F3150; color: #F4F5F9; }
+html[data-theme="dark"] .bd-share-canvas-wrap,
+html[data-theme="dark"] .bd-share-qr-row { background: #15162A; border-color: #2C2E45; }
+html[data-theme="dark"] .bd-share-qr-txt { color: #9AA0BE; }
+html[data-theme="dark"] .bd-share-qr-txt b { color: #F4F5F9; }
+html[data-theme="dark"] .bd-share-url {
+  background: #15162A; border-color: #2C2E45; color: #9AA0BE;
+}

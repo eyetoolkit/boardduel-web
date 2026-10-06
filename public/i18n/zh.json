@@ -2452,7 +2452,16 @@
     "go_opp_wins": "你输了",
     "bg_invite_close": "关闭",
     "bg_invite_room_code": "房间码",
-    "bg_invite_copy_code": "复制"
+    "bg_invite_copy_code": "复制",
+    "bg_share_title": "分享",
+    "bg_share_close": "关闭",
+    "bg_share_qr_hint": "📱 <b>扫码或点链接</b><br>邀请好友来同一张棋盘",
+    "bg_share_link": "分享链接",
+    "bg_share_copy": "📋 复制",
+    "bg_share_save": "⬇ 保存图片",
+    "bg_share_system": "💬 分享",
+    "bg_share_save_image": "🖼 保存邀请卡",
+    "bg_share_result": "分享战绩"
   },
   "bk": {
     "bk_blog_tag_brain": "脑力训练",

@@ -399,6 +399,8 @@ function finish(winner: TPlayer): void {
   endLine.textContent = line && line.length ? line.map(notation).join(' – ') : '—';
   endVerdict.className = 'go-end-verdict ' + (winner === 1 ? 'is-win' : 'is-loss');
   playSfx(winner === 1 ? 'win' : 'lose');
+  // 终局快照给「分享结果」卡片：AI 模式下 X(1) 是玩家，联机看自己那一手
+  snapshotResult(winner === (state.mode === 'ai' ? 1 : (state.myIdx ?? 0) + 1));
 
   if (winner === 1 && state.mode === 'ai') {
     const cur = readBest('tictactoe', state.mode, state.level);
@@ -413,6 +415,7 @@ function finishDraw(): void {
   endVerdict.className = 'go-end-verdict';
   endLine.textContent = window.t('bi.board_full');
   toast(window.t('bi.draw'));
+  snapshotResult(false);   // 和棋不算赢
   scheduleEndScreen();
 }
 
@@ -653,6 +656,29 @@ rematchBtn.addEventListener('click', () => {
 });
 reviewBtn.addEventListener('click', enterReplay);
 endLobbyBtn.addEventListener('click', exitMatchToLobby);
+
+/* 2026-10-06：分享结果 → Canvas 大图卡片（MathDuel 范式，可保存 PNG / 系统分享） */
+let lastResult: { youWin: boolean; moves: number; durationSec: number } | null = null;
+/** 终局时快照，避免之后回放/悔棋改写数据 */
+function snapshotResult(youWin: boolean): void {
+  lastResult = {
+    youWin,
+    moves: state.moves.length,
+    durationSec: state.timer ? Math.max(1, Math.round((Date.now() - state.timer.startedAt) / 1000)) : 0,
+  };
+}
+document.getElementById('tt-share')?.addEventListener('click', async () => {
+  if (!lastResult) { toast('Finish a game first'); return; }
+  const m = await import('../share-card');
+  m.shareResult('Tic-Tac-Toe · 3×3', {
+    youWin: lastResult.youWin,
+    moves: lastResult.moves,
+    durationSec: lastResult.durationSec,
+    link: state.roomCode ? location.origin + '/b/tictactoe/' + state.roomCode : location.origin + '/games/tictactoe/',
+    qrGame: state.roomCode ? 'tictactoe' : undefined,
+    tone: lastResult.youWin ? 'wood' : 'indigo',
+  });
+});
 
 /* ======================
  * 模式与深链

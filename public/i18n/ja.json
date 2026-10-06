@@ -2454,7 +2454,16 @@
     "go_opp_wins": "あなたの負け",
     "bg_invite_close": "閉じる",
     "bg_invite_room_code": "ルームコード",
-    "bg_invite_copy_code": "コピー"
+    "bg_invite_copy_code": "コピー",
+    "bg_share_title": "共有",
+    "bg_share_close": "閉じる",
+    "bg_share_qr_hint": "📱 <b>QR またはリンクをタップ</b><br>友人を同じ盤に招待",
+    "bg_share_link": "共有リンク",
+    "bg_share_copy": "📋 コピー",
+    "bg_share_save": "⬇ 画像を保存",
+    "bg_share_system": "💬 共有",
+    "bg_share_save_image": "🖼 招待カードを保存",
+    "bg_share_result": "結果を共有"
   },
   "bk": {
     "bk_blog_tag_brain": "脳トレ",

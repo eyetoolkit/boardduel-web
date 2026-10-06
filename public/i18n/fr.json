@@ -2454,7 +2454,16 @@
     "go_opp_wins": "Vous perdez",
     "bg_invite_close": "Fermer",
     "bg_invite_room_code": "Code de salon",
-    "bg_invite_copy_code": "Copier"
+    "bg_invite_copy_code": "Copier",
+    "bg_share_title": "Partager",
+    "bg_share_close": "Fermer",
+    "bg_share_qr_hint": "📱 <b>Scannez ou touchez le lien</b><br>Invitez un ami sur votre plateau",
+    "bg_share_link": "Lien de partage",
+    "bg_share_copy": "📋 Copier",
+    "bg_share_save": "⬇ Enregistrer l’image",
+    "bg_share_system": "💬 Partager",
+    "bg_share_save_image": "🖼 Enregistrer la carte",
+    "bg_share_result": "Partager le résultat"
   },
   "bk": {
     "bk_blog_tag_brain": "Entraînement cérébral",

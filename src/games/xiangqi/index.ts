@@ -480,6 +480,7 @@ function finish(winner: Side | 0): void {
     endLine.textContent = window.t('bg.bg_xq_draw_line');
     playSfx('place');
     toast(window.t('bg.bg_xq_draw'));
+    snapshotResult(false);   // 和棋不算赢
     scheduleEndScreen();
     return;
   }
@@ -490,6 +491,7 @@ function finish(winner: Side | 0): void {
   endVerdict.textContent = verdict;
   endLine.textContent = line;
   endVerdict.className = 'go-end-verdict ' + (meWon ? 'is-win' : 'is-loss');
+  snapshotResult(meWon);   // 终局快照给「分享结果」卡片
   playSfx(meWon ? 'win' : 'lose');
   toast(verdict);
   scheduleEndScreen();
@@ -735,6 +737,29 @@ rematchBtn.addEventListener('click', () => {
 });
 reviewBtn.addEventListener('click', enterReplay);
 endLobbyBtn.addEventListener('click', exitMatchToLobby);
+
+/* 2026-10-06：分享结果 → Canvas 大图卡片（MathDuel 范式，可保存 PNG / 系统分享） */
+let lastResult: { youWin: boolean; moves: number; durationSec: number } | null = null;
+/** 终局时快照，避免之后回放/悔棋改写数据 */
+function snapshotResult(youWin: boolean): void {
+  lastResult = {
+    youWin,
+    moves: state.moves.length,
+    durationSec: state.timer ? Math.max(1, Math.round((Date.now() - state.timer.startedAt) / 1000)) : 0,
+  };
+}
+document.getElementById('xq-share')?.addEventListener('click', async () => {
+  if (!lastResult) { toast('Finish a game first'); return; }
+  const m = await import('../share-card');
+  m.shareResult('Xiangqi', {
+    youWin: lastResult.youWin,
+    moves: lastResult.moves,
+    durationSec: lastResult.durationSec,
+    link: state.roomCode ? location.origin + '/b/xiangqi/' + state.roomCode : location.origin + '/games/xiangqi/',
+    qrGame: state.roomCode ? 'xiangqi' : undefined,
+    tone: lastResult.youWin ? 'wood' : 'indigo',
+  });
+});
 
 /* ======================
  * 模式与深链

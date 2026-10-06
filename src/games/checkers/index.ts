@@ -341,6 +341,7 @@ function finish(winner: CPlayer | 0): void {
   endVerdict.textContent = verdict;
   endVerdict.className = 'go-end-verdict ' + (winner === 0 ? 'is-draw' : (winner === HUMAN ? 'is-win' : 'is-loss'));
   endLine.textContent = `${window.t('bg.bg_checkers_pieces')} ${red} · ${black}`;
+  snapshotResult(winner === HUMAN);   // 终局快照给「分享结果」卡片
   playSfx(winner === HUMAN ? 'win' : winner === 0 ? 'place' : 'lose');
   toast(verdict);
   if (endScreenTimer) window.clearTimeout(endScreenTimer);
@@ -433,6 +434,30 @@ backLobbyBtn.addEventListener('click', exitMatchToLobby);
 /* ====================== 结算页三键 ====================== */
 rematchBtn.addEventListener('click', newGame);
 endLobbyBtn.addEventListener('click', exitMatchToLobby);
+
+/* 2026-10-06：分享结果 → Canvas 大图卡片（MathDuel 范式，可保存 PNG / 系统分享） */
+let lastResult: { youWin: boolean; moves: number; durationSec: number } | null = null;
+/** 终局时快照。跳棋没有 moves 数组，走子数取 history 长度 */
+function snapshotResult(youWin: boolean): void {
+  lastResult = {
+    youWin,
+    moves: state.history.length,
+    durationSec: state.timer && state.timer.startedAt
+      ? Math.max(1, Math.round((Date.now() - state.timer.startedAt) / 1000)) : 0,
+  };
+}
+document.getElementById('ck-share')?.addEventListener('click', async () => {
+  if (!lastResult) { toast('Finish a game first'); return; }
+  const m = await import('../share-card');
+  m.shareResult('Checkers', {
+    youWin: lastResult.youWin,
+    moves: lastResult.moves,
+    durationSec: lastResult.durationSec,
+    link: state.roomCode ? location.origin + '/b/checkers/' + state.roomCode : location.origin + '/games/checkers/',
+    qrGame: state.roomCode ? 'checkers' : undefined,
+    tone: lastResult.youWin ? 'wood' : 'indigo',
+  });
+});
 
 /* ====================== 屏幕切换 ====================== */
 function showScreen(s: 'match' | 'end'): void {
