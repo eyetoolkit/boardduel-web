@@ -2408,6 +2408,7 @@
     "bg_go_count_hint_ai": "标出引擎的死子后确认。你执黑先行。",
     "bg_go_count_only_enemy": "只能标对方的子为死子。",
     "bg_go_count_wait": "等待对手确认数目…",
+    "bg_go_by_count": "按数目",
     "bg_go_count_b": "黑",
     "bg_go_count_w": "白",
     "bg_go_count_clear": "重置",

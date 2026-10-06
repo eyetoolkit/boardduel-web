@@ -1138,12 +1138,15 @@ function handleWs(msg: Record<string, unknown>): void {
         ? t('bg.bg_go_byoyomi', 'by time (byoyomi)')
         : reason === 'opponent_left'
           ? t('bj.opp_left', 'Opponent left')
-          : t('bj.by_resignation', 'by resignation');
+          : reason === 'count'
+            // 终局数目结算，不是认输。漏掉这个分支会显示成「对方认输获胜」。
+            ? t('bg.bg_go_by_count', 'by count')
+            : t('bj.by_resignation', 'by resignation');
       if (reason === 'resign') {
         endVerdict.textContent = iLost ? t('bj.you_resigned', 'You resigned') : t('bj.opp_resigned', 'Opponent resigned');
       } else if (reason === 'timeout') {
         endVerdict.textContent = iLost ? t('bg.bg_go_timeout_you', 'You ran out of time') : t('bg.bg_go_you_win', 'You win');
-      } else {
+      } else {   // count / 其它：胜负文案一致，差别只在上面的 line
         endVerdict.textContent = iLost ? t('bg.bg_go_opp_wins', 'You lose') : t('bg.bg_go_you_win', 'You win');
       }
       endVerdict.className = 'go-end-verdict ' + (iLost ? 'is-loss' : 'is-win');

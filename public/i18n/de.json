@@ -2410,6 +2410,7 @@
     "bg_go_count_hint_ai": "Markiere die toten Gruppen des Motors und bestätige. Du spielst Schwarz (zuerst).",
     "bg_go_count_only_enemy": "Du kannst nur gegnerische Steine als tot markieren.",
     "bg_go_count_wait": "Warte auf die Bestätigung deines Gegners…",
+    "bg_go_by_count": "nach Zählung",
     "bg_go_count_b": "Schwarz",
     "bg_go_count_w": "Weiß",
     "bg_go_count_clear": "Zurücksetzen",
