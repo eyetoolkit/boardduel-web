@@ -2560,6 +2560,10 @@
     "takeback_requested": "Zug zurück angefordert",
     "takeback_accepted": "Zug zurück akzeptiert",
     "takeback_declined": "Zug zurück abgelehnt",
+    "takeback_decline": "Ablehnen",
+    "takeback_accept": "Annehmen",
+    "takeback_ask_note": "Bei Annahme wird der letzte Zug auf beiden Brettern zurückgenommen.",
+    "takeback_ask": "Dein Gegner bittet um Rücknahme",
     "opp_left": "Gegner hat verlassen",
     "link_copied": "Einladungslink kopiert"
   },

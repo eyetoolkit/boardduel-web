@@ -2560,6 +2560,10 @@
     "takeback_requested": "Takeback requested",
     "takeback_accepted": "Takeback accepted",
     "takeback_declined": "Takeback declined",
+    "takeback_decline": "Decline",
+    "takeback_accept": "Accept",
+    "takeback_ask_note": "Accepting undoes the last move on both boards.",
+    "takeback_ask": "Opponent asks to take back",
     "opp_left": "Opponent left",
     "link_copied": "Invite link copied"
   },

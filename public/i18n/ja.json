@@ -2560,6 +2560,10 @@
     "takeback_requested": "待ったを要求",
     "takeback_accepted": "待った承認",
     "takeback_declined": "待った拒否",
+    "takeback_decline": "辞退",
+    "takeback_accept": "受理",
+    "takeback_ask_note": "受理すると両方の盤面で最後の手を取り消します。",
+    "takeback_ask": "相手が待った一手を取り消したいと言っています",
     "opp_left": "相手が退出",
     "link_copied": "招待リンクをコピー"
   },

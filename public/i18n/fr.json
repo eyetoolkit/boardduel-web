@@ -2560,6 +2560,10 @@
     "takeback_requested": "Reprise demandée",
     "takeback_accepted": "Reprise acceptée",
     "takeback_declined": "Reprise refusée",
+    "takeback_decline": "Refuser",
+    "takeback_accept": "Accepter",
+    "takeback_ask_note": "Si vous acceptez, le dernier coup est annulé sur les deux plateaux.",
+    "takeback_ask": "Votre adversaire demande à annuler le coup",
     "opp_left": "L'adversaire a quitté",
     "link_copied": "Lien d'invitation copié"
   },

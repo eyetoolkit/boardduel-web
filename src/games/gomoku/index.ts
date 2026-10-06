@@ -80,6 +80,20 @@ const replayBtn = $<HTMLButtonElement>('go-replay');
 const soundBtn = $<HTMLButtonElement>('go-sound');
 
 const leaveCard = $<HTMLDivElement>('go-leavecard');
+// 悔棋应答（2026-10-06）：此前对手请求悔棋时只弹一句 toast，他没有任何回应的入口
+const takebackCard = $<HTMLDivElement>('go-takebackcard');
+const takebackYes = $<HTMLButtonElement>('go-takeback-yes');
+const takebackNo = $<HTMLButtonElement>('go-takeback-no');
+const takebackClose = $<HTMLButtonElement>('go-takeback-close');
+
+/** 关掉悔棋应答弹层（不发送任何消息——× 与拒绝一样都算 decline） */
+function closeTakebackCard(): void {
+  takebackCard.hidden = true;
+}
+takebackYes.addEventListener('click', () => { closeTakebackCard(); sendWs({ type: 'takeback_accept' }); });
+takebackNo.addEventListener('click', () => { closeTakebackCard(); sendWs({ type: 'takeback_decline' }); toast('Takeback declined'); });
+takebackClose.addEventListener('click', closeTakebackCard);
+takebackCard.addEventListener('click', (e) => { if (e.target === takebackCard) closeTakebackCard(); });
 const rpBar = $<HTMLDivElement>('go-replaybar');
 const rpPlay = $<HTMLButtonElement>('go-rp-play');
 const rpRange = $<HTMLInputElement>('go-rp-range');
@@ -1462,7 +1476,9 @@ function handleWs(msg: Record<string, unknown>): void {
     showScreen('end');
     return;
   }
-  if (t === 'takeback_request') { toast('Opponent asks to take back'); return; }
+  // 对手请求悔棋：给出可应答的弹层，不再只是弹一句 toast（对方此前无从回应）
+  if (t === 'takeback_request') { takebackCard.hidden = false; return; }
+  if (t === 'takeback_declined') { closeTakebackCard(); toast('Takeback declined'); return; }
   if (t === 'takeback_done') {
     if (state.history.length) {
       const h = state.history.pop()!;

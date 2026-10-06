@@ -216,6 +216,20 @@
           </div>
         </div>
 
+        <!-- 悔棋应答：此前只弹一句 toast，对手没有任何可回应的入口（2026-10-06 补） -->
+        <div class="go-levelcard" id="go-takebackcard" hidden>
+          <div class="go-level-panel">
+            <div class="go-hintcard-h">
+              <span data-i18n="bj.takeback_ask">Opponent asks to take back</span>
+              <button type="button" id="go-takeback-close" data-i18n-aria-label="bg.bg_gomoku_rp_exit" aria-label="Cancel">×</button>
+            </div>
+            <p class="go-leave-note" data-i18n="bj.takeback_ask_note">Accepting undoes the last move on both boards.</p>
+            <div class="go-leave-acts">
+              <button type="button" class="go-btn is-primary" id="go-takeback-yes" data-i18n="bj.takeback_accept">Accept</button>
+              <button type="button" class="go-btn is-danger" id="go-takeback-no" data-i18n="bj.takeback_decline">Decline</button>
+            </div>
+          </div>
+        </div>
         <!-- 退出确认（手机侧滑 / 返回键触发，2026-10-03） -->
         <div class="go-levelcard go-leavecard" id="go-leavecard" hidden>
           <div class="go-level-panel">

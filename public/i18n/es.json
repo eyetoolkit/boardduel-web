@@ -2560,6 +2560,10 @@
     "takeback_requested": "Retroceso solicitado",
     "takeback_accepted": "Retroceso aceptado",
     "takeback_declined": "Retroceso rechazado",
+    "takeback_decline": "Rechazar",
+    "takeback_accept": "Aceptar",
+    "takeback_ask_note": "Si aceptas se deshace la última jugada en ambos tableros.",
+    "takeback_ask": "Tu oponente pide deshacer la jugada",
     "opp_left": "El rival salió",
     "link_copied": "Enlace de invitación copiado"
   },

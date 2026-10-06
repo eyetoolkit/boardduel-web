@@ -2558,6 +2558,10 @@
     "takeback_requested": "已请求悔棋",
     "takeback_accepted": "悔棋已同意",
     "takeback_declined": "悔棋被拒绝",
+    "takeback_decline": "拒绝",
+    "takeback_accept": "接受",
+    "takeback_ask_note": "接受后会在两端同时撤销最后一手。",
+    "takeback_ask": "对手请求悔棋",
     "opp_left": "对手离开了",
     "link_copied": "邀请链接已复制"
   },
