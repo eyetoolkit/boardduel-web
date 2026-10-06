@@ -678,6 +678,8 @@ function roomHandlers(code: string) {
     onStart: (m: OnlineMsg) => { newGame(); applyRoomState(m, true); },
     onState: (m: OnlineMsg) => applyRoomState(m, false),
     onOpponentLeave: () => { state.roomLive = false; toast('Opponent left'); render(); },
+    // 断线：online-core 已把 roomLive 置 false，这里锁盘并给一句可见提示
+    onDisconnect: () => { toast(window.t('match.disconnected')); render(); },
     onRestart: () => newGame(),
     onGameOver: handleWs,
     // 服务端在 2026-10-06 起强制轮次；被拒时回滚 + 给出可读原因，而不是静默无反应

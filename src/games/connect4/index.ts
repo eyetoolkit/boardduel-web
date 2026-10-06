@@ -847,6 +847,8 @@ function roomHandlers(code: string) {
     onState: (m: OnlineMsg) => applyRoomState(m, false),
     onRestart: () => newGame(),
     onOpponentLeave: () => { state.roomLive = false; toast('Opponent left'); render(); },
+    // 断线：online-core 已把 roomLive 置 false，这里锁盘并给一句可见提示
+    onDisconnect: () => { toast(window.t('match.disconnected')); render(); },
     onGameOver: handleWs,
     onError: (m: OnlineMsg) => {
       const c = String((m.code as string) || (m.message as string) || '');

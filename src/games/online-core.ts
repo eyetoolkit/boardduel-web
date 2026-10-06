@@ -15,6 +15,8 @@ export interface OnlineState {
   roomCode: string | null;
   myIdx: number | null;
   mode: string;
+  /** 对手是否已在房、可落子。由 applyRoomState 类逻辑与 WS close/error 维护。 */
+  roomLive: boolean;
 }
 
 export type OnlineMsg = Record<string, unknown>;
@@ -37,6 +39,12 @@ export interface OnlineHandlers {
   /** 服务端拒绝（illegal_move / not_your_turn / 对方未连接…）。
    *  可选：未提供时该消息被忽略，行为与此前一致。 */
   onError?: (msg: OnlineMsg) => void;
+  /**
+   * WebSocket 断开或出错（close / error）。此时 state.roomLive 已被置 false，
+   * 收到就该把棋盘锁上并给玩家一句提示，否则走子会被 sendWs 静默丢弃。
+   * 新的 enterRoom 会重新打开连接并通过 onState/onStart 恢复。
+   */
+  onDisconnect?: () => void;
 }
 
 /**
@@ -263,10 +271,18 @@ export function enterRoom(state: OnlineState, code: string, handlers: OnlineHand
       return;
     }
   });
+  // 🔴 断线不再静默。此前这两个监听是空壳：socket 关掉后 state.ws 仍指向一个
+  //   CLOSED 对象，roomLive 也还是 true，于是棋盘照样可点，而 sendWs 在
+  //   readyState !== OPEN 时直接 return —— 玩家看到「我一直在走，棋盘动得很顺，
+  //   对手那边什么也没有」，全程零提示。这里把棋盘锁上并交回可见状态。
   ws.addEventListener('close', () => {
-    /* 连接断开 */
+    if (state.ws !== ws) return;          // 已被新一轮连接取代（重连/换房），别锁错
+    state.roomLive = false;
+    handlers.onDisconnect?.();
   });
   ws.addEventListener('error', () => {
-    /* 连接错误 */
+    if (state.ws !== ws) return;
+    state.roomLive = false;
+    handlers.onDisconnect?.();
   });
 }

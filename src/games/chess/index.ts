@@ -540,6 +540,9 @@ rpRange.addEventListener('input', () => { stopReplay(); seek(Number(rpRange.valu
  * ====================== */
 function undo(): void {
   if (state.over) return;
+  // 联机禁用：undo 不看是谁走的，能把对手的棋子从自己屏幕上撤掉，
+  // 而回合闸随之对双方同时打开 → 两块棋盘永久分叉，且全程没有任何报错。
+  if (state.mode === 'online') { toast('Undo is not available in online play'); return; }
   cancelAiMove();
   if (state.history.length === 0) return;
   state.gs = state.history.pop()!;
@@ -580,6 +583,10 @@ function resign(): void {
 function doResign(): void {
   if (state.over) return;
   cancelAiMove();
+  // 联机必须通知服务端。原先纯本地判负，后果有三：对手永远不知道这局结束了；
+  // 没有结算（无 Elo、无金币）；房间也不清理，对手要等 60 秒断线宽限才靠
+  // 「对手离开」拿到胜局 —— 而他若先点「再战」，restart 会把他自己的真实中局抹掉。
+  if (state.mode === 'online' && state.ws) sendWs(state as OnlineState, { type: 'resign' });
   state.over = true;
   stopTimer(state.timer);
   endVerdict.textContent = 'You resigned';
@@ -751,6 +758,7 @@ function newGame(): void {
     startTimer(state.timer, (ms) => { clockMeTime.textContent = fmtClock(ms); });
   }
   levelBtn.hidden = state.mode !== 'ai';
+  undoBtn.hidden = state.mode === 'online';   // 联机下 undo 会污染对手的棋盘，见 undo()
   showScreen('match');
   render();
   armBackGuard();
@@ -858,10 +866,14 @@ function roomHandlers(code: string) {
   return {
     onConnect: () => { newGame(); toast('Connected · room ' + code); },
     onOpponentMove: handleWs,
-    onStart: (m: OnlineMsg) => { newGame(); applyRoomState(m, true); },
+    // 服务端对「第二人加入」和「重连」广播的是同一个 start（games-room.js:267-310），
+    // 无条件 newGame() 会让中途刷新把**没刷新的对手**那盘真实中局也一起清空。
+    onStart: (m: OnlineMsg) => { if (!state.moves.length) newGame(); applyRoomState(m, true); },
     onState: (m: OnlineMsg) => applyRoomState(m, false),
     onRestart: () => newGame(),
     onOpponentLeave: () => { state.roomLive = false; toast('Opponent left'); render(); },
+    // 断线：online-core 已把 roomLive 置 false，这里锁盘并给一句可见提示
+    onDisconnect: () => { toast(window.t('match.disconnected')); render(); },
     onGameOver: handleWs,
   };
 }
