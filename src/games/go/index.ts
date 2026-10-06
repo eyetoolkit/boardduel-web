@@ -13,7 +13,7 @@
 import { setupNav, toast } from '../game-core';
 import { wireLobbyChrome } from '../../lobby-chrome';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
-import { myName as ocMyName } from '../online-core';
+import { myName as ocMyName, opponentNameFromState } from '../online-core';
 // 2026-10-06：好友房邀请卡片（全屏遮罩弹窗，范式抄 MathDuel 24-game share-overlay）
 import { mountInviteCard, showInviteCard, onOpponentJoined } from '../invite-card';
 import '../../styles/invite-card.css';
@@ -119,6 +119,8 @@ interface UIState {
    * 造成「我下的子凭空消失」的错觉。
    */
   rankedLive: boolean;
+  /** 对手昵称；未进房为 null。对手侧标签与时钟高亮都用它。 */
+  oppName: string | null;
 }
 
 const state: UIState = {
@@ -146,6 +148,7 @@ const state: UIState = {
   myIdx: null,
   sawGameOver: false,
   rankedLive: false,
+  oppName: null,
 };
 
 /* ══════════════════════════════════════════════════════════════
@@ -483,7 +486,10 @@ function renderClocks(): void {
     clockOppWho.textContent = t('bg.bg_go_engine_white', 'ENGINE · WHITE');
   } else if (state.mode === 'ranked') {
     clockMeWho.textContent = state.myIdx === 0 ? t('bj.you_black', 'You · Black') : t('bj.you_white', 'You · White');
-    clockOppWho.textContent = state.myIdx === 0 ? t('bj.opp_white', 'Opponent · White') : t('bj.opp_black', 'Opponent · Black');
+    // 对手没进房时别写「Opponent · White」——表也没走（clockFrozen），写等待态才对应真实情况。
+    clockOppWho.textContent = state.rankedLive && state.oppName
+      ? state.oppName
+      : t('bg.bg_common_waiting_opponent', 'Waiting for opponent…');
   } else {
     clockMeWho.textContent = t('bj.black_p1', 'BLACK P1');
     clockOppWho.textContent = t('bj.white_p2', 'WHITE P2');
@@ -507,6 +513,10 @@ function clockFrozen(): boolean {
   if (document.hidden) return true;
   // 引擎加载中：AI 的表不走（人类此刻也没法落子，公平）
   if (state.mode === 'ai' && katagoStatus().loading) return true;
+  // 🔴 2026-10-06：对手还没进房时不能走表。棋盘锁（canHumanMove:363）做了，
+  //   但时钟没跟着锁 —— 建房方是黑方（toPlay=1，initialClock 默认）时，
+  //   空房等 10 分钟主时间就烧光，finishByTimeout 直接判负。
+  if (state.mode === 'ranked' && !state.rankedLive) return true;
   return false;
 }
 
@@ -974,6 +984,30 @@ function sendWs(obj: Record<string, unknown>): void {
   try { ws.send(JSON.stringify(obj)); } catch (e) { /* ignore */ }
 }
 
+/** 联机再战回声闸：armed=true 表示本方刚发过 restart，等着吞掉自己那份 restart_notify */
+let restartEchoArmed = false;
+
+/**
+ * 服务端拒了刚落的那一手（错回合 / 非法点）→ 退回到落子之前。
+ * 之前只弹 toast：本地子已经落在盘上并轮了表，而对手那边没有这一步，
+ * 于是双方棋盘从此分叉，且 canHumanMove 的轮次判断再也对不回来。
+ * 棋钟按 applyLocalUndo 的同一口径处理：只轮转 toPlay，不返还任何时间。
+ */
+function rollbackRejected(): void {
+  cancelAiMove();
+  const prev = state.history.pop();
+  if (prev) {
+    state.go = prev;
+    state.clock = { ...state.clock, toPlay: prev.toPlay };
+  }
+  state.moves.pop();
+  state.over = false;
+  state.sawGameOver = false;
+  renderBoard();
+  updateInfo();
+  toast(t('bg.bg_common_move_rejected', 'Move rejected'));
+}
+
 function handleWs(msg: Record<string, unknown>): void {
   const ty = String(msg.type || '');
   if (ty === 'state' || ty === 'start') {
@@ -988,6 +1022,10 @@ function handleWs(msg: Record<string, unknown>): void {
     // 对局真正开始：'start' 广播或 state.roomStatus==='playing'
     const roomStatus = inner ? String(inner.roomStatus || '') : '';
     if (ty === 'start' || roomStatus === 'playing') state.rankedLive = true;
+    // 对手昵称：players 随 state/start 帧下来（start 广播新增字段），人数不足时 helper 返回 null
+    const nm = opponentNameFromState(msg, state.myIdx);
+    if (nm) state.oppName = nm;
+    if (!state.rankedLive) state.oppName = null;
     // 2026-10-06：对手进房 → 邀请卡片自动收起（延迟 9s，给对方扫码留时间）
     if (ty === 'start' || roomStatus === 'playing') onOpponentJoined('go');
     // 🔴 2026-10-05：state 快照若带着法历史（服务端 relayGoMoves），按历史重放恢复棋盘，
@@ -1095,9 +1133,12 @@ function handleWs(msg: Record<string, unknown>): void {
     return;
   }
   if (ty === 'takeback_declined') { toast(t('bj.takeback_declined', 'Takeback declined')); return; }
-  if (ty === 'restart_notify') { state.over = false; newGame(); return; }
+  // go 自带 WS、不走 online-core 的 sendWs，再战回声闸自己上闩。
+  // 服务端 restart 无差别广播，发起方也会收到自己那份；不吞的话回声会
+  // 把往返窗口内刚落下的一子擦掉。
+  if (ty === 'restart_notify') { if (restartEchoArmed) { restartEchoArmed = false; return; } state.over = false; newGame(); return; }
   if (ty === 'opponent_leave') { toast(t('bj.opp_left', 'Opponent left')); return; }
-  if (ty === 'error') { toast(String(msg.message || 'Room error')); return; }
+  if (ty === 'error') { rollbackRejected(); toast(String(msg.message || 'Room error')); return; }
 }
 
 function syncServerClock(_c: Record<string, number>): void {
@@ -1445,7 +1486,7 @@ $<HTMLButtonElement>('go-leave-yes').addEventListener('click', exitMatchToLobby)
 $<HTMLButtonElement>('go-back-lobby').addEventListener('click', exitMatchToLobby);
 $<HTMLButtonElement>('go-end-lobby').addEventListener('click', exitMatchToLobby);
 $<HTMLButtonElement>('go-rematch').addEventListener('click', () => {
-  if (state.mode === 'ranked') { sendWs({ type: 'restart' }); state.over = false; newGame(); return; }
+  if (state.mode === 'ranked') { restartEchoArmed = true; sendWs({ type: 'restart' }); state.over = false; newGame(); return; }
   newGame();
 });
 // ── 联机：聊天 / 邀请 / 再战 ──

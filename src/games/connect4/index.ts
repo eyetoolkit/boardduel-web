@@ -168,11 +168,14 @@ function render(): void {
 
   // 列落子提示（顶部）+ 棋盘格子 + 棋子
   let header = '';
+  // 能不能落子只看「轮到谁」，不能按 mode 一刀切：
+  // 之前写成 state.mode !== 'online'，导致联机房间一个命中区都没有 —— 联机完全下不了子。
+  const canDrop = state.mode === 'ai' ? (state.player === 1 && !state.aiThinking)
+    : state.mode === 'online' ? onlineMyTurn()
+    : true; // pass & play
   for (let c = 0; c < COLS; c++) {
     const cx = PAD + c * CELL + CELL / 2;
-    const hoverable = !state.over && state.board[c] === 0 &&
-      state.mode !== 'online' &&
-      (state.mode === 'pass' || (state.mode === 'ai' ? state.player === 1 && !state.aiThinking : true));
+    const hoverable = !state.over && state.board[c] === 0 && canDrop;
     if (hoverable) {
       header += `<g class="c4-cell" data-c="${c}" style="cursor:pointer">
         <rect class="hit" x="${PAD + c * CELL}" y="0" width="${CELL}" height="${SLOT_H}" fill="transparent"/>
@@ -740,7 +743,9 @@ function handleWs(msg: OnlineMsg): void {
   if (t === 'opponent_place') {
     const c = typeof msg.c === 'number' ? msg.c : -1;
     const by = typeof msg.by === 'number' ? msg.by : -1;
-    if (c >= 0 && by !== state.myIdx) {
+    // state.board[c] === 0 这道闸不能少：placeLocal 先记账再落子，
+    // 满列（drop 返回 -1）也会留下一条 move，而 onlineMyTurn 按 moves.length 取奇偶 —— 一条幻影步就永久错位。
+    if (c >= 0 && c < COLS && state.board[c] === 0 && by !== state.myIdx) {
       pushHistory();
       placeLocal(c, (by + 1) as CPlayer);
       afterMove();
@@ -813,6 +818,26 @@ function applyRoomState(msg: OnlineMsg, viaStart: boolean): void {
   render();
 }
 
+/**
+ * 服务端拒了刚落的那一子 → 回到落子之前。
+ * connect4 是 judgment 模式，服务端权威校验（满列/错回合直接 err）。
+ * 没有这一步：本地已经乐观落子并把 moves 记上，而 onlineMyTurn 按 moves.length 取奇偶，
+ * 于是棋盘多一子 + 回合永久错位，此后每一步都被拒 —— 房间卡死。
+ */
+function rollbackRejected(): void {
+  const prev = state.history.pop();
+  if (prev) {
+    state.board = prev.board;
+    state.player = prev.player;
+    state.lastMove = prev.lastMove;
+  }
+  state.moves.pop();
+  state.over = false;
+  state.sawGameOver = false;
+  render();
+  toast(window.t('bg.bg_common_move_rejected'));
+}
+
 function roomHandlers(code: string) {
   return {
     onConnect: () => { newGame(); toast('Connected · room ' + code); },
@@ -822,6 +847,11 @@ function roomHandlers(code: string) {
     onRestart: () => newGame(),
     onOpponentLeave: () => { state.roomLive = false; toast('Opponent left'); render(); },
     onGameOver: handleWs,
+    onError: (m: OnlineMsg) => {
+      const c = String((m.code as string) || (m.message as string) || '');
+      rollbackRejected();
+      if (c) toast(c);
+    },
   };
 }
 

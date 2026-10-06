@@ -2465,7 +2465,8 @@
     "bg_share_save_image": "🖼 招待カードを保存",
     "bg_share_result": "結果を共有",
     "bg_checkers_not_your_turn": "まだあなたの番ではありません",
-    "bg_common_waiting_opponent": "相手を待っています…"
+    "bg_common_waiting_opponent": "相手を待っています…",
+    "bg_common_move_rejected": "着手が拒否されました — サーバーが受け付けませんでした"
   },
   "bk": {
     "bk_blog_tag_brain": "脳トレ",

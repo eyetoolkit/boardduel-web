@@ -1341,6 +1341,30 @@ function sendWs(obj: Record<string, unknown>): void {
   try { ws.send(JSON.stringify(obj)); } catch (e) { /* ignore */ }
 }
 
+/** 联机再战回声闸：armed=true 表示本方刚发过 restart，等着吞掉自己那份 restart_notify */
+let restartEchoArmed = false;
+
+/**
+ * 服务端拒了刚落的那一子 → 回到落子之前。
+ * 之前只弹了 toast，棋盘留着那一步：自己看得见子、对手那边没有，
+ * 而且 isMyTurn 之后永远为 false —— 一手错棋把整局锁死。
+ */
+function rollbackRejected(): void {
+  const h = state.history.pop();
+  if (h) {
+    state.board = h.board;
+    state.turn = h.turn;
+    state.lastMove = h.lastMove;
+    state.moves = h.moves.slice();
+  }
+  state.over = false;
+  state.winLine = null;
+  state.sawGameOver = false;
+  cancelAiMove();
+  render();
+  toast(window.t('bg.bg_common_move_rejected'));
+}
+
 function handleWs(msg: Record<string, unknown>): void {
   const t = String(msg.type || '');
   if (t === 'state') {
@@ -1430,9 +1454,17 @@ function handleWs(msg: Record<string, unknown>): void {
     toast('Takeback accepted');
     return;
   }
-  if (t === 'restart_notify') { if (!state.over) newGame(); return; }
+  // gomoku 自带 WS、不走 online-core 的 sendWs，再战回声闸得自己上闩。
+  // 服务端 restart 无差别广播，发起方也会收到自己那份；不吞的话回声会把
+  // 往返窗口内刚落下的一子擦掉（原来的 if (!state.over) 也拦不住——
+  // rematch 上一行刚把 over 置回 false）。
+  if (t === 'restart_notify') {
+    if (restartEchoArmed) { restartEchoArmed = false; return; }
+    if (!state.over) newGame();
+    return;
+  }
   if (t === 'opponent_leave') { toast('Opponent left'); return; }
-  if (t === 'error') { toast(String(msg.message || 'Room error')); return; }
+  if (t === 'error') { rollbackRejected(); toast(String(msg.message || 'Room error')); return; }
 }
 
 function pickMoveIndex(msg: Record<string, unknown>): number {
@@ -1584,7 +1616,7 @@ hintClose.addEventListener('click', () => {
 backLobbyBtn.addEventListener('click', exitMatchToLobby);
 
 rematchBtn.addEventListener('click', () => {
-  if (state.mode === 'ranked') { sendWs({ type: 'restart' }); state.over = false; newGame(); return; }
+  if (state.mode === 'ranked') { restartEchoArmed = true; sendWs({ type: 'restart' }); state.over = false; newGame(); return; }
   newGame();
 });
 /* "Review moves" = 进入完整棋谱回放（从头自动播放，可暂停/拖动/逐手） */

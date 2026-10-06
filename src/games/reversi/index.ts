@@ -181,8 +181,11 @@ function render(): void {
 
   // 合法位预览
   let previews = '';
-  const myTurnOnline = state.mode === 'online' && state.myIdx !== null && state.player === state.myIdx + 1;
-  const showHints = !state.over && (state.mode === 'pass' || (state.mode === 'ai' ? state.player === HUMAN : myTurnOnline));
+  // roomLive 缺失会导致等待期就画出可点提示环（点了又被 onCell 静默丢掉）；
+  // reviewAt 缺失会导致回放态照常显示可点样式。两者都跟 onCell 的实际闸门对齐。
+  const myTurnOnline = state.mode === 'online' && state.roomLive && state.myIdx !== null && state.player === state.myIdx + 1;
+  const showHints = !state.over && state.reviewAt === null &&
+    (state.mode === 'pass' || (state.mode === 'ai' ? state.player === HUMAN : myTurnOnline));
   if (showHints) {
     const moves = legalMoves(renderBoard, state.player);
     for (const i of moves) {
@@ -267,9 +270,14 @@ function renderClockHud(): void {
   if (state.mode === 'ai') {
     clockMeCard.classList.toggle('is-active', !state.over && state.player === HUMAN && !state.aiThinking);
     clockOppCard.classList.toggle('is-active', !state.over && (state.player === ENGINE || state.aiThinking));
-  } else {
+  } else if (state.mode === 'pass') {
     clockMeCard.classList.toggle('is-active', false);
     clockOppCard.classList.toggle('is-active', false);
+  } else {
+    // online：原来整个 else 都置 false，联机下永远不高亮「谁的钟在走」。
+    const myTurn = state.roomLive && state.myIdx !== null && state.player === state.myIdx + 1;
+    clockMeCard.classList.toggle('is-active', !state.over && myTurn);
+    clockOppCard.classList.toggle('is-active', !state.over && !myTurn && state.roomLive);
   }
   // 联机：对手侧不能一直写「引擎」。没进房显示「等待中」，进房后显示真实昵称。
   if (state.mode === 'online') {
@@ -317,11 +325,11 @@ function pushHistory(): void {
 }
 
 function afterMove(): void {
-  // 切换回合
+  // 切换回合。state.player 此刻仍是刚走完的那一方，other 才是下一手方。
   const other: RPlayer = state.player === 1 ? 2 : 1;
-  // 当前方无合法步 → 跳过
+  // 下一手方无合法步 → 跳过
   if (legalMoves(state.board, other).length === 0) {
-    // 对方也无合法步 → 终局
+    // 双方都无合法步 → 终局
     if (legalMoves(state.board, state.player).length === 0) {
       state.over = true;
       stopTimer(state.timer);
@@ -329,10 +337,11 @@ function afterMove(): void {
       finish();
       return;
     }
-    // 仅当前方无子下 → 跳过，current player 继续
-    toast(other === HUMAN ? 'You have no move · skip' : 'Engine has no move · skip');
-    state.player = other;
-    render();
+    // 仅对方没子下 → 跳过，刚走完的这一方继续走（与服务端 reversi-core.js:93 同规则）。
+    // 原来这里写的是 state.player = other，等于把回合判给没子可走的那方：
+    // 双人同屏直接死局，联机则与服务端权威棋盘对着干。
+    toast(state.mode === 'ai' ? (other === HUMAN ? 'You have no move · skip' : 'Engine has no move · skip') : 'No move · pass');
+    render(); // state.player 保持不变 = 继续走
     if (state.mode === 'ai' && state.player === ENGINE) aiMove();
     return;
   }
@@ -850,6 +859,26 @@ function applyRoomState(msg: OnlineMsg, viaStart: boolean): void {
   render();
 }
 
+/**
+ * 服务端拒了刚落的那一子 → 回到落子之前。
+ * reversi 是 judgment 模式，服务端权威校验后 err。
+ * 没有这一步：本地已乐观落子并翻了盘，而服务端没这一手，
+ * 双方棋盘从此分叉，且本地回合标记永久对不上 —— 房间卡死。
+ */
+function rollbackRejected(): void {
+  const prev = state.history.pop();
+  if (prev) {
+    state.board = prev.board;
+    state.player = prev.player;
+    state.lastMove = prev.lastMove;
+  }
+  state.moves.pop();
+  state.over = false;
+  state.sawGameOver = false;
+  render();
+  toast(window.t('bg.bg_common_move_rejected'));
+}
+
 function roomHandlers(code: string) {
   return {
     onConnect: () => { newGame(); toast('Connected · room ' + code); maybeAutoPass(); },
@@ -860,6 +889,11 @@ function roomHandlers(code: string) {
     onRestart: () => newGame(),
     onOpponentLeave: () => { state.roomLive = false; toast('Opponent left'); render(); },
     onGameOver: handleWs,
+    onError: (m: OnlineMsg) => {
+      const c = String((m.code as string) || (m.message as string) || '');
+      rollbackRejected();
+      if (c) toast(c);
+    },
   };
 }
 

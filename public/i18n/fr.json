@@ -2465,7 +2465,8 @@
     "bg_share_save_image": "🖼 Enregistrer la carte",
     "bg_share_result": "Partager le résultat",
     "bg_checkers_not_your_turn": "Ce n'est pas encore votre tour",
-    "bg_common_waiting_opponent": "En attente de l'adversaire…"
+    "bg_common_waiting_opponent": "En attente de l'adversaire…",
+    "bg_common_move_rejected": "Coup refusé — le serveur ne l’a pas accepté"
   },
   "bk": {
     "bk_blog_tag_brain": "Entraînement cérébral",

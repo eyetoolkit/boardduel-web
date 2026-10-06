@@ -2465,7 +2465,8 @@
     "bg_share_save_image": "🖼 Einladungskarte speichern",
     "bg_share_result": "Ergebnis teilen",
     "bg_checkers_not_your_turn": "Du bist noch nicht am Zug",
-    "bg_common_waiting_opponent": "Warten auf Gegner…"
+    "bg_common_waiting_opponent": "Warten auf Gegner…",
+    "bg_common_move_rejected": "Zug abgelehnt – der Server hat ihn nicht akzeptiert"
   },
   "bk": {
     "bk_blog_tag_brain": "Gehirntraining",

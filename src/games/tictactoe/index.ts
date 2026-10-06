@@ -199,7 +199,14 @@ function render(): void {
       const cx = x + UNIT / 2, cy = y + UNIT / 2, r = UNIT / 2 - inset;
       mark = `<circle cx="${cx}" cy="${cy}" r="${r}" stroke="var(--ttt-o, #F59E0B)" stroke-width="${stroke}" fill="none" pointer-events="none"/>`;
     }
-    const clickable = !state.over && c === 0 && (state.mode !== 'ai' || (state.player === 1 && !state.aiThinking));
+    // 这里的 clickable 只决定光标样式，真正能不能落子在 onCell。与那道闸对齐：
+    // 原式 state.mode !== 'ai' 对 online 直接放行（等对手时也是 pointer），
+    // 且没排回放态（回放里历史棋盘照常显示 pointer）。
+    const canClick = state.reviewAt === null && !state.over && c === 0 && (
+      state.mode === 'online' ? onlineMyTurn()
+        : state.mode === 'ai' ? (state.player === 1 && !state.aiThinking)
+          : true);
+    const clickable = canClick;
     grid += `<g class="ttt-cell" data-i="${i}" style="cursor:${clickable ? 'pointer' : 'default'}">
       <rect class="hit" x="${x}" y="${y}" width="${UNIT}" height="${UNIT}" fill="transparent"/>
       ${mark}
@@ -866,6 +873,22 @@ function applyRoomState(msg: OnlineMsg, viaStart: boolean): void {
   render();
 }
 
+/**
+ * 服务端拒了刚走的那一步（not_your_turn / illegal_move …）→ 回到走之前。
+ * 没有这一步：本地已乐观落子、服务端那边没这一手，棋盘多一个子，
+ * 且 filledCount 奇偶被带偏，此后每一步都会被拒 —— 房间直接卡死。
+ * onlineMyTurn 由 filledCount 推回合，所以弹掉 board 就自动回到自己回合。
+ */
+function rollbackRejected(): void {
+  const prev = state.history.pop();
+  if (prev) state.board = prev;
+  state.moves.pop();
+  state.over = false;
+  state.sawGameOver = false;
+  render();
+  toast(window.t('bg.bg_common_move_rejected'));
+}
+
 function roomHandlers(code: string) {
   return {
     onConnect: () => { newGame(); toast('Connected · room ' + code); },
@@ -875,6 +898,11 @@ function roomHandlers(code: string) {
     onRestart: () => newGame(),
     onOpponentLeave: () => { state.roomLive = false; toast('Opponent left'); render(); },
     onGameOver: handleWs,
+    onError: (m: OnlineMsg) => {
+      const c = String((m.code as string) || (m.message as string) || '');
+      rollbackRejected();
+      if (c) toast(c);
+    },
   };
 }
 

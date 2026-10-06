@@ -186,10 +186,12 @@ function render(): void {
   let hits = '';
   if (myTurn) {
     const targets = new Set<number>();
+    // 有走法的己方棋子永远可点：负责「选中 / 改选 / 取消选中」。
+    // 之前这里按 selected 二选一，选中后就再也点不到别的子，取消分支是死代码。
+    // 与落点不重叠——引擎的 from 一定站着自己人、to 一定是空格或已吃掉的子。
+    for (const m of state.legal) targets.add(m.from);
     if (state.selected >= 0) {
       for (const m of state.legal) if (m.from === state.selected) targets.add(m.to);
-    } else {
-      for (const m of state.legal) targets.add(m.from);
     }
     for (const t of targets) {
       const [r, c] = rowCol(t);
@@ -239,9 +241,14 @@ function renderClockHud(): void {
   if (state.mode === 'ai') {
     clockMeCard.classList.toggle('is-active', !state.over && state.player === HUMAN && !state.aiThinking);
     clockOppCard.classList.toggle('is-active', !state.over && (state.player === ENGINE || state.aiThinking));
-  } else {
+  } else if (state.mode === 'pass') {
     clockMeCard.classList.toggle('is-active', false);
     clockOppCard.classList.toggle('is-active', false);
+  } else {
+    // online：原来整个 else 都置 false，联机下永远不高亮「谁的钟在走」。
+    const myTurn = onlineMyTurn();
+    clockMeCard.classList.toggle('is-active', !state.over && myTurn);
+    clockOppCard.classList.toggle('is-active', !state.over && !myTurn && state.roomLive);
   }
   // 联机：对手侧不能一直写「引擎」。没进房显示「等待中」，进房后显示真实昵称。
   if (state.mode === 'online') {
@@ -266,9 +273,9 @@ function onCell(i: number): void {
     const m = state.legal.find((x) => x.from === state.selected && x.to === i);
     if (m) { doMove(m); return; }
   }
-  // 否则尝试选中一个己方有走法的棋子
+  // 否则尝试选中一个己方有走法的棋子（再点同一个 = 取消选中）
   if (state.legal.some((x) => x.from === i)) {
-    state.selected = i;
+    state.selected = state.selected === i ? -1 : i;
     render();
     return;
   }
@@ -461,7 +468,14 @@ leaveYes.addEventListener('click', exitMatchToLobby);
 backLobbyBtn.addEventListener('click', exitMatchToLobby);
 
 /* ====================== 结算页三键 ====================== */
-rematchBtn.addEventListener('click', newGame);
+// 联机再战必须先发 restart：否则只有本方重置，对手还停在结算屏，不知道又开了一局
+rematchBtn.addEventListener('click', () => {
+  if (state.mode === 'online') {
+    if (state.ws) sendWs(state as OnlineState, { type: 'restart' });
+    state.over = false; newGame(); return;
+  }
+  newGame();
+});
 endLobbyBtn.addEventListener('click', exitMatchToLobby);
 
 /* 2026-10-06：分享结果 → Canvas 大图卡片（MathDuel 范式，可保存 PNG / 系统分享） */
@@ -637,6 +651,25 @@ function handleWs(msg: OnlineMsg): void {
   }
 }
 
+/**
+ * 服务端拒了刚走的那一步（not_your_turn / illegal_move …）→ 回到走之前。
+ * 跳棋本来就是中继模式 + 服务端强制轮次，被拒不回滚的话：
+ * 本地子已经落下、回合已翻，对手那边看不到这一步，两边从此错位。
+ * （既有 onError 只弹了提示，棋盘留着那一步 —— 症状是「棋子上去了但下不动」。）
+ */
+function rollbackRejected(): void {
+  const last = state.history.pop();
+  if (last) {
+    state.board = last.board;
+    state.player = last.player;
+    state.lastMove = last.lastMove;
+  }
+  state.selected = -1;
+  state.over = false;
+  render();
+  toast(window.t('bg.bg_common_move_rejected'));
+}
+
 function roomHandlers(code: string) {
   return {
     onConnect: () => { newGame(); toast('Connected · room ' + code); },
@@ -646,9 +679,10 @@ function roomHandlers(code: string) {
     onOpponentLeave: () => { state.roomLive = false; toast('Opponent left'); render(); },
     onRestart: () => newGame(),
     onGameOver: handleWs,
-    // 服务端在 2026-10-06 起强制轮次；被拒时给出可读原因，而不是静默无反应
+    // 服务端在 2026-10-06 起强制轮次；被拒时回滚 + 给出可读原因，而不是静默无反应
     onError: (m: OnlineMsg) => {
       const code = String((m.code as string) || (m.message as string) || '');
+      rollbackRejected();
       if (code === 'not_your_turn') toast(window.t('bg.bg_checkers_not_your_turn'));
       else if (code) toast(code);
     },

@@ -20,6 +20,10 @@ export interface OnlineState {
 export type OnlineMsg = Record<string, unknown>;
 
 export interface OnlineHandlers {
+  /**
+   * 本次 WS 连接只触发一次（首帧 state 握手时）。
+   * ⚠️ 不要在这里做 newGame() 之类会被反复触发的重置 —— judgment 模式每步都有 state 帧。
+   */
   onConnect?: (myIdx: number, code: string) => void;
   /** 第二人进房广播。带 players（对手昵称），见 applyRoomState 那类用法。 */
   onStart?: (msg: OnlineMsg) => void;
@@ -34,6 +38,17 @@ export interface OnlineHandlers {
    *  可选：未提供时该消息被忽略，行为与此前一致。 */
   onError?: (msg: OnlineMsg) => void;
 }
+
+/* ═══════════ 联机再战回声闸（2026-10-06）═══════════
+ * 服务端 restart 是无差别广播：发起方自己也会收到 restart_notify
+ * （games-room.js:698 中继模式 / :704 判棋模式）。而发起方在发送那一刻
+ * 已经自己 newGame() 过一次 —— 若不吞掉回声，回声会在 WS 往返窗口里
+ * 把玩家刚落下的一手擦掉（症状：自己的子凭空消失）。
+ *
+ * 收口在共享模块，棋种零改动：sendWs 见 type==='restart' 自动上闩，
+ * restart_notify 分发处自动吞掉自己那一次。各棋种的 newGame()/onRestart 保持原样。
+ * ⚠️ 自带 WS 的 gomoku / go 不走 sendWs，需在各自 restart 收发处自行处理。
+ * ═══════════════════════════════════════════════════════════════ */
 
 /* ═══════════ 联机等待态（2026-10-06）═══════════
  * 服务端 `state` 消息带 roomStatus（waiting / playing）与 players（含真实昵称），
@@ -120,9 +135,15 @@ export function wsUrl(code: string, name: string): string {
   return `${proto}//${location.host}/ws?code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}`;
 }
 
+/** 联机再战回声闸：armed=true 表示「本方刚发过 restart」。
+ *  见本文件顶部说明。模块级单例——一个页面只跑一款棋。 */
+const restartEcho = { armed: false };
+
 export function sendWs(state: OnlineState, obj: OnlineMsg): void {
   const ws = state.ws;
   if (!ws || ws.readyState !== WebSocket.OPEN) return;
+  // 自己发起再战 → 记一笔，稍后吞掉服务端回给自己的 restart_notify
+  if (obj.type === 'restart') restartEcho.armed = true;
   try {
     ws.send(JSON.stringify(obj));
   } catch {
@@ -145,6 +166,11 @@ export function enterRoom(state: OnlineState, code: string, handlers: OnlineHand
   ws.addEventListener('open', () => {
     /* 连接建立 */
   });
+  // onConnect 的语义是「这条连接握手完成一次」，不是「收到一帧 state」。
+  // judgment 模式(reversi/connect4)每落一子服务端就 broadcastState() 一帧(games-room.js:551)，
+  // 帧里没有 you/code，只有首帧有。若跟着每帧都调 onConnect，各游戏 onConnect 里的 newGame()
+  // 会把棋盘清空 —— 黑白棋实测：每走一步两端棋盘都被重置，双向永久不同步。
+  let connectNotified = false;
   ws.addEventListener('message', (ev) => {
     let msg: OnlineMsg;
     try {
@@ -157,7 +183,10 @@ export function enterRoom(state: OnlineState, code: string, handlers: OnlineHand
       if (typeof msg.you === 'number') state.myIdx = msg.you;
       const code2 = typeof msg.code === 'string' ? msg.code : '';
       if (code2) state.roomCode = code2;
-      handlers.onConnect?.(state.myIdx as number, state.roomCode || code);
+      if (!connectNotified) {
+        connectNotified = true;
+        handlers.onConnect?.(state.myIdx as number, state.roomCode || code);
+      }
       handlers.onState?.(msg);
       return;
     }
@@ -182,6 +211,12 @@ export function enterRoom(state: OnlineState, code: string, handlers: OnlineHand
       return;
     }
     if (t === 'restart_notify') {
+      // 服务端无差别广播，发起方也会收到自己那一份。发起方已经自己重置过，
+      // 再跑一次 onRestart 会把往返窗口内刚落下的一手擦掉。
+      if (restartEcho.armed) {
+        restartEcho.armed = false;
+        return;
+      }
       handlers.onRestart?.();
       return;
     }
