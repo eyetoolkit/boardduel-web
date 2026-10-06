@@ -839,12 +839,41 @@ function rollbackRejected(): void {
   toast(window.t('bg.bg_common_move_rejected'));
 }
 
+/**
+ * 判断棋模式：从服务端权威棋盘快照恢复（断线重连后用）。
+ * connect4 是 judgment 模式，服务端持有权威盘并随 broadcastState 下发。
+ * ⚠️ 编码映射：服务端扁平 42，null=空 / 0|1=座位号；客户端扁平 42，0=空 / 1|2=CPlayer。
+ * 座位同理：服务端 turn 是座位号(0/1)，客户端 player = 座位号 + 1。
+ */
+function applyServerBoard(m: OnlineMsg): void {
+  const inner = (m.state && typeof m.state === 'object') ? (m.state as OnlineMsg) : null;
+  if (!inner || !Array.isArray(inner.board) || inner.board.length !== 42) return;
+  if (typeof inner.turn !== 'number') return;
+  const b: CBoard = [];
+  for (let i = 0; i < 42; i++) {
+    const v = inner.board[i] as number | null;
+    b.push(v === null || v === undefined ? 0 : (v === 0 ? 1 : 2));
+  }
+  state.board = b;
+  state.player = (inner.turn + 1) as CPlayer;
+  state.lastMove = -1;
+  state.history = [];
+  state.moves = [];
+  state.over = String(inner.status || '') === 'over';
+  state.sawGameOver = false;
+  render();
+}
+
 function roomHandlers(code: string) {
   return {
-    onConnect: () => { newGame(); toast('Connected · room ' + code); },
+    // 重连也会再走 onConnect。清盘会让重连瞬间本地局面被抹掉、顺带重置时钟与历史。
+
+    onConnect: () => { if (!state.moves.length) newGame(); toast('Connected · room ' + code); },
+
+    onReconnect: () => { toast('Reconnected'); render(); },
     onOpponentPlace: handleWs,
     onStart: (m: OnlineMsg) => { newGame(); applyRoomState(m, true); },
-    onState: (m: OnlineMsg) => applyRoomState(m, false),
+    onState: (m: OnlineMsg) => { applyServerBoard(m); applyRoomState(m, false); },
     onRestart: () => newGame(),
     onOpponentLeave: () => { state.roomLive = false; toast('Opponent left'); render(); },
     // 断线：online-core 已把 roomLive 置 false，这里锁盘并给一句可见提示

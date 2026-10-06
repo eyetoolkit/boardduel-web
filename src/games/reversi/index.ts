@@ -880,13 +880,46 @@ function rollbackRejected(): void {
   toast(window.t('bg.bg_common_move_rejected'));
 }
 
+/**
+ * 判断棋模式：从服务端权威棋盘快照恢复（断线重连后用）。
+ * 中继棋种靠 relayMoves 重放，而 reversi 是 judgment 模式 —— 服务端持有权威盘，
+ * join 后随 broadcastState 下发，直接采用即可，不必重放。
+ *
+ * ⚠️ 两套编码不是一回事，不能直接赋值：
+ *   服务端 reversi-core: 扁平 64，null=空 / 0=黑 / 1=白
+ *   客户端 RBoard:      扁平 64，0=空  / 1=白 / 2=黑
+ * 座位同理：服务端 turn 是座位号(0/1)，客户端 player = 座位号 + 1。
+ * 注意快照不含着法序列，所以重连后回放历史会丢（棋盘是对的）。
+ */
+function applyServerBoard(m: OnlineMsg): void {
+  const inner = (m.state && typeof m.state === 'object') ? (m.state as OnlineMsg) : null;
+  if (!inner || !Array.isArray(inner.board) || inner.board.length !== 64) return;
+  if (typeof inner.turn !== 'number') return;
+  const b: RBoard = [];
+  for (let i = 0; i < 64; i++) {
+    const v = inner.board[i] as number | null;
+    b.push(v === null || v === undefined ? 0 : (v === 1 ? 1 : 2));
+  }
+  state.board = b;
+  state.player = (inner.turn + 1) as RPlayer;
+  state.lastMove = -1;
+  state.history = [];
+  state.over = String(inner.status || '') === 'over';
+  state.sawGameOver = false;
+  render();
+}
+
 function roomHandlers(code: string) {
   return {
-    onConnect: () => { newGame(); toast('Connected · room ' + code); maybeAutoPass(); },
+    // 重连也会再走 onConnect。清盘会让重连瞬间本地局面被抹掉、顺带重置时钟与历史。
+
+    onConnect: () => { if (!state.moves.length) newGame(); toast('Connected · room ' + code); maybeAutoPass(); },
+
+    onReconnect: () => { toast('Reconnected'); render(); },
     onOpponentPlace: handleWs,
     onPassNotify: handleWs,
     onStart: (m: OnlineMsg) => { newGame(); applyRoomState(m, true); },
-    onState: (m: OnlineMsg) => applyRoomState(m, false),
+    onState: (m: OnlineMsg) => { applyServerBoard(m); applyRoomState(m, false); },
     onRestart: () => newGame(),
     onOpponentLeave: () => { state.roomLive = false; toast('Opponent left'); render(); },
     // 断线：online-core 已把 roomLive 置 false，这里锁盘并给一句可见提示

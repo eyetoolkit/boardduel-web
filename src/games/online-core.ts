@@ -45,6 +45,12 @@ export interface OnlineHandlers {
    * 新的 enterRoom 会重新打开连接并通过 onState/onStart 恢复。
    */
   onDisconnect?: () => void;
+  /**
+   * 断线后自动重连成功（重试次数 > 0 的连接握手完成时触发）。
+   * 此时服务端已重发 join state（带中继着法历史），onState 紧随其后触发，
+   * 各游戏的 rebuildFromServer 会在那里把棋盘恢复好。
+   */
+  onReconnect?: () => void;
 }
 
 /**
@@ -191,10 +197,21 @@ export function sendWs(state: OnlineState, obj: OnlineMsg): void {
   }
 }
 
+/** 断线自动重连：最大尝试次数与退避基数（毫秒）。
+ *  0.6s → 1.2s → 2.4s → 4.8s，累计约 9s。服务端断线宽限是 60s，
+ *  4 次足够覆盖移动端常见的瞬时抖动，又不至于在真的断网时无意义地空转。 */
+const RECONNECT_MAX = 4;
+const RECONNECT_BASE_MS = 600;
+
 /** 进入房间：建 WS 并挂通用消息分发，按游戏类型回调 handlers */
 export function enterRoom(state: OnlineState, code: string, handlers: OnlineHandlers): void {
   state.roomCode = code;
   state.mode = 'online';
+  connect(state, code, handlers, 0);
+}
+
+/** 建立一条连接并挂分发。attempt>0 表示这是断线后的重连尝试。 */
+function connect(state: OnlineState, code: string, handlers: OnlineHandlers, attempt: number): void {
   let ws: WebSocket;
   try {
     ws = new WebSocket(wsUrl(code, myName()));
@@ -204,7 +221,7 @@ export function enterRoom(state: OnlineState, code: string, handlers: OnlineHand
   state.ws = ws;
 
   ws.addEventListener('open', () => {
-    /* 连接建立 */
+    if (attempt > 0) handlers.onReconnect?.();
   });
   // onConnect 的语义是「这条连接握手完成一次」，不是「收到一帧 state」。
   // judgment 模式(reversi/connect4)每落一子服务端就 broadcastState() 一帧(games-room.js:551)，
@@ -275,14 +292,30 @@ export function enterRoom(state: OnlineState, code: string, handlers: OnlineHand
   //   CLOSED 对象，roomLive 也还是 true，于是棋盘照样可点，而 sendWs 在
   //   readyState !== OPEN 时直接 return —— 玩家看到「我一直在走，棋盘动得很顺，
   //   对手那边什么也没有」，全程零提示。这里把棋盘锁上并交回可见状态。
+  //
+  //   并在此发起指数退避重连：移动端切地铁/进电梯这种瞬时抖动此前是**直接毁掉一局棋**
+  //   —— 玩家回来发现房间没了，得重新建房。服务端断线宽限是 60s（games-room.js:47），
+  //   重连成功后会重发 join state（带中继着法历史），前端 rebuildFromServer 负责恢复棋盘。
+  //   `state.ws !== ws` 这道闸同时挡住了主动退出：各游戏 leaveRoom 会先把 state.ws 置 null。
+  const scheduleReconnect = () => {
+    if (attempt >= RECONNECT_MAX) return;
+    const delay = RECONNECT_BASE_MS * Math.pow(2, attempt);
+    window.setTimeout(() => {
+      if (state.ws !== ws) return;        // 期间已离开房间/已被别的连接取代
+      connect(state, code, handlers, attempt + 1);
+    }, delay);
+  };
+
   ws.addEventListener('close', () => {
     if (state.ws !== ws) return;          // 已被新一轮连接取代（重连/换房），别锁错
     state.roomLive = false;
     handlers.onDisconnect?.();
+    scheduleReconnect();
   });
   ws.addEventListener('error', () => {
     if (state.ws !== ws) return;
     state.roomLive = false;
     handlers.onDisconnect?.();
+    // error 之后 close 一定会跟随，不在这里重连，避免同一断线排两次
   });
 }

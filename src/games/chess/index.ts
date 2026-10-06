@@ -419,7 +419,9 @@ function applyServerMoves(m: OnlineMsg): void {
   const mv = Array.isArray(m.moves) ? m.moves
     : (inner && Array.isArray(inner.moves) ? inner.moves : null);
   if (!mv || !mv.length) return;
-  if (state.moves.length) return;
+  // 不按本地着法数设闸：服务端中继历史才是权威，且 rebuildFromServer 是 moves 的纯函数、
+  // 重复执行结果一致。反倒是本地着法数会骗人 —— 自己刚走一手还没同步完时，
+  // 本地比服务端多一手，若据此跳过重放就会保留一个与对手不一致的局面。
   rebuildFromServer(mv as { from?: unknown; to?: unknown; promotion?: unknown }[]);
 }
 
@@ -951,7 +953,11 @@ function applyRoomState(msg: OnlineMsg, viaStart: boolean): void {
 
 function roomHandlers(code: string) {
   return {
-    onConnect: () => { newGame(); toast('Connected · room ' + code); },
+    // 重连也会再走 onConnect（每条新连接各触发一次）。不清盘，否则重连瞬间本地局面被抹掉，
+    // 紧接着 onState 的 rebuildFromServer 虽然会从服务端历史重放回来，但会闪一下空盘，
+    // 且 newGame 顺带重置时钟/历史。onState 会用服务端着法把局面补齐。
+    onConnect: () => { if (!state.moves.length) newGame(); toast('Connected · room ' + code); },
+    onReconnect: () => { toast('Reconnected'); render(); },
     onOpponentMove: handleWs,
     // 服务端对「第二人加入」和「重连」广播的是同一个 start（games-room.js:267-310），
     // 无条件 newGame() 会让中途刷新把**没刷新的对手**那盘真实中局也一起清空。

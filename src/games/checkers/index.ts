@@ -626,13 +626,13 @@ function rebuildFromServer(hist: { mv?: { from?: { r?: number; c?: number }; tar
   render();
 }
 
-/** 从 state 帧取服务端着法历史并重放；两种 state 形状都要认；已有本地着法则不重复应用。 */
+/** 从 state 帧取服务端着法历史并重放；两种 state 形状都要认。
+ *  不按本地 history 设闸：服务端中继历史才是权威，且 rebuildFromServer 是幂等的。 */
 function applyServerMoves(m: OnlineMsg): void {
   const inner = (m.state && typeof m.state === 'object') ? (m.state as OnlineMsg) : null;
   const mv = Array.isArray(m.moves) ? m.moves
     : (inner && Array.isArray(inner.moves) ? inner.moves : null);
   if (!mv || !mv.length) return;
-  if (state.history.length) return;
   rebuildFromServer(mv as Parameters<typeof rebuildFromServer>[0]);
 }
 
@@ -719,7 +719,9 @@ function rollbackRejected(): void {
 
 function roomHandlers(code: string) {
   return {
-    onConnect: () => { newGame(); toast('Connected · room ' + code); },
+    // 重连也会再走 onConnect。清盘会让重连瞬间本地局面被抹掉、顺带重置时钟与历史。
+    onConnect: () => { if (!state.history.length) newGame(); toast('Connected · room ' + code); },
+    onReconnect: () => { toast('Reconnected'); render(); },
     onOpponentMove: handleWs,
     onStart: (m: OnlineMsg) => { newGame(); applyRoomState(m, true); },
     onState: (m: OnlineMsg) => { applyServerMoves(m); applyRoomState(m, false); },
