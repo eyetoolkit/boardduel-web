@@ -257,15 +257,16 @@ function render(): void {
 
   if (canInteract) {
     const moves = legalMoves(state.gs);
-    if (state.selected < 0) {
-      const fromSqs = new Set(moves.map((m) => m.from));
-      for (const sq of fromSqs) {
-        const [x, y] = squareXY(sq);
-        hitAreas += `<g class="ch-cell" data-sq="${sq}" style="cursor:pointer">
-          <rect class="hit" x="${PAD + x * CELL}" y="${PAD + y * CELL}" width="${CELL}" height="${CELL}" fill="transparent"/>
-        </g>`;
-      }
-    } else {
+    // 有合法走法的己方棋子永远可点：负责「选中 / 改选 / 再点一次取消选中」。
+    // 与下面的落点区不重叠——legalMoves 只会落空点或敌子，不会吃自己的棋子。
+    const fromSqs = new Set(moves.map((m) => m.from));
+    for (const sq of fromSqs) {
+      const [x, y] = squareXY(sq);
+      hitAreas += `<g class="ch-cell" data-sq="${sq}" style="cursor:pointer">
+        <rect class="hit" x="${PAD + x * CELL}" y="${PAD + y * CELL}" width="${CELL}" height="${CELL}" fill="transparent"/>
+      </g>`;
+    }
+    if (state.selected >= 0) {
       for (const m of moves.filter((m) => m.from === state.selected)) {
         const [mx, my] = squareXY(m.to);
         hitAreas += `<g class="ch-cell" data-to="${m.to}" data-from="${state.selected}" style="cursor:pointer">
@@ -291,7 +292,8 @@ function render(): void {
       const to = g.dataset.to;
       const from = g.dataset.from;
       if (sq !== undefined) {
-        state.selected = Number(sq);
+        const n = Number(sq);
+        state.selected = state.selected === n ? -1 : n; // 再点同一个子 = 取消选中
         render();
       } else if (to !== undefined && from !== undefined) {
         const m = legalMoves(state.gs).find((mm) => mm.from === Number(from) && mm.to === Number(to));
