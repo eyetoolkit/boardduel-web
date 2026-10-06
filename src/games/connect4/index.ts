@@ -545,6 +545,10 @@ function resign(): void {
 function doResign(): void {
   if (state.over) return;
   cancelAiMove();
+  // 联机必须通知服务端。connect4/reversi 此前与 chess/xiangqi/tictactoe 一样是纯本地
+  // 判负（那一批只补了后者三款），后果：对手永远不知情、服务端 status 停在 'playing'、
+  // 无 Elo 无金币结算、房间不收尾 —— 而且认输后再战会被服务端的局中守卫拒绝。
+  if (state.mode === 'online' && state.ws) sendWs(state as OnlineState, { type: 'resign' });
   state.over = true;
   stopTimer(state.timer);
   endVerdict.textContent = 'You resigned';
