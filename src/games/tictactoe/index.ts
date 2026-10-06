@@ -88,6 +88,7 @@ const clockMeTime = document.getElementById('go-clock-me-time') as HTMLElement;
 void chatRoom;
 const clockMeCard = document.getElementById('go-clock-me') as HTMLElement;
 const clockOppCard = document.getElementById('go-clock-opp') as HTMLElement;
+const clockMeWho = document.getElementById('go-clock-me-who') as HTMLElement;
 const clockOppWho = document.getElementById('go-clock-opp-who') as HTMLElement;
 
 setupNav('tictactoe');
@@ -242,7 +243,11 @@ function renderHud(): void {
   } else if (state.mode === 'pass') {
     label = state.player === 1 ? window.t('bg.bg_tictactoe_you_x_lc') : window.t('bg.bg_tictactoe_pass_o_lc');
   } else if (state.mode === 'online') {
-    label = state.player === 1 ? window.t('bg.bg_tictactoe_you_x_lc') : window.t('bg.bg_tictactoe_engine_o_lc');
+    // 联机不能写死「You · X / Engine · O」：坐在 idx 1 的是 O 方，
+    // 而对手是真人，标成 Engine 会让「谁的钟在走」也读不出来。
+    const you = state.myIdx === 1 ? window.t('bg.bg_tictactoe_you_o_lc') : window.t('bg.bg_tictactoe_you_x_lc');
+    const opp = state.oppName || window.t('bg.bg_common_waiting_opponent');
+    label = state.player === (state.myIdx === 1 ? 2 : 1) ? you : opp;
   } else {
     // AI 模式
     label = state.player === 1
@@ -287,6 +292,10 @@ function renderClockHud(): void {
     clockMeCard.classList.toggle('is-active', !state.over && myTurn);
     clockOppCard.classList.toggle('is-active', !state.over && !myTurn && state.roomLive);
   }
+  // 自己这侧的时钟卡跟着座位走（HTML 里原先写死「YOU · X」，坐 O 方的人会一直看到 X）
+  clockMeWho.textContent = state.mode === 'online'
+    ? (state.myIdx === 1 ? window.t('bg.bg_tictactoe_you_o_lc') : window.t('bg.bg_tictactoe_you_x'))
+    : window.t('bg.bg_tictactoe_you_x');
   // 对手侧标签统一在此设置（原先靠 data-i18n，但 i18n 的 MutationObserver
   // 会把 JS 设的文案覆盖回去，2026-10-06 已摘掉该节点的 data-i18n）：
   //   联机 → 未开局「等待中…」，开局后显示服务端带来的真实昵称
@@ -458,6 +467,10 @@ function resetReplayUI(): void {
 
 function enterReplay(): void {
   if (!state.moves.length) { toast('No moves yet'); return; }
+  // 联机中局禁回放：回放态棋盘渲染的是**重放出来的历史局面**，对手此刻走的那一手
+  // 会被 apply 到真实 state 却完全看不见（要退出回放才显形）；若那一手终结了棋局，
+  // 结束屏还会被 reviewAt !== null 压住 —— 玩家盯着冻住的棋盘，不知道这局已经结束。
+  if (state.mode === 'online' && !state.over) { toast('Review is available after the game ends'); return; }
   cancelAiMove();          // 引擎待落的要撤掉
   if (state.screen !== 'match') showScreen('match');
   state.reviewAt = 0;
@@ -791,9 +804,25 @@ function handleWs(msg: OnlineMsg): void {
   } else if (t === 'opponent_leave') {
     toast('Opponent left');
   } else if (t === 'game_over') {
+    // 服务端判负时原先只 render()：冻住的棋盘、没有胜负、没有「再战」按钮。
+    // 字段口径对齐 games-room.js:783 settleAndBroadcast。
     state.over = true;
+    state.sawGameOver = true;
     stopTimer(state.timer);
+    const reason = String(msg.reason || 'resign');
+    const w = msg.winner;
+    if (w === 'draw') {
+      endVerdict.textContent = window.t('bi.draw');
+      endVerdict.className = 'go-end-verdict is-draw';
+      endLine.textContent = window.t('bj.draw_agreed');
+    } else {
+      const iLost = (typeof w === 'number' && state.myIdx !== null) ? w !== state.myIdx : false;
+      endVerdict.textContent = iLost ? window.t('bj.you_resigned') : window.t('bj.opp_resigned');
+      endVerdict.className = 'go-end-verdict ' + (iLost ? 'is-loss' : 'is-win');
+      endLine.textContent = reason === 'opponent_left' ? window.t('bj.opp_left') : window.t('bj.by_resignation');
+    }
     render();
+    scheduleEndScreen();
   }
 }
 

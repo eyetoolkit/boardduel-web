@@ -942,7 +942,10 @@ function offerDraw(): void {
   if (state.mode === 'ai') return;
   if (state.mode === 'pass') { finishDraw(); return; }
   toast('Draw proposed — waiting for opponent');
-  try { sendWs({ type: 'draw' }); } catch (e) { /* 后端若不支持则静默 */ }
+  // 服务端只认 draw_offer/draw_accept/draw_decline（games-room.js:332-345），
+  // 原来发的 {type:'draw'} 没有任何处理器 → 这一帧被静默丢弃：
+  // 提和方永远等不到回应，对手也压根不知道有人提和。
+  try { sendWs({ type: 'draw_offer' }); } catch (e) { /* ignore */ }
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -1412,24 +1415,39 @@ function handleWs(msg: Record<string, unknown>): void {
     return;
   }
   if (t === 'game_over') {
-    // 双向 game_over：既是“我认输”的回显，也是“对手认输/终局”的通知。
-    // 区分依据是本地是否已置 sawGameOver —— 自己认输时 resign() 会先置位。
+    // 🔴 服务端 settleAndBroadcast 发的是 { winner: 座位号|'draw', reason }
+    //   （games-room.js:783 / :807-816），既没有 you_lost 也没有 kind。
+    //   旧代码 String(msg.kind || 'resign') 永远拿到 'resign'，于是
+    //   · 对手离开（reason='opponent_left'）被显示成「对手认输」
+    //   · 超时判负（reason='timeout'）被显示成「胜利」—— 正好说反
+    //   改为按 go 的口径：用 winner 对比 myIdx 判胜负，用 reason 判文案。
     state.over = true;
+    state.sawGameOver = true;
     stopTimer(state.timer);
-    const kind = String(msg.kind || 'resign');
-    const iLost = !!msg.you_lost || (state.sawGameOver && kind !== 'draw');
-    if (kind === 'draw') {
+    const reason = String(msg.reason || 'resign');
+    const w = msg.winner;
+    if (w === 'draw') {
       endVerdict.textContent = window.t('bi.draw');
       endVerdict.className = 'go-end-verdict is-draw';
       endLine.textContent = window.t('bj.draw_agreed');
-    } else if (iLost) {
-      endVerdict.textContent = window.t('bj.you_resigned');
-      endVerdict.className = 'go-end-verdict is-loss';
-      endLine.textContent = window.t('bj.by_resignation');
     } else {
-      endVerdict.textContent = window.t('bj.opp_resigned');
-      endVerdict.className = 'go-end-verdict is-win';
-      endLine.textContent = window.t('bj.by_resignation');
+      const iLost = (typeof w === 'number' && state.myIdx !== null)
+        ? w !== state.myIdx
+        : (state.sawGameOver && reason !== 'draw');
+      if (reason === 'opponent_left') {
+        endVerdict.textContent = iLost ? window.t('bj.you_resigned') : window.t('bj.opp_left');
+        endLine.textContent = window.t('bj.opp_left');
+      } else if (reason === 'timeout') {
+        endVerdict.textContent = iLost ? window.t('bj.by_resignation') : window.t('bj.opp_resigned');
+        endLine.textContent = window.t('bj.by_resignation');
+      } else if (iLost) {
+        endVerdict.textContent = window.t('bj.you_resigned');
+        endLine.textContent = window.t('bj.by_resignation');
+      } else {
+        endVerdict.textContent = window.t('bj.opp_resigned');
+        endLine.textContent = window.t('bj.by_resignation');
+      }
+      endVerdict.className = 'go-end-verdict ' + (iLost ? 'is-loss' : 'is-win');
     }
     showScreen('end');
     return;
@@ -1463,7 +1481,15 @@ function handleWs(msg: Record<string, unknown>): void {
     if (!state.over) newGame();
     return;
   }
-  if (t === 'opponent_leave') { toast('Opponent left'); return; }
+  // 对手离开后必须锁盘。不锁的话 roomLive 还是 true、点子照样「落」在本地，
+  // 而 sendWs 投不出去 —— 宽限期内留下一堆对手永远看不到的幽灵子，
+  // 服务端回的是 对方未连接 / 对局未开始（在 NON_MOVE_ERRORS 里，不会触发回滚）。
+  if (t === 'opponent_leave') {
+    state.roomLive = false;
+    toast('Opponent left');
+    render();
+    return;
+  }
   if (t === 'error') { if (isMoveRejected(msg)) rollbackRejected(); toast(String(msg.message || 'Room error')); return; }
 }
 

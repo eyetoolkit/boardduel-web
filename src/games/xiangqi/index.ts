@@ -23,7 +23,7 @@ import {
 } from './engine';
 import {
   enterRoom, sendWs, inviteCode, clearInviteParam,
-  roomLiveFromState, opponentNameFromState,
+  isMoveRejected,  roomLiveFromState, opponentNameFromState,
   type OnlineState, type OnlineMsg,
 } from '../online-core';
 import { modeFromUrl, syncModeCardUI } from '../shared';
@@ -89,6 +89,7 @@ const backLobbyBtn = document.getElementById('xq-back-lobby') as HTMLButtonEleme
 const clockMeTime = document.getElementById('go-clock-me-time') as HTMLElement;
 const clockMeCard = document.getElementById('go-clock-me') as HTMLElement;
 const clockOppCard = document.getElementById('go-clock-opp') as HTMLElement;
+const clockMeWho = document.getElementById('go-clock-me-who') as HTMLElement;
 const clockOppWho = document.getElementById('go-clock-opp-who') as HTMLElement;
 
 setupNav('xiangqi');
@@ -337,7 +338,11 @@ function renderHud(): void {
   } else if (state.mode === 'pass') {
     label = state.gs.side === 1 ? window.t('bg.bg_xq_red_turn') : window.t('bg.bg_xq_black_turn');
   } else if (state.mode === 'online') {
-    label = state.gs.side === myColor() ? window.t('bg.bg_xq_you_red') : window.t('bg.bg_xq_opp_black');
+    // 联机不能沿用「YOU · RED / OPPONENT · BLACK」：myColor() 取决于座位，
+    // 坐黑方的人会看到「YOU · RED」；且对手是真人，不该叫 OPPONENT/Engine。
+    const you = myColor() === 1 ? window.t('bg.bg_xq_you_red') : window.t('bg.bg_xq_you_black');
+    const opp = state.oppName || window.t('bg.bg_common_waiting_opponent');
+    label = state.gs.side === myColor() ? you : opp;
   } else {
     label = state.gs.side === 1
       ? window.t('bg.bg_xq_you_red')
@@ -361,10 +366,19 @@ function renderClockHud(): void {
   if (state.mode === 'ai') {
     clockMeCard.classList.toggle('is-active', !state.over && state.gs.side === 1 && !state.aiThinking);
     clockOppCard.classList.toggle('is-active', !state.over && (state.gs.side === -1 || state.aiThinking));
-  } else {
+  } else if (state.mode === 'pass') {
     clockMeCard.classList.toggle('is-active', false);
     clockOppCard.classList.toggle('is-active', false);
+  } else {
+    // online：原先整个 else 都置 false，联机下永远不高亮「谁的钟在走」
+    const myTurn = state.roomLive && state.gs.side === myColor();
+    clockMeCard.classList.toggle('is-active', !state.over && myTurn);
+    clockOppCard.classList.toggle('is-active', !state.over && !myTurn && state.roomLive);
   }
+  // 自己这侧的时钟卡跟着座位走（HTML 里原先写死「YOU · RED」，黑方玩家会一直看到红方）
+  clockMeWho.textContent = state.mode === 'online'
+    ? (myColor() === 1 ? window.t('bg.bg_xq_you_red') : window.t('bg.bg_xq_you_black'))
+    : window.t('bg.bg_xq_you_red');
   // 联机：对手侧不能一直写「引擎」。没进房显示「等待中」，进房后显示真实昵称。
   if (state.mode === 'online') {
     clockOppWho.textContent = state.roomLive && state.oppName
@@ -532,6 +546,10 @@ function resetReplayUI(): void {
 
 function enterReplay(): void {
   if (!state.moves.length) { toast('No moves yet'); return; }
+  // 联机中局禁回放：回放态棋盘渲染的是**重放出来的历史局面**，对手此刻走的那一手
+  // 会被 apply 到真实 state 却完全看不见（要退出回放才显形）；若那一手终结了棋局，
+  // 结束屏还会被 reviewAt !== null 压住 —— 玩家盯着冻住的棋盘，不知道这局已经结束。
+  if (state.mode === 'online' && !state.over) { toast('Review is available after the game ends'); return; }
   cancelAiMove();
   if (state.screen !== 'match') showScreen('match');
   state.reviewAt = 0;
@@ -854,9 +872,25 @@ function handleWs(msg: OnlineMsg): void {
   } else if (t === 'opponent_leave') {
     toast('Opponent left');
   } else if (t === 'game_over') {
+    // 服务端判负时原先只 render()：冻住的棋盘、没有胜负、没有「再战」按钮
+    // （结算屏是另一个默认 hidden 的 section）。字段口径对齐 games-room.js:783。
     state.over = true;
+    state.sawGameOver = true;
     stopTimer(state.timer);
+    const reason = String(msg.reason || 'resign');
+    const w = msg.winner;
+    if (w === 'draw') {
+      endVerdict.textContent = window.t('bi.draw');
+      endVerdict.className = 'go-end-verdict is-draw';
+      endLine.textContent = window.t('bj.draw_agreed');
+    } else {
+      const iLost = (typeof w === 'number' && state.myIdx !== null) ? w !== state.myIdx : false;
+      endVerdict.textContent = iLost ? window.t('bj.you_resigned') : window.t('bj.opp_resigned');
+      endVerdict.className = 'go-end-verdict ' + (iLost ? 'is-loss' : 'is-win');
+      endLine.textContent = reason === 'opponent_left' ? window.t('bj.opp_left') : window.t('bj.by_resignation');
+    }
     render();
+    scheduleEndScreen();
   }
 }
 
@@ -928,6 +962,24 @@ function roomHandlers(code: string) {
     onOpponentLeave: () => { state.roomLive = false; toast('Opponent left'); render(); },
     // 断线：online-core 已把 roomLive 置 false，这里锁盘并给一句可见提示
     onDisconnect: () => { toast(window.t('match.disconnected')); render(); },
+    // 原先没有 onError：服务端的拒绝被静默丢弃，玩家那边留着一步对手看不到的棋。
+    onError: (m: OnlineMsg) => {
+      const code = String((m.code as string) || (m.message as string) || '');
+      if (isMoveRejected(m)) {
+        const prev = state.history.pop();
+        if (prev) {
+          state.gs = prev;
+          state.moves.pop();
+          state.lastMove = state.moves.length ? state.moves[state.moves.length - 1] : null;
+          state.selected = -1;
+          state.over = false;
+          rebuildArbiter();
+          render();
+        }
+        toast(window.t('bg.bg_common_move_rejected'));
+      }
+      if (code && !isMoveRejected(m)) toast(code);
+    },
     onGameOver: handleWs,
   };
 }

@@ -1003,6 +1003,11 @@ function rollbackRejected(): void {
   state.moves.pop();
   state.over = false;
   state.sawGameOver = false;
+  // 🔴 必须重建 posHashes —— 与 applyLocalUndo:901 同一处漏网。
+  // playWithKo 已经把「被回滚掉的那个局面」的哈希登记进去了，不清掉的话它会永远
+  // 留在集合里；之后对手的合法着法一旦复现该局面，computePlay 判 superko 拒绝，
+  // 而接收分支没有 else —— 对手那一手被静默丢弃，toPlay 也不再推进，整盘就此错位。
+  rebuildPosHashes();
   renderBoard();
   updateInfo();
   toast(t('bg.bg_common_move_rejected', 'Move rejected'));
@@ -1137,7 +1142,16 @@ function handleWs(msg: Record<string, unknown>): void {
   // 服务端 restart 无差别广播，发起方也会收到自己那份；不吞的话回声会
   // 把往返窗口内刚落下的一子擦掉。
   if (ty === 'restart_notify') { if (restartEchoArmed) { restartEchoArmed = false; return; } state.over = false; newGame(); return; }
-  if (ty === 'opponent_leave') { toast(t('bj.opp_left', 'Opponent left')); return; }
+  // 对手离开后必须锁盘（canHumanMove 靠 rankedLive 判）。不锁的话玩家还能继续落子，
+  // 而这些子投不出去 —— 宽限期内变成对手永远看不到的幽灵子。
+  if (ty === 'opponent_leave') {
+    state.rankedLive = false;
+    state.oppName = null;
+    toast(t('bj.opp_left', 'Opponent left'));
+    renderBoard();
+    updateInfo();
+    return;
+  }
   if (ty === 'error') { if (isMoveRejected(msg)) rollbackRejected(); toast(String(msg.message || 'Room error')); return; }
 }
 
