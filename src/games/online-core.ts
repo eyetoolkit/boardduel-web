@@ -176,9 +176,13 @@ export function myName(): string {
   }
 }
 
-export function wsUrl(code: string, name: string): string {
+/** WS 地址。rejoin=true 时带 rejoin=1，让服务端确定性地认出「这是重连」——
+ *  服务端不能靠 socket 数量或 readyState 去猜（断线重连必然快于服务端回收死连接，
+ *  同一个座位上会同时挂着旧连接与新连接；DO 的 WebSocket 也不保证暴露 readyState）。 */
+export function wsUrl(code: string, name: string, rejoin = false): string {
   const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-  return `${proto}//${location.host}/ws?code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}`;
+  const base = `${proto}//${location.host}/ws?code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}`;
+  return rejoin ? `${base}&rejoin=1` : base;
 }
 
 /** 联机再战回声闸：armed=true 表示「本方刚发过 restart」。
@@ -214,7 +218,7 @@ export function enterRoom(state: OnlineState, code: string, handlers: OnlineHand
 function connect(state: OnlineState, code: string, handlers: OnlineHandlers, attempt: number): void {
   let ws: WebSocket;
   try {
-    ws = new WebSocket(wsUrl(code, myName()));
+    ws = new WebSocket(wsUrl(code, myName(), attempt > 0));
   } catch {
     return;
   }
