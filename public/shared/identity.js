@@ -177,8 +177,10 @@
   var _me = null;
   function me() {
     if (_me) return Promise.resolve(_me);
+    // no-store：身份必须读最新的。否则浏览器会把「还没取名那次」的响应
+    // 缓存下来，刷新后一直返回旧值 —— 名字存上去了却永远读不回来。
     return ensureSession().then(function () {
-      return fetch(site.read, { credentials: 'include', headers: headers(false) });
+      return fetch(site.read, { credentials: 'include', cache: 'no-store', headers: headers(false) });
     }).then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) {
         var u = d ? site.unwrap(d) : { name: null, avatar: null };
@@ -204,7 +206,7 @@
     body[site.field] = name;
     var send = function () {
       return fetch(site.write, {
-        method: 'POST', credentials: 'include',
+        method: 'POST', credentials: 'include', cache: 'no-store',
         headers: headers(true), body: JSON.stringify(body)
       });
     };
