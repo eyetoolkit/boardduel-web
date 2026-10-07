@@ -183,28 +183,66 @@ export function myUuid(): string {
  * 全页共享同一个 promise，因此只有首次连接会多等一个 RTT，重连不受影响。
  */
 let accountReady: Promise<unknown> | null = null;
+
+/* ─── 玩家身份 ───
+   名字的真相在服务端账号上。以前这里是「随机生成一次 Player-xxxx 存本机」，
+   于是换设备就是另一个人，排行榜上也永远看不到你上次用的名字。 */
+let _idt: Promise<any> | null = null;
+function identity(): Promise<any> {
+  if ((window as any).Identity) return Promise.resolve((window as any).Identity);
+  if (_idt) return _idt;
+  _idt = new Promise((resolve) => {
+    const s = document.createElement('script');
+    s.src = '/shared/identity.js?v=1';
+    s.onload = () => resolve((window as any).Identity || null);
+    s.onerror = () => resolve(null);
+    document.head.appendChild(s);
+  });
+  return _idt;
+}
+
+/** 进房前把服务端名字拉回本机，myName() 之后就能直接读到。 */
+let _idtReady: Promise<void> | null = null;
+export function ensureIdentity(): Promise<void> {
+  if (!_idtReady) {
+    _idtReady = identity().then((I) => {
+      if (!I) return;
+      return I.me().then((m: any) => {
+        if (m && m.name) { try { localStorage.setItem('bd_nick', m.name); } catch { /* 隐私模式 */ } }
+      });
+    });
+  }
+  return _idtReady;
+}
+
 export function ensureAccount(): Promise<unknown> {
   if (!accountReady) {
-    accountReady = fetch('/api/account/me', { credentials: 'include' })
-      .catch(() => null);   // 拿不到身份也不能挡住玩家进房，服务端会按匿名处理
+    accountReady = Promise.all([
+      fetch('/api/account/me', { credentials: 'include' })
+        .catch(() => null),   // 拿不到身份也不能挡住玩家进房，服务端会按匿名处理
+      ensureIdentity(),
+    ]);
   }
   return accountReady;
+}
+
+function genName(): string {
+  return 'Player-' + Math.random().toString(36).slice(2, 6);
 }
 
 export function myName(): string {
   // 🔴 不能写死 'Player'：服务端 resolveIdx 会按 name 复用座位，
   // 两个匿名玩家同名会被分进同一座位（双方都执黑、互不走子）——2026-10-05 PvP 实测。
-  // 生成一次后持久化到 localStorage，保证同一浏览器刷新/重连名字稳定。
+  // 由来：服务端账号名（跨设备同一个你）→ 本机上次用过的 → 兜底生成一个唯一的。
   try {
-    const KEY = 'bd_nick';
-    let n = localStorage.getItem(KEY);
-    if (!n) {
-      n = 'Player-' + Math.random().toString(36).slice(2, 6);
-      localStorage.setItem(KEY, n);
-    }
-    return n;
+    const I = (window as any).Identity;
+    const n = (I && I.current && I.current()) || localStorage.getItem('bd_nick');
+    if (n) return n;
+    const g = genName();
+    localStorage.setItem('bd_nick', g);
+    return g;
   } catch {
-    return 'Player-' + Math.random().toString(36).slice(2, 6);
+    return genName();
   }
 }
 

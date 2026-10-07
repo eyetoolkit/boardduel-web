@@ -187,6 +187,7 @@
         '<nav class="sh-nav" aria-label="primary"></nav>' +
         '<span class="sh-spacer"></span>' +
         '<div class="sh-actions"></div>' +
+        '<span class="sh-me" data-identity="compact"></span>' +
       '</div>';
 
     var navEl = header.querySelector(".sh-nav");
@@ -228,5 +229,22 @@
       window.addEventListener("i18n:ready", retranslate);
     }
     window.addEventListener("i18n:change", retranslate);
+
+    /* 玩家身份：一次取名，之后每页都认识你。
+       header 是异步拼出来的，可能晚于 identity.js 的自动扫描，所以这里显式挂载一次。 */
+    var meEl = header.querySelector(".sh-me");
+    if (meEl) {
+      meEl.dataset.idtDone = "1";
+      var bootIdt = function () {
+        if (window.Identity) window.Identity.mount(meEl, { compact: true });
+      };
+      if (window.Identity) bootIdt();
+      else {
+        var idtScript = document.createElement("script");
+        idtScript.src = "/shared/identity.js?v=1";
+        idtScript.onload = bootIdt;
+        document.head.appendChild(idtScript);
+      }
+    }
   });
 })();
