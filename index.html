@@ -54,6 +54,7 @@
     </button>
     <div data-lang-switcher></div>
   </div>
+  <div class="sb-me"><span data-identity="compact"></span></div>
   <nav class="sb-nav" aria-label="Site navigation">
     <a class="nav-item active" href="/">
       <svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><label data-i18n="nav.home">Home</label>
@@ -269,5 +270,16 @@
 
 <script type="module" src="/src/pages/home.ts"></script>
 <script src="/i18n/lang-switcher.js?v=37" defer></script>
+<script src="/shared/identity.js?v=1" defer></script>
+<style>
+  /* 侧栏窄（220px）：身份条在这里改成竖排，输入框占满宽度 */
+  .sb-me{padding:0 12px 10px}
+  .sb-me .idt-ask.compact{flex-wrap:wrap;row-gap:5px;max-width:100%}
+  .sb-me .idt-ask.compact .idt-in{width:100%;flex:1 1 100%}
+  .sb-me .idt-ask.compact .idt-row{width:100%;flex-wrap:wrap}
+  .sb-me .idt-ask.compact .idt-go{flex:1 1 auto}
+  .sb-me .idt-bar{flex-wrap:wrap;gap:6px}
+  .sb-me .idt-note{max-width:100%;white-space:normal}
+</style>
 </body>
 </html>
