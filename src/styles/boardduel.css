@@ -628,6 +628,49 @@ a.go-mode:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; 
 .bd-foot a { color: var(--mute2); }
 .bd-foot a:hover { color: var(--mute); }
 
+/* ============== 游戏页规则区块（由 scripts/gen-game-rules.mjs 注入） ==============
+   内容来自 how-to-play/{slug}/ 的第一段规则列表，这里只负责让它长得像页面自己的：
+   一条上边框跟上面的游戏区分开，行宽沿用 .bd-lead 的 70ch，标题用展示字族、
+   正文用正文字族。不另立卡片、不加深色块 —— 这块是给读的人看的，安静就好。 */
+   类名刻意叫 .bd-howto 而不是 .bd-rules：boardduel.css 里已经有一个 .bd-rules
+   （411 行，字号 .82rem 的那套），撞名会静默互相覆盖。 */
+.bd-howto {
+  margin: 28px auto 0;
+  max-width: 70ch;
+  padding: 18px 0 0;
+  border-top: 1px solid var(--line);
+}
+.bd-howto-h {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  color: var(--paper);
+  margin: 0 0 10px;
+}
+.bd-howto ul { margin: 8px 0 12px; padding-left: 22px; }
+.bd-howto li {
+  margin: 6px 0;
+  font-size: .92rem;
+  line-height: 1.65;
+  color: var(--mute);
+}
+.bd-howto-more { margin: 0; font-size: .88rem; }
+.bd-howto-more a {
+  color: var(--brand);
+  font-weight: 600;
+  text-decoration: none;
+}
+.bd-howto-more a:hover { text-decoration: underline; }
+.bd-howto-more a:focus-visible {
+  outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 4px;
+}
+@media (max-width: 640px) {
+  .bd-howto { margin-top: 20px; padding-top: 14px; }
+  .bd-howto-h { font-size: 1rem; }
+  .bd-howto li { font-size: .88rem; }
+}
+
 /* 可访问性 */
 button:focus-visible, .bd-link:focus-visible {
   outline: 2px solid var(--gold); outline-offset: 2px;
