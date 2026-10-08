@@ -157,6 +157,39 @@ img { max-width: 100%; display: block; }
 }
 .bd-board-wrap svg { width: 100%; height: 100%; display: block; }
 
+/* F-002（2026-10-08）：移动端 arena 沉浸布局下棋盘溢出容器。
+   现象：tictactoe / connect4 等页面的棋盘被放大并裁切，只看到棋盘一角；
+        go 页面则反向被压成一条（棋盘只剩 125px 高、左右大片留白）。
+   根因：`.go-board` 有 `aspect-ratio: 1`（本文件下方规则），宿主高度 = 宽度 = 视口宽；
+   而 arena 布局把 `.bd-board-wrap` 改成 `flex: 1` + `aspect-ratio: auto`，
+   wrap 高度只剩"剩余空间"（实测 171~436px）。各 *-paper.css 在 ≤899.5px 又把
+   svg 从 `width/height:100%` 覆盖成 `width/height:auto; max-*:100%`，
+   其 `max-height:100%` 参照的是被 aspect-ratio 撑高的宿主，于是棋盘按视口宽溢出 wrap；
+   go-paper.css 另用 ID 选择器 `body.home-v2 #bd-board svg{width:100%;height:auto}`
+   （特异性 1,0,1）把高度压成 auto，棋盘又缩成一条。
+   修复：arena 布局下宿主改为「不超过可用空间的最大盒子」——高固定 100%（吃满 wrap），
+   宽用 aspect-ratio 反推，再用 max-width:100% 兜住"容器很矮很宽"的情况。
+   选择器带 #bd-board（ID）以压过 go-paper.css 的 ID 级规则（后者特异性同为 1,0,x，
+   但本条多一个类 → 1,1,x 胜出）。SVG 带 viewBox 且默认 preserveAspectRatio=meet，
+   会在盒内等比缩放居中，方棋盘(1:1)、connect4(7:6)、xiangqi(448:498)都不变形。*/
+@media (max-width: 899.5px) {
+  body.home-v2.bd-in-match .bd-board-wrap #bd-board {
+    height: 100%;
+    width: auto;
+    max-width: 100%;
+    max-height: 100%;
+    aspect-ratio: 1;
+    margin: auto;
+  }
+  /* 宿主尺寸确定后，svg 回到填满宿主（压过各 paper.css 的 auto / height:auto 覆盖）*/
+  body.home-v2.bd-in-match .bd-board-wrap #bd-board > svg {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+  }
+}
+
 .bd-side {
   display: flex; flex-direction: column; gap: 12px;
 }

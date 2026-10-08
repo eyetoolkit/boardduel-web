@@ -10,5 +10,8 @@ vite.config.ts.timestamp-*.mjs
 dist-beta/
 dist-beta/
 
+# 本地构建验证产物（vite build --outDir .verify-* ；勿提交）
+.verify*/
+
 # 残留的 git 修复目录（.git.broken / .git_backup 等）不应进仓库
 .git.broken/
