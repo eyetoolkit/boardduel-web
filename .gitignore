@@ -12,7 +12,3 @@ dist-beta/
 
 # 残留的 git 修复目录（.git.broken / .git_backup 等）不应进仓库
 .git.broken/
-
-# 本地验证脚本(不入库)
-.verify/
-dist_*/
