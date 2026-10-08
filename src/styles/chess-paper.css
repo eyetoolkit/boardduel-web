@@ -182,12 +182,12 @@ body.home-v2 .go-invite-qr-hint {
     max-width: none; margin: 0; padding: 0;
     height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
   }
-  body.home-v2.bd-in-match #ch-match {
+  body.home-v2.bd-in-match #ch-match, body.home-v2.bd-in-match #xq-match {
     display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0;
     padding: calc(6px + env(safe-area-inset-top)) 10px calc(8px + env(safe-area-inset-bottom));
   }
-  body.home-v2.bd-in-match #ch-end[hidden] { display: none; }
-  body.home-v2.bd-in-match #ch-match[hidden] { display: flex; }
+  body.home-v2.bd-in-match #ch-end, body.home-v2.bd-in-match #xq-end[hidden] { display: none; }
+  body.home-v2.bd-in-match #ch-match, body.home-v2.bd-in-match #xq-match[hidden] { display: flex; }
   body.home-v2.bd-in-match .bd-play,
   body.home-v2.bd-in-match .bd-side { display: contents; }
   body.home-v2.bd-in-match .go-clocks {
@@ -233,7 +233,7 @@ body.home-v2 .go-invite-qr-hint {
   }
   body.home-v2.bd-in-match .go-controls .go-icon-btn { flex: 0 0 44px; padding: 8px 0; }
   body.home-v2.bd-in-match .go-controls .go-btn[hidden] { display: none; }
-  body.home-v2.bd-in-match #ch-back-lobby {
+  body.home-v2.bd-in-match #ch-back-lobby, body.home-v2.bd-in-match #xq-back-lobby {
     order: 4; margin: 0; min-height: 38px; padding: 7px 10px;
     background: transparent; border-color: transparent;
     color: var(--mute2); font-size: .78rem;
@@ -244,14 +244,14 @@ body.home-v2 .go-invite-qr-hint {
   body.home-v2.bd-in-match .go-replaybar[hidden] { display: none; }
   body.home-v2.bd-in-match .go-rp-btn { width: 42px; height: 42px; }
   body.home-v2.bd-in-match .go-rp-range { margin-top: 7px; }
-  body.home-v2.bd-in-match.bd-replay #ch-back-lobby { order: 5; }
-  body.home-v2.bd-in-match #ch-end {
+  body.home-v2.bd-in-match.bd-replay #ch-back-lobby, body.home-v2.bd-in-match #xq-back-lobby { order: 5; }
+  body.home-v2.bd-in-match #ch-end, body.home-v2.bd-in-match #xq-end {
     position: fixed; inset: 0; z-index: 80;
     display: flex; align-items: center; justify-content: center;
     padding: 18px; background: rgba(18, 19, 31, .45);
     backdrop-filter: blur(2px);
   }
-  body.home-v2.bd-in-match #ch-end .go-endbar { width: 100%; max-width: 420px; margin: 0; }
+  body.home-v2.bd-in-match #ch-end, body.home-v2.bd-in-match #xq-end .go-endbar { width: 100%; max-width: 420px; margin: 0; }
 }
 
 html[data-theme="dark"] body.home-v2 .bd-board-wrap,
