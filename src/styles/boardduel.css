@@ -574,6 +574,11 @@ a.go-mode:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; 
   background: var(--ink2); border: 1px solid var(--line); border-radius: 10px;
   padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;
 }
+/* F-005（2026-10-08）：上面的 display:flex 会压过 hidden 属性的 UA 样式，
+   导致「HTML 写了 hidden、无 JS 打开」的聊天框在对局页常驻显示
+   （移动端沉浸布局里还插在棋钟与棋盘之间，挤小棋盘）。
+   全局兜底：hidden 即隐藏。gomoku-paper 的 is-open 开关不受影响（open 时已移除 hidden）。 */
+.go-chat[hidden] { display: none; }
 .go-chat-h {
   display: flex; justify-content: space-between; align-items: baseline;
   font-size: .72rem; letter-spacing: .1em; color: var(--mute2);
