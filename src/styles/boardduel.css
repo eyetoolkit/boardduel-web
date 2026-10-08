@@ -7,6 +7,13 @@
 /* 令牌统一由 tokens.css 提供（原 :root 夜色调色板被 home-v2 皮肤全覆盖，系死代码，已删除）。
    注意：--teal-soft 必须存在（.go-pill.is-live 引用），tokens.css 已定义。 */
 
+/* F-005b（2026-10-08）：全局 [hidden] 守卫。
+   事故复盘结论：任何元素只要自身/类名带 display 声明，hidden 属性就会静默失效
+   （CSS 作者样式 > UA 的 [hidden]{display:none}），页面"看起来正常"但功能残留。
+   F-005（.go-chat）只是单点修复，这条是整类兜底。!important 压过一切 display；
+   JS 要显示时正常 removeAttribute('hidden') 即可，不受影响。 */
+[hidden] { display: none !important; }
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body.home-v2 {
