@@ -38,3 +38,8 @@
 /service-worker.js
   Cache-Control: no-cache, must-revalidate
   Service-Worker-Allowed: /
+
+# service worker 永不缓存（浏览器拿到旧 SW 会锁死更新，必须每次回源）
+/sw.js
+  Cache-Control: no-cache, must-revalidate
+  Service-Worker-Allowed: /
