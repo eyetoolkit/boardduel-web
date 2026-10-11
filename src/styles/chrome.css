@@ -48,6 +48,7 @@ body.home-v2 .sb-nav { flex: 1; overflow-y: auto; padding-top: 10px; }
 body.home-v2 .sb-nav::-webkit-scrollbar { width: 0; }
 body.home-v2 .nav-item {
   display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 10px;
+  min-height: 44px;
   color: var(--mute); font-size: .86rem; font-weight: 500; text-decoration: none; white-space: nowrap;
 }
 body.home-v2 .nav-item:hover { background: var(--ink3); color: var(--paper); }

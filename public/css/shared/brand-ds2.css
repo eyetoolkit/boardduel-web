@@ -908,3 +908,16 @@ input, textarea, select, table, pre, code { max-width: 100%; box-sizing: border-
 @media (max-width: 720px) {
   .duel-section > .duel-wrap > .stats-grid { grid-template-columns: repeat(2, 1fr); gap: var(--s-3, 12px); }
 }
+
+/* ── P2 (2026-10-11): iOS 44pt 触摸目标兜底 ──
+   页脚/导航文字链接高度不足 44pt，移动端难点中。仅加最小高度与垂直居中，不改视觉布局。 */
+footer a,
+.site-footer a,
+.sites-footer a,
+.sb-footer a,
+.inv-footer a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  touch-action: manipulation;
+}
