@@ -241,7 +241,7 @@
       if (window.Identity) bootIdt();
       else {
         var idtScript = document.createElement("script");
-        idtScript.src = "/shared/identity.js?v=1";
+        idtScript.src = "/shared/identity.js?v=2";
         idtScript.onload = bootIdt;
         document.head.appendChild(idtScript);
       }

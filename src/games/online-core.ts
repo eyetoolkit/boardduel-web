@@ -193,7 +193,7 @@ function identity(): Promise<any> {
   if (_idt) return _idt;
   _idt = new Promise((resolve) => {
     const s = document.createElement('script');
-    s.src = '/shared/identity.js?v=1';
+    s.src = '/shared/identity.js?v=2';
     s.onload = () => resolve((window as any).Identity || null);
     s.onerror = () => resolve(null);
     document.head.appendChild(s);
