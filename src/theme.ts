@@ -4,9 +4,18 @@
  * 整站 papergames 浅色皮肤（首页 body.home-v2）都是浅色版，暗色层由本模块
  * 切换 html[data-theme="dark"] 触发（CSS 在 home-papergames.css 末尾定义）。
  * 本文件只负责：
- *   1. 启动时应用已保存的主题偏好（未保存过则一律浅色起步；无闪烁由各页 <head> 内联脚本兜底）
+ *   1. 启动时解析主题偏好：**用户没手动切过 → 跟随系统 prefers-color-scheme**；
+ *      手动切过之后 → 锁定 localStorage 里的显式偏好，不再被系统变更打扰。
  *   2. 委托监听 .sb-theme 点击（首页与未来各 lobby 页共用）
- *   3. 持久化到 localStorage('bd-theme')，并同步切换按钮图标与 aria 状态
+ *   3. 持久化到 localStorage('bd-theme2')，并同步切换按钮图标与 aria 状态
+ *
+ * 2026-10-11：v2 曾一律浅色起步（注释理由「部分用户首屏即暗色」）。改为跟随系统，
+ * 因为面向欧美 iPhone 用户时，装成 APP 后首屏白底是最明显的「不像原生 APP」信号。
+ * 三档语义：未设置=跟随系统 / 'light'=用户显式要浅色 / 'dark'=用户显式要深色。
+ *
+ * ⚠ 关键：applyTheme() 会写 localStorage，所以「跟随系统」这一档**不能**用它来应用，
+ *    否则首次访问就把系统值固化成显式偏好，用户之后再切系统主题就不会跟随了。
+ *    故 applySystemOnly() 只改 DOM 不落盘。
  *
  * 注意：游戏对局页（boardduel.css 深色对局区）本就不读 data-theme，不受影响。
  */
@@ -34,17 +43,20 @@ function current(): Theme {
   return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
 }
 
-/** 应用主题到 <html> 并同步所有切换按钮 + 地址栏主题色 */
-export function applyTheme(t: Theme): void {
+/** 系统是否偏好深色。缺 matchMedia（老浏览器）时按浅色处理。 */
+function prefersDark(): boolean {
+  try {
+    return !!window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  } catch {
+    return false;
+  }
+}
+
+/** 只改 DOM 与按钮/状态栏，**不写 localStorage** —— 用于「跟随系统」这一档 */
+function paint(t: Theme): void {
   const root = document.documentElement;
   if (t === 'dark') root.setAttribute('data-theme', 'dark');
   else root.removeAttribute('data-theme');
-
-  try {
-    localStorage.setItem(KEY, t);
-  } catch {
-    /* ignore */
-  }
 
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute('content', t === 'dark' ? '#0E0F1E' : '#F4F5F9');
@@ -57,15 +69,43 @@ export function applyTheme(t: Theme): void {
   });
 }
 
-/** 启动时调用一次：应用已保存偏好（默认浅色，不再跟随系统深色），并绑定委托点击监听 */
+/** 应用主题到 <html> 并同步所有切换按钮 + 地址栏主题色，同时**落盘为显式偏好** */
+export function applyTheme(t: Theme): void {
+  paint(t);
+  try {
+    localStorage.setItem(KEY, t);
+  } catch {
+    /* ignore */
+  }
+}
+
+/** 启动时调用一次：解析偏好并应用，随后绑定委托点击 + 跟随系统实时变更 */
 export function initTheme(): void {
-  // 旧键一次性清理：v1 曾跟随系统深色导致部分用户首屏即暗色，v2 一律浅色起步
+  // 旧键一次性清理：v1 曾用 bd-theme 存偏好，与新键语义不一致
   try {
     localStorage.removeItem(LEGACY_KEY);
   } catch {
     /* ignore */
   }
-  applyTheme(getStored() ?? 'light');
+
+  const stored = getStored();
+  if (stored) {
+    paint(stored); // 显式偏好优先，不跟随系统
+  } else {
+    paint(prefersDark() ? 'dark' : 'light'); // 未手动切过 → 跟随系统，且不落盘
+    // 用户中途改系统主题时实时跟随（仅在「未设置」档有效）
+    try {
+      const mq = window.matchMedia('(prefers-color-scheme: dark)');
+      const onChange = (e: MediaQueryListEvent) => {
+        if (getStored()) return; // 期间用户已手动选过 → 交还控制权
+        paint(e.matches ? 'dark' : 'light');
+      };
+      if (mq.addEventListener) mq.addEventListener('change', onChange);
+      else if (mq.addListener) mq.addListener(onChange); // 老 Safari
+    } catch {
+      /* ignore */
+    }
+  }
 
   // 委托监听：.sb-theme 在重渲染后依然存在，无需重复绑定
   document.addEventListener('click', (e: MouseEvent) => {
