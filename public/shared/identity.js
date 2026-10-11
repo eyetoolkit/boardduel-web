@@ -273,9 +273,12 @@
       '.idt-ask.compact .idt-note{font-size:.75rem;white-space:nowrap}',
       /* iOS Safari 对 font-size<16px 的输入框会在聚焦时自动放大页面（用户被迫手动缩回）。
          移动端强制 16px 下限；桌面端保留 .85rem 的紧凑排布不受影响。
-         放在 .compact 规则之后以确保覆盖（同样特异度时后者胜）。 */
-      '@media (max-width:820px){.idt-in,',
-      '.idt-ask.compact .idt-in{font-size:16px}}',
+         注意：.idt-in 用的是 `font:inherit`，字号继承自父级 —— 首页侧栏那种
+         「.idt-ask.compact 之外」的用法实测 computed 是 13.6px 且命中不到上面
+         .compact 那条规则，所以这里用元素级选择器兜底（.idt-in 只有 0,0,1,0 特异度，
+         放在所有规则之后 + 媒体查询内，不会被覆盖）。 */
+      '@media (max-width:820px){input.idt-in,',
+      'select.idt-in,textarea.idt-in,.idt-in{font-size:16px!important}}',
       '@media (prefers-reduced-motion:reduce){.idt-go,.idt-edit{transition:none}}'
     ].join('');
     doc.head.appendChild(s);
