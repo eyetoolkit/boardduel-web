@@ -3,7 +3,7 @@
    用法（支持多挂载）：
      <div id="lang-switcher"></div>          ← 放在导航/顶栏内（内嵌模式）
      <div data-lang-switcher></div>          ← 第二个挂载（如同id，侧栏等）
-     <script src="/i18n/lang-switcher.js?v=35" defer></script>
+     <script src="/i18n/lang-switcher.js?v=40" defer></script>
 
    模式自适应：
      - 挂载点位于 nav/header/.topbar/.sidebar 内 → 内嵌图标按钮（38px，菜单向下）
@@ -55,7 +55,8 @@
     +   'max-width:calc(100vw - 24px);margin:0;padding:6px;list-style:none;'
     +   'background:var(--lsw-bg,#fff);border:1px solid var(--lsw-line,rgba(25,20,45,.16));'
     +   'border-radius:14px;box-shadow:0 14px 36px var(--lsw-shadow,rgba(25,20,45,.18));'
-    +   'display:none;z-index:9600}'
+    +   'display:none;z-index:9600}' 
+    +   '.lang-switcher.lsw-flip .lsw-menu{left:0;right:auto}'
     + '.lang-switcher.open .lsw-menu{display:block}'
     + '.lang-switcher .lsw-opt{display:flex;align-items:center;gap:10px;width:100%;'
     +   'padding:9px 11px;border:0;border-radius:9px;background:none;font:inherit;'
@@ -116,6 +117,25 @@
     var btn = host.querySelector('.lsw-btn');
     var menu = host.querySelector('.lsw-menu');
 
+    // 菜单智能翻转：左挂载点（如 .sb-login）菜单向右展开会越出视口左缘时翻转为左对齐，
+    // 并对极窄视口做贴左裁切兜底。修复多语言选择框横向溢出/显示不全。
+    function repositionMenu() {
+      host.classList.remove('lsw-flip');
+      menu.style.maxWidth = '';
+      void menu.offsetWidth; // 强制回流，量到默认右对齐的真实位置
+      var vw = window.innerWidth || (document.documentElement.clientWidth || 0);
+      var M = 8; // 视口安全边距(px)
+      var r = menu.getBoundingClientRect();
+      if (r.left < M) {
+        host.classList.add('lsw-flip'); // CSS: left:0;right:auto
+        r = menu.getBoundingClientRect();
+      }
+      if (r.right > vw - M) { // 兜底：极窄视口仍越界 → 贴左并裁到视口内
+        host.classList.add('lsw-flip');
+        menu.style.maxWidth = (vw - 16) + 'px';
+      }
+    }
+
     function close() {
       host.classList.remove('open');
       btn.setAttribute('aria-expanded', 'false');
@@ -133,6 +153,7 @@
       });
       host.classList.toggle('open', willOpen);
       btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+      if (willOpen) repositionMenu();
     });
     host.querySelectorAll('.lsw-opt').forEach(function (opt) {
       opt.addEventListener('click', function (e) {
@@ -148,6 +169,10 @@
       });
     });
     host._lswClose = close;
+    // 视口变化（旋转/缩放）时若菜单开着则重算位置
+    window.addEventListener('resize', function () {
+      if (host.classList.contains('open')) repositionMenu();
+    });
   }
 
   function updateAll() {
