@@ -22,6 +22,10 @@
 
 const KEY = 'bd-theme2';
 const LEGACY_KEY = 'bd-theme';
+/** 迁移标记：v2 曾在启动时无条件 applyTheme('light')，把所有老用户的偏好固化成
+ *  'light'（他们其实从没手动选过）。2026-10-11 上线三档跟随后，这批脏值会让
+ *  老用户永远进不了「跟随系统」档。用一次性标记清掉，之后不再干预。 */
+const MIGRATED_KEY = 'bd-theme-followed';
 type Theme = 'dark' | 'light';
 
 const ICON_MOON =
@@ -89,8 +93,25 @@ export function initTheme(): void {
   }
 
   const stored = getStored();
-  if (stored) {
-    paint(stored); // 显式偏好优先，不跟随系统
+
+  // 一次性迁移：清掉 v2 时代无条件写死的 'light' 脏值，让老用户重新进入「跟随系统」档。
+  // 只清 light —— 'dark' 是用户可能真选过的，不能动。
+  let migrated = false;
+  try {
+    migrated = localStorage.getItem(MIGRATED_KEY) === '1';
+    if (!migrated) {
+      if (stored === 'light') localStorage.removeItem(KEY);
+      localStorage.setItem(MIGRATED_KEY, '1');
+      migrated = true;
+    }
+  } catch {
+    /* private mode：清不掉脏值，退回按显式偏好处理，不影响功能 */
+  }
+
+  const effective = migrated ? getStored() : stored;
+
+  if (effective) {
+    paint(effective); // 显式偏好优先，不跟随系统
   } else {
     paint(prefersDark() ? 'dark' : 'light'); // 未手动切过 → 跟随系统，且不落盘
     // 用户中途改系统主题时实时跟随（仅在「未设置」档有效）

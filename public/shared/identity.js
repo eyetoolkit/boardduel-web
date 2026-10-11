@@ -272,10 +272,10 @@
       '.idt-ask.compact .idt-go{padding:.35rem .7rem;font-size:.85rem}',
       '.idt-ask.compact .idt-note{font-size:.75rem;white-space:nowrap}',
       /* iOS Safari 对 font-size<16px 的输入框会在聚焦时自动放大页面（用户被迫手动缩回）。
-         移动端强制 16px 下限；桌面端保留 .85rem 的紧凑排布不受影响。 */
-      '@media (max-width:820px){.idt-ask.compact .idt-in,',
-      '.idt-ask.compact:not(.compact) .idt-in,',
-      '.idt-in{font-size:16px}}',
+         移动端强制 16px 下限；桌面端保留 .85rem 的紧凑排布不受影响。
+         放在 .compact 规则之后以确保覆盖（同样特异度时后者胜）。 */
+      '@media (max-width:820px){.idt-in,',
+      '.idt-ask.compact .idt-in{font-size:16px}}',
       '@media (prefers-reduced-motion:reduce){.idt-go,.idt-edit{transition:none}}'
     ].join('');
     doc.head.appendChild(s);
