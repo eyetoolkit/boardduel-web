@@ -36,9 +36,11 @@ body.home-v2 .btn-login {
   flex: 1; display: inline-flex; align-items: center; justify-content: center;
   background: var(--brand); color: #FFFFFF; border: 0; border-radius: 11px;
   font-weight: 700; font-size: .9rem; padding: 9px 0; white-space: nowrap;
-  text-decoration: none; font-family: var(--ui); cursor: pointer;
+  text-decoration: none; font-family: var(--ui); cursor: pointer; min-height: 44px;
 }
 body.home-v2 .btn-login:hover { background: var(--brand-bright); }
+/* iOS 44pt 触摸目标兜底：侧栏身份提交按钮（P2 · 2026-10-11） */
+body.home-v2 .sb-me .idt-go { min-height: 44px; display: inline-flex; align-items: center; touch-action: manipulation; }
 body.home-v2 .sb-theme {
   flex: none; width: 38px; border: 1px solid var(--line); background: #FFFFFF;
   border-radius: 11px; display: grid; place-items: center; color: var(--mute); cursor: pointer;
