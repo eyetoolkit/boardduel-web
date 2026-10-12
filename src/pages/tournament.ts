@@ -268,8 +268,11 @@ function renderEvents(): void {
           ? '<button class="tn-btn" data-join="' + esc(g.game) + '">' + esc(t('tournament.join')) + '</button>'
           : '<span class="tn-btn is-off">' + esc(t('tournament.closed')) + '</span>';
       const cd = open && g.startAt ? t('tournament.starts_in', { time: countdown(g.startAt) }) : '';
+      // ⚠️ 外层必须是 div 不能是 button：内嵌报名 <button> 是非法 HTML，
+      // 浏览器会提前闭合外层 → 报名按钮掉出卡片成孤儿块（2026-10-12 修复）。
+      // 用 role=button + tabindex + 键盘事件补回可点击/可聚焦语义。
       return (
-        '<button class="tn-event' + (selected === g.game ? ' is-sel' : '') + '" data-sel="' + esc(g.game) + '">' +
+        '<div class="tn-event' + (selected === g.game ? ' is-sel' : '') + '" data-sel="' + esc(g.game) + '" role="button" tabindex="0">' +
         '<span class="tn-event-top">' + statusPill(g) +
         '<span class="tn-seats">' + joined + ' / ' + max + '</span></span>' +
         '<span class="tn-event-head">' +
@@ -277,7 +280,7 @@ function renderEvents(): void {
         '<span class="tn-event-name">' + esc(gameLabel(g)) + '</span></span>' +
         '<span class="tn-event-cd">' + esc(cd) + '</span>' +
         '<span class="tn-event-act">' + btn + '</span>' +
-        '</button>'
+        '</div>'
       );
     })
     .join('');
@@ -365,6 +368,15 @@ function tick(): void {
 
 /* ══════════════════ 数据流 ══════════════════ */
 
+/** 选中某张赛事卡（点击或 Enter/Space 键盘触发共用） */
+function selectCard(target: HTMLElement): void {
+  const card = target.closest<HTMLElement>('[data-sel]');
+  if (!card) return;
+  selected = card.getAttribute('data-sel') || null;
+  renderEvents();
+  renderBracket();
+}
+
 async function load(): Promise<void> {
   const events = qs('#tn-events');
   try {
@@ -421,11 +433,18 @@ export function bootTournament(): void {
       if (g) void join(g);
       return;
     }
-    const card = target.closest<HTMLElement>('[data-sel]');
-    if (card) {
-      selected = card.getAttribute('data-sel') || null;
-      renderEvents();
-      renderBracket();
+    selectCard(target);
+  });
+
+  // 卡片是 div[role=button]：补 Enter/Space 键盘选中（Space 默认滚动页面，需拦住）
+  events?.addEventListener('keydown', (ev) => {
+    const kev = ev as KeyboardEvent;
+    if (kev.key !== 'Enter' && kev.key !== ' ') return;
+    const target = kev.target as HTMLElement | null;
+    if (!target || target.closest<HTMLElement>('[data-join]')) return;   // 按钮自身有原生键盘行为
+    if (target.closest<HTMLElement>('[data-sel]')) {
+      kev.preventDefault();
+      selectCard(target);
     }
   });
 

@@ -39,6 +39,7 @@ body.home-v2 .tn-event {
   cursor: pointer;
   font: inherit;
   color: inherit;
+  user-select: none;
   transition: border-color .15s, transform .15s, box-shadow .15s;
 }
 body.home-v2 .tn-event:hover {
