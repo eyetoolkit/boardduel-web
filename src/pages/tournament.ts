@@ -170,7 +170,7 @@ function renderMine(): void {
           ? t('tournament.waiting')
           : t('tournament.eliminated');
       const cta = actionable
-        ? '<a class="pp-cta" href="/b/' + esc(me.roomCode) + '">' + esc(t('tournament.enter_match')) + '</a>'
+        ? '<a class="pp-cta" href="/b/' + esc(g.game) + '/' + esc(me.roomCode) + '">' + esc(t('tournament.enter_match')) + '</a>'
         : '<a class="pp-cta ghost" href="/rank/">' + esc(t('tournament.cta_rank')) + '</a>';
       return (
         '<div class="pos">' +
@@ -254,7 +254,7 @@ function renderBracket(): void {
           };
           const canPlay = g.me && g.me.matchId === m.id && g.me.actionable && m.roomCode;
           const act = canPlay
-            ? '<a class="tn-play" href="/b/' + esc(m.roomCode as string) + '">' + esc(t('tournament.enter_match')) + '</a>'
+            ? '<a class="tn-play" href="/b/' + esc(g.game) + '/' + esc(m.roomCode as string) + '">' + esc(t('tournament.enter_match')) + '</a>'
             : '';
           return '<div class="tn-match">' + cell(a) + cell(b) + act + '</div>';
         })
