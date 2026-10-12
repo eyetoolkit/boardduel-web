@@ -8,6 +8,7 @@
  * ============================================================ */
 
 import { wireLobbyChrome } from './lobby-chrome';
+import { bootTournament } from './pages/tournament';
 
 type Json = Record<string, unknown>;
 
@@ -342,6 +343,8 @@ function boot(): void {
   } else if (page === 'shop') {
     void loadWallet().then(loadShop);
     wireShop();
+  } else if (page === 'tournament') {
+    bootTournament();
   }
 }
 

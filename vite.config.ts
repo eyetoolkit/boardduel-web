@@ -94,6 +94,8 @@ export default defineConfig({
         rank: resolve(here, 'rank/index.html'),
         stats: resolve(here, 'stats/index.html'),
         shop: resolve(here, 'shop/index.html'),
+        // 每日锦标赛（2026-10-12）：后端 Tournament DO + /api/tournament/{list,join}
+        tournament: resolve(here, 'tournament/index.html'),
         howto: resolve(here, 'how-to-play/index.html'),
         howtoGomoku: resolve(here, 'how-to-play/gomoku/index.html'),
         // 4 个棋类游戏（2026-09-28 全量上线）

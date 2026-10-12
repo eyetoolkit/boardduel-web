@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:78,fallback:"en"};</script>
+  <script src="/i18n/i18n.js?v=68"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Daily Tournament · BoardDuel</title>
+  <meta name="description" content="Eight-player single-elimination tournaments every day across Gomoku, Chess and Othello. Register, win three rounds, take the crown.">
+  <link rel="canonical" href="https://boardduel.com/tournament/">
+  <meta name="theme-color" content="#F4F5F9">
+  <link rel="stylesheet" href="/src/styles/tokens.css">
+  <link rel="stylesheet" href="/src/styles/chrome.css">
+  <link rel="stylesheet" href="/src/styles/boardduel.css">
+  <link rel="stylesheet" href="/src/styles/arena-paper.css">
+  <link rel="stylesheet" href="/src/styles/page-paper.css">
+  <link rel="stylesheet" href="/src/styles/tournament-paper.css">
+  <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/space-grotesk-latin-700.woff2" as="font" type="font/woff2" crossorigin>
+  <script>(function(){try{var t=localStorage.getItem('bd-theme2');if(t==='dark'||(t!=='light'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.setAttribute('data-theme','dark');var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content','#0E0F1E');}}catch(e){}})();</script>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Board Duel">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
+<link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)" href="/splash-1170x2532.png">
+<link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)" href="/splash-1290x2796.png">
+<link rel="apple-touch-startup-image" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)" href="/splash-1284x2778.png">
+<link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" href="/splash-750x1334.png">
+<script src="/js/sw-register.js" defer></script>
+</head>
+<body class="home-v2" data-page="tournament">
+<!-- ══ 移动端顶栏（<1120px 显示） ══ -->
+<div class="topbar">
+  <button class="burger" id="burger" aria-label="Open navigation" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="logo" href="/">Board<b>Duel</b></a>
+  <a class="btn-login" href="/games/gomoku/lobby/">Play</a>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<!-- ══ 侧边导航 ══ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-top">
+    <a class="logo" href="/">Board<b>Duel</b></a>
+    <button class="sb-collapse" id="collapse" title="Collapse navigation" aria-label="Collapse navigation">&laquo;</button>
+  </div>
+  <div class="sb-login">
+    <a class="btn-login" href="/games/gomoku/lobby/"><span>Play Gomoku</span></a>
+    <button class="sb-theme" type="button" title="Toggle theme" aria-label="Toggle theme" aria-pressed="false">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13A8 8 0 1 1 11 4a6.5 6.5 0 0 0 9 9z"/></svg>
+    </button>
+  </div>
+  <nav class="sb-nav" aria-label="Site navigation">
+    <a class="nav-item" href="/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><label>Home</label>
+    </a>
+    <div class="nav-group">Play</div>
+    <a class="nav-item" href="/games/gomoku/lobby/">
+      <img class="mini" src="/games/gomoku/cover.svg" alt="" aria-hidden="true"><label>Gomoku</label>
+    </a>
+    <a class="nav-item" href="/games/tictactoe/lobby/">
+      <img class="mini" src="/games/tictactoe/cover.svg" alt="" aria-hidden="true"><label>Tic-Tac-Toe</label>
+    </a>
+    <a class="nav-item" href="/games/connect4/lobby/">
+      <img class="mini" src="/games/connect4/cover.svg" alt="" aria-hidden="true"><label>Connect 4</label>
+    </a>
+    <a class="nav-item" href="/games/reversi/lobby/">
+      <img class="mini" src="/games/reversi/cover.svg" alt="" aria-hidden="true"><label>Othello</label>
+    </a>
+    <a class="nav-item" href="/games/chess/lobby/">
+      <img class="mini" src="/games/chess/cover.svg" alt="" aria-hidden="true"><label>Chess</label>
+    </a>
+    <a class="nav-item" href="/games/checkers/lobby/">
+      <img class="mini" src="/games/checkers/cover.svg" alt="" aria-hidden="true"><label>Checkers</label>
+    </a>
+    <a class="nav-item" href="/games/go/lobby/">
+      <img class="mini" src="/games/go/cover.svg?v=2" alt="" aria-hidden="true"><label>Go</label>
+    </a>
+    <a class="nav-item" href="/games/xiangqi/lobby/">
+      <img class="mini" src="/games/xiangqi/cover.svg?v=2" alt="" aria-hidden="true"><label>Xiangqi</label>
+    </a>
+    <div class="nav-group">More</div>
+    <a class="nav-item active" href="/tournament/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3"/><path d="M7 5H4v2a3 3 0 0 0 3 3"/></svg><label>Tournament</label>
+    </a>
+    <a class="nav-item" href="/rank/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3"/><path d="M7 5H4v2a3 3 0 0 0 3 3"/></svg><label>Leaderboard</label>
+    </a>
+    <a class="nav-item" href="/stats/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg><label>My stats</label>
+    </a>
+    <a class="nav-item" href="/shop/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16l-1 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><label>Shop</label>
+    </a>
+    <a class="nav-item" href="/how-to-play/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2z"/><path d="M8 7h7"/><path d="M8 11h7"/></svg><label>How to play</label>
+    </a>
+    <a class="nav-item" href="/teacher/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 2 9l10 5 10-5z"/><path d="M6 11.5V16c0 1.6 2.7 3 6 3s6-1.4 6-3v-4.5"/></svg><label>Teacher</label>
+    </a>
+  </nav>
+  <div class="nav-foot">
+    <span class="lang-pill"><b>EN</b></span>
+    <span class="sb-copy">&copy; 2026</span>
+  </div>
+</aside>
+<main class="pp-main">
+  <div class="pp-wrap">
+    <nav class="pp-crumb" aria-label="Breadcrumb"><a href="/">Home</a><span class="sep">/</span><span data-i18n="tournament.crumb">Daily Tournament</span></nav>
+    <h1 class="pp-h1" data-i18n="tournament.title">Daily Tournament</h1>
+    <p class="pp-lead" data-i18n="tournament.lead">Eight players, three rounds, one crown. Register for today's open bracket in Gomoku, Chess or Othello.</p>
+
+    <!-- ══ 我的赛事（已报名 / 轮到我时置顶） ══ -->
+    <div class="pp-me tn-mine" id="tn-mine" hidden></div>
+
+    <!-- ══ 今日三场赛事 ══ -->
+    <h2 class="pp-h2" data-i18n="tournament.events_h2">Today's brackets</h2>
+    <div class="tn-events" id="tn-events">
+      <div class="pp-state" data-i18n="tournament.loading">Loading…</div>
+    </div>
+
+    <!-- ══ 选中赛事的对阵表 ══ -->
+    <h2 class="pp-h2" data-i18n="tournament.bracket_h2">Bracket</h2>
+    <div class="tn-bracket" id="tn-bracket">
+      <div class="pp-state" data-i18n="tournament.pick_event">Pick a bracket above to see the draw.</div>
+    </div>
+
+    <div class="pp-cta-row">
+      <a class="pp-cta" href="/games/gomoku/lobby/" data-i18n="tournament.cta_play">Play a match</a>
+      <a class="pp-cta ghost" href="/rank/" data-i18n="tournament.cta_rank">Leaderboard</a>
+    </div>
+
+    <!-- ══ 赛制说明 ══ -->
+    <h2 class="pp-h2" data-i18n="tournament.rules_h2">How it works</h2>
+    <div class="pp-grid">
+      <div class="pp-card">
+        <h3 class="pp-h3"><span class="tn-step">1</span><span data-i18n="tournament.rule1_h">Register</span></h3>
+        <p class="pp-p" data-i18n="tournament.rule1_b">Sign up before the countdown ends. Seats are first come, first served — the bracket fills to eight.</p>
+      </div>
+      <div class="pp-card">
+        <h3 class="pp-h3"><span class="tn-step">2</span><span data-i18n="tournament.rule2_h">Play your rounds</span></h3>
+        <p class="pp-p" data-i18n="tournament.rule2_b">Win two matches to reach the final. Every round opens a fresh room with its own code — watch the bracket for your turn.</p>
+      </div>
+      <div class="pp-card">
+        <h3 class="pp-h3"><span class="tn-step">3</span><span data-i18n="tournament.rule3_h">Take the crown</span></h3>
+        <p class="pp-p" data-i18n="tournament.rule3_b">The champion takes the title and 100 coins, the runner-up 50. Unplayed seats fall to house AI.</p>
+      </div>
+      <div class="pp-card">
+        <h3 class="pp-h3"><span class="tn-step">4</span><span data-i18n="tournament.rule4_h">Come back tomorrow</span></h3>
+        <p class="pp-p" data-i18n="tournament.rule4_b">A fresh bracket opens every day at 19:00 UTC. Your rating carries over; the draw does not.</p>
+      </div>
+    </div>
+  </div>
+</main>
+<script type="module" src="/src/page-chrome.ts"></script>
+<script src="/i18n/lang-switcher.js?v=40" defer></script>
+</body>
+</html>

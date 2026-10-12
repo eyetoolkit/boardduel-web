@@ -1,0 +1,224 @@
+/* ============================================================
+ * BoardDuel · 每日锦标赛（/tournament/）
+ * 2026-10-12 · 依赖 tokens.css 提供的 --ink / --paper / --indigo /
+ * --ember / --teal 等变量，自动适配暗色（tokens.css 切 data-theme）。
+ * ============================================================ */
+
+/* ══════════════════ 我的赛事横幅 ══════════════════ */
+
+body.home-v2 .tn-mine {
+  border-left: 3px solid var(--ember);
+  background: var(--paper2);
+}
+body.home-v2 .tn-mine .pos { font-weight: 700; color: var(--ink); }
+body.home-v2 .tn-mine .det { margin-top: 4px; color: var(--mute); font-size: .9rem; }
+body.home-v2 .tn-mine-cta { margin-top: 10px; }
+body.home-v2 .tn-mine-cta .pp-cta { display: inline-block; }
+
+/* ══════════════════ 赛事卡 ══════════════════ */
+
+body.home-v2 .tn-events {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 14px 0 8px;
+}
+@media (max-width: 680px) { body.home-v2 .tn-events { grid-template-columns: 1fr; } }
+
+body.home-v2 .tn-event {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  text-align: left;
+  background: var(--paper2);
+  border: 1px solid var(--ink3);
+  border-radius: 12px;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition: border-color .15s, transform .15s;
+}
+body.home-v2 .tn-event:hover { border-color: var(--indigo-hover); transform: translateY(-1px); }
+body.home-v2 .tn-event.is-sel { border-color: var(--indigo); box-shadow: 0 0 0 1px var(--indigo) inset; }
+body.home-v2 .tn-event:focus-visible { outline: 2px solid var(--indigo-hover); outline-offset: 2px; }
+
+body.home-v2 .tn-event-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+body.home-v2 .tn-event-name { font-weight: 700; font-size: 1.02rem; color: var(--ink); }
+body.home-v2 .tn-event-cd { font-size: .8rem; color: var(--mute); min-height: 1.1em; }
+body.home-v2 .tn-seats {
+  font-size: .78rem;
+  color: var(--mute);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* 状态药丸 */
+body.home-v2 .tn-pill {
+  font-size: .72rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+body.home-v2 .tn-registration { color: var(--teal); }
+body.home-v2 .tn-running     { color: var(--ember); }
+body.home-v2 .tn-finished    { color: var(--indigo); }
+body.home-v2 .tn-cancelled,
+body.home-v2 .tn-error       { color: var(--mute2); }
+
+/* ══════════════════ 报名按钮 ══════════════════ */
+
+body.home-v2 .tn-btn {
+  display: inline-block;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  background: var(--indigo);
+  color: #FFFFFF;
+  font: inherit;
+  font-weight: 600;
+  font-size: .9rem;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+}
+body.home-v2 .tn-btn:hover { background: var(--indigo-hover); }
+/* 触摸目标 ≥44pt（iOS HIG） */
+@media (pointer: coarse) { body.home-v2 .tn-btn { min-height: 44px; } }
+body.home-v2 .tn-btn.is-joined {
+  background: transparent;
+  color: var(--teal);
+  border-color: var(--teal);
+  cursor: default;
+}
+body.home-v2 .tn-btn.is-off {
+  background: transparent;
+  color: var(--mute2);
+  border-color: var(--ink3);
+  cursor: default;
+}
+
+body.home-v2 .tn-flash {
+  margin-bottom: 10px;
+  border-left: 3px solid var(--ember);
+  color: var(--ember);
+}
+
+/* ══════════════════ bracket ══════════════════ */
+
+body.home-v2 .tn-bracket-row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(190px, 1fr);
+  gap: 14px;
+  margin: 14px 0;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+@media (max-width: 680px) {
+  body.home-v2 .tn-bracket-row { grid-auto-flow: row; grid-auto-columns: auto; overflow-x: visible; }
+}
+
+body.home-v2 .tn-round-h {
+  font-size: .76rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--mute2);
+  margin-bottom: 10px;
+}
+
+body.home-v2 .tn-match {
+  background: var(--paper2);
+  border: 1px solid var(--ink3);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+body.home-v2 .tn-side {
+  padding: 8px 11px;
+  font-size: .88rem;
+  color: var(--paper);
+  border-bottom: 1px solid var(--ink3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+body.home-v2 .tn-side:last-of-type { border-bottom: 0; }
+body.home-v2 .tn-side.is-tbd { color: var(--mute2); font-style: italic; }
+body.home-v2 .tn-side.is-win { font-weight: 700; color: var(--teal); background: rgba(20, 184, 166, .10); }
+/* 我在这场里 → 用左侧色条标记，不改背景色以免和「已胜出」混淆 */
+body.home-v2 .tn-side.is-me { box-shadow: inset 3px 0 0 var(--ember); }
+
+body.home-v2 .tn-play {
+  display: block;
+  padding: 7px 11px;
+  font-size: .8rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  color: #FFFFFF;
+  background: var(--ember);
+}
+body.home-v2 .tn-play:hover { filter: brightness(1.08); }
+@media (pointer: coarse) { body.home-v2 .tn-play { min-height: 44px; line-height: 30px; } }
+
+/* ══════════════════ 最终排名 ══════════════════ */
+
+body.home-v2 .tn-ranks {
+  margin-top: 18px;
+  padding: 14px 16px;
+  background: var(--paper2);
+  border: 1px solid var(--ink3);
+  border-radius: 12px;
+}
+body.home-v2 .tn-ranks-h {
+  font-size: .76rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--mute2);
+  margin-bottom: 10px;
+}
+body.home-v2 .tn-rank {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: .92rem;
+  color: var(--paper);
+  border-bottom: 1px solid var(--ink3);
+}
+body.home-v2 .tn-rank:last-child { border-bottom: 0; }
+body.home-v2 .tn-rank span {
+  min-width: 28px;
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ══════════════════ 规则卡序号 ══════════════════ */
+
+body.home-v2 .tn-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--indigo);
+  color: #FFFFFF;
+  font-size: .76rem;
+  font-weight: 700;
+  vertical-align: 2px;
+}
