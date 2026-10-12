@@ -272,7 +272,9 @@ function renderEvents(): void {
         '<button class="tn-event' + (selected === g.game ? ' is-sel' : '') + '" data-sel="' + esc(g.game) + '">' +
         '<span class="tn-event-top">' + statusPill(g) +
         '<span class="tn-seats">' + joined + ' / ' + max + '</span></span>' +
-        '<span class="tn-event-name">' + esc(gameLabel(g)) + '</span>' +
+        '<span class="tn-event-head">' +
+        '<img class="tn-event-ico" src="/games/' + esc(g.game) + '/cover.svg" alt="" aria-hidden="true" loading="lazy">' +
+        '<span class="tn-event-name">' + esc(gameLabel(g)) + '</span></span>' +
         '<span class="tn-event-cd">' + esc(cd) + '</span>' +
         '<span class="tn-event-act">' + btn + '</span>' +
         '</button>'
