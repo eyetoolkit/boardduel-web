@@ -222,3 +222,70 @@ body.home-v2 .tn-step {
   font-weight: 700;
   vertical-align: 2px;
 }
+/* ═══════════ 开赛提醒模态（2026-10-12） ═══════════ */
+body.home-v2 .tn-remind {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(30, 27, 57, .55);
+  backdrop-filter: blur(3px);
+}
+body.home-v2 .tn-remind[hidden] { display: none; }
+body.home-v2 .tn-remind-card {
+  width: min(420px, 100%);
+  background: var(--ink2);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 24px 60px rgba(30, 27, 57, .35);
+  padding: 26px 24px 22px;
+  text-align: center;
+  animation: tn-remind-pop .18s ease-out;
+}
+@keyframes tn-remind-pop {
+  from { transform: scale(.94) translateY(6px); opacity: 0; }
+  to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+body.home-v2 .tn-remind-ico { font-size: 34px; line-height: 1; }
+body.home-v2 .tn-remind-t {
+  margin: 10px 0 6px;
+  font-size: 1.15rem;
+  color: var(--paper);
+}
+body.home-v2 .tn-remind-b {
+  margin: 0 0 18px;
+  font-size: .92rem;
+  line-height: 1.6;
+  color: var(--mute);
+}
+body.home-v2 .tn-remind-act {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+body.home-v2 .tn-remind-go {
+  display: block;
+  padding: 12px 18px;
+  border-radius: 12px;
+  background: var(--indigo);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background .15s ease;
+}
+body.home-v2 .tn-remind-go:hover { background: var(--indigo-hover); }
+body.home-v2 .tn-remind-go:focus-visible { outline: 3px solid var(--indigo-bright); outline-offset: 2px; }
+body.home-v2 .tn-remind-x {
+  padding: 10px 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--mute);
+  font-size: .9rem;
+  cursor: pointer;
+}
+body.home-v2 .tn-remind-x:hover { color: var(--paper); border-color: var(--mute2); }
+/* 「我的赛事」卡里的开赛倒计时 */
+body.home-v2 .tn-mine-cd { color: var(--indigo); font-weight: 600; }

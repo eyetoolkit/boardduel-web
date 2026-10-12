@@ -169,17 +169,83 @@ function renderMine(): void {
         : typeof me.round === 'number' && me.round >= 0
           ? t('tournament.waiting')
           : t('tournament.eliminated');
+      // 报名中：跟官方倒计时（tick() 里每秒刷新 .tn-mine-cd，见文件末尾）
+      const cd = !actionable && g.status === 'registration' && g.startAt
+        ? '<span class="tn-mine-cd" data-cd="' + esc(g.startAt) + '"></span>'
+        : '';
       const cta = actionable
         ? '<a class="pp-cta" href="/b/' + esc(g.game) + '/' + esc(me.roomCode) + '">' + esc(t('tournament.enter_match')) + '</a>'
         : '<a class="pp-cta ghost" href="/rank/">' + esc(t('tournament.cta_rank')) + '</a>';
       return (
         '<div class="pos">' +
         esc(t('tournament.my_event')) + ' · ' + esc(gameLabel(g)) + '</div>' +
-        '<div class="det">' + esc(state) + '</div>' +
+        '<div class="det">' + esc(state) + cd + '</div>' +
         '<div class="tn-mine-cta">' + cta + '</div>'
       );
     })
     .join('');
+}
+
+/* ══════════════════ 开赛提醒（2026-10-12） ══════════════════
+ * 场景：用户报名后离开/忘了，到点房间开好也不知道 → 90 分钟超时判平局，
+ * 整条对阵路径作废（ Tournament DO 的兜底逻辑）。本站无推送基础设施，
+ * 所以做两级提醒：
+ *   ① 页面内模态 —— 轮询发现「轮到我」的 false→true 跳变时弹出
+ *      （15s 轮询 + visibilitychange 补拉，前台停留时可靠）
+ *   ② 系统 Notification —— 报名成功时（用户手势内）请求权限，
+ *      之后跳变时若已授权则顺带发一条（用户切到其他标签页也能看到）
+ * 都不授权也不弹 → 至少还有「我的赛事」卡片的倒计时与状态文案。 */
+
+/** 已提醒过的 game（false→true 跳变去重；actionable 消失时移除以便下轮再提醒） */
+const notified = new Set<string>();
+
+/** 报名成功后请求通知权限（必须在用户手势的调用栈里，否则浏览器直接拒） */
+function askNotifyPermission(): void {
+  try {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'default') void Notification.requestPermission();
+  } catch (e) { /* 老浏览器无 requestPermission 返回值，忽略 */ }
+}
+
+function fireNotification(g: TGame): void {
+  try {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    new Notification(t('tournament.notify_title'), {
+      body: t('tournament.notify_body', { game: gameLabel(g) }),
+      tag: 'tn-' + g.game,       // 同赛事只保留一条，避免刷屏
+    });
+  } catch (e) { /* 权限被拒/不支持：静默 */ }
+}
+
+function showRemind(g: TGame): void {
+  const modal = qs('#tn-remind');
+  const go = qs<HTMLAnchorElement>('#tn-remind-go');
+  if (!modal) return;
+  if (go) go.href = '/b/' + esc(g.game) + '/' + esc((g.me as TMe).roomCode || '');
+  modal.hidden = false;
+  fireNotification(g);
+}
+
+function hideRemind(): void {
+  const modal = qs('#tn-remind');
+  if (modal) modal.hidden = true;
+}
+
+/** 每次 load 后调用：检测「轮到我」的跳变并提醒 */
+function checkReminders(games: TGame[]): void {
+  for (const g of games) {
+    const me = g.me;
+    const live = !!(me && me.joined && me.actionable && me.roomCode);
+    if (live) {
+      if (!notified.has(g.game)) {
+        notified.add(g.game);
+        showRemind(g);
+      }
+    } else if (notified.has(g.game)) {
+      // 房间关了（打完/流局）：下轮再开房时允许重新提醒
+      notified.delete(g.game);
+    }
+  }
 }
 
 /* ── 赛事卡 ── */
@@ -288,6 +354,11 @@ function countdown(startAt: number): string {
 
 function tick(): void {
   renderEvents();
+  // 「我的赛事」卡里的开赛倒计时每秒走字（只改文本，不重建 DOM，避免打断点击）
+  document.querySelectorAll<HTMLElement>('.tn-mine-cd').forEach((el) => {
+    const at = Number(el.getAttribute('data-cd') || '0');
+    if (at > 0) el.textContent = ' · ' + t('tournament.starts_in', { time: countdown(at) });
+  });
 }
 
 /* ══════════════════ 数据流 ══════════════════ */
@@ -298,6 +369,7 @@ async function load(): Promise<void> {
     const d = await api('/api/tournament/list');
     latest = (Array.isArray(d.games) ? d.games : []) as TGame[];
     renderMine();
+    checkReminders(latest);
     renderEvents();
     renderBracket();
   } catch {
@@ -314,6 +386,7 @@ async function join(game: string): Promise<void> {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ game }),
     });
+    askNotifyPermission();   // 用户手势内请求，浏览器才会弹权限框
     await load();
   } catch (e) {
     const code = (e as Error & { code?: string }).code || '';
@@ -352,6 +425,13 @@ export function bootTournament(): void {
       renderEvents();
       renderBracket();
     }
+  });
+
+  // 提醒模态： dismiss / 点进入比赛 后关闭；ESC 同效
+  qs('#tn-remind-x')?.addEventListener('click', hideRemind);
+  qs('#tn-remind-go')?.addEventListener('click', hideRemind);
+  document.addEventListener('keydown', (ev) => {
+    if ((ev as KeyboardEvent).key === 'Escape') hideRemind();
   });
 
   void load();
