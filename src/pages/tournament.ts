@@ -140,6 +140,11 @@ let polling = 0;
 let ticker = 0;
 
 function gameLabel(g: TGame): string {
+  // 优先用客户端 i18n 字典（game_<id>.name）翻译棋种名；
+  // 后端 /api/tournament/list 的 title 是写死的中文，不能信任。
+  const key = 'game_' + g.game + '.name';
+  const tr = t(key);
+  if (tr !== key) return tr;
   return g.title || g.game;
 }
 
@@ -453,6 +458,15 @@ export function bootTournament(): void {
   qs('#tn-remind-go')?.addEventListener('click', hideRemind);
   document.addEventListener('keydown', (ev) => {
     if ((ev as KeyboardEvent).key === 'Escape') hideRemind();
+  });
+
+  // 切换语言时，JS 渲染的动态区（赛事卡/对阵图/我的赛事）用新语言重绘
+  window.addEventListener('language-changed', () => {
+    if (latest && latest.length) {
+      renderMine();
+      renderEvents();
+      renderBracket();
+    }
   });
 
   void load();

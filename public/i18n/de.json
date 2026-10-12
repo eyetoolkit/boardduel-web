@@ -2697,4 +2697,9 @@
     "err_bad_json": "Fehlerhafte Anfrage.",
     "err_generic": "Anmeldung fehlgeschlagen. Bitte erneut versuchen."
   }
+,
+  "game_reversi": {
+    "name": "Reversi",
+    "title": "Reversi"
+  }
 }

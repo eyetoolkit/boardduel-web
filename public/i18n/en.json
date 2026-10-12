@@ -2696,4 +2696,9 @@
     "err_bad_json": "Malformed request.",
     "err_generic": "Could not register. Try again."
   }
+,
+  "game_reversi": {
+    "name": "Reversi",
+    "title": "Reversi"
+  }
 }

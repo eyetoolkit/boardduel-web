@@ -2697,4 +2697,9 @@
     "err_bad_json": "Solicitud mal formada.",
     "err_generic": "No se pudo apuntar. Inténtalo de nuevo."
   }
+,
+  "game_reversi": {
+    "name": "Reversi",
+    "title": "Reversi"
+  }
 }

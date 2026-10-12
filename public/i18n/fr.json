@@ -2697,4 +2697,9 @@
     "err_bad_json": "Requête malformée.",
     "err_generic": "Inscription impossible. Réessayez."
   }
+,
+  "game_reversi": {
+    "name": "Reversi",
+    "title": "Reversi"
+  }
 }
