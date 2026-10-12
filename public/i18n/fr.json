@@ -34,6 +34,7 @@
   "nav": {
     "home": "Accueil",
     "rank": "Classement",
+    "tournament": "Tournoi",
     "about": "À propos",
     "contact": "Contact",
     "ttt": "✕◯ Morpion",
@@ -1687,6 +1688,9 @@
     "play_now": "Jouer maintenant",
     "group_play": "Jouer",
     "group_help": "Aide",
+    "tnt_title": "Tournoi quotidien",
+    "tnt_sub": "Huit joueurs, trois manches, une couronne. Les brackets du jour (Gomoku, Othello, Échecs) sont ouverts.",
+    "tnt_cta": "Voir les brackets du jour",
     "coin_shop": "Boutique de pièces",
     "how_to_play": "Comment jouer",
     "tag_1v1": "1c1",

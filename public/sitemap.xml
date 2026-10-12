@@ -6,6 +6,7 @@
   <url><loc>https://boardduel.com/privacy/</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://boardduel.com/terms/</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://boardduel.com/rank/</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://boardduel.com/tournament/</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
   <url><loc>https://boardduel.com/shop/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://boardduel.com/stats/</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://boardduel.com/how-to-play/</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>

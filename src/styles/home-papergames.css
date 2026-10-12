@@ -346,3 +346,34 @@ html[data-theme="dark"] body.home-v2 .tier i { background: #2C2F52; }
 html[data-theme="dark"] body.home-v2 .wrow .rk { color: var(--violet-bright); }
 html[data-theme="dark"] body.home-v2 .wrow.me { color: var(--violet-bright); }
 
+
+/* ═══════════ 每日锦标赛 banner（2026-10-12 上线入口） ═══════════ */
+.home-v2 .tnt-banner { padding: 20px 0 4px; }
+.home-v2 .tnt-banner-in {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 18px; border-radius: 16px; text-decoration: none;
+  background: linear-gradient(135deg, #7C3AED 0%, #4F46E5 62%, #6366F1 100%);
+  color: #fff; box-shadow: 0 10px 30px rgba(79, 70, 229, .25);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.home-v2 .tnt-banner-in:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(79, 70, 229, .35); }
+.home-v2 .tnt-banner-in:focus-visible { outline: 3px solid var(--brand-bright); outline-offset: 3px; }
+.home-v2 .tnt-banner-ico {
+  flex: none; width: 44px; height: 44px; border-radius: 12px;
+  display: grid; place-items: center; background: rgba(255, 255, 255, .16);
+}
+.home-v2 .tnt-banner-ico svg {
+  width: 24px; height: 24px; fill: none; stroke: #fff;
+  stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
+}
+.home-v2 .tnt-banner-txt { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.home-v2 .tnt-banner-txt b { font-size: 16px; letter-spacing: .2px; }
+.home-v2 .tnt-banner-txt span { font-size: 13px; line-height: 1.5; opacity: .88; }
+.home-v2 .tnt-banner-cta {
+  flex: none; margin-left: auto; font-size: 13px; font-weight: 700;
+  padding: 9px 16px; border-radius: 999px; background: #fff; color: #4F46E5; white-space: nowrap;
+}
+@media (max-width: 720px) {
+  .home-v2 .tnt-banner-in { flex-wrap: wrap; }
+  .home-v2 .tnt-banner-cta { margin-left: 0; width: 100%; text-align: center; }
+}

@@ -34,6 +34,7 @@
   "nav": {
     "home": "首页",
     "rank": "排行榜",
+    "tournament": "锦标赛",
     "about": "关于",
     "contact": "联系",
     "ttt": "✕◯ 井字棋",
@@ -1684,6 +1685,9 @@
     "play_now": "立即游玩",
     "group_play": "游玩",
     "group_help": "帮助",
+    "tnt_title": "每日锦标赛",
+    "tnt_sub": "八人淘汰赛，三轮决出冠军。今日五子棋、黑白棋、国际象棋战场已开放报名，快来占位。",
+    "tnt_cta": "查看今日赛场",
     "coin_shop": "金币商店",
     "how_to_play": "玩法说明",
     "tag_1v1": "1v1",

@@ -34,6 +34,7 @@
   "nav": {
     "home": "Home",
     "rank": "Ranking",
+    "tournament": "Tournament",
     "about": "About",
     "contact": "Contact",
     "ttt": "✕◯ Tic-Tac-Toe",
@@ -1686,6 +1687,9 @@
     "play_now": "Play now",
     "group_play": "Play",
     "group_help": "Help",
+    "tnt_title": "Daily Tournament",
+    "tnt_sub": "Eight players, three rounds, one crown. Today's brackets in Gomoku, Othello and Chess are open — grab a seat.",
+    "tnt_cta": "View today's brackets",
     "coin_shop": "Coin shop",
     "how_to_play": "How to play",
     "tag_1v1": "1v1",

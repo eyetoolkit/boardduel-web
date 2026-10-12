@@ -34,6 +34,7 @@
   "nav": {
     "home": "Inicio",
     "rank": "Clasificación",
+    "tournament": "Torneo",
     "about": "Acerca de",
     "contact": "Contacto",
     "ttt": "✕◯ Tres en raya",
@@ -1687,6 +1688,9 @@
     "play_now": "Jugar ahora",
     "group_play": "Jugar",
     "group_help": "Ayuda",
+    "tnt_title": "Torneo diario",
+    "tnt_sub": "Ocho jugadores, tres rondas, una corona. Los brackets de hoy de Gomoku, Othello y Ajedrez están abiertos.",
+    "tnt_cta": "Ver los brackets de hoy",
     "coin_shop": "Tienda de monedas",
     "how_to_play": "Cómo jugar",
     "tag_1v1": "1v1",

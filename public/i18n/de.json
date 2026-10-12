@@ -34,6 +34,7 @@
   "nav": {
     "home": "Startseite",
     "rank": "Rangliste",
+    "tournament": "Turnier",
     "about": "Über uns",
     "contact": "Kontakt",
     "ttt": "✕◯ Tic-Tac-Toe",
@@ -1687,6 +1688,9 @@
     "play_now": "Jetzt spielen",
     "group_play": "Spielen",
     "group_help": "Hilfe",
+    "tnt_title": "Tägliches Turnier",
+    "tnt_sub": "Acht Spieler, drei Runden, eine Krone. Die Brackets für Gomoku, Othello und Schach sind heute geöffnet.",
+    "tnt_cta": "Heutige Brackets ansehen",
     "coin_shop": "Münzenshop",
     "how_to_play": "Anleitung",
     "tag_1v1": "1v1",
