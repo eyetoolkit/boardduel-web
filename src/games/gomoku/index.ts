@@ -1491,11 +1491,19 @@ function handleWs(msg: Record<string, unknown>): void {
     //   · 对手离开（reason='opponent_left'）被显示成「对手认输」
     //   · 超时判负（reason='timeout'）被显示成「胜利」—— 正好说反
     //   改为按 go 的口径：用 winner 对比 myIdx 判胜负，用 reason 判文案。
+    // ⚡ 2026-10-12：新增 reason='natural_over'（服务端判五连，见 worker
+    //   games-room.js gomokuFiveAt）。本地 finish() 此时已展示带头连线标注的
+    //   判词（"You win · A1 – A5"），服务端帧只做确认，不覆盖本地文案。
+    const hadLocalVerdict = state.over;
     state.over = true;
     state.sawGameOver = true;
     stopTimer(state.timer);
     const reason = String(msg.reason || 'resign');
     const w = msg.winner;
+    if (reason === 'natural_over' && hadLocalVerdict) {
+      showScreen('end');
+      return;
+    }
     if (w === 'draw') {
       endVerdict.textContent = window.t('bi.draw');
       endVerdict.className = 'go-end-verdict is-draw';
@@ -1510,6 +1518,10 @@ function handleWs(msg: Record<string, unknown>): void {
       } else if (reason === 'timeout') {
         endVerdict.textContent = iLost ? window.t('bj.by_resignation') : window.t('bj.opp_resigned');
         endLine.textContent = window.t('bj.by_resignation');
+      } else if (reason === 'natural_over') {
+        // 本地未判词的兜底（刷新重连后收到终局帧）：服务端判的五连
+        endVerdict.textContent = iLost ? window.t('bj.opp_five') : window.t('bj.you_five');
+        endLine.textContent = window.t('bj.five_in_row');
       } else if (iLost) {
         endVerdict.textContent = window.t('bj.you_resigned');
         endLine.textContent = window.t('bj.by_resignation');
