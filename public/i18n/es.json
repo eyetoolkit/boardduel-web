@@ -153,7 +153,9 @@
     "signout": "Cerrar sesión",
     "username": "Nombre",
     "continue": "Continuar",
-    "reset_password": "Restablecer contraseña"
+    "reset_password": "Restablecer contraseña",
+    "forgot_desc": "Ingresa tu correo registrado, enviaremos un enlace para restablecer la contraseña.",
+    "body_too_large": "Solicitud demasiado grande, inténtalo de nuevo"
   },
   "toast": {
     "game_tip": "¡Haz clic en el tablero para comenzar. Buena suerte!"
@@ -204,7 +206,14 @@
     "disconnected_alert": "Desconectado del rival",
     "invalid_code": "Ingresa un código de 6 dígitos",
     "match_fail": "Emparejamiento fallido, inténtalo de nuevo",
-    "matchmaking": "Buscando un rival real…"
+    "matchmaking": "Buscando un rival real…",
+    "mode_online": "🌐 En línea",
+    "mode_ai": "🤖 vs IA",
+    "mode_random": "⚡ Aleatorio",
+    "copy_invite_link": "Copiar enlace de invitación",
+    "invite_copied": "Enlace de invitación copiado",
+    "default_player": "Jugador",
+    "mysterious_player": "Oponente misterioso"
   },
   "home": {
     "badge": "🎮 Arena de juegos de mesa",
@@ -1942,7 +1951,11 @@
     "bh_tictactoe_q2_b": "Es empate. Las nueve casillas se llenan rápido, así que los empates son comunes entre jugadores experimentados.",
     "bh_tictactoe_q3_t": "¿Es mejor esquina o centro?",
     "bh_tictactoe_q3_b": "El centro es la jugada inicial más fuerte. Si el centro está tomado, una esquina es la mejor respuesta.",
-    "bh_tictactoe_play": "Jugar Tic-Tac-Toe"
+    "bh_tictactoe_play": "Jugar Tic-Tac-Toe",
+    "bh_c4_modes_b": "vs IA — juega contra un motor en vivo a tres niveles; Pass & play — dos jugadores, una pantalla; Sala con amigo — comparte un código de seis caracteres y juega a distancia.",
+    "bh_gomoku_modes_b": "vs IA — juega contra un motor en vivo a tres niveles; Pass & play — dos jugadores, una pantalla; Sala con amigo — comparte un código de seis caracteres y juega a distancia.",
+    "bh_reversi_modes_b": "vs IA — juega contra un motor en vivo a tres niveles; Pass & play — dos jugadores, una pantalla; Sala con amigo — comparte un código de seis caracteres y juega a distancia.",
+    "bh_tictactoe_modes_b": "vs IA — juega contra un motor en vivo a tres niveles; Pass & play — dos jugadores, una pantalla; Sala con amigo — comparte un código de seis caracteres y juega a distancia."
   },
   "bn": {
     "bn_loading": "Cargando…",
@@ -1997,7 +2010,11 @@
     "bn_teacher_export_csv": "📊 Exportar CSV",
     "bn_teacher_cross_ttl": "Prueba las otras webs de la familia Duel",
     "bn_teacher_cross_md": "24 puntos · Sudoku 4×4-9×9 · Pirámide de ecuaciones · Pirámide numérica · informes semanales",
-    "bn_teacher_cross_mem": "Duelos 1v1 de conocimiento en vocabulario / historia / ciencia"
+    "bn_teacher_cross_mem": "Duelos 1v1 de conocimiento en vocabulario / historia / ciencia",
+    "bn_teacher_cap_roster": "Listas de clase e historial de tareas"
+  },
+  "mp": {
+    "my_stats": "Mis estadísticas"
   },
   "bm": {
     "bm_chip_pass_play": "IA · Dos en una pantalla",
@@ -2073,7 +2090,13 @@
     "bm_ttt_step2_t": "Bloquea o gana",
     "bm_ttt_step2_b": "Revisa primero la amenaza del rival, luego tu línea.",
     "bm_ttt_step3_t": "Tres en línea",
-    "bm_ttt_step3_b": "Fila, columna o diagonal — el primero en completar tres gana."
+    "bm_ttt_step3_b": "Fila, columna o diagonal — el primero en completar tres gana.",
+    "bm_chess_tagline": "Todas las reglas. Ningún montaje.",
+    "bm_gomoku_tagline": "Las piedras son el papel.",
+    "bm_go_tagline": "El tablero es el territorio.",
+    "bm_reversi_tagline": "Da la vuelta. Termina con más fichas.",
+    "bm_c4_tagline": "Suelta. Apila. Conecta cuatro.",
+    "bm_ttt_tagline": "Tres en línea. Toma el tablero."
   },
   "bg": {
     "bg_checkers_you_red": "TÚ · ROJO",
@@ -2483,7 +2506,15 @@
     "bg_checkers_not_your_turn": "Todavía no es tu turno",
     "bg_common_waiting_opponent": "Esperando al rival…",
     "bg_common_move_rejected": "Movimiento rechazado: el servidor no lo aceptó",
-    "bg_common_reconnect_failed": "Conexión perdida: no se pudo reconectar. Sala {code}: comparte este código para retomar la partida."
+    "bg_common_reconnect_failed": "Conexión perdida: no se pudo reconectar. Sala {code}: comparte este código para retomar la partida.",
+    "bg_gomoku_draw_offer_title": "El rival propone tablas",
+    "bg_gomoku_draw_accept": "Aceptar",
+    "bg_gomoku_draw_decline": "Rechazar",
+    "bg_gomoku_draw_waiting": "Esperando respuesta del rival…",
+    "bg_gomoku_draw_declined_toast": "El rival rechazó las tablas",
+    "bg_gomoku_draw_pending": "Primero responde a la propuesta de tablas",
+    "bg_xq_hero_sub": "Todas las reglas. Ningún montaje.",
+    "bg_chess_you_black": "TÚ · NEGRO"
   },
   "bk": {
     "bk_blog_tag_brain": "Entrenamiento cerebral",
@@ -2514,7 +2545,12 @@
     "board_full": "tablero lleno",
     "black_wins": "Gana negro",
     "white_wins": "Gana blanco",
-    "board_label": {}
+    "board_label": {},
+    "you_win": "Ganas",
+    "ai_wins": "Gana el motor",
+    "you_lose": "Pierdes",
+    "red_wins": "Gana rojo",
+    "teal_wins": "Gana turquesa"
   },
   "bj": {
     "finding_opponent": "Buscando oponente…",
@@ -2574,7 +2610,8 @@
     "takeback_ask_note": "Si aceptas se deshace la última jugada en ambos tableros.",
     "takeback_ask": "Tu oponente pide deshacer la jugada",
     "opp_left": "El rival salió",
-    "link_copied": "Enlace de invitación copiado"
+    "link_copied": "Enlace de invitación copiado",
+    "undo_offline_only": "No se puede deshacer en juego online"
   },
   "bk2": {
     "bk2_p1": "Tanto los juegos de mesa como los rompecabezas afirman entrenar tu cerebro. Pero desarrollan habilidades cognitivas muy diferentes. Entender qué tipo se adapta a tus objetivos te ayuda a aprovechar mejor tu tiempo de juego.",
@@ -2696,8 +2733,7 @@
     "err_rate_limited": "Demasiados intentos — espera un momento.",
     "err_bad_json": "Solicitud mal formada.",
     "err_generic": "No se pudo apuntar. Inténtalo de nuevo."
-  }
-,
+  },
   "game_reversi": {
     "name": "Reversi",
     "title": "Reversi"

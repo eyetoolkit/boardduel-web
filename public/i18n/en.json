@@ -153,7 +153,9 @@
     "signout": "Sign out",
     "username": "Username",
     "continue": "Continue",
-    "reset_password": "Reset password"
+    "reset_password": "Reset password",
+    "forgot_desc": "Enter your registered email, we will send a password reset link.",
+    "body_too_large": "Request too large, please try again"
   },
   "toast": {
     "game_tip": "Click the board to start. Good luck!"
@@ -204,7 +206,14 @@
     "disconnected_alert": "Disconnected from opponent",
     "invalid_code": "Enter a 6-digit room code",
     "match_fail": "Matchmaking failed, try again",
-    "matchmaking": "Finding a real player…"
+    "matchmaking": "Finding a real player…",
+    "mode_online": "🌐 Online",
+    "mode_ai": "🤖 vs AI",
+    "mode_random": "⚡ Random",
+    "copy_invite_link": "Copy Invite Link",
+    "invite_copied": "Invite link copied",
+    "default_player": "Player",
+    "mysterious_player": "Mysterious opponent"
   },
   "home": {
     "badge": "🎮 Board game arena",
@@ -1941,7 +1950,11 @@
     "bh_tictactoe_q2_b": "It is a draw. Nine cells fill fast, so draws are common between experienced players.",
     "bh_tictactoe_q3_t": "Is the corner or centre better?",
     "bh_tictactoe_q3_b": "The centre is the strongest first move. If the centre is taken, a corner is the best reply.",
-    "bh_tictactoe_play": "Play Tic-Tac-Toe"
+    "bh_tictactoe_play": "Play Tic-Tac-Toe",
+    "bh_c4_modes_b": "vs AI — play a live engine at three difficulty levels; Pass & play — two players, one screen; Friend room — share a six-character code and play remotely.",
+    "bh_gomoku_modes_b": "vs AI — play a live engine at three difficulty levels; Pass & play — two players, one screen; Friend room — share a six-character code and play remotely.",
+    "bh_reversi_modes_b": "vs AI — play a live engine at three difficulty levels; Pass & play — two players, one screen; Friend room — share a six-character code and play remotely.",
+    "bh_tictactoe_modes_b": "vs AI — play a live engine at three difficulty levels; Pass & play — two players, one screen; Friend room — share a six-character code and play remotely."
   },
   "bn": {
     "bn_loading": "Loading…",
@@ -1996,7 +2009,11 @@
     "bn_teacher_export_csv": "📊 Export CSV",
     "bn_teacher_cross_ttl": "Try the other Duel family sites",
     "bn_teacher_cross_md": "24-point · Sudoku 4×4-9×9 · Equation pyramid · Number pyramid · adaptive weekly insights",
-    "bn_teacher_cross_mem": "1v1 knowledge duels for vocabulary / history / science classrooms"
+    "bn_teacher_cross_mem": "1v1 knowledge duels for vocabulary / history / science classrooms",
+    "bn_teacher_cap_roster": "Class rosters & assignment history"
+  },
+  "mp": {
+    "my_stats": "My stats"
   },
   "bm": {
     "bm_chip_pass_play": "AI · Pass & Play",
@@ -2072,7 +2089,13 @@
     "bm_ttt_step2_t": "Block or win",
     "bm_ttt_step2_b": "Always check the opponent’s threat first, then your own line.",
     "bm_ttt_step3_t": "Three in a row",
-    "bm_ttt_step3_b": "Row, column or diagonal — first side to three wins."
+    "bm_ttt_step3_b": "Row, column or diagonal — first side to three wins.",
+    "bm_chess_tagline": "All the rules. None of the setup.",
+    "bm_gomoku_tagline": "The stones are the paper.",
+    "bm_go_tagline": "The board is the territory.",
+    "bm_reversi_tagline": "Flip the board. End with the most discs.",
+    "bm_c4_tagline": "Drop. Stack. Connect four.",
+    "bm_ttt_tagline": "Three in a row. Take the board."
   },
   "bg": {
     "bg_checkers_you_red": "YOU · RED",
@@ -2482,7 +2505,15 @@
     "bg_checkers_not_your_turn": "Not your turn yet",
     "bg_common_waiting_opponent": "Waiting for opponent…",
     "bg_common_move_rejected": "Move rejected — the server did not accept it",
-    "bg_common_reconnect_failed": "Connection lost — could not reconnect. Room {code}: share this code to resume the game."
+    "bg_common_reconnect_failed": "Connection lost — could not reconnect. Room {code}: share this code to resume the game.",
+    "bg_gomoku_draw_offer_title": "Opponent proposes a draw",
+    "bg_gomoku_draw_accept": "Accept",
+    "bg_gomoku_draw_decline": "Decline",
+    "bg_gomoku_draw_waiting": "Waiting for opponent to answer…",
+    "bg_gomoku_draw_declined_toast": "Draw declined",
+    "bg_gomoku_draw_pending": "Answer the draw request first",
+    "bg_xq_hero_sub": "All the rules. None of the setup.",
+    "bg_chess_you_black": "YOU · BLACK"
   },
   "bk": {
     "bk_blog_tag_brain": "Brain Training",
@@ -2513,7 +2544,12 @@
     "board_full": "board full",
     "black_wins": "Black wins",
     "white_wins": "White wins",
-    "board_label": {}
+    "board_label": {},
+    "you_win": "You win",
+    "ai_wins": "Engine wins",
+    "you_lose": "You lose",
+    "red_wins": "Red wins",
+    "teal_wins": "Teal wins"
   },
   "bj": {
     "finding_opponent": "Finding opponent…",
@@ -2573,7 +2609,8 @@
     "takeback_ask_note": "Accepting undoes the last move on both boards.",
     "takeback_ask": "Opponent asks to take back",
     "opp_left": "Opponent left",
-    "link_copied": "Invite link copied"
+    "link_copied": "Invite link copied",
+    "undo_offline_only": "Undo is not available in online play"
   },
   "bk2": {
     "bk2_p1": "Both board games and puzzle games claim to train your brain. But they develop very different cognitive skills. Understanding which type suits your goals helps you get more from your game time.",
@@ -2695,8 +2732,7 @@
     "err_rate_limited": "Too many attempts — give it a moment.",
     "err_bad_json": "Malformed request.",
     "err_generic": "Could not register. Try again."
-  }
-,
+  },
   "game_reversi": {
     "name": "Reversi",
     "title": "Reversi"

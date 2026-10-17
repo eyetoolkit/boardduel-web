@@ -74,21 +74,10 @@ body.home-v2 .go-end-verdict { font-weight: 700; }
  * ════════════════════════════════════════════════════════════ */
 body.home-v2 .bd-board-wrap,
 body.home-v2 .bd-hud { border-radius: 14px; box-shadow: 0 2px 4px rgba(30, 27, 57, .06), 0 4px 12px rgba(30, 27, 57, .07); }
-body.home-v2 .bd-mode-card { border-radius: 16px; box-shadow: 0 2px 4px rgba(30, 27, 57, .06), 0 4px 12px rgba(30, 27, 57, .07); }
 body.home-v2 .bd-control button { border-radius: 12px; }
 
 /* hero 元信息 chips */
 body.home-v2 .bd-game-meta span { background: #FFFFFF; }
-
-/* 模式卡：选中 = 靛蓝描边 + 淡靛底 */
-body.home-v2 .bd-mode-card:hover { border-color: #C7CBEE; }
-body.home-v2 .bd-mode-card.is-cur { border-color: var(--indigo-hover); background: #EEF0FB; }
-body.home-v2 .bd-mode-badge { color: var(--mute); }
-
-/* 难度按钮：句首大写的药丸，选中 = 靛蓝实心 */
-body.home-v2 .bd-diff-btn { border-radius: 999px; background: #FFFFFF; padding: 6px 16px; }
-body.home-v2 .bd-diff-btn:hover { color: var(--paper); border-color: #C7CBEE; }
-body.home-v2 .bd-diff-btn.is-cur { background: var(--indigo); border-color: var(--indigo); color: #FFFFFF; }
 
 /* 主操作（New game 等）：琥珀实心 */
 body.home-v2 .bd-control button.bd-primary {
@@ -152,11 +141,7 @@ html[data-theme="dark"] body.home-v2 {
   color: #E8EAF4;
 }
 html[data-theme="dark"] body.home-v2 .bd-board-wrap,
-html[data-theme="dark"] body.home-v2 .bd-hud,
-html[data-theme="dark"] body.home-v2 .bd-mode-card {
+html[data-theme="dark"] body.home-v2 .bd-hud {
   box-shadow: 0 2px 4px rgba(0, 0, 0, .35), 0 4px 12px rgba(0, 0, 0, .35);
 }
 html[data-theme="dark"] body.home-v2 .bd-game-meta span { background: #1A1B2E; }
-html[data-theme="dark"] body.home-v2 .bd-diff-btn { background: #1A1B2E; }
-html[data-theme="dark"] body.home-v2 .bd-diff-btn.is-cur { background: var(--indigo); color: #12131F; }
-html[data-theme="dark"] body.home-v2 .bd-mode-card.is-cur { background: #222336; }

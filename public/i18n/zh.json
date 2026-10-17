@@ -153,7 +153,9 @@
     "signout": "退出",
     "username": "用户名",
     "continue": "继续",
-    "reset_password": "重置密码"
+    "reset_password": "重置密码",
+    "forgot_desc": "输入注册邮箱，我们会发送密码重置链接。",
+    "body_too_large": "提交内容过大，请重试"
   },
   "toast": {
     "game_tip": "点击棋盘开始对战，祝你好运！"
@@ -204,7 +206,14 @@
     "create_room_fail": "创建房间失败",
     "disconnected_alert": "与对手的连接已断开",
     "invalid_code": "请输入6位房间码",
-    "match_fail": "匹配失败，请重试"
+    "match_fail": "匹配失败，请重试",
+    "mode_online": "🌐 联机",
+    "mode_ai": "🤖 人机",
+    "mode_random": "⚡ 随机配对",
+    "copy_invite_link": "复制邀请链接",
+    "invite_copied": "邀请链接已复制",
+    "default_player": "玩家",
+    "mysterious_player": "神秘对手"
   },
   "home": {
     "badge": "🎮 经典棋类对战",
@@ -1939,7 +1948,11 @@
     "bh_tictactoe_q2_b": "平局。9 格填得快，老手之间平局很常见。",
     "bh_tictactoe_q3_t": "角落好还是中心好？",
     "bh_tictactoe_q3_b": "中心是先手最强一手。如果中心被占，角落是最佳应手。",
-    "bh_tictactoe_play": "开始井字棋"
+    "bh_tictactoe_play": "开始井字棋",
+    "bh_c4_modes_b": "人机对战——三档 AI 实时对弈；同屏轮流——两人一台设备；好友房——6 位房间码远程开战。",
+    "bh_gomoku_modes_b": "人机对战——三档 AI 实时对弈；同屏轮流——两人一台设备；好友房——6 位房间码远程开战。",
+    "bh_reversi_modes_b": "人机对战——三档 AI 实时对弈；同屏轮流——两人一台设备；好友房——6 位房间码远程开战。",
+    "bh_tictactoe_modes_b": "人机对战——三档 AI 实时对弈；同屏轮流——两人一台设备；好友房——6 位房间码远程开战。"
   },
   "bn": {
     "bn_loading": "加载中…",
@@ -1994,7 +2007,11 @@
     "bn_teacher_export_csv": "📊 导出 CSV",
     "bn_teacher_cross_ttl": "试试其他 Duel 系列站点",
     "bn_teacher_cross_md": "24 点 · 数独 4×4-9×9 · 方程金字塔 · 数字金字塔 · 自适应周报",
-    "bn_teacher_cross_mem": "1v1 知识对抗，覆盖词汇 / 历史 / 科学等 12 类目"
+    "bn_teacher_cross_mem": "1v1 知识对抗，覆盖词汇 / 历史 / 科学等 12 类目",
+    "bn_teacher_cap_roster": "班级名册与作业记录"
+  },
+  "mp": {
+    "my_stats": "我的战绩"
   },
   "bm": {
     "bm_chip_pass_play": "AI · 双人同屏",
@@ -2070,7 +2087,13 @@
     "bm_ttt_step2_t": "拦截或取胜",
     "bm_ttt_step2_b": "优先看对手威胁，再看自己的连线。",
     "bm_ttt_step3_t": "三连成线",
-    "bm_ttt_step3_b": "行、列或对角——先三连者胜。"
+    "bm_ttt_step3_b": "行、列或对角——先三连者胜。",
+    "bm_chess_tagline": "规则齐全。零布子。",
+    "bm_gomoku_tagline": "棋子即是棋纸。",
+    "bm_go_tagline": "棋盘即领土。",
+    "bm_reversi_tagline": "翻转棋盘。终局数子多者胜。",
+    "bm_c4_tagline": "落子。堆叠。连成四颗。",
+    "bm_ttt_tagline": "三子连线。占领棋盘。"
   },
   "bg": {
     "bg_checkers_you_red": "你 · 红方",
@@ -2480,7 +2503,15 @@
     "bg_checkers_not_your_turn": "还没轮到你",
     "bg_common_waiting_opponent": "等待对手加入…",
     "bg_common_move_rejected": "走子被拒 —— 服务端未接受这一步",
-    "bg_common_reconnect_failed": "连接已断开，重连失败。房间 {code}：把这个码发给对方即可继续这局。"
+    "bg_common_reconnect_failed": "连接已断开，重连失败。房间 {code}：把这个码发给对方即可继续这局。",
+    "bg_gomoku_draw_offer_title": "对手提议和棋",
+    "bg_gomoku_draw_accept": "接受",
+    "bg_gomoku_draw_decline": "拒绝",
+    "bg_gomoku_draw_waiting": "等待对手回应…",
+    "bg_gomoku_draw_declined_toast": "对方拒绝了和棋",
+    "bg_gomoku_draw_pending": "请先回应和棋提议",
+    "bg_xq_hero_sub": "规则齐全。零布子。",
+    "bg_chess_you_black": "你 · 黑"
   },
   "bk": {
     "bk_blog_tag_brain": "脑力训练",
@@ -2511,7 +2542,12 @@
     "board_full": "棋盘已满",
     "black_wins": "黑胜",
     "white_wins": "白胜",
-    "board_label": {}
+    "board_label": {},
+    "you_win": "你赢了",
+    "ai_wins": "引擎获胜",
+    "you_lose": "你输了",
+    "red_wins": "红方获胜",
+    "teal_wins": "青方获胜"
   },
   "bj": {
     "finding_opponent": "正在寻找对手…",
@@ -2571,7 +2607,8 @@
     "takeback_ask_note": "接受后会在两端同时撤销最后一手。",
     "takeback_ask": "对手请求悔棋",
     "opp_left": "对手离开了",
-    "link_copied": "邀请链接已复制"
+    "link_copied": "邀请链接已复制",
+    "undo_offline_only": "联机对战不可悔棋"
   },
   "bk2": {
     "bk2_p1": "棋类游戏与解谜游戏都号称能训练大脑，但两者发展的是截然不同的认知技能。了解哪种类型更契合你的目标，能让你的游戏时间更有收获。",
@@ -2693,8 +2730,7 @@
     "err_rate_limited": "操作过于频繁，请稍等一下。",
     "err_bad_json": "请求格式有误。",
     "err_generic": "报名失败，请重试。"
-  }
-,
+  },
   "game_reversi": {
     "name": "黑白棋",
     "title": "黑白棋"

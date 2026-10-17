@@ -59,17 +59,3 @@ export function modeFromUrl(fallback: Mode = 'ai'): Mode {
   }
   return fallback;
 }
-
-/**
- * F-002 修复：把 ?mode=xxx 的 is-cur class 同步到对应 mode 卡上。
- * 必须在 state.mode 设定之后、render() 之前调用。
- * 只动 .is-cur class，不影响 .is-disabled / disabled 属性。
- */
-export function syncModeCardUI(mode: Mode): void {
-  const cards = document.querySelectorAll<HTMLElement>('.bd-mode-card');
-  cards.forEach((c) => {
-    const m = c.dataset.mode as Mode | undefined;
-    if (m === mode) c.classList.add('is-cur');
-    else c.classList.remove('is-cur');
-  });
-}

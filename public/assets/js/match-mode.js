@@ -40,7 +40,7 @@
     active: false,
     matchId: null,
     pollTimer: null,
-    name: t('match.default_player', 'Player') + Math.floor(1000 + Math.random() * 9000),
+    name: t('match.default_player', null, null, 'Player') + Math.floor(1000 + Math.random() * 9000),
     mode: 'ai'
   };
 

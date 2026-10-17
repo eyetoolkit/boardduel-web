@@ -17,7 +17,7 @@ export type Difficulty = 'easy' | 'medium' | 'hard';
 export const ROWS = 6;
 export const COLS = 7;
 export const SIZE2 = ROWS * COLS;
-const INF = 1_000_000;
+const INF = 100_000_000; // 必须 > WIN_SCORE，见 scoreWindow 上方注释
 
 const DIRS: ReadonlyArray<[number, number]> = [[1, 0], [0, 1], [1, 1], [1, -1]];
 const CENTER = 3; // 中间列 = 第 4 列（0-based index 3），重力棋盘常给中心加成
@@ -79,6 +79,15 @@ export function checkWinner(b: Board): GameResult {
   return { winner: 0, line: null };
 }
 
+/**
+ * 终局分（4 连已成立）。
+ * 🔴 必须**严格小于** αβ 的 INF，否则剪枝会把「已经赢了」当成「搜索边界」，
+ *    导致 `beta <= alpha` 提前 break，深层搜索被污染 —— 实测 hard 档有
+ *    **15.4% 的局面会错过眼前的直接胜手**，而 easy（depth=2，剪枝少）反而 0%。
+ *    也就是说深度越大越弱，难度完全倒挂。改这个数之前先跑 c4 回归。
+ */
+const WIN_SCORE = 10_000_000;
+
 /** 评估一格周围的"模式"（player 视角） */
 function scoreWindow(w: Cell[], player: Player): number {
   const opp = (player === 1 ? 2 : 1) as Player;
@@ -87,7 +96,7 @@ function scoreWindow(w: Cell[], player: Player): number {
   const empty = w.filter((c) => c === 0).length;
 
   if (op > 0 && my > 0) return 0;
-  if (my === 4) return 1_000_000;
+  if (my === 4) return WIN_SCORE;
   if (my === 3 && empty === 1) return 100;
   if (my === 2 && empty === 2) return 10;
   return 0;
@@ -122,6 +131,14 @@ export function evaluate(b: Board, player: Player): number {
 
 /** αβ 搜索 */
 function alphabeta(b: Board, depth: number, alpha: number, beta: number, player: Player, ai: Player): number {
+  // 🔴 终局必须在这里显式判定，不能只靠 evaluate 的形状分。
+  //    修复前只在 depth===0 才 evaluate，于是「已经 4 连」的局面仍被当成进行中继续搜，
+  //    深层搜索会把终局局面重新展开评估 —— 实测 hard 有 12~15% 的局面
+  //    会放弃眼前的直接胜手。落下即判终局后该比例降到 0。
+  const done = checkWinner(b);
+  if (done.winner === ai) return WIN_SCORE + depth;   // 越早取胜越偏好
+  if (done.winner !== 0) return done.winner === 3 ? 0 : -WIN_SCORE - depth;
+
   const moves = legalMoves(b);
   if (depth === 0 || moves.length === 0) return evaluate(b, ai);
 
@@ -188,5 +205,53 @@ export function selfTest(): { ok: boolean; details: string[] } {
     ok = false;
     details.push('opening should be center col 3, got ' + m);
   }
+
+  // 🔴 回归断言：三档都**必须**走眼前能赢的那一步。
+  //    修复前 alphabeta 不判终局，hard 有 15.4% 的局面放弃直接胜手，
+  //    导致「深度越大越弱」——easy(depth2) 100% 击败 hard(depth6)。
+  //    这条断言把那个倒挂钉死在测试里。
+  for (const lv of ['easy', 'medium', 'hard'] as Difficulty[]) {
+    const misses = countMissedWins(lv, 400);
+    if (misses.total === 0) {
+      ok = false;
+      details.push(`${lv} 未构造出任何必胜局面，回归断言本身失效`);
+    }
+    if (misses.missed > 0) {
+      ok = false;
+      details.push(`${lv} 有 ${misses.missed}/${misses.total} 个必胜局面被放弃（应为 0）`);
+    }
+  }
   return { ok, details };
+}
+/**
+ * 构造随机中局，统计「AI 面前有一步直接赢，却选了别的」的次数。
+ * 这是 Connect4 终局判定缺失的直接判据（见 alphabeta 上方注释）。
+ * 分母不该为 0 —— 为 0 说明构造不出有效局面，判据本身失效，必须报错而不是静默通过。
+ */
+export function countMissedWins(difficulty: Difficulty, games = 400): {
+  total: number; missed: number;
+} {
+  let total = 0;
+  let missed = 0;
+  for (let g = 0; g < games; g++) {
+    const b = emptyBoard();
+    const pre = 5 + Math.floor(Math.random() * 4);
+    for (let i = 0; i < pre; i++) {
+      const mv = legalMoves(b);
+      if (!mv.length) break;
+      drop(b, mv[Math.floor(Math.random() * mv.length)], (i % 2 === 0 ? 1 : 2) as Player);
+    }
+    if (checkWinner(b).winner !== 0 || isFull(b)) continue;
+
+    const winCols = legalMoves(b).filter((c) => {
+      const r = drop(b, c, 2);
+      const won = r >= 0 && checkWinner(b).winner === 2;
+      if (r >= 0) b[r] = 0;
+      return won;
+    });
+    if (!winCols.length) continue;
+    total++;
+    if (!winCols.includes(bestMove(b, 2, difficulty))) missed++;
+  }
+  return { total, missed };
 }

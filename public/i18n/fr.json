@@ -153,7 +153,9 @@
     "signout": "Se déconnecter",
     "username": "Nom",
     "continue": "Continuer",
-    "reset_password": "Réinitialiser le mot de passe"
+    "reset_password": "Réinitialiser le mot de passe",
+    "forgot_desc": "Entrez votre e-mail enregistré, nous enverrons un lien de réinitialisation.",
+    "body_too_large": "Requête trop volumineuse, veuillez réessayer"
   },
   "toast": {
     "game_tip": "Cliquez sur le plateau pour commencer. Bonne chance!"
@@ -204,7 +206,14 @@
     "disconnected_alert": "Déconnecté de l’adversaire",
     "invalid_code": "Entrez un code à 6 chiffres",
     "match_fail": "Échec du matchmaking, réessayez",
-    "matchmaking": "Recherche d’un joueur…"
+    "matchmaking": "Recherche d’un joueur…",
+    "mode_online": "🌐 En ligne",
+    "mode_ai": "🤖 vs IA",
+    "mode_random": "⚡ Aléatoire",
+    "copy_invite_link": "Copier le lien d’invitation",
+    "invite_copied": "Lien d’invitation copié",
+    "default_player": "Joueur",
+    "mysterious_player": "Adversaire mystérieux"
   },
   "home": {
     "badge": "🎮 Arène de jeux de plateau",
@@ -1942,7 +1951,11 @@
     "bh_tictactoe_q2_b": "C’est une nulle. Neuf cases se remplissent vite, donc les nulles sont fréquentes entre joueurs expérimentés.",
     "bh_tictactoe_q3_t": "Coin ou centre, que vaut-il mieux ?",
     "bh_tictactoe_q3_b": "Le centre est le coup initial le plus fort. Si le centre est pris, un coin est la meilleure réponse.",
-    "bh_tictactoe_play": "Jouer à Tic-Tac-Toe"
+    "bh_tictactoe_play": "Jouer à Tic-Tac-Toe",
+    "bh_c4_modes_b": "vs IA — affrontez un moteur en direct à trois niveaux ; Pass & play — deux joueurs, un écran ; Friend room — partagez un code à six caractères et jouez à distance.",
+    "bh_gomoku_modes_b": "vs IA — affrontez un moteur en direct à trois niveaux ; Pass & play — deux joueurs, un écran ; Friend room — partagez un code à six caractères et jouez à distance.",
+    "bh_reversi_modes_b": "vs IA — affrontez un moteur en direct à trois niveaux ; Pass & play — deux joueurs, un écran ; Friend room — partagez un code à six caractères et jouez à distance.",
+    "bh_tictactoe_modes_b": "vs IA — affrontez un moteur en direct à trois niveaux ; Pass & play — deux joueurs, un écran ; Friend room — partagez un code à six caractères et jouez à distance."
   },
   "bn": {
     "bn_loading": "Chargement…",
@@ -1997,7 +2010,11 @@
     "bn_teacher_export_csv": "📊 Exporter CSV",
     "bn_teacher_cross_ttl": "Découvrez les autres sites Duel",
     "bn_teacher_cross_md": "24 points · Sudoku 4×4-9×9 · Pyramide d'équations · Pyramide numérique · rapports hebdo adaptatifs",
-    "bn_teacher_cross_mem": "Duels 1v1 de connaissances en vocabulaire / histoire / sciences"
+    "bn_teacher_cross_mem": "Duels 1v1 de connaissances en vocabulaire / histoire / sciences",
+    "bn_teacher_cap_roster": "Listes de classe et historique des devoirs"
+  },
+  "mp": {
+    "my_stats": "Mes stats"
   },
   "bm": {
     "bm_chip_pass_play": "IA · Deux sur un écran",
@@ -2073,7 +2090,13 @@
     "bm_ttt_step2_t": "Bloquez ou gagnez",
     "bm_ttt_step2_b": "Vérifiez d’abord la menace adverse, puis votre ligne.",
     "bm_ttt_step3_t": "Trois en ligne",
-    "bm_ttt_step3_b": "Ligne, colonne ou diagonale — le premier à trois gagne."
+    "bm_ttt_step3_b": "Ligne, colonne ou diagonale — le premier à trois gagne.",
+    "bm_chess_tagline": "Toutes les règles. Aucun montage.",
+    "bm_gomoku_tagline": "Les pierres sont le papier.",
+    "bm_go_tagline": "Le plateau est le territoire.",
+    "bm_reversi_tagline": "Retournez le plateau. Gagnez avec le plus de pions.",
+    "bm_c4_tagline": "Jetez. Empilez. Quatro d’affilée.",
+    "bm_ttt_tagline": "Trois d’affilée. Prends le plateau."
   },
   "bg": {
     "bg_checkers_you_red": "VOUS · ROUGE",
@@ -2483,7 +2506,15 @@
     "bg_checkers_not_your_turn": "Ce n'est pas encore votre tour",
     "bg_common_waiting_opponent": "En attente de l'adversaire…",
     "bg_common_move_rejected": "Coup refusé — le serveur ne l’a pas accepté",
-    "bg_common_reconnect_failed": "Connexion perdue — reconnexion impossible. Salle {code} : partagez ce code pour reprendre la partie."
+    "bg_common_reconnect_failed": "Connexion perdue — reconnexion impossible. Salle {code} : partagez ce code pour reprendre la partie.",
+    "bg_gomoku_draw_offer_title": "L'adversaire propose une nulle",
+    "bg_gomoku_draw_accept": "Accepter",
+    "bg_gomoku_draw_decline": "Refuser",
+    "bg_gomoku_draw_waiting": "En attente de la réponse de l’adversaire…",
+    "bg_gomoku_draw_declined_toast": "L’adversaire a refusé la nulle",
+    "bg_gomoku_draw_pending": "Répondez d’abord à la proposition de nulle",
+    "bg_xq_hero_sub": "Toutes les règles. Aucun montage.",
+    "bg_chess_you_black": "TOI · NOIR"
   },
   "bk": {
     "bk_blog_tag_brain": "Entraînement cérébral",
@@ -2514,7 +2545,12 @@
     "board_full": "plateau plein",
     "black_wins": "Noir gagne",
     "white_wins": "Blanc gagne",
-    "board_label": {}
+    "board_label": {},
+    "you_win": "Vous gagnez",
+    "ai_wins": "Le moteur gagne",
+    "you_lose": "Vous perdez",
+    "red_wins": "Rouge gagne",
+    "teal_wins": "Turquoise gagne"
   },
   "bj": {
     "finding_opponent": "Recherche d’adversaire…",
@@ -2574,7 +2610,8 @@
     "takeback_ask_note": "Si vous acceptez, le dernier coup est annulé sur les deux plateaux.",
     "takeback_ask": "Votre adversaire demande à annuler le coup",
     "opp_left": "L'adversaire a quitté",
-    "link_copied": "Lien d'invitation copié"
+    "link_copied": "Lien d'invitation copié",
+    "undo_offline_only": "Le coup ne peut pas être annulé en jeu en ligne"
   },
   "bk2": {
     "bk2_p1": "Les jeux de plateau et les casse-têtes prétendent entraîner votre cerveau. Mais ils développent des compétences cognitives très différentes. Comprendre lequel convient à vos objectifs vous aide à tirer le meilleur de votre temps de jeu.",
@@ -2696,8 +2733,7 @@
     "err_rate_limited": "Trop de tentatives — patientez un instant.",
     "err_bad_json": "Requête malformée.",
     "err_generic": "Inscription impossible. Réessayez."
-  }
-,
+  },
   "game_reversi": {
     "name": "Reversi",
     "title": "Reversi"

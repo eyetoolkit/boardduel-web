@@ -32,9 +32,10 @@ import {
   type OnlineState, type OnlineMsg,
   isMoveRejected,
 } from '../online-core';
-import { modeFromUrl, syncModeCardUI } from '../shared';
+import { modeFromUrl } from '../shared';
 import { openFriendRoom } from '../friend-room';
 import { reportRound, isClassroom, urlRoomCode, ensureStudentCode } from '../../shared/teacher-track';
+import { parseGameOver } from '../../shared/game-over';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 
 /* ======================
@@ -104,8 +105,10 @@ type UIState = {
   /** 当前该谁走：1 = 玩家 X，2 = AI/pass 玩家 O */
   player: TPlayer;
   over: boolean;
-  /** 用于 Undo 的快照栈（每手 push 一个） */
-  history: TBoard[];
+  /** 用于 Undo 的快照栈（每手 push 一个）。
+   *  🔴 2026-10-15：原为裸 TBoard[]，不存轮到谁 → undo 只能把 player 硬置 1，
+   *  导致 pass（同屏双人）模式撤棋后「该谁走」是错的。现连 player 一起存。 */
+  history: { board: TBoard; player: TPlayer }[];
   /** 完整走子序列（用于棋谱回放） */
   moves: number[];
   /** 棋钟：当前总用时（ms） */
@@ -374,7 +377,8 @@ function onCell(i: number): void {
 }
 
 function pushHistory(): void {
-  state.history.push(cloneBoard(state.board));
+  // 连同「此刻轮到谁」一起快照，undo 才能正确还原 pass 模式的回合并手
+  state.history.push({ board: cloneBoard(state.board), player: state.player });
 }
 
 function afterMove(): void {
@@ -462,10 +466,10 @@ function finish(winner: TPlayer): void {
   }
 
   const verdict = state.mode === 'ai'
-    ? (winner === 1 ? 'You win' : 'Engine wins')
+    ? (winner === 1 ? window.t('bi.you_win') : window.t('bi.ai_wins'))
     : state.mode === 'pass'
-      ? (winner === 1 ? 'X wins' : 'O wins')
-      : (winner === ((state.myIdx ?? 0) + 1) ? 'You win' : 'You lose');
+      ? (winner === 1 ? window.t('bi.x_wins') : window.t('bi.o_wins'))
+      : (winner === ((state.myIdx ?? 0) + 1) ? window.t('bi.you_win') : window.t('bi.you_lose'));
   const line = checkWinner(state.board).line;
   endVerdict.textContent = verdict;
   endLine.textContent = line && line.length ? line.map(notation).join(' – ') : '—';
@@ -582,17 +586,22 @@ function undo(): void {
   if (state.over) return;
   // 联机禁用：undo 不看是谁走的，能把对手的棋子从自己屏幕上撤掉，
   // 而 onlineMyTurn 按 filledCount 推回合，撤完自己这边又变成"轮到我" → 双方同时可走，永久分叉。
-  if (state.mode === 'online') { toast('Undo is not available in online play'); return; }
+  if (state.mode === 'online') { toast(window.t('bj.undo_offline_only')); return; }
   cancelAiMove();
   if (state.history.length === 0) return;
-  state.board = state.history.pop()!;
+  // 🔴 2026-10-15：从快照读回 player，不再无条件 `state.player = 1` ——
+  //   pass 模式是两人轮流，撤棋后必须回到「本手之前的那个走子方」。
+  const s0 = state.history.pop()!;
+  state.board = s0.board;
+  state.player = s0.player;
   state.moves.pop();
   // AI 模式：玩家撤销后还要回退到玩家回合（撤销玩家 + AI 共 2 步）
   if (state.mode === 'ai' && state.history.length >= 1) {
-    state.board = state.history.pop()!;
+    const s1 = state.history.pop()!;
+    state.board = s1.board;
+    state.player = s1.player;
     state.moves.pop();
   }
-  state.player = 1;
   render();
 }
 
@@ -627,10 +636,12 @@ function doResign(): void {
   if (state.mode === 'online' && state.ws) sendWs(state as OnlineState, { type: 'resign' });
   state.over = true;
   stopTimer(state.timer);
-  endVerdict.textContent = state.mode === 'ai' ? 'You resigned' : 'You resigned';
+  // 🔴 2026-10-16：原先是 `state.mode === 'ai' ? 'You resigned' : 'You resigned'`（三元两边一样），
+  // 顺手去掉无意义分支；同时接 i18n。
+  endVerdict.textContent = window.t('bj.you_resigned');
   endVerdict.className = 'go-end-verdict is-loss';
   endLine.textContent = '—';
-  toast('Resigned');
+  toast(window.t('bj.resigned'));
   scheduleEndScreen();
 }
 
@@ -768,7 +779,6 @@ document.getElementById('tt-share')?.addEventListener('click', async () => {
  * ====================== */
 const _initialMode: Mode = inviteCode() ? 'online' : modeFromUrl('ai');
 state.mode = _initialMode;
-syncModeCardUI(state.mode);
 
 /* ======================
  * 屏幕切换
@@ -849,17 +859,23 @@ function handleWs(msg: OnlineMsg): void {
     state.over = true;
     state.sawGameOver = true;
     stopTimer(state.timer);
-    const reason = String(msg.reason || 'resign');
-    const w = msg.winner;
-    if (w === 'draw') {
+    // 🔴 2026-10-15：口径收敛到共享解析器。修复前这里是裸读 msg.winner 且只认
+    //   [w === 'draw']，而服务端 relay 模式的 drawAccept 广播的是
+    //   { kind:'draw', reason:'双方同意' } —— 没有 winner 字段（见 shared/game-over.ts
+    //   顶部的契约事故说明）。于是双方同意和棋被渲染成一方胜出的胜负屏。
+    //   parseGameOver 同时认 winner:'draw' 与 kind:'draw' 两种形状，
+    //   所以前端可以先于服务端上线，部署窗口内也不会错判。
+    const go = parseGameOver(msg);
+    if (go.draw) {
       endVerdict.textContent = window.t('bi.draw');
       endVerdict.className = 'go-end-verdict is-draw';
       endLine.textContent = window.t('bj.draw_agreed');
     } else {
-      const iLost = (typeof w === 'number' && state.myIdx !== null) ? w !== state.myIdx : false;
+      // 🔴 判胜负必须先确认 winner 非 null：[null !== myIdx] 会把双方同时显示成失败。
+      const iLost = (typeof go.winner === 'number' && state.myIdx !== null) ? go.winner !== state.myIdx : false;
       endVerdict.textContent = iLost ? window.t('bj.you_resigned') : window.t('bj.opp_resigned');
       endVerdict.className = 'go-end-verdict ' + (iLost ? 'is-loss' : 'is-win');
-      endLine.textContent = reason === 'opponent_left' ? window.t('bj.opp_left') : window.t('bj.by_resignation');
+      endLine.textContent = go.reason === 'opponent_left' ? window.t('bj.opp_left') : window.t('bj.by_resignation');
     }
     render();
     scheduleEndScreen();
@@ -892,16 +908,6 @@ chatForm.addEventListener('submit', (e) => {
  * 启动
  * ====================== */
 // 模式卡：仅 ai / pass 两张可点（井字棋目前无 ranked）
-document.querySelectorAll<HTMLButtonElement>('.bd-mode-card').forEach((b) => {
-  b.addEventListener('click', () => {
-    if (b.classList.contains('is-disabled')) return;
-    const m = b.dataset.mode as Mode;
-    if (m === 'human') { toast('Online match coming soon'); return; }
-    state.mode = m;
-    syncModeCardUI(m);
-    newGame();
-  });
-});
 
 undoBtn.addEventListener('click', undo);
 resignBtn.addEventListener('click', resign);
@@ -959,7 +965,8 @@ function applyRoomState(msg: OnlineMsg, viaStart: boolean): void {
  */
 function rollbackRejected(): void {
   const prev = state.history.pop();
-  if (prev) state.board = prev;
+  // 🔴 2026-10-15：history 现在是 {board, player}，读回 player 让回合也一并还原
+  if (prev) { state.board = prev.board; state.player = prev.player; }
   state.moves.pop();
   state.over = false;
   state.sawGameOver = false;

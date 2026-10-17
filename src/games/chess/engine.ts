@@ -173,6 +173,15 @@ function pieceColor(p: Piece): Side | null {
   return (p === p.toUpperCase()) ? 'w' : 'b';
 }
 
+/**
+ * 升变目标集合。Piece 约定「大写=白，小写=黑」，所以升变必须按走子方取对应大小写，
+ * 否则黑方升变会在盘上留下白后（2026-10-15 修复前 `['Q','R','B','N']` 写死导致）。
+ */
+const PROMO_PIECES: Record<Side, Piece[]> = {
+  w: ['Q', 'R', 'B', 'N'],
+  b: ['q', 'r', 'b', 'n'],
+};
+
 function fileOf(sq: number) { return sq % 8; }
 function rankOf(sq: number) { return Math.floor(sq / 8); }
 
@@ -265,8 +274,9 @@ export function legalMoves(s: GameState): Move[] {
         const r1 = r + dir;
         if (r1 >= 0 && r1 < 8 && board[r1 * 8 + f] === '.') {
           if (r1 === promoRank) {
-            // 升变 — 生成 4 种
-            for (const promo of ['Q','R','B','N'] as Piece[]) {
+            // 升变 — 生成 4 种。升变目标的大小写必须跟随走子方颜色，
+            // 否则黑方升变后盘上会出现白后（Piece 约定：大写=白，小写=黑）。
+            for (const promo of PROMO_PIECES[lower ? 'b' : 'w']) {
               const mv: Move = { from: sq, to: r1 * 8 + f, piece: p, promo };
               if (tryApply(s, mv)) out.push(mv);
             }
@@ -290,12 +300,25 @@ export function legalMoves(s: GameState): Move[] {
           const t = board[rr * 8 + ff];
           if (t !== '.' && pieceColor(t) === opp) {
             if (rr === promoRank) {
-              for (const promo of ['Q','R','B','N'] as Piece[]) {
+              for (const promo of PROMO_PIECES[lower ? 'b' : 'w']) {
                 const mv: Move = { from: sq, to: rr * 8 + ff, piece: p, capture: t, promo };
                 if (tryApply(s, mv)) out.push(mv);
               }
             } else {
               const mv: Move = { from: sq, to: rr * 8 + ff, piece: p, capture: t };
+              if (tryApply(s, mv)) out.push(mv);
+            }
+          }
+          // 🔴 吃过路兵（en passant）：目标格为空，但旁边那枚敌兵刚走完双步。
+          // s.enpassant 记录的是「下一手可以落子的目标格」（FEN 标准语义）。
+          // （2026-10-15 修复：此处曾误加 `rr === promoRank - dir` 条件——promoRank 是升变行，
+          //  与吃过路兵无关，该条件恒不成立，导致分支永不可达。另 s.enpassant 原先恒置 null，
+          //  分支即使条件正确也永远不触发。）
+          else if (t === '.' && s.enpassant === rr * 8 + ff) {
+            // 被跳过的敌兵在本兵「起点所在行」的 ff 列
+            const victim = board[r * 8 + ff];
+            if (victim !== '.' && pieceColor(victim) === opp && victim.toLowerCase() === 'p') {
+              const mv: Move = { from: sq, to: rr * 8 + ff, piece: p, capture: victim, enpassant: true };
               if (tryApply(s, mv)) out.push(mv);
             }
           }
@@ -415,8 +438,16 @@ function tryApply(s: GameState, m: Move): boolean {
 export function applyMove(s: GameState, m: Move): void {
   const turn = s.turn;
   const piece = s.board[m.from];
+  const fromRank = Math.floor(m.from / 8);
+  const toFile = m.to % 8;
+  const toRank = Math.floor(m.to / 8);
   s.board[m.from] = '.';
   s.board[m.to] = m.promo ? m.promo : piece;
+
+  // 🔴 吃过路兵：被吃的敌兵不在 m.to 那一格，而在「与 m.from 同行、m.to 所在列」的被跳过格
+  if (m.enpassant) {
+    s.board[toFile + fromRank * 8] = '.';
+  }
 
   // 王车易位：搬车
   if (m.castle) {
@@ -457,12 +488,26 @@ export function applyMove(s: GameState, m: Move): void {
 
   // 切换走子方
   s.turn = turn === 'w' ? 'b' : 'w';
-  s.enpassant = null;
+  // 🔴 双步推进 → 记录「下一手可落子的目标格」（FEN 标准语义）：
+  //    兵从 fromRank 跳到 toRank，被跳过格是中间格，也是对方吃过路兵时的落点。
+  //    修复前此处无条件置 null，en passant 分支因此永远不触发。
+  const isDoublePawn = isPawn && Math.abs(toRank - fromRank) === 2;
+  s.enpassant = isDoublePawn ? (toFile + Math.floor((fromRank + toRank) / 2) * 8) : null;
   s.history.push(m);
 }
 
-/** 全局评估：从 'w' 视角的子力和，正 = 白好 */
-export function evaluate(s: GameState): number {
+/**
+ * 全局评估：从 'w' 视角的子力和，正 = 白好
+ *
+ * 🔴 机动性项会调用 legalMoves 两次（当前方 + 翻转 turn 后的对方），
+ *    而 alphabeta 的叶子节点在调用本函数之前**已经算过一次 legalMoves**
+ *    （见 alphabeta 里的 `moves` 变量）。三份走法里有一份是纯浪费，
+ *    而 depth=6 时叶子节点数量最大 —— 这正是最该省的地方。
+ *
+ * `myMovesCount` 由调用方传入已算好的走法数；不传则自行生成
+ * （保留给 evaluate() 的独立调用方，如 selfTest / 调试）。
+ */
+export function evaluate(s: GameState, myMovesCount?: number): number {
   let score = 0;
   for (let sq = 0; sq < 64; sq++) {
     const p = s.board[sq];
@@ -475,7 +520,7 @@ export function evaluate(s: GameState): number {
   }
   // 机动性
   if (!s.turn) return score;
-  const myM = legalMoves(s).length;
+  const myM = myMovesCount ?? legalMoves(s).length;
   s.turn = s.turn === 'w' ? 'b' : 'w';
   const opM = legalMoves(s).length;
   s.turn = s.turn === 'b' ? 'w' : 'b';
@@ -495,7 +540,8 @@ function alphabeta(s: GameState, depth: number, alpha: number, beta: number, max
       }
       return 0; // 逼和
     }
-    return evaluate(s);
+    // 复用已算好的 moves 长度，省掉 evaluate 内部第三次生成
+    return evaluate(s, moves.length);
   }
 
   // move ordering：吃子先按 MVV-LVA（最大被吃 - 最小攻击者）

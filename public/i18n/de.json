@@ -153,7 +153,9 @@
     "signout": "Abmelden",
     "username": "Benutzername",
     "continue": "Weiter",
-    "reset_password": "Passwort zurücksetzen"
+    "reset_password": "Passwort zurücksetzen",
+    "forgot_desc": "Geben Sie Ihre registrierte E-Mail ein, wir senden einen Link zum Zurücksetzen des Passworts.",
+    "body_too_large": "Anfrage zu groß, bitte versuche es erneut"
   },
   "toast": {
     "game_tip": "Klicken Sie auf das Brett um zu starten. Viel Glück!"
@@ -204,7 +206,14 @@
     "disconnected_alert": "Verbindung zum Gegner getrennt",
     "invalid_code": "6-stelligen Code eingeben",
     "match_fail": "Matchmaking fehlgeschlagen, bitte erneut versuchen",
-    "matchmaking": "Suche einen echten Gegner…"
+    "matchmaking": "Suche einen echten Gegner…",
+    "mode_online": "🌐 Online",
+    "mode_ai": "🤖 vs KI",
+    "mode_random": "⚡ Zufällig",
+    "copy_invite_link": "Einladungslink kopieren",
+    "invite_copied": "Einladungslink kopiert",
+    "default_player": "Spieler",
+    "mysterious_player": "Geheimer Gegner"
   },
   "home": {
     "badge": "🎮 Brettspiel-Arena",
@@ -1942,7 +1951,11 @@
     "bh_tictactoe_q2_b": "Es ist Remis. Neun Felder füllen sich schnell, daher sind Remis zwischen erfahrenen Spielern häufig.",
     "bh_tictactoe_q3_t": "Ecke oder Mitte – was ist besser?",
     "bh_tictactoe_q3_b": "Die Mitte ist der stärkste Erstzug. Ist die Mitte belegt, ist eine Ecke die beste Antwort.",
-    "bh_tictactoe_play": "Tic-Tac-Toe spielen"
+    "bh_tictactoe_play": "Tic-Tac-Toe spielen",
+    "bh_c4_modes_b": "Gegen KI – tritt live gegen eine Engine auf drei Stufen an; Pass & Play – zwei Spieler, ein Bildschirm; Freundschaftsraum – teile einen sechsstelligen Code und spiele aus der Ferne.",
+    "bh_gomoku_modes_b": "Gegen KI – tritt live gegen eine Engine auf drei Stufen an; Pass & Play – zwei Spieler, ein Bildschirm; Freundschaftsraum – teile einen sechsstelligen Code und spiele aus der Ferne.",
+    "bh_reversi_modes_b": "Gegen KI – tritt live gegen eine Engine auf drei Stufen an; Pass & Play – zwei Spieler, ein Bildschirm; Freundschaftsraum – teile einen sechsstelligen Code und spiele aus der Ferne.",
+    "bh_tictactoe_modes_b": "Gegen KI – tritt live gegen eine Engine auf drei Stufen an; Pass & Play – zwei Spieler, ein Bildschirm; Freundschaftsraum – teile einen sechsstelligen Code und spiele aus der Ferne."
   },
   "bn": {
     "bn_loading": "Lädt…",
@@ -1997,7 +2010,11 @@
     "bn_teacher_export_csv": "📊 CSV exportieren",
     "bn_teacher_cross_ttl": "Probiere weitere Duel-Seiten",
     "bn_teacher_cross_md": "24-Punkt · Sudoku 4×4-9×9 · Gleichungs-Pyramide · Zahlen-Pyramide · adaptive Wochenberichte",
-    "bn_teacher_cross_mem": "1v1 Wissensduelle für Vokabeln / Geschichte / Naturwissenschaften"
+    "bn_teacher_cross_mem": "1v1 Wissensduelle für Vokabeln / Geschichte / Naturwissenschaften",
+    "bn_teacher_cap_roster": "Klassenlisten & Aufgabenverlauf"
+  },
+  "mp": {
+    "my_stats": "Meine Stats"
   },
   "bm": {
     "bm_chip_pass_play": "KI · Zu zweit auf einem Bildschirm",
@@ -2073,7 +2090,13 @@
     "bm_ttt_step2_t": "Blocken oder gewinnen",
     "bm_ttt_step2_b": "Prüfe immer zuerst die Drohung des Gegners, dann deine Linie.",
     "bm_ttt_step3_t": "Drei in einer Reihe",
-    "bm_ttt_step3_b": "Reihe, Spalte oder Diagonale – wer zuerst drei hat, gewinnt."
+    "bm_ttt_step3_b": "Reihe, Spalte oder Diagonale – wer zuerst drei hat, gewinnt.",
+    "bm_chess_tagline": "Alle Regeln. Kein Aufbau.",
+    "bm_gomoku_tagline": "Die Steine sind das Papier.",
+    "bm_go_tagline": "Das Brett ist das Territorium.",
+    "bm_reversi_tagline": "Das Brett umdrehen. Mit meisten Scheiben gewinnen.",
+    "bm_c4_tagline": "Werfen. Stapeln. Vier verbinden.",
+    "bm_ttt_tagline": "Drei in einer Reihe. Nimm das Brett."
   },
   "bg": {
     "bg_checkers_you_red": "DU · ROT",
@@ -2483,7 +2506,15 @@
     "bg_checkers_not_your_turn": "Du bist noch nicht am Zug",
     "bg_common_waiting_opponent": "Warten auf Gegner…",
     "bg_common_move_rejected": "Zug abgelehnt – der Server hat ihn nicht akzeptiert",
-    "bg_common_reconnect_failed": "Verbindung verloren — Wiederverbindung fehlgeschlagen. Raum {code}: Teile diesen Code, um die Partie fortzusetzen."
+    "bg_common_reconnect_failed": "Verbindung verloren — Wiederverbindung fehlgeschlagen. Raum {code}: Teile diesen Code, um die Partie fortzusetzen.",
+    "bg_gomoku_draw_offer_title": "Gegner schlägt Remis vor",
+    "bg_gomoku_draw_accept": "Annehmen",
+    "bg_gomoku_draw_decline": "Ablehnen",
+    "bg_gomoku_draw_waiting": "Warte auf Antwort des Gegners…",
+    "bg_gomoku_draw_declined_toast": "Gegner lehnt Remis ab",
+    "bg_gomoku_draw_pending": "Bitte zuerst die Remis-Anfrage beantworten",
+    "bg_xq_hero_sub": "Alle Regeln. Kein Aufbau.",
+    "bg_chess_you_black": "DU · SCHWARZ"
   },
   "bk": {
     "bk_blog_tag_brain": "Gehirntraining",
@@ -2514,7 +2545,12 @@
     "board_full": "Brett voll",
     "black_wins": "Schwarz gewinnt",
     "white_wins": "Weiß gewinnt",
-    "board_label": {}
+    "board_label": {},
+    "you_win": "Du gewinnst",
+    "ai_wins": "Der Motor gewinnt",
+    "you_lose": "Du verlierst",
+    "red_wins": "Rot gewinnt",
+    "teal_wins": "Türkis gewinnt"
   },
   "bj": {
     "finding_opponent": "Gegner wird gesucht…",
@@ -2574,7 +2610,8 @@
     "takeback_ask_note": "Bei Annahme wird der letzte Zug auf beiden Brettern zurückgenommen.",
     "takeback_ask": "Dein Gegner bittet um Rücknahme",
     "opp_left": "Gegner hat verlassen",
-    "link_copied": "Einladungslink kopiert"
+    "link_copied": "Einladungslink kopiert",
+    "undo_offline_only": "Zug zurück ist im Online-Spiel nicht verfügbar"
   },
   "bk2": {
     "bk2_p1": "Brettspiele und Puzzle behaupten beide, das Gehirn zu trainieren. Doch sie fördern sehr unterschiedliche kognitive Fähigkeiten. Zu verstehen, welcher Typ zu deinen Zielen passt, hilft dir, deine Spielzeit optimal zu nutzen.",
@@ -2696,8 +2733,7 @@
     "err_rate_limited": "Zu viele Versuche — bitte kurz warten.",
     "err_bad_json": "Fehlerhafte Anfrage.",
     "err_generic": "Anmeldung fehlgeschlagen. Bitte erneut versuchen."
-  }
-,
+  },
   "game_reversi": {
     "name": "Reversi",
     "title": "Reversi"

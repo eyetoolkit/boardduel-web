@@ -396,6 +396,22 @@ export async function bestMoveKatago(
   for (let i = 0; i < n; i++) if (legalMask[i] && logits[i] > mx) mx = logits[i];
   if (passLogit > mx) mx = passLogit;
 
+  // 🔴 temp=0（hard 档）必须走确定性 argmax，不能进采样分支。
+  //   修复前此处无条件除以 temp → 0/0 = NaN → 整个权重数组为 NaN →
+  //   `r -= NaN` 恒为 NaN，`r <= 0` 恒 false → 落到下面的 `return legal[0]`，
+  //   即「hard 档固定走棋盘索引升序第一个点（左上角）」，与设计意图完全相反。
+  if (temp <= 0) {
+    let best = -1;
+    let bestV = -Infinity;
+    for (let i = 0; i < n; i++) {
+      if (!legalMask[i]) continue;
+      if (logits[i] > bestV) { bestV = logits[i]; best = i; }
+    }
+    if (passLogit > bestV) return n; // pass 也可能是全局最优
+    if (best >= 0) return best;
+    return legal[0];
+  }
+
   const w = new Float64Array(n + 1);
   let sum = 0;
   for (let i = 0; i < n; i++) {
@@ -411,8 +427,11 @@ export async function bestMoveKatago(
     r -= w[i];
     if (r <= 0) return i;
   }
-  // 理论上不可达（r 已被 pass 权重截断），兜底取第一合法点
-  return legal[0];
+  // 数值兜底：权重全为 0（或 sum 退化）时按 logits 取最大值，而非索引首项
+  let fb = -1, fbV = -Infinity;
+  for (let i = 0; i < n; i++) if (legalMask[i] && logits[i] > fbV) { fbV = logits[i]; fb = i; }
+  if (passLogit > fbV) return n;
+  return fb >= 0 ? fb : legal[0];
 }
 
 /** 局面评估（给 UI 用的胜率/目数），失败返回 null。 */

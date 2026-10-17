@@ -197,9 +197,12 @@ function evaluate(board: Board, ai: Player): number {
     const r = Math.floor(i / 8);
     const c = i % 8;
     let val = v === RED_MAN || v === BLACK_MAN ? 100 : 175; // 王更值钱
-    // 推进度：红兵越靠下越好，黑兵越靠上越好
-    if (v === RED_MAN) val += r * 6;
-    else if (v === BLACK_MAN) val += (7 - r) * 6;
+    // 推进度：红兵向上（r 减小）前进，故 r 越小越好；黑兵向下（r 增大）前进，故 r 越大越好。
+    // 🔴 2026-10-15 修复：原为 `val += r*6` / `val += (7-r)*6`，与 manDirs() 的
+    //   实际行棋方向完全相反 —— AI 在奖励自己的兵后退。它依然能赢，只是赢得很难看，
+    //   玩家会归因于「这游戏难」，属最难自查的一类评估符号 bug。
+    if (v === RED_MAN) val += (7 - r) * 6;
+    else if (v === BLACK_MAN) val += r * 6;
     // 边列兵不易被侧翼吃
     if (c === 0 || c === 7) val += 8;
     score += pl === ai ? val : -val;

@@ -115,7 +115,7 @@
       var w = document.createElement("div");
       w.className = "sh-menu-wrap sh-games";
       w.innerHTML = '<button type="button" class="sh-navbtn" aria-haspopup="true" aria-expanded="false">' +
-        '<span data-sh-i18n="nav.games" data-sh-fallback="Games">' + t("nav.games", "Games") + '</span><span class="sh-caret">▾</span></button>' +
+        '<span data-sh-i18n="nav.games" data-sh-fallback="Games">' + t("nav.games", null, null, "Games") + '</span><span class="sh-caret">▾</span></button>' +
         '<div class="sh-menu" role="menu"></div>';
       var menu = w.querySelector(".sh-menu");
       list.forEach(function (g) {

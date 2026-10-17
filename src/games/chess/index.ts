@@ -28,9 +28,10 @@ import {
   isMoveRejected,  roomLiveFromState, opponentNameFromState,
   type OnlineState, type OnlineMsg,
 } from '../online-core';
-import { modeFromUrl, syncModeCardUI } from '../shared';
+import { modeFromUrl } from '../shared';
 import { openFriendRoom } from '../friend-room';
 import { reportRound, isClassroom, urlRoomCode, ensureStudentCode } from '../../shared/teacher-track';
+import { parseGameOver } from '../../shared/game-over';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 
 /* ======================
@@ -539,7 +540,7 @@ function finish(): void {
   }
 
   const meWon = state.mode === 'ai' ? state.gs.turn === 'b' : (state.mode === 'online' ? state.gs.turn !== myColor() : false);
-  const verdict = meWon ? 'You win' : 'You lose';
+  const verdict = meWon ? window.t('bi.you_win') : window.t('bi.you_lose');
   const line = meWon ? 'Checkmate' : 'Checkmate';
   endVerdict.textContent = verdict;
   endLine.textContent = line;
@@ -688,10 +689,10 @@ function doResign(): void {
   if (state.mode === 'online' && state.ws) sendWs(state as OnlineState, { type: 'resign' });
   state.over = true;
   stopTimer(state.timer);
-  endVerdict.textContent = 'You resigned';
+  endVerdict.textContent = window.t('bj.you_resigned');
   endVerdict.className = 'go-end-verdict is-loss';
   endLine.textContent = '—';
-  toast('Resigned');
+  toast(window.t('bj.resigned'));
   scheduleEndScreen();
 }
 
@@ -844,7 +845,6 @@ document.getElementById('ch-share')?.addEventListener('click', async () => {
  * ====================== */
 const _initialMode: Mode = inviteCode() ? 'online' : modeFromUrl('ai');
 state.mode = _initialMode;
-syncModeCardUI(state.mode);
 
 /* ======================
  * 屏幕切换
@@ -931,17 +931,23 @@ function handleWs(msg: OnlineMsg): void {
     state.over = true;
     state.sawGameOver = true;
     stopTimer(state.timer);
-    const reason = String(msg.reason || 'resign');
-    const w = msg.winner;
-    if (w === 'draw') {
+    // 🔴 2026-10-15：口径收敛到共享解析器。修复前这里是裸读 msg.winner 且只认
+    //   [w === 'draw']，而服务端 relay 模式的 drawAccept 广播的是
+    //   { kind:'draw', reason:'双方同意' } —— 没有 winner 字段（见 shared/game-over.ts
+    //   顶部的契约事故说明）。于是双方同意和棋被渲染成一方胜出的胜负屏。
+    //   parseGameOver 同时认 winner:'draw' 与 kind:'draw' 两种形状，
+    //   所以前端可以先于服务端上线，部署窗口内也不会错判。
+    const go = parseGameOver(msg);
+    if (go.draw) {
       endVerdict.textContent = window.t('bi.draw');
       endVerdict.className = 'go-end-verdict is-draw';
       endLine.textContent = window.t('bj.draw_agreed');
     } else {
-      const iLost = (typeof w === 'number' && state.myIdx !== null) ? w !== state.myIdx : false;
+      // 🔴 判胜负必须先确认 winner 非 null：[null !== myIdx] 会把双方同时显示成失败。
+      const iLost = (typeof go.winner === 'number' && state.myIdx !== null) ? go.winner !== state.myIdx : false;
       endVerdict.textContent = iLost ? window.t('bj.you_resigned') : window.t('bj.opp_resigned');
       endVerdict.className = 'go-end-verdict ' + (iLost ? 'is-loss' : 'is-win');
-      endLine.textContent = reason === 'opponent_left' ? window.t('bj.opp_left') : window.t('bj.by_resignation');
+      endLine.textContent = go.reason === 'opponent_left' ? window.t('bj.opp_left') : window.t('bj.by_resignation');
     }
     render();
     scheduleEndScreen();
@@ -951,16 +957,6 @@ function handleWs(msg: OnlineMsg): void {
 /* ======================
  * 启动
  * ====================== */
-document.querySelectorAll<HTMLButtonElement>('.bd-mode-card').forEach((b) => {
-  b.addEventListener('click', () => {
-    if (b.classList.contains('is-disabled')) return;
-    const m = b.dataset.mode as Mode;
-    if (m === 'human') { toast('Online match coming soon'); return; }
-    state.mode = m;
-    syncModeCardUI(m);
-    newGame();
-  });
-});
 
 undoBtn.addEventListener('click', undo);
 resignBtn.addEventListener('click', resign);

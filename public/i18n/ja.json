@@ -153,7 +153,9 @@
     "signout": "サインアウト",
     "username": "ユーザー名",
     "continue": "続ける",
-    "reset_password": "パスワードをリセット"
+    "reset_password": "パスワードをリセット",
+    "forgot_desc": "Enter your registered メール, we will send a パスワード reset link.",
+    "body_too_large": "リクエストが大きすぎます。もう一度お試しください"
   },
   "toast": {
     "game_tip": "盤をクリックして開始。頑張って！"
@@ -204,7 +206,14 @@
     "disconnected_alert": "相手との接続が切れました",
     "invalid_code": "6桁のルームコードを入力",
     "match_fail": "マッチングに失敗しました。もう一度お試しください",
-    "matchmaking": "実際の選手を探しています…"
+    "matchmaking": "実際の選手を探しています…",
+    "mode_online": "🌐 オンラインバトル",
+    "mode_ai": "AI",
+    "mode_random": "⚡ ランダムマッチ",
+    "copy_invite_link": "招待リンクをコピー",
+    "invite_copied": "招待リンクをコピーしました",
+    "default_player": "プレイヤー",
+    "mysterious_player": "謎の対戦相手"
   },
   "home": {
     "badge": "🎮 ボードゲームアリーナ",
@@ -1941,7 +1950,11 @@
     "bh_tictactoe_q2_b": "引き分け。9 マスはすぐに埋まるため、上級者同士では引き分けが一般的。",
     "bh_tictactoe_q3_t": "角と中央どっちが良い？",
     "bh_tictactoe_q3_b": "中央は最強の先手。中央が妙じられているなら、角が最善の返し。",
-    "bh_tictactoe_play": "三目並べをプレイ"
+    "bh_tictactoe_play": "三目並べをプレイ",
+    "bh_c4_modes_b": "AI と対戦 — 3 段階のエンジンと対局；パス＆プレイ — 2 人で 1 つの画面；フレンドルーム — 6 桁コードでリモート対戦。",
+    "bh_gomoku_modes_b": "AI と対戦 — 3 段階のエンジンと対局；パス＆プレイ — 2 人で 1 つの画面；フレンドルーム — 6 桁コードでリモート対戦。",
+    "bh_reversi_modes_b": "AI と対戦 — 3 段階のエンジンと対局；パス＆プレイ — 2 人で 1 つの画面；フレンドルーム — 6 桁コードでリモート対戦。",
+    "bh_tictactoe_modes_b": "AI と対戦 — 3 段階のエンジンと対局；パス＆プレイ — 2 人で 1 つの画面；フレンドルーム — 6 桁コードでリモート対戦。"
   },
   "bn": {
     "bn_loading": "読み込み中…",
@@ -1996,7 +2009,11 @@
     "bn_teacher_export_csv": "📊 CSVエクスポート",
     "bn_teacher_cross_ttl": "他の Duel シリーズも試す",
     "bn_teacher_cross_md": "24 点 · 数独 4×4-9×9 · 方程式ピラミッド · 数字ピラミッド · 適応型週次インサイト",
-    "bn_teacher_cross_mem": "語彙 / 歴史 / 科学など 12 カテゴリの 1v1 知識デュエル"
+    "bn_teacher_cross_mem": "語彙 / 歴史 / 科学など 12 カテゴリの 1v1 知識デュエル",
+    "bn_teacher_cap_roster": "クラス名簿と課題履歴"
+  },
+  "mp": {
+    "my_stats": "マイスタッツ"
   },
   "bm": {
     "bm_chip_pass_play": "AI · 同画面プレイ",
@@ -2072,7 +2089,13 @@
     "bm_ttt_step2_t": "ブロックか揃え",
     "bm_ttt_step2_b": "常に相手の脅威を先に確認、自分のラインはそれからだ。",
     "bm_ttt_step3_t": "三つ並び",
-    "bm_ttt_step3_b": "横・縦・斜め — 先に三つ並べた方が勝ち。"
+    "bm_ttt_step3_b": "横・縦・斜め — 先に三つ並べた方が勝ち。",
+    "bm_chess_tagline": "ルールは全部。準備はゼロ。",
+    "bm_gomoku_tagline": "石が盤である。",
+    "bm_go_tagline": "盤が領土である。",
+    "bm_reversi_tagline": "盤を裏返す。最も多くの駒で終える。",
+    "bm_c4_tagline": "落とし、積み、四つを繋げ。",
+    "bm_ttt_tagline": "三つ並び、盤を制す。"
   },
   "bg": {
     "bg_checkers_you_red": "あなた · 赤",
@@ -2482,7 +2505,15 @@
     "bg_checkers_not_your_turn": "まだあなたの番ではありません",
     "bg_common_waiting_opponent": "相手を待っています…",
     "bg_common_move_rejected": "着手が拒否されました — サーバーが受け付けませんでした",
-    "bg_common_reconnect_failed": "接続が切断され、再接続に失敗しました。部屋 {code}：このコードを共有すると再開できます。"
+    "bg_common_reconnect_failed": "接続が切断され、再接続に失敗しました。部屋 {code}：このコードを共有すると再開できます。",
+    "bg_gomoku_draw_offer_title": "相手が引き分けを提案しています",
+    "bg_gomoku_draw_accept": "承認",
+    "bg_gomoku_draw_decline": "拒否",
+    "bg_gomoku_draw_waiting": "相手の返答を待っています…",
+    "bg_gomoku_draw_declined_toast": "相手が引き分けを拒否しました",
+    "bg_gomoku_draw_pending": "先に引き分けの提案に応えてください",
+    "bg_xq_hero_sub": "ルールは全部。準備はゼロ。",
+    "bg_chess_you_black": "あなた · 黒"
   },
   "bk": {
     "bk_blog_tag_brain": "脳トレ",
@@ -2513,7 +2544,12 @@
     "board_full": "盤が埋まる",
     "black_wins": "黒の勝ち",
     "white_wins": "白の勝ち",
-    "board_label": {}
+    "board_label": {},
+    "you_win": "あなたの勝ち",
+    "ai_wins": "エンジンの勝ち",
+    "you_lose": "あなたの負け",
+    "red_wins": "赤の勝ち",
+    "teal_wins": "青の勝ち"
   },
   "bj": {
     "finding_opponent": "対戦相手を探しています…",
@@ -2573,7 +2609,8 @@
     "takeback_ask_note": "受理すると両方の盤面で最後の手を取り消します。",
     "takeback_ask": "相手が待った一手を取り消したいと言っています",
     "opp_left": "相手が退出",
-    "link_copied": "招待リンクをコピー"
+    "link_copied": "招待リンクをコピー",
+    "undo_offline_only": "オンライン対戦では取り消せません"
   },
   "bk2": {
     "bk2_p1": "ボードゲームとパズルゲームはどちらも脳を鍛えると言われますが、育てる認知スキルはまったく異なります。どちらが自分の目標に合っているかを理解することで、ゲームの時間をより有効に使えます。",
@@ -2695,8 +2732,7 @@
     "err_rate_limited": "試行が多すぎます。 少し待ってください。",
     "err_bad_json": "リクエストが不正です。",
     "err_generic": "登録できませんでした。 再試行してください。"
-  }
-,
+  },
   "game_reversi": {
     "name": "オセロ",
     "title": "オセロ"

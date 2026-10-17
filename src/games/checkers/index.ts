@@ -18,8 +18,9 @@ import {
   type Board as CBoard, type Player as CPlayer, type Difficulty as CDifficulty, type Move,
   EMPTY, colorOf, isKing, SIZE, RED_MAN, BLACK_MAN,
 } from './engine';
-import { modeFromUrl, syncModeCardUI } from '../shared';
+import { modeFromUrl } from '../shared';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
+import { parseGameOver } from '../../shared/game-over';
 import {
   enterRoom, sendWs, inviteCode, clearInviteParam,
   roomLiveFromState, opponentNameFromState,
@@ -310,13 +311,21 @@ function doMove(m: Move): void {
  *   本地走子不传，走默认翻转。
  */
 function afterMove(nextPlayer?: CPlayer): void {
-  // 胜负判定：当前方无子或无合法步 → 对方胜
-  if (countPieces(state.board, state.player) === 0 || moves(state.board, state.player).length === 0) {
+  // 🔴 2026-10-15 修复：胜负判定必须查「下一手方」，不是「刚走完的那方」。
+  //   修复前这里读 state.player，而 state.player 直到 :332 才翻转，于是：
+  //   · 红吃掉黑最后一子 → 被检查的是红自己（还有子）→ 不判胜 → 玩家永久卡死
+  //   AI 模式靠 aiMove():356-364 的 `if(!m)` 兜住了，pass / online 没有兜底。
+  //   现在先算出真正的下一手方，再对它判胜负。
+  const upcoming: CPlayer = nextPlayer ?? (state.player === 1 ? 2 : 1);
+
+  // 胜负判定：下一手方无子或无合法步 → 刚走完的那方胜（即 upcoming 的对方）
+  if (countPieces(state.board, upcoming) === 0 || moves(state.board, upcoming).length === 0) {
     state.over = true;
     state.selected = -1;
     stopTimer(state.timer);
+    state.player = upcoming;
     render();
-    finish(state.player === HUMAN ? ENGINE : HUMAN);
+    finish(upcoming === HUMAN ? ENGINE : HUMAN);
     return;
   }
   // 无吃子 40 步判和
@@ -329,7 +338,7 @@ function afterMove(nextPlayer?: CPlayer): void {
     return;
   }
   // 切换回合
-  state.player = nextPlayer ?? (state.player === 1 ? 2 : 1);
+  state.player = upcoming;
   state.legal = moves(state.board, state.player);
   render();
   if (state.mode === 'ai' && state.player === ENGINE && !state.over) {
@@ -530,6 +539,7 @@ function newGame(): void {
     startTimer(state.timer, (ms) => { clockMeTime.textContent = fmtClock(ms); });
   }
   levelBtn.hidden = state.mode !== 'ai';
+  undoBtn.hidden = state.mode === 'online';   // 联机下 undo 会污染对手棋盘（见 undo() 内注释）
   showScreen('match');
   armBackGuard();
 }
@@ -537,20 +547,22 @@ function newGame(): void {
 /* ====================== 撤销 / 认输 ====================== */
 function undo(): void {
   if (state.over) return;
+  // 🔴 2026-10-15 新增：联机禁用（与 tictactoe 一致）。undo 不看是谁走的，
+  //   能把对手的棋子从自己屏幕上撤掉，撤完双方回合判断分叉 → 永久卡房。
+  if (state.mode === 'online') { toast(window.t('bj.undo_offline_only')); return; }
   cancelAiMove();
   if (state.history.length === 0) return;
-  const last = state.history.pop()!;
-  state.board = last.board;
-  state.player = last.player;
-  state.lastMove = last.lastMove;
-  state.selected = -1;
-  // AI 模式：再多退一步，回到玩家决策前
-  if (state.mode === 'ai' && state.history.length >= 1) {
-    const prev = state.history.pop()!;
-    state.board = prev.board;
-    state.player = prev.player;
-    state.lastMove = prev.lastMove;
+  // AI 模式：玩家撤销后还要回退到玩家决策前（玩家 + AI 共 2 步）。
+  // 修复前 AI 分支 pop 两次 history 却只重算一次 legal，语义不一致；
+  // 现在统一按步数回退，最后统一重算合法步。
+  const steps = state.mode === 'ai' && state.history.length >= 2 ? 2 : 1;
+  for (let k = 0; k < steps; k++) {
+    const last = state.history.pop()!;
+    state.board = last.board;
+    state.player = last.player;
+    state.lastMove = last.lastMove;
   }
+  state.selected = -1;
   state.legal = moves(state.board, state.player);
   render();
 }
@@ -700,9 +712,30 @@ function handleWs(msg: OnlineMsg): void {
   } else if (t === 'opponent_leave') {
     toast('Opponent left');
   } else if (t === 'game_over') {
+    // 🔴 2026-10-15 修复：此前收到服务端终局帧只 state.over=true + render()，
+    //   屏幕停在冻住的棋盘上 —— 没有胜负、没有「再战」按钮，结算屏从不弹。
+    //   症状和对端「卡死」一模一样：对手认输后你这边永远走不下去。
+    //   本页已有 finish()（能处理胜负/和棋三态并填结算屏 + 分享快照），
+    //   这里只需把服务端帧归一化成胜负结果后转过去，不要另写一套结算逻辑。
+    //   口径说明：服务端 relay 模式的 game_over 有两种形状 ——
+    //     认输 { kind:'resign', winner:'红'|'黑', by: 座位号 }
+    //     提和 { kind:'draw', reason:'双方同意' }  ← 无 winner 字段
+    //   parseGameOver 同时认 winner:'draw' 与 kind:'draw'，见 shared/game-over.ts。
     state.over = true;
     stopTimer(state.timer);
+    const go = parseGameOver(msg);
     render();
+    // winner 是座位号，需要换算成本页的颜色（1=红 / 2=黑）。
+    // 座位映射有源码依据：:609 onlineMyTurn() 判的是
+    //   state.player === (state.myIdx + 1) → 座位 0 对应玩家 1（红），座位 1 对应 2（黑）。
+    // 拿不到座位号时不能瞎猜 —— 中性判和由 finish(0) 呈现，比猜错颜色安全。
+    const winnerSeat = typeof go.winner === 'number' ? go.winner : null;
+    const winner: CPlayer | 0 = go.draw
+      ? 0
+      : winnerSeat !== null
+        ? (winnerSeat === 0 ? 2 : 1) as CPlayer
+        : 0;
+    finish(winner);
   }
 }
 
@@ -770,19 +803,8 @@ const wantsFriend = (() => {
 /* ====================== 模式与深链 ====================== */
 const _initialMode: Mode = modeFromUrl('ai');
 state.mode = ic || wantsFriend ? 'online' : _initialMode;
-syncModeCardUI(state.mode);
 
 /* ====================== 启动 ====================== */
-document.querySelectorAll<HTMLButtonElement>('.bd-mode-card').forEach((b) => {
-  b.addEventListener('click', () => {
-    if (b.classList.contains('is-disabled')) return;
-    const m = b.dataset.mode as Mode;
-    if (m === 'human') { toast('Online match coming soon'); return; }
-    state.mode = m;
-    syncModeCardUI(m);
-    newGame();
-  });
-});
 
 const keepAlive = () => { unlockSfx(); };
 window.addEventListener('pointerdown', keepAlive, { capture: true, passive: true });

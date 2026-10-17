@@ -65,38 +65,6 @@ export function setupNav(_slug: string): void {
   });
 }
 
-/** 模式选择器：3 张按钮（AI / Pass / 占位 Human） */
-export interface ModeCard {
-  mode: Mode;
-  label: string;
-  badge?: string;
-}
-
-export function buildModeCards(_slug: string, defaultMode: Mode): string {
-  const cards: ModeCard[] = [
-    { mode: 'ai',    label: 'Play the engine', badge: '3 levels' },
-    { mode: 'pass',  label: 'Pass & play', badge: 'two players, one screen' },
-    { mode: 'human', label: 'Online match', badge: 'coming soon' },
-  ];
-  return cards.map((c) => {
-    const sel = c.mode === defaultMode;
-    const dis = c.mode === 'human';
-    return `<button type="button" class="bd-mode-card${sel ? ' is-cur' : ''}${dis ? ' is-disabled' : ''}" data-mode="${c.mode}"${dis ? ' disabled' : ''}>
-      <span class="bd-mode-label">${c.label}</span>
-      <span class="bd-mode-badge">${c.badge ?? ''}</span>
-    </button>`;
-  }).join('');
-}
-
-/** 难度档位（与 engine.ts 档位一致） */
-export function buildDifficultyButtons(defaultLevel: Difficulty = 'medium'): string {
-  const levels: Difficulty[] = ['easy', 'medium', 'hard'];
-  return levels.map((lv) => {
-    const sel = lv === defaultLevel;
-    return `<button type="button" class="bd-diff-btn${sel ? ' is-cur' : ''}" data-level="${lv}">${lv.toUpperCase()}</button>`;
-  }).join('');
-}
-
 /** 简易 toast（页面右下角） */
 let toastEl: HTMLElement | null = null;
 export function toast(msg: string, dur = 2200): void {

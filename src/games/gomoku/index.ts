@@ -28,6 +28,7 @@ import {
 import { isClassroom, reportRound, ensureStudentCode, urlRoomCode } from '../../shared/teacher-track';
 // 2026-10-03：落子音效（WebAudio 合成，跨页记住开关）
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
+import { parseGameOver } from '../../shared/game-over';
 // 2026-10-05：持久随机昵称（防止匿名玩家同名被服务端分进同一座位）
 import { myName as ocMyName, isMoveRejected, ensureAccount } from '../online-core';
 // 2026-10-06：好友房邀请卡片（全屏遮罩弹窗，范式抄 MathDuel 24-game share-overlay）
@@ -72,6 +73,13 @@ const undoBtn = $<HTMLButtonElement>('go-undo');
 const hintBtn = $<HTMLButtonElement>('go-hint');
 const resignBtn = $<HTMLButtonElement>('go-resign');
 const drawBtn = $<HTMLButtonElement>('go-draw');
+// 🔴 2026-10-15 新增：提和应答弹层（此前 draw_offer 上行了但无任何下行处理）
+const drawOfferBox = $<HTMLElement>('go-drawbox');
+const drawAcceptBtn = $<HTMLButtonElement>('go-draw-accept');
+const drawDeclineBtn = $<HTMLButtonElement>('go-draw-decline');
+const drawOfferTitle = $<HTMLElement>('go-draw-title');
+/** 待应答的提和发起方座位号；-1 = 无待应答提和。提和未结清期间禁止落子，避免回合分叉。 */
+let drawPendingFrom = -1;
 const backLobbyBtn = $<HTMLButtonElement>('go-back-lobby');
 const levelBtn = $<HTMLButtonElement>('go-level');
 const levelCard = $<HTMLDivElement>('go-levelcard');
@@ -574,6 +582,12 @@ function pushHistory(): void {
 
 function onCell(i: number): void {
   if (state.over || state.board[i] !== 0 || state.reviewAt !== null) return;
+  // 🔴 2026-10-15：提和未结清时禁止落子。否则玩家在弹层待应答期间还能走子，
+  //   回合与提和状态分叉，接受后结算局面与实际盘面不符。
+  if (drawPendingFrom >= 0 && state.mode !== 'ai' && state.mode !== 'pass') {
+    toast(window.t('bg.bg_gomoku_draw_pending'));
+    return;
+  }
   // 命中区现在是常驻的（见 render），所以"轮不到你"要在这里明确挡下，
   // 并给一句人话提示 —— 静默无响应会被当成卡死。
   if (!isMyTurn()) {
@@ -691,11 +705,11 @@ function finish(winner: GPlayer, line: number[] | null): void {
   // 结果条：获胜连线命名（设计稿要求）
   const lineText = line ? line.map((i) => notation(i)).join(' – ') : '';
   let verdict: string;
-  if (state.mode === 'ai') verdict = winner === 1 ? 'You win' : 'Engine wins';
-  else if (state.mode === 'pass') verdict = winner === 1 ? 'Black wins' : 'White wins';
+  if (state.mode === 'ai') verdict = winner === 1 ? window.t('bi.you_win') : window.t('bi.ai_wins');
+  else if (state.mode === 'pass') verdict = winner === 1 ? window.t('bi.black_wins') : window.t('bi.white_wins');
   else {
     const mySide: GPlayer = state.myIdx === 0 ? 1 : 2;
-    verdict = winner === mySide ? 'You win' : 'You lose';
+    verdict = winner === mySide ? window.t('bi.you_win') : window.t('bi.you_lose');
   }
 
   // M2（2026-10-01）：仅 classroom 邀请房间上报 track（不污染 PvP）
@@ -1480,6 +1494,38 @@ function handleWs(msg: Record<string, unknown>): void {
     if (msg.clock) syncClock(msg.clock as Record<string, number>);
     return;
   }
+  // 🔴 2026-10-15 修复：提和应答链路此前整段缺失 ——
+  //   offerDraw() 正确上行 {type:'draw_offer'}，但这里没有任何 draw_* 分支，
+  //   于是提和方永远等不到回应，对手压根不知道有人提和（UI 里 Accept 控件是设计过的）。
+  //   服务端契约（games-room.js drawOffer/drawDecline/settleAndBroadcast）：
+  //     下行 draw_offer { by: 座位号 }      ← 对方提和，本方需应答
+  //     下行 draw_declined（注意是过去式）    ← 对方拒绝
+  //     接受后走 game_over { winner:'draw', reason:'draw_agreed' }（下方已处理）
+  if (t === 'draw_offer') {
+    const by = typeof msg.by === 'number' ? msg.by : -1;
+    drawPendingFrom = by;
+    drawOfferBox.hidden = false;
+    // 提和期间锁盘，避免一边应答一边落子导致回合分叉
+    const youAreOfferer = by >= 0 && by === state.myIdx;
+    drawOfferTitle.textContent =
+      window.t(youAreOfferer ? 'bg.bg_gomoku_draw_waiting' : 'bg.bg_gomoku_draw_offer_title');
+    drawAcceptBtn.hidden = youAreOfferer;
+    drawDeclineBtn.hidden = youAreOfferer;
+    return;
+  }
+  if (t === 'draw_declined') {
+    drawPendingFrom = -1;
+    drawOfferBox.hidden = true;
+    toast(window.t('bg.bg_gomoku_draw_declined_toast'));
+    return;
+  }
+  if (t === 'draw_accepted') {
+    // 服务端若直接广播该类型也兼容（当前实现走 game_over，此分支为防御）
+    drawPendingFrom = -1;
+    drawOfferBox.hidden = true;
+    finishDraw();
+    return;
+  }
   if (t === 'chat') {
     addChat(String(msg.name || '—'), String(msg.text || ''), !!msg.emoji);
     return;
@@ -1498,27 +1544,32 @@ function handleWs(msg: Record<string, unknown>): void {
     state.over = true;
     state.sawGameOver = true;
     stopTimer(state.timer);
-    const reason = String(msg.reason || 'resign');
-    const w = msg.winner;
-    if (reason === 'natural_over' && hadLocalVerdict) {
+    // 🔴 2026-10-15：口径收敛到共享解析器（见 shared/game-over.ts）。
+    //   修复前只认 [w === 'draw']，而服务端 relay 模式的 drawAccept 广播
+    //   { kind:'draw', reason:'双方同意' }（无 winner 字段）→ 和棋被渲染成胜负屏。
+    //   gomoku 走 relay，所以这条路径 100% 命中旧契约。
+    const go = parseGameOver(msg);
+    if (go.reason === 'natural_over' && hadLocalVerdict) {
       showScreen('end');
       return;
     }
-    if (w === 'draw') {
+    if (go.draw) {
       endVerdict.textContent = window.t('bi.draw');
       endVerdict.className = 'go-end-verdict is-draw';
       endLine.textContent = window.t('bj.draw_agreed');
     } else {
-      const iLost = (typeof w === 'number' && state.myIdx !== null)
-        ? w !== state.myIdx
-        : (state.sawGameOver && reason !== 'draw');
-      if (reason === 'opponent_left') {
+      // 🔴 winner 为 null 时不能靠 `w !== myIdx`（恒真 → 双方都显示失败）。
+      //   兜底看 sawGameOver：本方若已先行认输/判负，则视为输。
+      const iLost = (typeof go.winner === 'number' && state.myIdx !== null)
+        ? go.winner !== state.myIdx
+        : state.sawGameOver;
+      if (go.reason === 'opponent_left') {
         endVerdict.textContent = iLost ? window.t('bj.you_resigned') : window.t('bj.opp_left');
         endLine.textContent = window.t('bj.opp_left');
-      } else if (reason === 'timeout') {
+      } else if (go.reason === 'timeout') {
         endVerdict.textContent = iLost ? window.t('bj.by_resignation') : window.t('bj.opp_resigned');
         endLine.textContent = window.t('bj.by_resignation');
-      } else if (reason === 'natural_over') {
+      } else if (go.reason === 'natural_over') {
         // 本地未判词的兜底（刷新重连后收到终局帧）：服务端判的五连
         endVerdict.textContent = iLost ? window.t('bj.opp_five') : window.t('bj.you_five');
         endLine.textContent = window.t('bj.five_in_row');
@@ -1719,6 +1770,18 @@ undoBtn.addEventListener('click', undo);
 hintBtn.addEventListener('click', showHints);
 resignBtn.addEventListener('click', resign);
 drawBtn.addEventListener('click', offerDraw);
+// 🔴 2026-10-15：提和应答。上行 draw_accept / draw_decline 是服务端唯一认的两个类型
+//   （games-room.js:12363-12364）；下行拒绝通知是过去式 draw_declined。
+drawAcceptBtn.addEventListener('click', () => {
+  drawOfferBox.hidden = true;
+  drawPendingFrom = -1;
+  try { sendWs({ type: 'draw_accept' }); } catch (e) { /* ignore */ }
+});
+drawDeclineBtn.addEventListener('click', () => {
+  drawOfferBox.hidden = true;
+  drawPendingFrom = -1;
+  try { sendWs({ type: 'draw_decline' }); } catch (e) { /* ignore */ }
+});
 hintClose.addEventListener('click', () => {
   hintCard.hidden = true;
   boardEl.querySelectorAll('.go-hintdot').forEach((n) => n.remove());

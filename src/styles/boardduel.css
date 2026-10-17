@@ -82,8 +82,6 @@ img { max-width: 100%; display: block; }
   .bd-game-meta { margin-top: 10px; gap: 6px; }
   .bd-game-meta span { padding: 3px 9px; font-size: .68rem; }
   .bd-section-title { margin: 16px 0 8px; font-size: 1rem; }
-  .bd-mode-row { margin: 8px 0 4px; }
-  .bd-mode-card { padding: 9px 12px; }
 }
 .bd-hero h1 {
   font-family: var(--disp); font-weight: 640;
@@ -109,40 +107,6 @@ img { max-width: 100%; display: block; }
   font-family: var(--disp); font-weight: 640;
   font-size: 1.1rem; letter-spacing: .04em;
   margin: 28px 0 12px; color: var(--paper);
-}
-
-.bd-mode-row {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
-  margin: 14px 0 4px;
-}
-.bd-mode-card {
-  border: 1px solid var(--line); border-radius: 10px;
-  background: var(--ink3); padding: 12px 14px;
-  display: flex; flex-direction: column; gap: 4px;
-  text-align: left; transition: border-color .12s;
-}
-.bd-mode-card:hover { border-color: var(--ember-dim); }
-.bd-mode-card.is-cur {
-  border-color: var(--ember); background: var(--ember-soft);
-}
-.bd-mode-card.is-disabled {
-  opacity: .45; cursor: not-allowed;
-}
-.bd-mode-label { font-size: .92rem; font-weight: 700; color: var(--paper); }
-.bd-mode-badge { font-size: .72rem; color: var(--mute2); letter-spacing: .04em; }
-
-.bd-diff-row {
-  display: flex; gap: 6px; margin: 4px 0 18px; flex-wrap: wrap;
-}
-.bd-diff-btn {
-  font-size: .68rem; letter-spacing: .14em; font-weight: 700;
-  border: 1px solid var(--line); border-radius: 99px;
-  padding: 5px 14px; color: var(--mute2);
-  transition: .12s;
-}
-.bd-diff-btn:hover { color: var(--mute); }
-.bd-diff-btn.is-cur {
-  color: var(--paper); border-color: var(--gold); background: var(--gold-soft);
 }
 
 /* ============== 棋盘区域 ============== */
@@ -229,8 +193,6 @@ img { max-width: 100%; display: block; }
 
 @media (max-width: 720px) {
   .bd-play { grid-template-columns: 1fr; }
-  .bd-mode-row { grid-template-columns: 1fr; }
-  .bd-diff-row { flex-wrap: wrap; }
   .bd-main { overflow-x: hidden; }
 }
 

@@ -1,18 +1,123 @@
 /**
  * BoardDuel · Go 模式选择页（/games/go/lobby/）
  * ------------------------------------------------------------
- * 镜像 gomoku lobby 的行为：模式卡全部是纯 `<a href="?mode=...">`，
- * JS 关掉也能用（利于抓取与分享）；JS 只负责通用 chrome（wireLobbyChrome）。
+ * 与其余 7 款大厅同构：
+ *   · 模式卡全部是纯 `<a href="?mode=...">`，JS 关掉也能用（利于抓取与分享）；
+ *   · JS 只做两件小事 —— 侧栏拉真实 /api/leaderboard、邀请码校验后跳转；
+ *   · wireLobbyChrome 处理 sidebar 缩放、顶部 chip 抽屉等通用 chrome。
  *
- * 与 gomoku lobby 的差异：围棋目前只有两种可玩模式（vs AI / pass-and-play），
- * 联机好友房与让子棋排在后续里程碑，故这里不发 /api/leaderboard 榜单、
- * 也没有邀请码输入（那是 online 模式上线后才有的，见 W5）。
+ * 2026-10-15 更正：本文件此前注释写「围棋联机好友房排在后续里程碑，故不发榜单、
+ * 也没有邀请码输入」，但 go/index.ts 早已完整接入 ranked 好友房
+ * （roomCode / invite-card / pendingFriend / ws 建房链路全在），大厅只是没给入口。
+ * 好友房可用却没有入口 = 真实功能缺口，故此处补齐榜单与房间码面板，
+ * 与 chess/lobby.ts 保持同构。全站 /api/leaderboard 不分游戏，Go 可直接复用。
  */
 
 import { wireLobbyChrome } from '../../lobby-chrome';
 
+const $ = <T extends HTMLElement = HTMLElement>(id: string): T | null =>
+  document.getElementById(id) as T | null;
+
+const GAME_URL = '/games/go/';
+/** worker 的房间码：6 位字母数字（与 chess / gomoku 大厅同款；worker /b/<game>/<CODE> 路由） */
+const INVITE_RE = /^[A-Za-z0-9]{6}$/;
+
+const esc = (s: unknown): string =>
+  String(s ?? '').replace(
+    /[&<>"']/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string,
+  );
+
+/* ===================== 侧栏 · 真实榜单 ===================== */
+
+function statRow(rank: string, label: string, pt: string, me = false): string {
+  return `<div class="rank-row${me ? ' me' : ''}"><span class="rank">${esc(rank)}</span><span class="nm">${esc(label)}</span><span class="pt num">${esc(pt)}</span></div>`;
+}
+
+async function renderSide(): Promise<void> {
+  const host = $('rankRows');
+  if (!host) return;
+
+  let lb: Record<string, unknown> | null = null;
+  let me: Record<string, unknown> | null = null;
+  try {
+    const [lbRes, meRes] = await Promise.all([
+      fetch('/api/leaderboard?limit=3', { credentials: 'include' }),
+      fetch('/api/account/me', { credentials: 'include' }),
+    ]);
+    if (lbRes.ok) lb = (await lbRes.json()) as Record<string, unknown>;
+    if (meRes.ok) me = (await meRes.json()) as Record<string, unknown>;
+  } catch {
+    host.innerHTML = '<div class="rank-empty">The global ladder needs a live connection.</div>';
+    return;
+  }
+
+  const entries = lb && Array.isArray(lb.entries) ? (lb.entries as Record<string, unknown>[]) : [];
+  const mine = lb && lb.me && typeof lb.me === 'object' ? (lb.me as Record<string, unknown>) : null;
+  const loggedIn = !!(me && me.loggedIn);
+  let html = '';
+
+  if (entries.length) {
+    html += entries
+      .map((e, i) => statRow(String(i + 1), String(e.nickname || 'Player'), `${Number(e.score) || 0} pts`))
+      .join('');
+  } else {
+    html += '<div class="rank-empty">Nobody has finished a rated game yet — take the first spot.</div>';
+  }
+
+  if (mine && (mine.rank || mine.score != null)) {
+    html += statRow('you', 'You', `${Number(mine.score) || 0} pts`, true);
+  } else if (loggedIn) {
+    html += statRow('You', 'You', '0 pts', true);
+  }
+  host.innerHTML = html;
+}
+
+/* ===================== 邀请码 ===================== */
+
+function initInvite(): void {
+  const input = $<HTMLInputElement>('roomInput');
+  const err = $('roomErr');
+  const say = (m: string) => {
+    if (err) err.textContent = m;
+  };
+
+  const q = new URLSearchParams(location.search);
+  const fromUrl = (q.get('c') || q.get('room') || '').trim();
+  if (fromUrl && INVITE_RE.test(fromUrl)) {
+    location.replace(`${GAME_URL}?c=${encodeURIComponent(fromUrl.toUpperCase())}`);
+    return;
+  }
+
+  const go = () => {
+    const code = (input?.value || '').trim().toUpperCase();
+    if (!INVITE_RE.test(code)) {
+      say('Please enter the 6-character room code.');
+      input?.focus();
+      return;
+    }
+    say('');
+    location.href = `${GAME_URL}?c=${encodeURIComponent(code)}`;
+  };
+
+  if (input) {
+    input.addEventListener('input', () => {
+      input.value = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      say('');
+    });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') go();
+    });
+  }
+  $('joinRoom')?.addEventListener('click', go);
+}
+
+/* ===================== 启动 ===================== */
+
 function boot(): void {
   wireLobbyChrome();
+  initInvite();
+  void renderSide();
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

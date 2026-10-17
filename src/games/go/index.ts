@@ -13,6 +13,7 @@
 import { setupNav, toast } from '../game-core';
 import { wireLobbyChrome } from '../../lobby-chrome';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
+import { parseGameOver } from '../../shared/game-over';
 import { myName as ocMyName, opponentNameFromState, isMoveRejected, ensureAccount } from '../online-core';
 // 2026-10-06：好友房邀请卡片（全屏遮罩弹窗，范式抄 MathDuel 24-game share-overlay）
 import { mountInviteCard, showInviteCard, onOpponentJoined } from '../invite-card';
@@ -439,11 +440,11 @@ function finishCounting(dead: Set<number>): void {
   let humanWon = false;
   if (state.mode === 'ai') {
     humanWon = sc.winner === HUMAN;
-    verdict = humanWon ? t('bg.bg_go_you_win', 'You win') : t('bg.bg_go_ai_wins', 'Engine wins');
+    verdict = humanWon ? t('bi.you_win', 'You win') : t('bi.ai_wins', 'Engine wins');
   } else if (state.mode === 'ranked') {
     const mySide: Player = state.myIdx === 0 ? 1 : 2;
     humanWon = sc.winner === mySide;
-    verdict = humanWon ? t('bg.bg_go_you_win', 'You win') : t('bg.bg_go_opp_wins', 'You lose');
+    verdict = humanWon ? t('bi.you_win', 'You win') : t('bi.you_lose', 'You lose');
   } else {
     verdict = sc.winner === 1 ? t('bi.black_wins', 'Black wins') : t('bi.white_wins', 'White wins');
   }
@@ -824,7 +825,7 @@ function finishByResign(): void {
     const mySide: Player = state.myIdx === 0 ? 1 : 2;
     const winner = opponent(state.go.toPlay);
     const humanWon = winner === mySide;
-    endGame(humanWon ? t('bg.bg_go_you_win', 'You win') : t('bg.bg_go_opp_wins', 'You lose'),
+    endGame(humanWon ? t('bi.you_win', 'You win') : t('bi.you_lose', 'You lose'),
       t('bj.by_resignation', 'by resignation'), 'resign', humanWon);
   } else {
     const winner = opponent(state.go.toPlay);
@@ -846,7 +847,7 @@ function finishByTimeout(): void {
     const mySide: Player = state.myIdx === 0 ? 1 : 2;
     const winner = opponent(loser);
     const humanWon = winner === mySide;
-    endGame(humanWon ? t('bg.bg_go_you_win', 'You win') : t('bg.bg_go_opp_wins', 'You lose'),
+    endGame(humanWon ? t('bi.you_win', 'You win') : t('bi.you_lose', 'You lose'),
       t('bg.bg_go_byoyomi', 'by time (byoyomi)'), 'timeout', humanWon);
   } else {
     const winner = opponent(loser);
@@ -1188,36 +1189,41 @@ function handleWs(msg: Record<string, unknown>): void {
     return;
   }
   if (ty === 'game_over') {
-    // 🔴 2026-10-05：服务端 game_over 实际字段是 { winner: 座位号|'draw', reason }，
-    //   没有 you_lost/kind 字段 —— 旧代码读 you_lost 永远 undefined，胜负全靠
-    //   sawGameOver 碰运气（刷新过页面的一方胜负显示必错）。改为 winner 对比 myIdx。
+    // 🔴 2026-10-15：口径收敛到共享解析器（见 shared/game-over.ts）。
+    //   修复前这里裸读 msg.winner 且只认 [w === 'draw']，而服务端 relay 模式的
+    //   drawAccept 广播 { kind:'draw', reason:'双方同意' }（无 winner 字段）
+    //   → 和棋被渲染成胜负屏。parseGameOver 两种形状都认。
+    //   注：go 走 relay（CORES 只有 reversi/connect4），所以这里的和棋
+    //   100% 命中旧契约，是全站受影响最直接的一款。
     state.over = true;
     state.sawGameOver = true;
     stopClockLoop();
-    const reason = String(msg.reason || 'resign');
-    const w = msg.winner;
-    if (w === 'draw') {
+    const go = parseGameOver(msg);
+    if (go.draw) {
       endVerdict.textContent = t('bi.draw', 'Draw');
       endVerdict.className = 'go-end-verdict is-draw';
       endLine.textContent = t('bj.draw_agreed', 'Draw agreed');
     } else {
-      const iLost = (typeof w === 'number' && state.myIdx !== null)
-        ? w !== state.myIdx
-        : !!msg.you_lost;
-      const line = reason === 'timeout'
+      // 🔴 winner 非 null 才参与判胜负：上一版兜底读 you_lost，而服务端根本不发该字段，
+      //   等于恒 undefined → 恒判「我赢」。改成 winner 为空时按 sawGameOver 走
+      //   （本方是否已先行认输/判负），仍无据时才判 win。
+      const iLost = (typeof go.winner === 'number' && state.myIdx !== null)
+        ? go.winner !== state.myIdx
+        : state.sawGameOver;
+      const line = go.reason === 'timeout'
         ? t('bg.bg_go_byoyomi', 'by time (byoyomi)')
-        : reason === 'opponent_left'
+        : go.reason === 'opponent_left'
           ? t('bj.opp_left', 'Opponent left')
-          : reason === 'count'
+          : go.reason === 'count'
             // 终局数目结算，不是认输。漏掉这个分支会显示成「对方认输获胜」。
             ? t('bg.bg_go_by_count', 'by count')
             : t('bj.by_resignation', 'by resignation');
-      if (reason === 'resign') {
+      if (go.reason === 'resign') {
         endVerdict.textContent = iLost ? t('bj.you_resigned', 'You resigned') : t('bj.opp_resigned', 'Opponent resigned');
-      } else if (reason === 'timeout') {
-        endVerdict.textContent = iLost ? t('bg.bg_go_timeout_you', 'You ran out of time') : t('bg.bg_go_you_win', 'You win');
+      } else if (go.reason === 'timeout') {
+        endVerdict.textContent = iLost ? t('bg.bg_go_timeout_you', 'You ran out of time') : t('bi.you_win', 'You win');
       } else {   // count / 其它：胜负文案一致，差别只在上面的 line
-        endVerdict.textContent = iLost ? t('bg.bg_go_opp_wins', 'You lose') : t('bg.bg_go_you_win', 'You win');
+        endVerdict.textContent = iLost ? t('bi.you_lose', 'You lose') : t('bi.you_win', 'You win');
       }
       endVerdict.className = 'go-end-verdict ' + (iLost ? 'is-loss' : 'is-win');
       endLine.textContent = line;

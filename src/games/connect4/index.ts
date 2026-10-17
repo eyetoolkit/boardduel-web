@@ -28,9 +28,10 @@ import {
   type OnlineState, type OnlineMsg,
   isMoveRejected,
 } from '../online-core';
-import { modeFromUrl, syncModeCardUI } from '../shared';
+import { modeFromUrl } from '../shared';
 import { openFriendRoom } from '../friend-room';
 import { reportRound, isClassroom, urlRoomCode, ensureStudentCode } from '../../shared/teacher-track';
+import { parseGameOver } from '../../shared/game-over';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 
 /* ======================
@@ -249,11 +250,16 @@ function renderHud(): void {
 function statusLabel(): string {
   if (state.over) {
     const w = checkWinner(state.board).winner;
-    if (w === 3) return 'draw';
-    return w === 1 ? 'you win' : (state.mode === 'ai' ? 'AI wins' : 'Teal wins');
+    if (w === 3) return window.t('bi.draw');
+    return w === 1
+      ? window.t('bi.red_wins')
+      : (state.mode === 'ai' ? window.t('bi.ai_wins') : window.t('bi.teal_wins'));
   }
   if (state.aiThinking) return window.t('status.thinking');
-  return state.player === 1 ? window.t('bg.bg_connect4_you_red_lc') + ' turn' : 'Teal turn';
+  // 色名走既有键（bg_connect4_pass_teal_lc = "Teal"），不靠正则从 "... wins" 里剥词
+  return state.player === 1
+    ? window.t('bg.bg_connect4_you_red_lc') + ' ' + window.t('bg.bg_connect4_turn')
+    : window.t('bg.bg_connect4_pass_teal_lc') + ' ' + window.t('bg.bg_connect4_turn');
 }
 
 function renderClockHud(): void {
@@ -395,10 +401,10 @@ function finish(winner: CPlayer, line: number[] | null): void {
   }
 
   const verdict = state.mode === 'ai'
-    ? (winner === 1 ? 'You win' : 'Engine wins')
+    ? (winner === 1 ? window.t('bi.you_win') : window.t('bi.ai_wins'))
     : state.mode === 'pass'
-      ? (winner === 1 ? 'Red wins' : 'Teal wins')
-      : (winner === ((state.myIdx ?? 0) + 1) ? 'You win' : 'You lose');
+      ? (winner === 1 ? window.t('bi.red_wins') : window.t('bi.teal_wins'))
+      : (winner === ((state.myIdx ?? 0) + 1) ? window.t('bi.you_win') : window.t('bi.you_lose'));
   endVerdict.textContent = verdict;
   endLine.textContent = line && line.length ? line.map(notation).join(' – ') : '—';
   endVerdict.className = 'go-end-verdict ' + (winner === 1 ? 'is-win' : 'is-loss');
@@ -504,19 +510,24 @@ rpRange.addEventListener('input', () => { stopReplay(); seek(Number(rpRange.valu
  * ====================== */
 function undo(): void {
   if (state.over) return;
+  // 🔴 2026-10-15 新增：联机禁用（与 tictactoe 一致）。undo 不看是谁走的，
+  //   能把对手的棋子从自己屏幕上撤掉，而 onlineMyTurn 按 moves.length 推回合，
+  //   撤完自己这边又变成「轮到我」→ 双方同时可走 → 永久分叉。
+  if (state.mode === 'online') { toast(window.t('bj.undo_offline_only')); return; }
   cancelAiMove();
   if (state.history.length === 0) return;
-  const last = state.history.pop()!;
-  state.board = last.board;
-  state.player = last.player;
-  state.lastMove = last.lastMove;
-  if (state.mode === 'ai' && state.history.length >= 1) {
-    const prev = state.history.pop()!;
-    state.board = prev.board;
-    state.player = prev.player;
-    state.lastMove = prev.lastMove;
+  // 🔴 2026-10-15 修复：AI 模式下 history 回退 2 步（玩家 + AI），
+  //   但修复前 moves 只在函数末尾 pop 一次 → 棋盘退 2 子而 moves 只退 1，
+  //   两者错位。后果：回放出现幽灵子；联机 onlineMyTurn() 用 moves.length 判回合 → 永久错位 → 房间卡死。
+  // 修法：moves 的回退次数必须与 history 完全一致，收进同一个循环。
+  const steps = state.mode === 'ai' && state.history.length >= 2 ? 2 : 1;
+  for (let k = 0; k < steps; k++) {
+    const last = state.history.pop()!;
+    state.board = last.board;
+    state.player = last.player;
+    state.lastMove = last.lastMove;
+    state.moves.pop();
   }
-  state.moves.pop();
   render();
 }
 
@@ -551,10 +562,10 @@ function doResign(): void {
   if (state.mode === 'online' && state.ws) sendWs(state as OnlineState, { type: 'resign' });
   state.over = true;
   stopTimer(state.timer);
-  endVerdict.textContent = 'You resigned';
+  endVerdict.textContent = window.t('bj.you_resigned');
   endVerdict.className = 'go-end-verdict is-loss';
   endLine.textContent = '—';
-  toast('Resigned');
+  toast(window.t('bj.resigned'));
   scheduleEndScreen();
 }
 
@@ -687,7 +698,6 @@ document.getElementById('c4-share')?.addEventListener('click', async () => {
  * ====================== */
 const _initialMode: Mode = inviteCode() ? 'online' : modeFromUrl('ai');
 state.mode = _initialMode;
-syncModeCardUI(state.mode);
 
 /* ======================
  * 屏幕切换
@@ -720,6 +730,7 @@ function newGame(): void {
     startTimer(state.timer, (ms) => { clockMeTime.textContent = fmtClock(ms); });
   }
   levelBtn.hidden = state.mode !== 'ai';
+  undoBtn.hidden = state.mode === 'online';   // 联机下 undo 会污染对手棋盘（见 undo() 内注释）
   showScreen('match');
   render();
   armBackGuard();
@@ -767,17 +778,23 @@ function handleWs(msg: OnlineMsg): void {
     state.over = true;
     state.sawGameOver = true;
     stopTimer(state.timer);
-    const reason = String(msg.reason || 'resign');
-    const w = msg.winner;
-    if (w === 'draw') {
+    // 🔴 2026-10-15：口径收敛到共享解析器。修复前这里是裸读 msg.winner 且只认
+    //   [w === 'draw']，而服务端 relay 模式的 drawAccept 广播的是
+    //   { kind:'draw', reason:'双方同意' } —— 没有 winner 字段（见 shared/game-over.ts
+    //   顶部的契约事故说明）。于是双方同意和棋被渲染成一方胜出的胜负屏。
+    //   parseGameOver 同时认 winner:'draw' 与 kind:'draw' 两种形状，
+    //   所以前端可以先于服务端上线，部署窗口内也不会错判。
+    const go = parseGameOver(msg);
+    if (go.draw) {
       endVerdict.textContent = window.t('bi.draw');
       endVerdict.className = 'go-end-verdict is-draw';
       endLine.textContent = window.t('bj.draw_agreed');
     } else {
-      const iLost = (typeof w === 'number' && state.myIdx !== null) ? w !== state.myIdx : false;
+      // 🔴 判胜负必须先确认 winner 非 null：[null !== myIdx] 会把双方同时显示成失败。
+      const iLost = (typeof go.winner === 'number' && state.myIdx !== null) ? go.winner !== state.myIdx : false;
       endVerdict.textContent = iLost ? window.t('bj.you_resigned') : window.t('bj.opp_resigned');
       endVerdict.className = 'go-end-verdict ' + (iLost ? 'is-loss' : 'is-win');
-      endLine.textContent = reason === 'opponent_left' ? window.t('bj.opp_left') : window.t('bj.by_resignation');
+      endLine.textContent = go.reason === 'opponent_left' ? window.t('bj.opp_left') : window.t('bj.by_resignation');
     }
     render();
     scheduleEndScreen();
@@ -787,16 +804,6 @@ function handleWs(msg: OnlineMsg): void {
 /* ======================
  * 启动
  * ====================== */
-document.querySelectorAll<HTMLButtonElement>('.bd-mode-card').forEach((b) => {
-  b.addEventListener('click', () => {
-    if (b.classList.contains('is-disabled')) return;
-    const m = b.dataset.mode as Mode;
-    if (m === 'human') { toast('Online match coming soon'); return; }
-    state.mode = m;
-    syncModeCardUI(m);
-    newGame();
-  });
-});
 
 undoBtn.addEventListener('click', undo);
 resignBtn.addEventListener('click', resign);

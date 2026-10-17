@@ -129,9 +129,31 @@
   }
 
   /**
-   * 核心翻译函数
+   * 缺键告警 —— 🔴 2026-10-17：**默认开启**。
+   * 旧实现把告警藏在 `window.__I18N_VERBOSE` 后面（默认 false），
+   * 导致 16 个缺键长期躺在生产上、console 里一个信号都没有。
+   * 现在：每个 (key, lang) 只报一次（避免刷爆控制台），
+   * 需要静音时显式设 `window.__I18N_QUIET = true`。
    */
-  function t(key, vars, lang) {
+  var _missingWarned = {};
+  function warnMissingKey(key, lang) {
+    var id = lang + '|' + key;
+    if (_missingWarned[id]) return;
+    _missingWarned[id] = true;
+    if (typeof window !== 'undefined' && window.__I18N_QUIET) return;
+    console.warn('[i18n] missing key:', key, 'lang:', lang);
+  }
+
+  /**
+   * 核心翻译函数
+   *
+   * @param key      字典键，如 'match.mode_ai'
+   * @param vars     插值变量对象，如 {round: 1, total: 10}；**不是兜底文案**
+   * @param lang     语言，缺省用当前语言
+   * @param fallback 🔴 第四参才是兜底文案。字典缺键时优先返回它，而不是裸 key。
+   *                注意不要写 t('k', '兜底文案') —— 那会被当成 vars 忽略掉。
+   */
+  function t(key, vars, lang, fallback) {
     lang = lang || currentLang;
     var dict = dicts[lang] || {};
     var val = get(dict, key);
@@ -141,12 +163,15 @@
       val = get(dicts[DEFAULT_LANG], key);
     }
 
-    // Fallback 到 key 本身（最坏情况）
+    // Fallback 到调用方提供的兜底文案（优先于裸 key 上屏）
+    if (val === undefined && fallback !== undefined && fallback !== null) {
+      warnMissingKey(key, lang);
+      return fallback;
+    }
+
+    // 兜底到 key 本身（最坏情况）—— 必须报警，不能静默
     if (val === undefined) {
-      // 静默降级 — 开发时可在 console 设 window.__I18N_VERBOSE = true 重新开启
-      if (typeof window !== 'undefined' && window.__I18N_VERBOSE) {
-        console.warn('[i18n] missing key:', key, 'lang:', lang);
-      }
+      warnMissingKey(key, lang);
       return key;
     }
 

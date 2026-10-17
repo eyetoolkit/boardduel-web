@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:77,fallback:"en"};</script>
+  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:85,fallback:"en"};</script>
   <script src="/i18n/i18n.js?v=67"></script>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -185,15 +185,20 @@
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-friend"/></svg></div>
           <div class="mt" data-i18n="bm.bm_mt_friend">Friend Room</div>
         </a>
-        <a class="mode" href="/games/reversi/?mode=pass" data-mode="random">
+        <!-- 🔴 2026-10-15：Random Match 灰态化。修复前本卡 href 与下方 Pass & Play 卡**字面相同**
+             （同为 ?mode=pass），checkers 更是指向 ?mode=ai —— 玩家点「随机匹配」拿到的是本地双人/单机 AI。
+             后端 tri-sites worker 没有 matchmaking 队列，功能尚未实现，不能用假链接冒充。
+             接入真实匹配时改回 <a href="/games/reversi/?mode=random"> 即可，无需调整样式。 -->
+        <div class="mode soon" aria-disabled="true">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-random"/></svg></div>
           <div class="mt" data-i18n="bm.bm_mt_random">Random Match</div>
-        </a>
+          <span class="soon-pill" data-i18n="bl.bl_soon_pill">SOON</span>
+        </div>
         <a class="mode" href="/games/reversi/?mode=pass" data-mode="pass">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-pass"/></svg></div>
           <div class="mt" data-i18n="bm.bm_mt_pass">Pass &amp; Play</div>
         </a>
-        <a class="mode" href="/games/reversi/?mode=ai" data-mode="master">
+        <a class="mode" href="/games/reversi/?mode=ai&level=hard" data-mode="master">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-master"/></svg></div>
           <div class="mt" data-i18n="bm.bm_mt_ai_master">vs AI Master</div>
         </a>
