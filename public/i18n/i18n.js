@@ -136,7 +136,20 @@
    * 需要静音时显式设 `window.__I18N_QUIET = true`。
    */
   var _missingWarned = {};
+  /** 某语言的词典是否已加载完成（非空对象）。 */
+  function dictReady(lang) {
+    var d = dicts[lang];
+    return !!d && Object.keys(d).length > 0;
+  }
   function warnMissingKey(key, lang) {
+    // 🔴 2026-10-17：字典尚未加载完成时（currentLang 还是 null、dicts[lang] 为空），
+    // 每个键都会「查无此键」——这是启动竞态的瞬态，不是真缺键。
+    // 页面 module 脚本是 defer 语义，常早于 i18n.js 的 async fetch 完成，
+    // 此时报警会把控制台刷爆（mathduel 实测单页 144 条假告警），真告警反被埋掉。
+    // 判据：**只有被查询的那本词典已加载**、仍查不到该键，才报。
+    // （不能放宽到「默认语言已加载也报」——en 先 fetch 完成、currentLang
+    //   还是 null 的那一小段窗口里，页面脚本的每次调用都会被误报。）
+    if (!dictReady(lang)) return;
     var id = lang + '|' + key;
     if (_missingWarned[id]) return;
     _missingWarned[id] = true;
