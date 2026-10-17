@@ -31,7 +31,7 @@ import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 import { parseGameOver } from '../../shared/game-over';
 // 2026-10-05：持久随机昵称（防止匿名玩家同名被服务端分进同一座位）
 import { myName as ocMyName, isMoveRejected, ensureAccount } from '../online-core';
-// 2026-10-06：好友房邀请卡片（全屏遮罩弹窗，范式抄 MathDuel 24-game share-overlay）
+// 2026-10-06：好友房邀请卡片（全屏遮罩弹窗，范式抄 NumeriDuel 24-game share-overlay）
 import { mountInviteCard, showInviteCard, onOpponentJoined } from '../invite-card';
 import '../../styles/invite-card.css';
 
@@ -128,7 +128,7 @@ const chatInput = $<HTMLInputElement>('go-chat-input');
 const chatRoom = $<HTMLElement>('go-chat-room');
 // 2026-10-06：邀请面板改为全屏遮罩弹窗卡片（原 .go-invite 侧栏内联，
 // 移动端 .bd-side 是 display:contents → 被摊平，扫码图铺在棋盘下方）。
-// 范式抄 MathDuel 24-game 的 .share-overlay。
+// 范式抄 NumeriDuel 24-game 的 .share-overlay。
 const inviteCard = mountInviteCard('go', 'gomoku', 'Gomoku · 15×15');
 const inviteEl = $<HTMLElement>('go-invite');
 const inviteCopyBtn = $<HTMLButtonElement>('go-invite-copy');
@@ -1796,7 +1796,7 @@ rematchBtn.addEventListener('click', () => {
 reviewBtn.addEventListener('click', enterReplay);
 endLobbyBtn.addEventListener('click', exitMatchToLobby);
 
-/* 2026-10-06：分享结果 → Canvas 大图卡片（MathDuel 范式，可保存 PNG / 系统分享） */
+/* 2026-10-06：分享结果 → Canvas 大图卡片（NumeriDuel 范式，可保存 PNG / 系统分享） */
 $<HTMLButtonElement>('go-share')?.addEventListener('click', async () => {
   if (!lastResult) { toast('Finish a game first'); return; }
   const m = await import('../share-card');

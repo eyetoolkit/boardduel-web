@@ -95,7 +95,7 @@ const EN = {
   'home.intro': 'Challenge board game lovers worldwide — free, no sign-up, no ads.',
   'home.cta_start': 'Start a duel',
   'home.boardduel_name': 'BoardDuel · Board Games',
-  'home.mathduel_name': 'MathDuel · Math Duels',
+  'home.mathduel_name': 'NumeriDuel · Math Duels',
   'home.memoryduel_name': 'MemoryDuel · Knowledge Battles',
   'home.badge_classic': '★ Classic',
   'home.badge_hot': '★ HOT',

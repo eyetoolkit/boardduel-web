@@ -1,7 +1,7 @@
 /* ============================================================
  * BoardDuel · 好友房邀请卡片（2026-10-06）
  * ------------------------------------------------------------
- * 范式抄自 MathDuel 24-game 的 .share-overlay / .share-card：
+ * 范式抄自 NumeriDuel 24-game 的 .share-overlay / .share-card：
  *   fixed inset:0 遮罩 + 居中白卡 + ✕ 关闭 + 点击遮罩关闭。
  * 皮肤用 BoardDuel 的 paper 主题（白卡 + 软靛影 + 圆角16），
  * 不用 mathduel 的深蓝，避免两站气质割裂。

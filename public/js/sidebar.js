@@ -29,7 +29,7 @@
       ]
     },
     math: {
-      name: 'Math Duel', nameKey: 'site.name', emoji: '🔢', host: 'numeriduel.com',
+      name: 'Numeri Duel', nameKey: 'site.name', emoji: '🔢', host: 'numeriduel.com',
       games: [
         { icon: '24',  name: '24 Game',        key: 'nav.24game',   href: '/games/24-game/' },
         { icon: '24⁺', name: '24 Easy',        key: 'nav.24easy',   href: '/games/24-game-easy/' },
@@ -50,7 +50,7 @@
 
   var BRAND_MATRIX = [
     { key: 'board',  emoji: '⚔️', name: 'Board Duel',  nameKey: 'site.name', descKey: 'brand.board_desc' },
-    { key: 'math',   emoji: '🔢', name: 'Math Duel',   nameKey: 'site.name', descKey: 'brand.math_desc' },
+    { key: 'math',   emoji: '🔢', name: 'Numeri Duel',   nameKey: 'site.name', descKey: 'brand.math_desc' },
     { key: 'memory', emoji: '🧠', name: 'Memory Duel', nameKey: 'site.name', descKey: 'brand.memory_desc' }
   ];
 
@@ -361,13 +361,13 @@
     // 隐藏各站旧 nav 残留
     var site = document.documentElement.dataset.site;
 
-    // MathDuel 旧元素
+    // NumeriDuel 旧元素
     hideById('lang-switcher');           // 旧语言切换容器
     hideById('hamburger');               // 旧汉堡按钮
     hideByClass('mobile-topbar');        // 旧移动端顶部栏
     hideByClass('drawer-backdrop');      // 旧抽屉遮罩
     if (site === 'math') {
-      // MathDuel 旧侧栏/底部导航/抽屉（全部隐藏）
+      // NumeriDuel 旧侧栏/底部导航/抽屉（全部隐藏）
       document.querySelectorAll('.sidebar, [class*="sidebar"], [class*="drawer"], .bottom-nav').forEach(function(el){
         if (el.id !== 'triSidebar') el.style.display = 'none';
       });
@@ -452,7 +452,7 @@
       applySidebarLang(lang);
     }
     document.addEventListener('langchange', onLangChange);      // BoardDuel/MemoryDuel
-    document.addEventListener('i18n:change', onLangChange);      // MathDuel
+    document.addEventListener('i18n:change', onLangChange);      // NumeriDuel
 
     // 兜底：如果没有事件，也定期轮询 localStorage（保护 setTimeout）
     var _lastLang = getSiteLang();

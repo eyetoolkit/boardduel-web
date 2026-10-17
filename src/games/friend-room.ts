@@ -3,7 +3,7 @@
  * ─────────────────────────────────────────────────────────────
  * 给 tictactoe / connect4 / reversi / chess / xiangqi 补齐
  * 「建房 → 房码 + 二维码 + 邀请链接」——与 gomoku/go 的 go-invite 面板
- * 同一套视觉与后端契约（参考 MathDuel 24-game 的分享面板范式）：
+ * 同一套视觉与后端契约（参考 NumeriDuel 24-game 的分享面板范式）：
  *
  *   · 建房：GET /api/gp/room?game=<id>&name=<n> → { ok, code }
  *     （码必须由服务端生成：/ws 只认 KV 里已存在的房间，前端自造码会被拒）
@@ -14,7 +14,7 @@
  * 2026-10-06 改造：面板 DOM 原本注入 aside.bd-side，但移动端对局页
  * 有 `body.bd-in-match .bd-side { display: contents }`，面板被摊平成
  * 裸流 —— 扫码图铺在棋盘下方、房码被挤出视口（用户 10-06 实测截图）。
- * 现改为全屏遮罩弹窗卡片（范式抄 MathDuel 24-game 的 .share-overlay），
+ * 现改为全屏遮罩弹窗卡片（范式抄 NumeriDuel 24-game 的 .share-overlay），
  * 挂在 body 上，避开侧栏摊平。详见 ./invite-card.ts。
  *
  * data-i18n 交给 i18n.js 的 MutationObserver（R-2）自动翻译。

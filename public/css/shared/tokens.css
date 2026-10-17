@@ -170,7 +170,7 @@ img { max-width: 100%; display: block; }
   --bp-sm: 640px; --bp-md: 768px; --bp-lg: 1024px;
 }
 
-/* ============ 品牌阶梯 · MathDuel Blue (重设计) ============ */
+/* ============ 品牌阶梯 · NumeriDuel Blue (重设计) ============ */
 html[data-site="math"] {
   --brand-50:  #EFF5FD;
   --brand-100: #DCEBFB;

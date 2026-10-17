@@ -10,7 +10,7 @@
 |------|------|---------|
 | `robots.txt.tpl` | 搜索引擎爬虫规则 | 各站 `robots.txt` |
 | `ai.txt.tpl` | AI 爬虫说明 | 各站 `ai.txt`（MemoryDuel 暂无） |
-| `llms.txt.tpl` | LLM 描述（可选） | 各站 `llms.txt`（MathDuel 才有） |
+| `llms.txt.tpl` | LLM 描述（可选） | 各站 `llms.txt`（NumeriDuel 才有） |
 | `404.html.tpl` | 错误页模板 | 各站 `404.html` |
 | `manifest.webmanifest.tpl` | PWA manifest 模板 | 各站 `manifest.webmanifest` |
 | `sw-helpers.js` | Service Worker 共享策略 | 各站 `service-worker.js` 通过 `importScripts('/shared/sw-helpers.js')` 加载 |

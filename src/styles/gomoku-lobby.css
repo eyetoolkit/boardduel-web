@@ -1,15 +1,15 @@
 /* ============================================================
  * BoardDuel · Gomoku 模式选择页（/games/gomoku/lobby/）
  * ------------------------------------------------------------
- * 完全 1:1 镜像 MathDuel 24-game lobby 的 CSS 结构与 class 名，
- * 仅把 MathDuel 品牌色（靛蓝 `--indigo` / 琥珀 `--amber`）映射到
+ * 完全 1:1 镜像 NumeriDuel 24-game lobby 的 CSS 结构与 class 名，
+ * 仅把 NumeriDuel 品牌色（靛蓝 `--indigo` / 琥珀 `--amber`）映射到
  * BoardDuel 品牌色（紫罗兰 `--violet`）。模式卡、面板、How-to-play、
- * Ladder 都跟 MathDuel 一模一样的结构和数值——只是为了契合 gomoku
+ * Ladder 都跟 NumeriDuel 一模一样的结构和数值——只是为了契合 gomoku
  * 的玩法（AI 引擎 / Friend Room / Random Match / Pass & Play / Tournament）
  * 把 5 张可点卡 + 1 张 SOON 内容替换了。
  *
  * Token 来源：home-papergames.css 已经定义了 `--violet / --card / --paper /
- * --ink / --mute / --line / --r-card` 等。本文件只把 MathDuel 用的 CSS
+ * --ink / --mute / --line / --r-card` 等。本文件只把 NumeriDuel 用的 CSS
  * 变量名重命名成 BoardDuel 等价的（用 CSS 变量映射保持可读性）。
  * ============================================================ */
 
@@ -33,8 +33,8 @@
 .home-v2 .g-hero .sub { color: var(--mute); font-size: 1.05rem; max-width: 34em; margin: 0 auto; }
 .home-v2 .g-hero .chips { margin-top: 18px; }
 
-/* ── 主栅格：左模式网格 + 右信息栏（与 MathDuel 24-game lobby 同规范） ──
-   MathDuel 的特点：lobby-grid 有一个 :before 伪元素做棋盘格底纹，
+/* ── 主栅格：左模式网格 + 右信息栏（与 NumeriDuel 24-game lobby 同规范） ──
+   NumeriDuel 的特点：lobby-grid 有一个 :before 伪元素做棋盘格底纹，
    内部 section / aside 抬高 z-index 浮在底纹之上。 */
 .home-v2 .lobby-grid {
   display: grid; grid-template-columns: 1.55fr 1fr; gap: 24px;
@@ -61,7 +61,7 @@
   font-size: .82rem; color: var(--mute); margin-top: 2px;
 }
 
-/* ── 模式卡：与 MathDuel 24-game lobby 完全相同的结构和数值 ──
+/* ── 模式卡：与 NumeriDuel 24-game lobby 完全相同的结构和数值 ──
    62×62 紫罗兰渐变方块（装 38×38 inline SVG）+ 标题 + optional tag。
    hover 有 tilt rotate(-3deg) scale(1.06) 动画。 */
 .home-v2 .modes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
@@ -101,7 +101,7 @@
   color: var(--mute); max-width: 24em;
 }
 
-/* SOON 灰态（与 MathDuel 同） */
+/* SOON 灰态（与 NumeriDuel 同） */
 .home-v2 .mode.soon {
   background: transparent; border-style: dashed; color: #9BA0B8; box-shadow: none; cursor: default;
 }
@@ -115,7 +115,7 @@
   border-radius: 999px; padding: 2px 8px;
 }
 
-/* ── 右栏 panel：白卡信息面板（与 MathDuel 同） ── */
+/* ── 右栏 panel：白卡信息面板（与 NumeriDuel 同） ── */
 .home-v2 .side { display: grid; gap: 18px; }
 .home-v2 .panel {
   background: #fff; border: 1px solid var(--line);
@@ -129,9 +129,9 @@
   font-size: .82rem; color: var(--mute); margin-bottom: 12px;
 }
 
-/* ── 榜单行：替换 MathDuel 的 .arb-row（gomoku 自己的） ──
-   保留 MathDuel 的视觉规范（rank / name / pt 三列 + me 高亮），
-   改名为 .rank-row 以避免与 MathDuel CSS 冲突（gomoku 用 /api/leaderboard）。 */
+/* ── 榜单行：替换 NumeriDuel 的 .arb-row（gomoku 自己的） ──
+   保留 NumeriDuel 的视觉规范（rank / name / pt 三列 + me 高亮），
+   改名为 .rank-row 以避免与 NumeriDuel CSS 冲突（gomoku 用 /api/leaderboard）。 */
 .home-v2 .rank-row {
   display: flex; align-items: center; gap: 10px;
   padding: 8px 0; border-bottom: 1px dashed var(--line);
@@ -159,7 +159,7 @@
 .home-v2 .rank-row.me .rank { background: var(--violet-soft); }
 .home-v2 .rank-empty { font-size: .82rem; color: var(--mute); padding: 4px 0; }
 
-/* ── 邀请码输入（与 MathDuel 同结构） ── */
+/* ── 邀请码输入（与 NumeriDuel 同结构） ── */
 .home-v2 .field { display: block; margin-bottom: 12px; }
 .home-v2 .field span {
   display: block; font-size: .8rem; font-weight: 600;
@@ -175,7 +175,7 @@
 }
 .home-v2 .field input:focus { outline: none; border-color: var(--violet-bright); background: #fff; }
 
-/* ── 通用按钮：.btn-violet（替代 MathDuel 的 .btn-amber）+ .btn-ghost ── */
+/* ── 通用按钮：.btn-violet（替代 NumeriDuel 的 .btn-amber）+ .btn-ghost ── */
 .home-v2 .panel .btn-row { display: flex; gap: 10px; }
 .home-v2 .panel .btn {
   flex: 1; display: inline-flex; align-items: center; justify-content: center;
@@ -202,7 +202,7 @@
   margin-top: 8px;
 }
 
-/* ── How to play 4 步（与 MathDuel 同列数：4 列 → 移动端 2 列 → 单列） ── */
+/* ── How to play 4 步（与 NumeriDuel 同列数：4 列 → 移动端 2 列 → 单列） ── */
 .home-v2 .how { padding: 40px 0 8px; }
 .home-v2 .how-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
 .home-v2 .step {
@@ -278,7 +278,7 @@
 
 /* ============================================================
  * 暗色模式（html[data-theme="dark"]，由 .sb-theme 切换）
- * 与 MathDuel 暗色块对应：.mi 渐变变深，box-shadow 用黑色阴影。
+ * 与 NumeriDuel 暗色块对应：.mi 渐变变深，box-shadow 用黑色阴影。
  * ============================================================ */
 html[data-theme="dark"] body.home-v2 .mode { background: var(--card); border-color: var(--card-line); }
 html[data-theme="dark"] body.home-v2 .mode:hover { border-color: var(--violet-bright); box-shadow: 0 12px 26px rgba(0, 0, 0, .35); }

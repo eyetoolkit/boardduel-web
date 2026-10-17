@@ -5,7 +5,7 @@
  * CSS：   src/styles/home-papergames.css（body.home-v2 作用域，不影响游戏页）
  *
  * 页面上的四个动态件：
- *   1. 今日列表倒计时 —— UTC 午夜重置（与 MathDuel 首页同规则）
+ *   1. 今日列表倒计时 —— UTC 午夜重置（与 NumeriDuel 首页同规则）
  *   2. 今日勾选进度   —— localStorage 记录当天点开了哪几张盘，真实进度，非假数据
  *   3. 排行榜       —— 真实 GET /api/leaderboard，拿不到就显示本站点暂无记录
  *   4. 抽屉 / 收窄导航

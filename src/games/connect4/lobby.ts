@@ -1,7 +1,7 @@
 /**
  * BoardDuel · Tic-Tac-Toe 模式选择页（/games/connect4/lobby/）
  * ------------------------------------------------------------
- * 完全镜像 MathDuel 24-game lobby / gomoku lobby 的 JS 行为：
+ * 完全镜像 NumeriDuel 24-game lobby / gomoku lobby 的 JS 行为：
  *   · 5 张可点模式卡 + 1 张 SOON 灰态，全部用纯 `<a href="?mode=...">`，
  *     JS 关掉也能用，方便抓取与分享；
  *   · JS 只做两件小事 —— 侧栏拉真实 /api/leaderboard、邀请码校验后跳转；

@@ -237,7 +237,7 @@ section { padding: 36px 0 8px; }
 
 /* ---------- Hero 统一：标题居中 + badge + 可选 tags ---------- */
 
-/* MathDuel: .hero.reveal 原本可能有复杂布局 — 重置 */
+/* NumeriDuel: .hero.reveal 原本可能有复杂布局 — 重置 */
 .hero.reveal { text-align: center; padding: 56px 20px 40px; }
 .hero.reveal .hero-tagline-text { font-size: clamp(28px, 5vw, 40px); line-height: 1.2; font-weight: 800; }
 .hero.reveal h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.2; margin: 0 0 12px; font-weight: 800; }
@@ -272,7 +272,7 @@ html[data-site="math"] .hero.reveal span.hero-tag,
 
 /* ---------- 卡片统一：hover 上浮 + 品牌色边框 ---------- */
 
-/* MathDuel: .game-card.dark 原本是深色 */
+/* NumeriDuel: .game-card.dark 原本是深色 */
 .game-card.dark {
   background: var(--card);
   border: 1px solid var(--line);
@@ -371,7 +371,7 @@ section { padding: 40px 0 8px; }
   background: var(--brand-700, var(--brand)); color: #fff; border-color: var(--brand-700, var(--brand));  /* v3: 白字安全值 */
 }
 
-/* ---------- Reveal 动画（MathDuel 已有 reveal 类） ---------- */
+/* ---------- Reveal 动画（NumeriDuel 已有 reveal 类） ---------- */
 .reveal { opacity: 1 !important; transform: none !important; }
 
 /* ---------- 小屏适配 ---------- */
@@ -384,9 +384,9 @@ section { padding: 40px 0 8px; }
 }
 
 /* ============================================================
-   Homepage Bottom Sections — 从 MathDuel 同步到三站
+   Homepage Bottom Sections — 从 NumeriDuel 同步到三站
    Leaderboard (战绩) + Value Section (为什么选择) + Footer (政策)
-   变量适配：MathDuel inline → 共享 tokens.css
+   变量适配：NumeriDuel inline → 共享 tokens.css
    ============================================================ */
 
 /* ---------- Section 通用 header ---------- */
@@ -571,7 +571,7 @@ section { padding: 40px 0 8px; }
 }
 
 /* ============================================================
-   Game Page Shared UI — 从 MathDuel 同步
+   Game Page Shared UI — 从 NumeriDuel 同步
    g-tutorial-btn + bottom-nav
    ============================================================ */
 

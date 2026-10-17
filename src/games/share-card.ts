@@ -1,7 +1,7 @@
 /**
  * BoardDuel · 分享卡片（2026-10-06）
  * ─────────────────────────────────────────────────────────────
- * 范式抄 MathDuel 24-game 的 .share-overlay / .share-card：
+ * 范式抄 NumeriDuel 24-game 的 .share-overlay / .share-card：
  *   弹窗里放一张 **Canvas 绘制的大图**（600×760），可下载成 PNG、
  *   可调系统分享。跟之前做的 .go-invite 邀请弹窗是两层：
  *     · go-invite  = 建房时的邀请信息（房码 + 扫码进房）

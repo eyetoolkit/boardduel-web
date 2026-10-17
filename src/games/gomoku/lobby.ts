@@ -1,12 +1,12 @@
 /**
  * BoardDuel · Gomoku 模式选择页（/games/gomoku/lobby/）
  * ------------------------------------------------------------
- * 完全镜像 MathDuel 24-game lobby 的 JS 行为：
+ * 完全镜像 NumeriDuel 24-game lobby 的 JS 行为：
  *   · 5 张可点模式卡 + 1 张 SOON 灰态，全部用纯 `<a href="?mode=...">`，
  *     JS 关掉也能用，方便抓取与分享；
  *   · JS 只做两件小事 —— 侧栏拉真实 /api/leaderboard、邀请码校验后跳转；
  *   · wireLobbyChrome 处理 sidebar 缩放、顶部 chip 抽屉等通用 chrome。
- * 与 MathDuel 的差异：gomoku 没有 daily puzzle / 没有 tag-done、没有 AI 补位 widget。
+ * 与 NumeriDuel 的差异：gomoku 没有 daily puzzle / 没有 tag-done、没有 AI 补位 widget。
  */
 
 import { wireLobbyChrome } from '../../lobby-chrome';
@@ -15,7 +15,7 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string): T | null =>
   document.getElementById(id) as T | null;
 
 const GAME_URL = '/games/gomoku/';
-/** worker 的房间码：6 位字母数字（与 MathDuel 24-game lobby 一致；worker /b/<game>/<CODE> 路由） */
+/** worker 的房间码：6 位字母数字（与 NumeriDuel 24-game lobby 一致；worker /b/<game>/<CODE> 路由） */
 const INVITE_RE = /^[A-Za-z0-9]{6}$/;
 
 const esc = (s: unknown): string =>
@@ -24,7 +24,7 @@ const esc = (s: unknown): string =>
     (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string,
   );
 
-/* ===================== 侧栏 · 真实榜单（gomoku 用 MathDuel 的 .rank-row 视觉规范） ===================== */
+/* ===================== 侧栏 · 真实榜单（gomoku 用 NumeriDuel 的 .rank-row 视觉规范） ===================== */
 
 function statRow(rank: string, label: string, pt: string, me = false): string {
   return `<div class="rank-row${me ? ' me' : ''}"><span class="rank">${esc(rank)}</span><span class="nm">${esc(label)}</span><span class="pt num">${esc(pt)}</span></div>`;
@@ -70,7 +70,7 @@ async function renderSide(): Promise<void> {
   host.innerHTML = html;
 }
 
-/* ===================== 邀请码（与 MathDuel 24-game lobby 同结构） ===================== */
+/* ===================== 邀请码（与 NumeriDuel 24-game lobby 同结构） ===================== */
 
 function initInvite(): void {
   const input = $<HTMLInputElement>('roomInput');

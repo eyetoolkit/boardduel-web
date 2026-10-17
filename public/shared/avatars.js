@@ -1,11 +1,11 @@
 /* ═══════════════════════════════════════════════════════════════
-   BoardDuel 头像渲染助手 (boardduel 站内独立副本, 移植自 mathduel)
+   BoardDuel 头像渲染助手 (boardduel 站内独立副本, 移植自 numeriduel)
    用法:
      BDAvatars.chipHtml(id)  -> '<span class="bd-p-avatar">🐱</span>'
      BDAvatars.chip(el, id)  -> 渲染进容器
      BDAvatars.icon(id)      -> emoji 字符
      BDAvatars.pick(seed)    -> 由昵称确定性派生头像 id(无服务端头像时也能稳定显示)
-   id 与 mathduel stores/account.js FREE_AVATARS + ep.js CATALOG 对齐;
+   id 与 numeriduel stores/account.js FREE_AVATARS + ep.js CATALOG 对齐;
    未知 id 兜底 🎭, 不抛错。
    ═════════════════════════════════════════════════════════════ */
 (function () {

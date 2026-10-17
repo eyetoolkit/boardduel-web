@@ -13,7 +13,7 @@
 
 'use strict';
 
-const WS_BASE = (typeof window !== 'undefined' && window.MATHDUEL_WS_BASE)
+const WS_BASE = (typeof window !== 'undefined' && window.NUMERIDUEL_WS_BASE)
   || (typeof location !== 'undefined' ? location.protocol + '//' + location.host : 'https://numeriduel.com');
 const HTTP_BASE = WS_BASE.replace(/^wss?:/, '');
 

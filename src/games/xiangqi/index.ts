@@ -826,7 +826,7 @@ rematchBtn.addEventListener('click', () => {
 reviewBtn.addEventListener('click', enterReplay);
 endLobbyBtn.addEventListener('click', exitMatchToLobby);
 
-/* 2026-10-06：分享结果 → Canvas 大图卡片（MathDuel 范式，可保存 PNG / 系统分享） */
+/* 2026-10-06：分享结果 → Canvas 大图卡片（NumeriDuel 范式，可保存 PNG / 系统分享） */
 let lastResult: { youWin: boolean; moves: number; durationSec: number } | null = null;
 /** 终局时快照，避免之后回放/悔棋改写数据 */
 function snapshotResult(youWin: boolean): void {

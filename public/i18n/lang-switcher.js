@@ -232,7 +232,7 @@
   function init() {
     injectCSS();
     if (mountAll() > 0) return;
-    // 挂载点由 JS 后置渲染（如 mathduel 首页 chrome）：轮询等它出现
+    // 挂载点由 JS 后置渲染（如 numeriduel 首页 chrome）：轮询等它出现
     if (typeof MutationObserver === 'undefined') return;
     var _t = null;
     var _obs = new MutationObserver(function () {

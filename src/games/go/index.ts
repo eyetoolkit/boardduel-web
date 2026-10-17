@@ -15,7 +15,7 @@ import { wireLobbyChrome } from '../../lobby-chrome';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 import { parseGameOver } from '../../shared/game-over';
 import { myName as ocMyName, opponentNameFromState, isMoveRejected, ensureAccount } from '../online-core';
-// 2026-10-06：好友房邀请卡片（全屏遮罩弹窗，范式抄 MathDuel 24-game share-overlay）
+// 2026-10-06：好友房邀请卡片（全屏遮罩弹窗，范式抄 NumeriDuel 24-game share-overlay）
 import { mountInviteCard, showInviteCard, onOpponentJoined } from '../invite-card';
 import '../../styles/invite-card.css';
 import {
@@ -1072,7 +1072,7 @@ async function startFriendRoom(): Promise<void> {
     const code = String((j && j.code) || '').toUpperCase();
     if (!r.ok || !/^[A-Z2-9]{6}$/.test(code)) { fail(); return; }
     enterRankedRoom(code);
-    // 2026-10-06：改弹全屏邀请卡片（范式抄 MathDuel 24-game share-overlay）。
+    // 2026-10-06：改弹全屏邀请卡片（范式抄 NumeriDuel 24-game share-overlay）。
     // 原 .go-invite 是侧栏内联面板，移动端 .bd-side 是 display:contents
     // 会被摊平成裸流 —— 二维码直接铺在棋盘下方、房码被挤出视口。
     if (inviteEl) inviteEl.hidden = true;

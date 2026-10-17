@@ -6,7 +6,7 @@
  * 面板被摊平成裸流元素 —— 扫码图直接铺在棋盘下方、房码被挤出视口、
  * 再叠两条 toast 就彻底乱了（用户 10-06 实测截图）。
  *
- * 改成与 MathDuel 24-game `shareOverlay` 同范式的**全屏遮罩弹窗**：
+ * 改成与 NumeriDuel 24-game `shareOverlay` 同范式的**全屏遮罩弹窗**：
  *   fixed inset:0 + 居中 .go-invite-card（白卡 + 软靛影 + 圆角16）
  *   遮罩点击关闭 / ✕ 关闭 / 好友进房后自动收起
  * 房码 + 短链 + 二维码三件套保留，后端契约一字不改：
@@ -140,7 +140,7 @@ export function mountInviteCard(prefix: string, game: string, label: string): In
     flash(copyCodeBtn, '✅ Copied', 'Copy');
   });
 
-  // 「保存邀请卡」→ 打开 Canvas 绘制的大图分享卡片（MathDuel 范式）
+  // 「保存邀请卡」→ 打开 Canvas 绘制的大图分享卡片（NumeriDuel 范式）
   // 延迟引入避免 invite-card → share-card 的循环依赖
   q<HTMLButtonElement>('make-card').addEventListener('click', async () => {
     const c = codeEl.textContent.trim();

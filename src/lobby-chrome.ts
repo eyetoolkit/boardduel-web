@@ -1,7 +1,7 @@
 /**
  * BoardDuel · Lobby/首页 共用 chrome 接线
  * ------------------------------------------------------------
- * 与 MathDuel 的 lobby-chrome 同一思路：侧栏抽屉（移动端 burger 展开 /
+ * 与 NumeriDuel 的 lobby-chrome 同一思路：侧栏抽屉（移动端 burger 展开 /
  * overlay 点击关闭 / Esc 关闭）、桌面收起（rail）、主题切换（.sb-theme），
  * 全部收敛到一个模块。首页与现在及未来的各游戏 lobby 页共用，
  * 避免出现「按钮在、事件没人绑」的静默失效。

@@ -42,7 +42,7 @@ const T = {
     '404.title_msg': '页面未找到',
     '404.message': '你访问的页面不存在或已被删除。',
     'home.boardduel_name': 'BoardDuel · 棋类游戏',
-    'home.mathduel_name': 'MathDuel · 数学对决',
+    'home.mathduel_name': 'NumeriDuel · 数学对决',
     'home.memoryduel_name': 'MemoryDuel · 知识对战',
     'home.badge_classic': '★ 经典',
     'home.badge_hot': '★ 热门',

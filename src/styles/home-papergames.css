@@ -4,14 +4,14 @@
  * 视觉真相源：design-reference/boardduel-homepage-papergames.html
  * 交接文档：boardduel-home-spec.md
  *
- * 实现策略（与 MathDuel 首页完全同构）：
+ * 实现策略（与 NumeriDuel 首页完全同构）：
  *   - 全部 token 锁在 body.home-v2 作用域，class 级控股股东；
  *     只有首页 <body class="home-v2"> 才会命中，5 个游戏页共用
  *     src/styles/boardduel.css，一行不受影响。
  *   - 字体统一为 Space Grotesk(400/700 display) + Sora(正文)，@font-face
  *     由 tokens.css 提供（2026-09-28 起弃用 Inter；/fonts/sora-latin.woff2 已在站）。
  *
- * 品牌差异（BoardDuel 专属，勿改成 MathDuel 的琥珀）：
+ * 品牌差异（BoardDuel 专属，勿改成 NumeriDuel 的琥珀）：
  *   强调色 = 紫罗兰 #7C3AED · 深卡 #241C4D · 底纹 = 96px 棋盘格 + 24px 细网格
  * ========================================================================== */
 
@@ -201,7 +201,7 @@ body.home-v2 {
 .home-v2 .feat b { display: block; font-size: .94rem; margin-bottom: 2px; }
 .home-v2 .feat span { font-size: .8rem; color: var(--mute); line-height: 1.55; display: block; }
 
-/* ═══════════ WHY BOARDDUEL 品牌段（对标 MathDuel 的 WHY 段，紫罗兰色板） ═══════════ */
+/* ═══════════ WHY BOARDDUEL 品牌段（对标 NumeriDuel 的 WHY 段，紫罗兰色板） ═══════════ */
 .home-v2 .why { padding: 48px 0 28px; }
 .home-v2 .why-card {
   background: linear-gradient(135deg, #241C4D 0%, #3B2A86 100%);

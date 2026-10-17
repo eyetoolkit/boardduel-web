@@ -288,7 +288,7 @@ function renderCard(canvas, card) {
 }
 
 /* ─── 工具: 下载 canvas 为 PNG 文件 ─── */
-function downloadCard(canvas, filename = 'mathduel-share.png') {
+function downloadCard(canvas, filename = 'numeriduel-share.png') {
   if (!canvas) throw new Error('canvas required');
   // toBlob 是异步,但旧浏览器支持 toDataURL
   if (canvas.toBlob) {

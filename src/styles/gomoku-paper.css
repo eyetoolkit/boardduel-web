@@ -1,5 +1,5 @@
 /* ============================================================
- * BoardDuel · Gomoku 对局页 · MathDuel paper 皮肤 v2（2026-09-27）
+ * BoardDuel · Gomoku 对局页 · NumeriDuel paper 皮肤 v2（2026-09-27）
  * ------------------------------------------------------------
  * 参照 numeriduel.com 游戏页（body.arena.skin-paper）的实测 token：
  *   纸面 #F4F5F9 · 白卡 #FFF · 边线 #E3E6F0 · 靛墨 #1E1B39
@@ -15,7 +15,7 @@
 
 /* 字体 @font-face 统一移至 tokens.css */
 
-/* ── token 重映射（boardduel.css :root 的 MathDuel paper 版） ── */
+/* ── token 重映射（boardduel.css :root 的 NumeriDuel paper 版） ── */
 body.home-v2 {
   /* 通用 token 由 tokens.css 提供（--indigo 别名已指向品牌紫）；本文件只保留 --go-* 棋盘变量与底纹 */
   /* 棋盘 SVG 变量（index.ts 引用，带 fallback）
@@ -42,7 +42,7 @@ body.home-v2 .bd-hero h1,
 body.home-v2 .go-end-verdict { font-weight: 700; }
 
 /* ════════════════════════════════════════════════════════════
- * 卡片语言：白卡 + 软靛影（MathDuel e-2），层级 = 卡16 / 按钮12
+ * 卡片语言：白卡 + 软靛影（NumeriDuel e-2），层级 = 卡16 / 按钮12
  * ════════════════════════════════════════════════════════════ */
 body.home-v2 .bd-board-wrap,
 body.home-v2 .go-mode,
@@ -74,7 +74,7 @@ body.home-v2 .go-mode.is-cur { border-color: var(--indigo-hover); background: #E
 /* hero 元信息 chips：白底 */
 body.home-v2 .bd-game-meta span { background: #FFFFFF; }
 
-/* 主 CTA：琥珀实心（MathDuel btn-amber 同款） */
+/* 主 CTA：琥珀实心（NumeriDuel btn-amber 同款） */
 body.home-v2 .go-btn.is-primary {
   background: var(--gold);
   color: #1E1B39;
