@@ -2611,7 +2611,9 @@
     "takeback_ask": "Votre adversaire demande à annuler le coup",
     "opp_left": "L'adversaire a quitté",
     "link_copied": "Lien d'invitation copié",
-    "undo_offline_only": "Le coup ne peut pas être annulé en jeu en ligne"
+    "undo_offline_only": "Le coup ne peut pas être annulé en jeu en ligne",
+    "chess_no_moves_replay": "Aucun coup encore",
+    "chess_review_after_end": "Le visionnage est disponible après la fin de la partie"
   },
   "bk2": {
     "bk2_p1": "Les jeux de plateau et les casse-têtes prétendent entraîner votre cerveau. Mais ils développent des compétences cognitives très différentes. Comprendre lequel convient à vos objectifs vous aide à tirer le meilleur de votre temps de jeu.",

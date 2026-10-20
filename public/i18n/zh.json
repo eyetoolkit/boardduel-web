@@ -2608,7 +2608,9 @@
     "takeback_ask": "对手请求悔棋",
     "opp_left": "对手离开了",
     "link_copied": "邀请链接已复制",
-    "undo_offline_only": "联机对战不可悔棋"
+    "undo_offline_only": "联机对战不可悔棋",
+    "chess_no_moves_replay": "暂无棋谱",
+    "chess_review_after_end": "对局结束后才可复盘"
   },
   "bk2": {
     "bk2_p1": "棋类游戏与解谜游戏都号称能训练大脑，但两者发展的是截然不同的认知技能。了解哪种类型更契合你的目标，能让你的游戏时间更有收获。",

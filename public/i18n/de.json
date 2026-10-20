@@ -2611,7 +2611,9 @@
     "takeback_ask": "Dein Gegner bittet um Rücknahme",
     "opp_left": "Gegner hat verlassen",
     "link_copied": "Einladungslink kopiert",
-    "undo_offline_only": "Zug zurück ist im Online-Spiel nicht verfügbar"
+    "undo_offline_only": "Zug zurück ist im Online-Spiel nicht verfügbar",
+    "chess_no_moves_replay": "Noch keine Züge",
+    "chess_review_after_end": "Rückblick ist nach Spielende verfügbar"
   },
   "bk2": {
     "bk2_p1": "Brettspiele und Puzzle behaupten beide, das Gehirn zu trainieren. Doch sie fördern sehr unterschiedliche kognitive Fähigkeiten. Zu verstehen, welcher Typ zu deinen Zielen passt, hilft dir, deine Spielzeit optimal zu nutzen.",

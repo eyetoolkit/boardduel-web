@@ -20,7 +20,7 @@ import {
 } from '../game-core';
 import { wireLobbyChrome } from '../../lobby-chrome';
 import {
-  initialState, cloneState, legalMoves, applyMove, bestMove,
+  initialState, cloneState, legalMoves, applyMove, bestMove, inCheck,
   type GameState as CS, type Side as CSide, type Move as CMove, type Piece as CPiece,
 } from './engine';
 import {
@@ -108,6 +108,9 @@ type UIState = {
   selected: number;
   lastMove: CMove | null;
   over: boolean;
+  /** 终局类型：'checkmate' | 'stalemate' | 'fifty' | 'insufficient' | 'resign'。
+   *  null = 进行中。finish() 据此选择文案与 is-draw 类。 */
+  result: string | null;
   /** 每步快照：用于 Undo */
   history: CS[];
   /** 完整走子序列（每手一个 CMove；回放时按顺序 applyMove） */
@@ -136,6 +139,7 @@ const state: UIState = {
   selected: -1,
   lastMove: null,
   over: false,
+  result: null,
   history: [],
   moves: [],
   timer: createTimer(),
@@ -168,6 +172,109 @@ function algToSq(alg: string): number {
   const f = alg.charCodeAt(0) - 97;
   const r = parseInt(alg.charAt(1), 10) - 1;
   return r * 8 + f;
+}
+
+/**
+ * 局面哈希（含 castling / en passant / 走子方）。
+ * 用于三次重复判和：不记 halfmove（同一 halfmove 值允许重复计数——
+ * 标准 FEN 重复计数惯例），也不记 fullmove。
+ * 🔴 这是纯函数，不改传入的 state.gs。
+ */
+function positionKey(gs: CS): string {
+  return (gs.board as string[]).join('') + '|'
+    + (gs.castling.K ? 'K' : '') + (gs.castling.Q ? 'Q' : '')
+    + (gs.castling.k ? 'k' : '') + (gs.castling.q ? 'q' : '')
+    + '|' + (gs.enpassant ?? '-') + '|' + gs.turn;
+}
+
+/**
+ * 子力不足判定（简化版，覆盖最常见的无将杀残局）：
+ *   · K vs K（纯王对王）
+ *   · K+B vs K（单象孤注）
+ *   · K+N vs K（单马孤注）
+ *   · 同色双象（K+B+B vs K，两象同色格）
+ * 🔴 不覆盖 K+B+N vs K（实战极罕见，漏判影响小）；R/Q 任何方持有都非不足。
+ * 调用时 gs.board 是 64 格棋子字符数组，'K'/'k' 是大写/小写表示王。
+ */
+function insufficientMaterial(gs: CS): boolean {
+  // 收集双方除王外的子力
+  const w: string[] = [], b: string[] = [];
+  for (const p of gs.board as string[]) {
+    if (p === '.') continue;
+    if (p === 'K' || p === 'k') continue;
+  if (p === p.toUpperCase()) w.push(p);
+  else b.push(p);
+  }
+  // K vs K：双方都没有任何子
+  if (w.length === 0 && b.length === 0) return true;
+  // 单兵孤注（K+N vs K / K+B vs K）：一方无子，另一方只有 1 个轻子
+  if (w.length === 0 && b.length === 1 && (b[0] === 'N' || b[0] === 'B')) return true;
+  if (b.length === 0 && w.length === 1 && (w[0] === 'N' || w[0] === 'B')) return true;
+  // 同色双象（K+B+B vs K）：一方只有两个象且同色格
+  if (w.length === 0 && b.length === 2 && b[0] === 'B' && b[1] === 'B') {
+    // 简化：任意两象同色格（按棋盘坐标色判）
+    let colorMatch = false;
+    let count = 0;
+    for (let i = 0; i < 64; i++) {
+      if (gs.board[i] === 'B') {
+        count++;
+        const f = i % 8, r = Math.floor(i / 8);
+        const sqColor = (f + r) % 2; // 0 = 黑格, 1 = 白格
+        if (count === 2) {
+          // 比较第一象和当前象
+          const firstB = gs.board.findIndex(x => x === 'B');
+          if (firstB >= 0 && ((firstB % 8 + Math.floor(firstB / 8)) % 2) === sqColor) {
+            colorMatch = true;
+          }
+        }
+      }
+    }
+    if (colorMatch) return true;
+  }
+  if (b.length === 0 && w.length === 2 && w[0] === 'B' && w[1] === 'B') {
+    let colorMatch = false;
+    let count = 0;
+    for (let i = 0; i < 64; i++) {
+      if (gs.board[i] === 'B') {
+        count++;
+        const f = i % 8, r = Math.floor(i / 8);
+        const sqColor = (f + r) % 2;
+        if (count === 2) {
+          const firstB = gs.board.findIndex(x => x === 'B');
+          if (firstB >= 0 && ((firstB % 8 + Math.floor(firstB / 8)) % 2) === sqColor) {
+            colorMatch = true;
+          }
+        }
+      }
+    }
+    if (colorMatch) return true;
+  }
+  // 未覆盖的子力配置（双方都有子、或含 R/Q/P）→ 不算不足
+  return false;
+}
+
+/**
+ * 三次重复局面：走子历史里有 3 次相同位置哈希（含当前）。
+ * 走子历史里存的是完整 CS 快照，逐个算 positionKey。
+ */
+function isThreefold(gs: CS, history: CS[]): boolean {
+  const cur = positionKey(gs);
+  const counts = new Map<string, number>();
+  for (const snap of history) counts.set(positionKey(snap), (counts.get(positionKey(snap)) || 0) + 1);
+  counts.set(cur, (counts.get(cur) || 0) + 1);
+  return (counts.get(cur) ?? 0) >= 3;
+}
+
+/**
+ * 终局原因检测：当前局面是否因 50-move / 子力不足 / 三次重复 自动判和。
+ * 返回原因字符串，或 null（表示无自动和棋，继续走）。
+ * 🔴 调用时机：`legalMoves === 0` 且 `!inCheck`（逼和）之前先查这三条。
+ */
+function autoDrawReason(gs: CS, history: CS[]): string | null {
+  if (isThreefold(gs, history)) return 'threefold';
+  if (gs.halfmove >= 100) return 'fifty';
+  if (insufficientMaterial(gs)) return 'insufficient';
+  return null;
 }
 function myColor(): CSide {
   return state.myIdx === 0 ? 'w' : 'b';
@@ -475,6 +582,24 @@ function doMove(m: CMove): void {
 function afterMove(): void {
   const moves = legalMoves(state.gs);
   if (moves.length === 0) {
+    // 🔴 区分三种终局：将杀（被将军）/ 逼和（未被将军）/ 自动和棋（50-move/三连/子力不足）。
+    const checked = inCheck(state.gs, state.gs.turn);
+    if (checked) {
+      state.result = 'checkmate';
+    } else {
+      const autoReason = autoDrawReason(state.gs, state.history);
+      state.result = autoReason || 'stalemate';
+    }
+    state.over = true;
+    stopTimer(state.timer);
+    render();
+    finish();
+    return;
+  }
+  // 走棋中也可触发 50-move / 三次重复 / 子力不足 判和（不等到无合法着法）
+  const autoReason = autoDrawReason(state.gs, state.history);
+  if (autoReason && state.mode !== 'online') {
+    state.result = autoReason;
     state.over = true;
     stopTimer(state.timer);
     render();
@@ -539,14 +664,42 @@ function finish(): void {
     });
   }
 
-  const meWon = state.mode === 'ai' ? state.gs.turn === 'b' : (state.mode === 'online' ? state.gs.turn !== myColor() : false);
-  const verdict = meWon ? window.t('bi.you_win') : window.t('bi.you_lose');
-  const line = meWon ? 'Checkmate' : 'Checkmate';
+  // 🔴 2026-10-20：按终局类型区分文案，修掉「stalemate 误显示 Checkmate」的死三元
+  //   与「将杀/逼和都判本方胜/负」的规则性错误。result 由 afterMove 检测后写入。
+  const result = state.result;
+  let verdict: string, line: string, cls: string;
+
+  if (result === 'checkmate') {
+    // 将杀：本方是白且黑无着法=我赢；本方是黑且白无着法=我输。pass 模式 meWon=false。
+    const meWon = state.mode === 'ai' ? state.gs.turn === 'b' : (state.mode === 'online' ? state.gs.turn !== myColor() : false);
+    verdict = meWon ? window.t('bi.you_win') : window.t('bi.you_lose');
+    line = window.t('chess.checkmate');
+    cls = meWon ? 'is-win' : 'is-loss';
+  } else if (result === 'stalemate' || result === 'fifty' || result === 'insufficient' || result === 'threefold') {
+    // 逼和 / 50-move / 子力不足 / 三次重复 = 和棋。
+    verdict = window.t('bi.draw');
+    const reasonKey = result === 'stalemate' ? 'chess.stalemate'
+      : result === 'fifty' ? 'chess.fifty'
+      : result === 'insufficient' ? 'chess.insufficient'
+      : 'chess.threefold';
+    line = window.t(reasonKey as 'chess.checkmate');
+    cls = 'is-draw';
+  } else {
+    // result 为 null（理论上不会到这里，finish 仅在 over=true 时调用；联机由 game_over 帧渲染）。
+    // 兜底走原胜负逻辑，避免空文案。
+    const meWon = state.mode === 'ai' ? state.gs.turn === 'b' : (state.mode === 'online' ? state.gs.turn !== myColor() : false);
+    verdict = meWon ? window.t('bi.you_win') : window.t('bi.you_lose');
+    line = window.t('chess.checkmate');
+    cls = meWon ? 'is-win' : 'is-loss';
+  }
+
   endVerdict.textContent = verdict;
   endLine.textContent = line;
-  endVerdict.className = 'go-end-verdict ' + (meWon ? 'is-win' : 'is-loss');
-  snapshotResult(meWon);   // 终局快照给「分享结果」卡片
-  playSfx(meWon ? 'win' : 'lose');
+  endVerdict.className = 'go-end-verdict ' + cls;
+  const meWonBool = cls === 'is-win';
+  const isDraw = cls === 'is-draw';
+  snapshotResult(meWonBool && !isDraw);   // 终局快照给「分享结果」卡片（和棋不计为 win）
+  playSfx(isDraw ? 'lose' : (meWonBool ? 'win' : 'lose'));
   toast(verdict + ' · ' + line);
   scheduleEndScreen();
 }
@@ -566,11 +719,11 @@ function resetReplayUI(): void {
 }
 
 function enterReplay(): void {
-  if (!state.moves.length) { toast('No moves yet'); return; }
+  if (!state.moves.length) { toast(window.t('bj.chess_no_moves_replay')); return; }
   // 联机中局禁回放：回放态棋盘渲染的是**重放出来的历史局面**，对手此刻走的那一手
   // 会被 apply 到真实 state 却完全看不见（要退出回放才显形）；若那一手终结了棋局，
   // 结束屏还会被 reviewAt !== null 压住 —— 玩家盯着冻住的棋盘，不知道这局已经结束。
-  if (state.mode === 'online' && !state.over) { toast('Review is available after the game ends'); return; }
+  if (state.mode === 'online' && !state.over) { toast(window.t('bj.chess_review_after_end')); return; }
   cancelAiMove();
   if (state.screen !== 'match') showScreen('match');
   state.reviewAt = 0;
@@ -873,6 +1026,7 @@ function newGame(): void {
   state.selected = -1;
   state.lastMove = null;
   state.over = false;
+  state.result = null;
   state.history = [];
   state.moves = [];
   state.aiThinking = false;
@@ -922,7 +1076,7 @@ function handleWs(msg: OnlineMsg): void {
   } else if (t === 'start' || t === 'restart_notify') {
     newGame();
   } else if (t === 'opponent_leave') {
-    toast('Opponent left');
+    toast(window.t('bj.opp_left'));
   } else if (t === 'game_over') {
     // 🔴 原先只 render()：服务端判负（如断线宽限到期、超时）时玩家看到一块冻住的
     //   棋盘，没有胜负、没有「再战」按钮（结算屏是另一个默认 hidden 的 section），
@@ -1015,7 +1169,7 @@ function roomHandlers(code: string) {
     onStart: (m: OnlineMsg) => { if (!state.moves.length) newGame(); applyRoomState(m, true); },
     onState: (m: OnlineMsg) => { applyServerMoves(m); applyRoomState(m, false); },
     onRestart: () => newGame(),
-    onOpponentLeave: () => { state.roomLive = false; toast('Opponent left'); render(); },
+    onOpponentLeave: () => { state.roomLive = false; toast(window.t('bj.opp_left')); render(); },
     // 断线：online-core 已把 roomLive 置 false，这里锁盘并给一句可见提示
     onDisconnect: () => { toast(window.t('match.disconnected')); render(); },
     // chess/xiangqi 原先没有 onError：服务端任何拒绝（对局未开始 / 对方未连接 /

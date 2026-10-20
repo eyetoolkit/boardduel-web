@@ -2610,7 +2610,9 @@
     "takeback_ask": "Opponent asks to take back",
     "opp_left": "Opponent left",
     "link_copied": "Invite link copied",
-    "undo_offline_only": "Undo is not available in online play"
+    "undo_offline_only": "Undo is not available in online play",
+    "chess_no_moves_replay": "No moves yet",
+    "chess_review_after_end": "Review is available after the game ends"
   },
   "bk2": {
     "bk2_p1": "Both board games and puzzle games claim to train your brain. But they develop very different cognitive skills. Understanding which type suits your goals helps you get more from your game time.",

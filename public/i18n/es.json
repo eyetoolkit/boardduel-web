@@ -2611,7 +2611,9 @@
     "takeback_ask": "Tu oponente pide deshacer la jugada",
     "opp_left": "El rival salió",
     "link_copied": "Enlace de invitación copiado",
-    "undo_offline_only": "No se puede deshacer en juego online"
+    "undo_offline_only": "No se puede deshacer en juego online",
+    "chess_no_moves_replay": "Aún no hay jugadas",
+    "chess_review_after_end": "El repaso está disponible después de terminar la partida"
   },
   "bk2": {
     "bk2_p1": "Tanto los juegos de mesa como los rompecabezas afirman entrenar tu cerebro. Pero desarrollan habilidades cognitivas muy diferentes. Entender qué tipo se adapta a tus objetivos te ayuda a aprovechar mejor tu tiempo de juego.",
