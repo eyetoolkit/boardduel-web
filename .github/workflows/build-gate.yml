@@ -89,3 +89,9 @@ jobs:
       # tsc --noEmit + vite build + 产物后处理，一步到位
       - name: Type check + build
         run: pnpm build
+
+      # 10 个围棋引擎单测（node --experimental-strip-types 原生跑 .test.ts，无需 tsx）。
+      # 不含 b-m2-track-chunk.test.mjs —— 它是 live 集成探针（fetch 线上 boardduel.com chunk），
+      # 会因网络抖动假红，留在本地手动跑；红线 RULES-FE-G「假失败比真 bug 费时间」
+      - name: Unit tests
+        run: pnpm test
