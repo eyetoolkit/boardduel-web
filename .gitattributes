@@ -1,0 +1,49 @@
+# 仓库行尾策略固化（2026-10-22）
+#
+# 🔴 背景：本仓长期没有 .gitattributes，行尾由编辑器偶然状态决定。
+#   实测（2026-10-22）：已跟踪文件里 6 个整文件 CRLF、49 个 mixed
+#   （同一文件内 CRLF 与 LF 混杂）。
+#
+#   姊妹仓 memoryduel-web 在 2026-10-13 已经踩过一次：一次程序化写回
+#   （Node fs.writeFileSync）把文件整体规范化成 LF，于是单个键的新增
+#   产生 7228 增 / 7021 删 的整文件 diff —— 内容一字未变、纯噪声，
+#   却让 review 无法进行、git blame 也失去追查能力。
+#
+#   根因不是「有人改了行尾」，而是「行尾没有被声明」。只要不写死，
+#   任何一次脚本化写文件都会重演。
+#
+# 策略：文本一律 LF 入库，与 Vite / Node / wrangler / CI(Linux) 一致，
+#   消除 Windows 开发 → Linux 构建的跨平台差异。
+
+* text=auto eol=lf
+
+*.json  text eol=lf
+*.js    text eol=lf
+*.mjs   text eol=lf
+*.cjs   text eol=lf
+*.ts    text eol=lf
+*.css   text eol=lf
+*.html  text eol=lf
+*.svg   text eol=lf
+*.md    text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.toml  text eol=lf
+*.sql   text eol=lf
+*.txt   text eol=lf
+
+# 二进制资源：禁止行尾转换，否则构建产物损坏
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.avif  binary
+*.ico   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.mp3   binary
+*.mp4   binary
+*.webm  binary
+*.pdf   binary
