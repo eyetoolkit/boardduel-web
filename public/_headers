@@ -34,8 +34,8 @@
 /robots.txt
   Cache-Control: public, max-age=3600, must-revalidate
 
-# service-worker 永缓存控制
-/service-worker.js
+# sw.js 永不缓存控制（线上注册的 SW；2026-10-21 删除了从未注册的 service-worker.js 规则）
+/sw.js
   Cache-Control: no-cache, must-revalidate
   Service-Worker-Allowed: /
 

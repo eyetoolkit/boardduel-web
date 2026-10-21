@@ -1,7 +1,7 @@
 # Tri-Sites 共享资源模板
 
 本目录存放三站可共用的元文件/HTML/JS 模板。每个站点根 `public/` 下的同名文件
-(`robots.txt`、`ai.txt`、`404.html`、`manifest.webmanifest`、`service-worker.js`)
+(`robots.txt`、`ai.txt`、`404.html`、`manifest.webmanifest`)
 应保持与本站模板的"占位符替换"同步。
 
 ## 当前可用模板
@@ -13,7 +13,10 @@
 | `llms.txt.tpl` | LLM 描述（可选） | 各站 `llms.txt`（NumeriDuel 才有） |
 | `404.html.tpl` | 错误页模板 | 各站 `404.html` |
 | `manifest.webmanifest.tpl` | PWA manifest 模板 | 各站 `manifest.webmanifest` |
-| `sw-helpers.js` | Service Worker 共享策略 | 各站 `service-worker.js` 通过 `importScripts('/shared/sw-helpers.js')` 加载 |
+
+（2026-10-21：原 `sw-helpers.js` + 各站 `service-worker.js` 双 SW 并存，其中
+`service-worker.js` 从未被注册（各站 `js/sw-register.js` 注册的是 `/sw.js`），
+测试长期保护死文件。已删除这两个文件，线上 SW 策略以各站 `sw.js` 为唯一真相源。）
 
 ## 维护流程
 
