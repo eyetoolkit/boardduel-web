@@ -191,6 +191,21 @@
         </div>
       </div>
 
+      <!-- Booster 卡片（P0-2：2026-10-22 接线后倍率真正作用于金币） -->
+      <div class="card" id="m-booster-card" style="margin-bottom:24px">
+        <style>
+          #m-booster-card .booster-list { display:flex; flex-wrap:wrap; gap:10px }
+          #m-booster-card .booster-item { display:flex; align-items:center; gap:8px; background:#f7f8fc; border:1px solid #e3e7f0; border-radius:12px; padding:10px 12px }
+          #m-booster-card .booster-icon { font-size:1.4rem }
+          #m-booster-card .booster-name { font-weight:700; font-size:.85rem; min-width:64px }
+          #m-booster-card .booster-timer { margin-top:10px; font-weight:800; color:#b45309; font-size:.95rem; font-variant-numeric:tabular-nums }
+        </style>
+        <div class="card-title">⚡ 增益道具（Booster）</div>
+        <div class="card-meta" style="margin-bottom:10px">激活后 30 分钟内，对局金币收益变为 1.5× 或 2×。</div>
+        <div id="m-booster-list" class="booster-list"></div>
+        <div id="m-booster-timer" class="booster-timer" style="display:none"></div>
+      </div>
+
       <!-- Tab 切换 -->
       <div class="tabs">
         <button class="tab active" data-tab="quests" data-i18n="membership.tab_quests">📅 Daily Quests</button>
@@ -311,7 +326,7 @@
             document.getElementById('m-adfree-meta').textContent = '到期: ' + new Date(af.expires_at).toLocaleDateString();
           } else {
             document.getElementById('m-adfree-status').textContent = '未激活';
-            document.getElementById('m-adfree-meta').innerHTML = '<a href="#" data-exchange>用积分兑换 →</a>';
+            document.getElementById('m-adfree-meta').textContent = '本站暂未投放广告';
           }
         });
 
@@ -489,6 +504,93 @@
     });
 
     checkLogin();
+  })();
+  </script>
+  <script>
+  /* Booster 交互（P0-2：2026-10-22 接线后倍率真正作用于金币）
+     拉 /api/boosters/me → 渲染 catalog（购买/激活/倒计时），购买与激活走 /api/boosters/{purchase,activate}。
+     匿名态后端仍返回 catalog（balance:0），按钮因余额不足 disabled —— 登录后自动可用。 */
+  (function(){
+    'use strict';
+    var listEl = document.getElementById('m-booster-list');
+    var timerEl = document.getElementById('m-booster-timer');
+    if (!listEl) return;
+    var timerId = null;
+    var data = { balance: 0, inventory: [], active: null, boosters: [] };
+
+    function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]); }); }
+
+    function render(){
+      var html = '';
+      for (var i=0;i<data.boosters.length;i++){
+        var b = data.boosters[i];
+        var owned = data.inventory.some(function(x){ return x.id === b.id; });
+        var isActive = !!(data.active && data.active.id === b.id);
+        var gap = Math.max(0, b.cost - data.balance);
+        var action;
+        if (isActive){
+          action = '<button class="btn btn-secondary btn-sm" disabled>生效中</button>';
+        } else if (owned){
+          action = '<button class="btn btn-secondary btn-sm" data-booster="'+esc(b.id)+'" data-act="activate">激活</button>';
+        } else {
+          action = '<button class="btn btn-sm" data-booster="'+esc(b.id)+'" data-act="buy" '+(gap>0?'disabled':'')+'>🪙 '+b.cost+(gap>0?'（差 '+gap+'）':'')+'</button>';
+        }
+        html += '<div class="booster-item">'+
+          '<span class="booster-icon">'+esc(b.icon)+'</span>'+
+          '<span class="booster-name">'+esc(b.name)+'</span>'+
+          action+'</div>';
+      }
+      if (!html) html = '<span style="color:var(--m);font-size:.85rem">暂无可购买道具</span>';
+      listEl.innerHTML = html;
+      updateTimer();
+    }
+
+    function updateTimer(){
+      if (!data.active || data.active.expiresAt <= Date.now()){
+        timerEl.style.display = 'none';
+        if (timerId){ clearInterval(timerId); timerId = null; }
+        return;
+      }
+      var tick = function(){
+        var rem = Math.max(0, data.active.expiresAt - Date.now());
+        var mm = Math.floor(rem/60000), ss = Math.floor((rem%60000)/1000);
+        timerEl.textContent = '⚡ 生效中 · '+String(mm).padStart(2,'0')+':'+String(ss).padStart(2,'0');
+        timerEl.style.display = 'block';
+        if (rem <= 0) updateTimer();
+      };
+      tick();
+      if (!timerId) timerId = setInterval(tick, 1000);
+    }
+
+    function load(){
+      fetch('/api/boosters/me', { credentials:'same-origin' })
+        .then(function(r){ return r.json(); })
+        .then(function(d){ if (d && d.boosters){ data = d; } render(); })
+        .catch(function(){ render(); });
+    }
+
+    listEl.addEventListener('click', function(e){
+      var btn = e.target.closest ? e.target.closest('[data-booster]') : null;
+      if (!btn || btn.disabled) return;
+      var id = btn.getAttribute('data-booster');
+      var act = btn.getAttribute('data-act') || 'buy';
+      btn.disabled = true;
+      fetch('/api/boosters/'+act, { method:'POST', credentials:'same-origin', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ item: id }) })
+        .then(function(r){ return r.json(); })
+        .then(function(){ load(); refreshBalance(); })
+        .catch(function(){ btn.disabled = false; });
+    });
+
+    function refreshBalance(){
+      var bal = document.getElementById('m-coins');
+      if (!bal) return;
+      fetch('/api/coins/me', { credentials:'same-origin' })
+        .then(function(r){ return r.json(); })
+        .then(function(c){ if (c && typeof c.coins === 'number') bal.textContent = c.coins.toLocaleString(); })
+        .catch(function(){});
+    }
+
+    load();
   })();
   </script>
   <script src="/shared/site-header.js?v=ds2-13"></script>
