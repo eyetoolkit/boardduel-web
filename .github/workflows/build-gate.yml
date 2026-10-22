@@ -89,6 +89,13 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      # shared 契约漂移门禁（2026-10-22，收敛阶段4）：public/shared/ 里的跨站
+      # 契约文件必须与 eyetoolkit/fe-shared 真相源逐字节一致。直接改本站契约
+      # 文件会在此被拦——正确流程是 fe-shared 改 → npm run sync:shared → commit。
+      # 数据源 raw.githubusercontent.com（免鉴权，脚本内 3 次退避重试）。
+      - name: Shared contract sync check
+        run: pnpm sync:shared:check
+
       # tsc --noEmit + vite build + 产物后处理，一步到位
       - name: Type check + build
         run: pnpm build
