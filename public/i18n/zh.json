@@ -1747,7 +1747,16 @@
     "soon_pill": "即将推出",
     "footer_explore": "探索 Duel 家族",
     "footer_copy": "© 2026 BoardDuel · 纯静态 · 隐私优先 · 免费游玩",
-    "nav_teacher": "教师端"
+    "nav_teacher": "教师端",
+    "eco_title": "你的金币",
+    "eco_checkin": "签到 +10",
+    "eco_signedin": "已签到 ✓",
+    "eco_btn_disabled": "登录",
+    "eco_sub_earn": "每局赢金币。登录查看余额。",
+    "eco_sub_daily": "每日签到 +10，连签 7 天 +50。",
+    "eco_sub_ok": "已签到 — +10 金币。",
+    "eco_sub_streak": "连签 {n} 天 — +50 奖励！",
+    "eco_sub_anon": "登录查看你的金币。"
   },
   "bl": {
     "bl_modes_h2": "选择玩法",

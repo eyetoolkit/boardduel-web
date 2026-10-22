@@ -1749,7 +1749,16 @@
     "soon_pill": "近日",
     "footer_explore": "Duel ファミリーを見る",
     "footer_copy": "© 2026 BoardDuel · 完全静的 · プライバシー最優先 · 無料",
-    "nav_teacher": "教師用"
+    "nav_teacher": "教師用",
+    "eco_title": "あなたのコイン",
+    "eco_checkin": "ログイン +10",
+    "eco_signedin": "ログイン済み ✓",
+    "eco_btn_disabled": "ログイン",
+    "eco_sub_earn": "対戦でコインを獲得。残高はログインで見えます。",
+    "eco_sub_daily": "毎日ログインで +10、7 日連続で +50。",
+    "eco_sub_ok": "ログインしました — +10コイン。",
+    "eco_sub_streak": "{n}日連続 — +50ボーナス!",
+    "eco_sub_anon": "残高を見るにはログインしてください。"
   },
   "bl": {
     "bl_modes_h2": "モードを選ぶ",

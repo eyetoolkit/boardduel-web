@@ -1750,7 +1750,16 @@
     "soon_pill": "BALD",
     "footer_explore": "Entdecke die Duel-Familie",
     "footer_copy": "© 2026 BoardDuel · Pure static · Datenschutz zuerst · Kostenlos spielen",
-    "nav_teacher": "Lehrkräfte"
+    "nav_teacher": "Lehrkräfte",
+    "eco_title": "Deine Münzen",
+    "eco_checkin": "Anmelden +10",
+    "eco_signedin": "Angemeldet ✓",
+    "eco_btn_disabled": "Anmelden",
+    "eco_sub_earn": "Verdiene Münzen in jeder Partie. Melde dich an, um deinen Saldo zu sehen.",
+    "eco_sub_daily": "Täglich +10, 7 Tage am Stück +50.",
+    "eco_sub_ok": "Angemeldet — +10 Münzen.",
+    "eco_sub_streak": "{n} Tage in Folge — +50 Bonus!",
+    "eco_sub_anon": "Melde dich an, um deine Münzen zu sehen."
   },
   "bl": {
     "bl_modes_h2": "Wähle deinen Modus",

@@ -1749,7 +1749,16 @@
     "soon_pill": "SOON",
     "footer_explore": "Explore the Duel family",
     "footer_copy": "© 2026 BoardDuel · Pure static · Privacy-first · Free to play",
-    "nav_teacher": "Teacher"
+    "nav_teacher": "Teacher",
+    "eco_title": "Your coins",
+    "eco_checkin": "Sign in +10",
+    "eco_signedin": "Signed in ✓",
+    "eco_btn_disabled": "Sign in",
+    "eco_sub_earn": "Earn coins every match. Sign in to see your balance.",
+    "eco_sub_daily": "Sign in daily for +10, 7-day streak for +50.",
+    "eco_sub_ok": "Signed in — +10 coins.",
+    "eco_sub_streak": "{n}-day streak — +50 bonus!",
+    "eco_sub_anon": "Sign in to see your coins."
   },
   "bl": {
     "bl_modes_h2": "Choose your mode",

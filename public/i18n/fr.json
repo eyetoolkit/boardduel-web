@@ -1750,7 +1750,16 @@
     "soon_pill": "BIENTÔT",
     "footer_explore": "Explore la famille Duel",
     "footer_copy": "© 2026 BoardDuel · 100% statique · Confidentialité d'abord · Gratuit",
-    "nav_teacher": "Enseignants"
+    "nav_teacher": "Enseignants",
+    "eco_title": "Vos pièces",
+    "eco_checkin": "Connexion +10",
+    "eco_signedin": "Connecté ✓",
+    "eco_btn_disabled": "Connexion",
+    "eco_sub_earn": "Gagnez des pièces à chaque partie. Connectez-vous pour voir votre solde.",
+    "eco_sub_daily": "Chaque jour +10, 7 jours d'affilée +50.",
+    "eco_sub_ok": "Connecté — +10 pièces.",
+    "eco_sub_streak": "{n} jours d'affilée — bonus +50 !",
+    "eco_sub_anon": "Connectez-vous pour voir vos pièces."
   },
   "bl": {
     "bl_modes_h2": "Choisissez un mode",

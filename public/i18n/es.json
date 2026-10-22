@@ -1750,7 +1750,16 @@
     "soon_pill": "PRONTO",
     "footer_explore": "Explora la familia Duel",
     "footer_copy": "© 2026 BoardDuel · Puro estático · Privacidad primero · Gratis para jugar",
-    "nav_teacher": "Profesores"
+    "nav_teacher": "Profesores",
+    "eco_title": "Tus monedas",
+    "eco_checkin": "Entrar +10",
+    "eco_signedin": "Entrado ✓",
+    "eco_btn_disabled": "Entrar",
+    "eco_sub_earn": "Gana monedas en cada partida. Inicia sesión para ver tu saldo.",
+    "eco_sub_daily": "Inicia sesión a diario: +10; 7 días seguidos: +50.",
+    "eco_sub_ok": "Sesión iniciada — +10 monedas.",
+    "eco_sub_streak": "¡{n} días seguidos — ¡bono de +50!",
+    "eco_sub_anon": "Inicia sesión para ver tus monedas."
   },
   "bl": {
     "bl_modes_h2": "Elige tu modo",

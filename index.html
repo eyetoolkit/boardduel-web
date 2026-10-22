@@ -224,6 +224,16 @@
       </div>
       <p class="daily-msg" style="margin:-6px 0 10px"><span id="lbSub" data-i18n="home_v2.lb_loading">Loading top players&hellip;</span></p>
       <div class="weekly-rows" id="lbRows"></div>
+      <!-- #5 经济 UI：余额卡 + 每日签到（PvP 发币可见 + 留存钩子）。
+           拉数走 fe-shared public/shared/coins.mjs，文案 JS 动态写入，
+           匿名/接口失败降级为「登录看余额」，不写假数据。 -->
+      <div class="eco-card" id="ecoCard" aria-live="polite">
+        <div class="eco-row">
+          <span class="eco-balance" id="ecoBalance"><span class="eco-coin" aria-hidden="true">&#129689;</span> <span class="eco-num" id="ecoNum">&mdash;</span></span>
+          <button class="eco-checkin" id="ecoCheckin" type="button">Sign in daily +10</button>
+        </div>
+        <div class="eco-sub" id="ecoSub" data-i18n="home_v2.eco_sub_earn">Earn coins every match. Sign in to see your balance.</div>
+      </div>
       <a class="btn-exchange" href="/shop/" style="display:block;text-align:center" data-i18n="home_v2.lb_spend">&#129689; Spend coins in the shop</a>
     </div>
   </section>
@@ -301,6 +311,8 @@
 </footer>
 
 <script type="module" src="/src/pages/home.ts"></script>
+<!-- #5 经济卡：余额 + 每日签到（import fe-shared public/shared/coins.mjs） -->
+<script type="module" src="/js/eco-home.mjs?v=1"></script>
 <script src="/i18n/lang-switcher.js?v=40" defer></script>
 <script src="/shared/identity.js?v=3" defer></script>
 <style>
