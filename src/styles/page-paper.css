@@ -207,6 +207,7 @@ body.home-v2 .pp-state {
   background: #FFFFFF; border: 1px dashed var(--line); border-radius: 14px;
   padding: 22px; text-align: center; color: var(--mute); font-size: .9rem;
 }
+body.home-v2 .pp-err { border-style: solid; border-color: #C2372F; color: #C2372F; }
 
 /* ════════════════════════════════════════════════════════════
  * 暗色模式
@@ -217,6 +218,7 @@ html[data-theme="dark"] body.home-v2 .pp-stat,
 html[data-theme="dark"] body.home-v2 .pp-item,
 html[data-theme="dark"] body.home-v2 .pp-faq,
 html[data-theme="dark"] body.home-v2 .pp-state { background: var(--ink2); border-color: var(--line); }
+html[data-theme="dark"] body.home-v2 .pp-err { border-color: #FF7A70; color: #FF7A70; }
 
 html[data-theme="dark"] body.home-v2 .pp-note { background: #222336; }
 html[data-theme="dark"] body.home-v2 .pp-me {

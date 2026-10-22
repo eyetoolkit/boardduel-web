@@ -251,7 +251,7 @@ async function loadWallet(): Promise<void> {
       '<span class="amt">' +
       coins +
       '</span>' +
-      '<span class="hint">Win a match to earn +10 coins</span>';
+      '<span class="hint">Win +15 coins · play +5</span>';
   } catch {
     box.innerHTML =
       '<span class="coin" aria-hidden="true">🪙</span>' +
@@ -308,22 +308,45 @@ function wireShop(): void {
     if (!btn) return;
     const id = btn.dataset.buy;
     if (!id) return;
+    clearShopError();
     btn.disabled = true;
     const old = btn.textContent;
     btn.textContent = '…';
     try {
+      /* 🔴 字段名必须是 item（服务端 ep.itemById(String(body.item || ''))）。
+         2026-10-22 修复：此前发 { id } → itemById('') → 恒 400 no_such_item，
+         boardduel 商店购买 100% 失败且 catch 静默、玩家无感知。 */
       await api('/api/shop/purchase', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ item: id }),
       });
       await loadWallet();
       await loadShop();
     } catch {
       btn.disabled = false;
       btn.textContent = old ?? 'Redeem';
+      showShopError();
     }
   });
+}
+
+/* 购买失败可见化：旧实现 catch 后只静默恢复按钮，玩家点了没反应、
+   也分不清「没币」还是「坏了」。错误行挂在商品网格上方，5 秒自消。 */
+function showShopError(): void {
+  const box = qs('#pp-shop');
+  if (!box || box.querySelector('.pp-err')) return;
+  const p = document.createElement('div');
+  p.className = 'pp-state pp-err';
+  p.textContent = 'Purchase failed — please sign in and try again.';
+  box.prepend(p);
+  setTimeout(clearShopError, 5000);
+}
+
+function clearShopError(): void {
+  const box = qs('#pp-shop');
+  const err = box?.querySelector('.pp-err');
+  if (err) err.remove();
 }
 
 /* ══════════════════ 分派 ══════════════════ */
