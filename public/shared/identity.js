@@ -255,11 +255,14 @@
       'font-size:1rem;font-weight:700;color:inherit}',
       '.idt-row{display:flex;gap:.5rem;margin:.6rem 0 .4rem}',
       '.idt-in{flex:1;min-width:0;padding:.5rem .7rem;border:1px solid var(--border,rgba(0,0,0,.18));',
-      'border-radius:.5rem;font:inherit;font-family:var(--font-sans,inherit);background:var(--bg,#fff);color:inherit}',
+      'border-radius:.5rem;font:inherit;font-family:var(--font-sans,inherit);background:var(--bg,#fff);color:inherit;',
+      /* 🔴 触摸目标 ≥44px（2026-10-15 生产 CDP 实测 34.2px 高）；
+         只补 min-height，字号与配色不动。本文件是 numeriduel 私有副本。 */
+      'min-height:44px}',
       '.idt-in:focus-visible{outline:2px solid var(--brand-600,#0066CC);outline-offset:1px;',
       'border-color:var(--brand-600,#0066CC)}',
       '.idt-go{flex:none;padding:.5rem .9rem;border:0;border-radius:.5rem;cursor:pointer;',
-      'background:var(--brand-600,#0066CC);color:#fff;font:inherit;font-weight:600}',
+      'background:var(--brand-600,#0066CC);color:#fff;font:inherit;font-weight:600;min-height:44px}',
       '.idt-go:disabled{opacity:.45;cursor:default}',
       '.idt-go:focus-visible{outline:2px solid var(--brand-600,#0066CC);outline-offset:2px}',
       '.idt-note{margin:0;font-size:.8rem;line-height:1.45;color:var(--muted,rgba(0,0,0,.55))}',
@@ -271,12 +274,22 @@
       '.idt-ask.compact .idt-in{width:9rem;padding:.35rem .6rem;font-size:.85rem}',
       '.idt-ask.compact .idt-go{padding:.35rem .7rem;font-size:.85rem}',
       '.idt-ask.compact .idt-note{font-size:.75rem;white-space:nowrap}',
-      /* iOS Safari 对 font-size<16px 的输入框会在聚焦时自动放大页面（用户被迫手动缩回）。
-         移动端强制 16px 下限；桌面端保留 .85rem 的紧凑排布不受影响。
-         注意：.idt-in 用的是 `font:inherit`，字号继承自父级 —— 首页侧栏那种
-         「.idt-ask.compact 之外」的用法实测 computed 是 13.6px 且命中不到上面
-         .compact 那条规则，所以这里用元素级选择器兜底（.idt-in 只有 0,0,1,0 特异度，
-         放在所有规则之后 + 媒体查询内，不会被覆盖）。 */
+      /* 🔴 2026-10-14 移动端横向溢出修复（390px 视口实测 scrollWidth=556）：
+         顶栅那一行是 brand + nav + actions + 身份条，无宽度约束时用户名一长
+         （或叠加「修改」按钮）就把整行撑破视口 → 页面出现横向滚动条，
+         正文被推出屏幕。共用页头的页面同时中招。
+         三处缺一不可：
+           1) .sh-me 允许收缩（inline-flex 默认 min-width:auto = 内容宽，不肯缩）
+           2) .idt-name 限宽 + 省略号（用户名是外部输入，长度不可控）
+           3) .idt-edit 不换行且不被挤没
+         只改其中一处无效：只给 .idt-name 加 max-width，.sh-me 仍会以
+         min-width:auto 顶着内容宽度不缩。 */
+      '.sh-me{display:inline-flex;align-items:center;min-width:0;max-width:100%;flex-shrink:1;overflow:hidden}',
+      '.idt-ask.compact .idt-name{max-width:5.5rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.idt-ask.compact .idt-edit{flex:none;white-space:nowrap}',
+      '@media (max-width:820px){.sh-me .idt-name{max-width:4rem}}',
+      /* iOS Safari for font-size<16px input auto-zooms the page on focus (user must
+         zoom out manually). Force a 16px floor on mobile; desktop keeps .85rem. */
       '@media (max-width:820px){input.idt-in,',
       'select.idt-in,textarea.idt-in,.idt-in{font-size:16px!important}}',
       '@media (prefers-reduced-motion:reduce){.idt-go,.idt-edit{transition:none}}'
