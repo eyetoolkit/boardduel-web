@@ -121,7 +121,7 @@ function match(size: number, seed: number, blackDiff: Difficulty, whiteDiff: Dif
   let steps = 0;
   while (s.passes < 2 && steps < cap) {
     const diff = s.toPlay === 1 ? blackDiff : whiteDiff;
-    const m = bestMove(s, diff, rng);
+    const m = bestMove(s, diff, { rng });
     if (m < 0) s = pass(s);
     else {
       const r = computePlay(s, m, { superko: true, history });
