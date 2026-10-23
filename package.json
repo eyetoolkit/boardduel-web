@@ -17,7 +17,8 @@
     "test": "node --experimental-strip-types --test tests/go-ai.test.ts tests/go-ai-flow.test.ts tests/go-clock.test.ts tests/go-engine.test.ts tests/go-eval-hard.test.ts tests/go-eval-zero-sum.test.ts tests/go-katago-history.test.ts tests/go-render.test.ts tests/go-score.test.ts tests/go-superko-ui.test.ts tests/go-territory-by-color.test.ts tests/chess-engine.test.ts tests/connect4-online.test.ts tests/tictactoe-engine.test.ts tests/reversi-seat.test.ts tests/engine-selftest.test.ts tests/checkers-rules.test.ts tests/game-over.test.ts tests/board-anim.test.ts tests/chess-export.test.ts tests/export-record.test.ts",
     "sync:shared": "node scripts/sync-shared.mjs boardduel",
     "sync:shared:check": "node scripts/sync-shared.mjs boardduel --check",
-    "lint:i18n": "node _tools/i18n-lint.mjs"
+    "lint:i18n": "node _tools/i18n-lint.mjs",
+    "smoke": "node _tools/smoke-batch4.mjs"
   },
   "devDependencies": {
     "typescript": "^5.6.3",

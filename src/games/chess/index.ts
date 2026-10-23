@@ -367,7 +367,8 @@ function render(): void {
       const [x, y] = squareXY(sq);
       const cx = PAD + x * CELL + CELL / 2;
       const cy = PAD + y * CELL + CELL / 2;
-      lastMark += `<circle cx="${cx}" cy="${cy}" r="6" fill="var(--ch-last, rgba(245,158,11,.45))"/>`;
+      // bd-last-mark：与其他游戏统一的「最后一手」挂钩（样式/冒烟都靠它寻址）
+      lastMark += `<circle class="bd-last-mark" cx="${cx}" cy="${cy}" r="6" fill="var(--ch-last, rgba(245,158,11,.45))"/>`;
     }
   }
 

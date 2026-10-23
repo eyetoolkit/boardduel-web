@@ -180,7 +180,7 @@ function render(): void {
   // 最后一手
   let last = '';
   if (state.lastMove >= 0) {
-    last += `<rect x="${PAD + (state.lastMove % SIZE) * CELL}" y="${PAD + Math.floor(state.lastMove / SIZE) * CELL}" width="${CELL}" height="${CELL}" fill="none" stroke="#F59E0B" stroke-width="3" opacity="0.9"/>`;
+    last += `<rect class="bd-last-mark" x="${PAD + (state.lastMove % SIZE) * CELL}" y="${PAD + Math.floor(state.lastMove / SIZE) * CELL}" width="${CELL}" height="${CELL}" fill="none" stroke="#F59E0B" stroke-width="3" opacity="0.9"/>`;
   }
 
   // 棋子

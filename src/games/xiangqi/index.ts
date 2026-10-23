@@ -264,7 +264,7 @@ function render(): void {
   if (lm) {
     for (const sq of [lm.from, lm.to]) {
       const [x, y] = pointXY(sq);
-      lastMark += `<circle cx="${x}" cy="${y}" r="6" fill="rgba(245,158,11,.5)"/>`;
+      lastMark += `<circle class="bd-last-mark" cx="${x}" cy="${y}" r="6" fill="rgba(245,158,11,.5)"/>`;
     }
   }
 

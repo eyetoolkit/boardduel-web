@@ -39,6 +39,25 @@ export interface DiffOpts {
 const FLIP_STEP_MS = 22;
 const FLIP_MAX_MS = 176;
 
+/** 动画时长（ms），必须与 boardduel.css 里 keyframes 的 duration 对齐，
+ *  否则续播会算错剩余时间（早停 = 动画被截断，晚停 = 多挂一阵类）。 */
+const ANIM_MS: Record<string, number> = {
+  'bd-anim-place': 280,   // .28s
+  'bd-anim-flip': 340,    // .34s（+ stagger 才是总时长）
+};
+
+/** 正在播的动画：格子 → 起播时刻与 stagger。用于同帧重渲染的续播。 */
+interface Flight { cls: string; start: number; stagger: number; }
+const inFlight = new Map<number, Flight>();
+
+/**
+ * 清空续播状态。新局 / 换局 / 单测隔离时调用——prev 传 null 也会清，
+ * 但显式调一次更直白（例如同一页面存在两块棋盘时互相串味）。
+ */
+export function resetCellAnims(): void {
+  inFlight.clear();
+}
+
 /**
  * 比较 prev（上一帧盘面）与 next（本帧盘面），返回「哪一格该播什么动画」。
  *
@@ -57,7 +76,14 @@ export function diffCellAnims(
   opts: DiffOpts = {},
 ): Map<number, CellAnim> {
   const out = new Map<number, CellAnim>();
-  if (!prev || !live) return out;
+  const now = Date.now();
+
+  // prev 为 null = 首帧 / 新局 / 退出回放。此时连"续播"也要清掉：
+  // 否则上一局残留的动画会在新盘面上接着播几百毫秒。
+  if (!prev) { inFlight.clear(); return out; }
+  // 回放态不播（历史盘面跳变会全盘乱 pop），也不续播。
+  if (!live) { inFlight.clear(); return out; }
+
   const { lastIdx = -1, cols = 8, allowFlip = false, flipStepMs = FLIP_STEP_MS, flipMaxMs = FLIP_MAX_MS } = opts;
   const n = Math.min(prev.length, next.length);
   for (let i = 0; i < n; i++) {
@@ -79,6 +105,26 @@ export function diffCellAnims(
     }
     // 其余（有子→空格）不播
   }
+
+  // 起播登记：记录"哪一格在什么时候开始播什么"，供下面的续播算进度
+  for (const [i, a] of out) inFlight.set(i, { cls: a.cls, start: now, stagger: a.delay });
+
+  // ── 续播（2026-10-24 修 P1）─────────────────────────────────────────────
+  // 为什么必须有这段：render() 是 innerHTML 全量重建，而落子后同一次任务里
+  // 往往连着好几次 render —— 典型链路是 afterMove() 先 render() 切回合，
+  // 紧接着 aiMove() 又 state.aiThinking=true; render()。盘面没变 → 第二次
+  // 没有 diff → 动画类被新 DOM 抹掉 → **动画一帧都没播就消失**（实测
+  // reversi/connect4/chess/xiangqi/checkers 全部如此，只有 gomoku/tictactoe
+  // 因为渲染顺序侥幸躲过）。
+  // 解法：盘面没变的重渲染里，把还没播完的格子按"已播时长"用负 delay 续播，
+  // 动画从断点继续而不是重头开始。
+  for (const [i, f] of inFlight) {
+    if (out.has(i)) continue;                       // 本帧已重新起播
+    const elapsed = now - f.start;
+    const total = f.stagger + (ANIM_MS[f.cls] ?? 300);
+    if (elapsed >= total) { inFlight.delete(i); continue; }
+    out.set(i, { cls: f.cls, delay: f.stagger - elapsed });
+  }
   return out;
 }
 
@@ -94,5 +140,6 @@ export function animClassSuffix(anim: Map<number, CellAnim>, i: number): string 
 
 export function animDelayStyle(anim: Map<number, CellAnim>, i: number): string {
   const a = anim.get(i);
-  return a && a.delay > 0 ? ` style="animation-delay:${a.delay}ms"` : '';
+  // 负值也输出：续播时用负 delay 让动画从断点继续（见 diffCellAnims 的续播段）
+  return a && a.delay !== 0 ? ` style="animation-delay:${a.delay}ms"` : '';
 }
