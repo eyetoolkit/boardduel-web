@@ -32,6 +32,9 @@ import { modeFromUrl, levelFromUrl } from '../shared';
 import { openFriendRoom } from '../friend-room';
 import { reportRound, isClassroom, urlRoomCode, ensureStudentCode } from '../../shared/teacher-track';
 import { parseGameOver } from '../../shared/game-over';
+import { diffCellAnims, animClassSuffix, animDelayStyle } from '../../shared/board-anim';
+import { mountExportButton } from '../../shared/export-ui';
+import { buildPgn } from './export';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 import { runAiSearch } from '../../shared/ai-worker';
 // Vite `?worker` 导入：产出独立 worker chunk（默认导出是 Worker 构造函数）。
@@ -309,7 +312,11 @@ function viewBoard(moves: CMove[], reviewAt: number | null): { gs: CS; lastMove:
 /* ======================
  * 渲染
  * ====================== */
-function pieceSvg(p: CPiece, sq: number): string {
+/** 上一帧盘面快照：落子动画按 diff 注入（见 shared/board-anim.ts）。
+ *  新局/退出回放时置 null——否则从终局局面回到初始局面会全盘乱pop。 */
+let animPrevBoard: string[] | null = null;
+
+function pieceSvg(p: CPiece, sq: number, animCls = '', delayStyle = ''): string {
   const kind = p.toLowerCase();
   if (kind === '.') return '';
   const [x, y] = squareXY(sq);
@@ -321,7 +328,7 @@ function pieceSvg(p: CPiece, sq: number): string {
   const glyph = PIECE_G[kind.toUpperCase()].replace(/stroke="#0A0F14"/g, `stroke="${edge}"`);
   const w = CELL * 0.74;
   const ox = cx - w / 2, oy = cy - w / 2;
-  return `<g class="ch-piece" transform="translate(${ox} ${oy}) scale(${w / 40})" fill="${body}" pointer-events="none">`
+  return `<g class="ch-piece${animCls}"${delayStyle} transform="translate(${ox} ${oy}) scale(${w / 40})" fill="${body}" pointer-events="none">`
     + `<g stroke="${edge}" stroke-width="1.1" stroke-linejoin="round" fill="${body}">${glyph}</g>`
     + '</g>';
 }
@@ -330,6 +337,11 @@ function render(): void {
   const { gs: viewGs, lastMove } = viewBoard(state.moves, state.reviewAt);
   const renderGs = state.reviewAt !== null ? viewGs : state.gs;
   const lm = state.reviewAt !== null ? lastMove : state.lastMove;
+
+  // 动画三件套：只给相对上一帧真正新落的棋子挂一次性类（国象不翻面，
+  // 升变 P→Q 也不播——allowFlip:false）。回放态不播，但快照照常更新。
+  const anim = diffCellAnims(animPrevBoard, renderGs.board, state.reviewAt === null, { allowFlip: false });
+  animPrevBoard = renderGs.board.slice();
 
   const canInteract = !state.over &&
     (state.mode === 'ai' ? humanSide() === state.gs.turn
@@ -401,7 +413,7 @@ function render(): void {
   // 棋子
   let pieces = '';
   for (let i = 0; i < 64; i++) {
-    if (renderGs.board[i] !== '.') pieces += pieceSvg(renderGs.board[i], i);
+    if (renderGs.board[i] !== '.') pieces += pieceSvg(renderGs.board[i], i, animClassSuffix(anim, i), animDelayStyle(anim, i));
   }
 
   boardEl.innerHTML = `<svg viewBox="0 0 ${SLOT} ${SLOT}" aria-label="Chess board">
@@ -734,6 +746,8 @@ function resetReplayUI(): void {
   state.replayPlaying = false;
   if (replayTimer) { clearTimeout(replayTimer); replayTimer = 0; }
   state.reviewAt = null;
+  // 新局/退出回放：清空动画快照，避免终局局面→初始局面时全盘乱pop
+  animPrevBoard = null;
   replayBar.hidden = true;
   document.body.classList.remove('bd-replay');
 }
@@ -1238,3 +1252,13 @@ if (ic) {
 
 // i18n 字典异步 fetch 兜底
 setTimeout(() => render(), 250);
+
+/* ======================
+ * 棋谱导出（2026-10-24 第四批）
+ * 国际象棋 PGN：SAN 由 buildPgn 重放整局生成（含消歧 / 易位 / 升变 / +# 标记）。
+ * ====================== */
+mountExportButton({
+  game: 'chess',
+  ext: 'pgn',
+  build: () => (state.moves.length ? buildPgn(state.moves.slice()) : null),
+});

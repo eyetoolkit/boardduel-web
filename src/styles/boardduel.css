@@ -249,6 +249,44 @@ img { max-width: 100%; display: block; }
 .ttt-cell.is-x { color: var(--paper); }
 .ttt-cell.is-o { color: var(--ember); }
 
+/* ============== 动画三件套 · 共享层（2026-10-24 第四批） ==============
+   ① .is-last 最后一手持久标记：connect4/reversi 原本只有 class 没有 CSS，
+      这里给兜底描边；gomoku（环+点）/chess（双点）/go（环）各有 skin 级样式
+   ② .bd-anim-place 落子弹出：只挂"本手新落"的棋子，由 shared/board-anim.ts
+      按盘面 diff 一次性注入——时钟 tick / hover / 选中引发的重渲染盘面没变，
+      没有 diff 就没有类，动画不会重播
+   ③ .bd-anim-flip 翻子（黑白棋）：被翻面棋子按与落点的距离 stagger
+   注意：SVG 元素的 transform-origin 默认相对 viewport，必须 transform-box:
+   fill-box 才能以自身中心缩放——这是本段所有动画的地基。
+   ==================================================================== */
+.c4-piece.is-last,
+.rv-stone.is-last {
+  stroke: var(--ember);
+  stroke-width: 2.4;
+}
+.bd-anim-place,
+.bd-anim-flip {
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: transform;
+}
+.bd-anim-place { animation: bd-place-pop .28s cubic-bezier(.2, 1.25, .4, 1) both; }
+.bd-anim-flip { animation: bd-flip-y .34s ease-in-out both; }
+@keyframes bd-place-pop {
+  0%   { transform: scale(.25); opacity: .3; }
+  60%  { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); }
+}
+@keyframes bd-flip-y {
+  0%   { transform: scaleX(1); }
+  50%  { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bd-anim-place,
+  .bd-anim-flip { animation: none; }
+}
+
 /* ============================================================
    Gomoku · 棋子语言（对齐设计稿 01 BOARD LANGUAGE / 02–04 SCREENS）
    —— 金色**只**用于获胜连线（.go-win-ring），别处一律不用。

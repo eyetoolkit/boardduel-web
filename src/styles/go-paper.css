@@ -18,11 +18,13 @@ body.home-v2 {
   --go-frame: #C89452;                          /* 外框带：略深木色 */
   --go-frame-edge: rgba(94, 62, 24, .38);
   --go-last: #B45309;                           /* 最后一手环：深琥珀棕 */
+  --go-wr-track: rgba(30, 27, 57, .14);         /* 胜率条底槽（白方一侧） */
+  --go-wr-fill: #1E1B39;                        /* 胜率条填充（黑方一侧） */
   /* 纸面底纹 */
   background-color: #F4F5F9;
   background-image:
-    linear-gradient(rgba(124, 58, 237, .038) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(124, 58, 237, .038) 1px, transparent 1px);
+    linear-gradient(rgba(79, 70, 229, .038) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79, 70, 229, .038) 1px, transparent 1px);
   background-size: 24px 24px;
   color: #1E1B39;
 }
@@ -247,6 +249,8 @@ html[data-theme="dark"] body.home-v2 {
   --go-frame: #161827;
   --go-frame-edge: rgba(232, 234, 244, .10);
   --go-last: #FBBF24;
+  --go-wr-track: rgba(232, 234, 244, .16);
+  --go-wr-fill: #A5B4FC;
   background-color: #12131F;
   background-image:
     linear-gradient(rgba(232, 234, 244, .035) 1px, transparent 1px),
@@ -521,4 +525,22 @@ body.home-v2 .go-scorepanel-side.go-scorepanel-b { color: #2b3340; font-weight: 
 body.home-v2 .go-scorepanel-side.go-scorepanel-w { color: #6b7280; font-weight: 700; }
 body.home-v2 .go-scorepanel-komi {
   margin: 8px 0 0; font-size: .72rem; color: var(--mute2); text-align: right;
+}
+
+/* ── 胜率 HUD（2026-10-24 第四批）：KataGo 前向后的胜率条 + 目差 ── */
+.go-wr-bar {
+  position: relative;
+  height: 8px;
+  margin: 6px 0 2px;
+  border-radius: 999px;
+  background: var(--go-wr-track);
+  overflow: hidden;
+}
+.go-wr-bar > i {
+  display: block;
+  height: 100%;
+  width: 50%;                 /* 无评估时的中性位置 */
+  border-radius: 999px;
+  background: var(--go-wr-fill);
+  transition: width .35s ease;
 }

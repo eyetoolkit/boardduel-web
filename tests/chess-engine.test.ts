@@ -82,3 +82,51 @@ test('selfTest passes (includes pawn-attack regression)', () => {
   const r = selfTest();
   assert.equal(r.ok, true, r.details.join('; '));
 });
+
+/* ============================================================
+ * 2026-10-24 P0 回归：attackedSquares 的 addRay 曾把「撞子」写成 return，
+ * 直接退出整个 addRay —— 滑子在一个方向被挡后，剩余方向全部不辐射。
+ * 后果①：傻瓜将杀（1.f3 e5 2.g4 Qh4#）后白 g4-g5 被判为解将，将杀永不成立；
+ * 后果②：被挡的后/车/象漏标其他方向的攻击格，王可走入真实被攻格。
+ * 下面三条分别钉住：将杀成立、滑子多方向辐射、漏攻会导致王走入被攻格。
+ * ============================================================ */
+
+test('傻瓜将杀：1.f3 e5 2.g4 Qh4# —— 白方零合法着法', () => {
+  const s = initialState();
+  const idx = (x: string) => ('abcdefgh'.indexOf(x[0])) + (Number(x[1]) - 1) * 8;
+  for (const c of ['f2f3', 'e7e5', 'g2g4', 'd8h4']) {
+    const from = idx(c.slice(0, 2)), to = idx(c.slice(2, 4));
+    const m = legalMoves(s).find((x) => x.from === from && x.to === to);
+    assert.ok(m, `legal: ${c}`);
+    applyMove(s, m!);
+  }
+  assert.equal(inCheck(s, 'w'), true, 'white is in check');
+  assert.equal(legalMoves(s).length, 0, 'checkmate: no legal move (notably g4-g5 must not be legal)');
+});
+
+test('滑子被挡后其余方向仍要辐射（addRay 多方向）', () => {
+  // 黑后 d1(3)：射线顺序 [[1,1],[1,-1],[-1,1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1]]。
+  // 白兵 c2(10) 挡住第 3 个方向（左上斜线）——bug 版在此 return 掉整个 addRay，
+  // 第 6 个方向（沿 1 rank 向左到 c1/b1/a1）永远跑不到，白王 a1 就被判"没被将"。
+  const s = mini([[3, 'q'], [10, 'P'], [0, 'K'], [60, 'k']], 'w');
+  assert.equal(inCheck(s, 'w'), true, 'Qd1 still checks Ka1 along rank 1 despite the c2 blocker');
+  // 反向钉：拿掉挡子后结论不变（防"改坏了正常路径"）
+  const s2 = mini([[3, 'q'], [0, 'K'], [60, 'k']], 'w');
+  assert.equal(inCheck(s2, 'w'), true);
+});
+
+test('射线止于挡子：d 线被兵堵住后 d8 不再被攻击', () => {
+  // 同一修复的另一半——不能"多方向辐射"修过头变成穿透。
+  // 黑王放 a8(56) 而非 e8——否则 e8 与 d8 相邻，王的邻接攻击会污染判定
+  const s = mini([[3, 'q'], [27, 'P'], [59, 'K'], [56, 'k']], 'w');
+  assert.equal(inCheck(s, 'w'), false, 'P@d4 blocks the d-file: d8 is not attacked');
+  // 挡子拿掉后 d8 重新被辐射（确认不是"干脆不辐射了"）
+  const s2 = mini([[3, 'q'], [59, 'K'], [56, 'k']], 'w');
+  assert.equal(inCheck(s2, 'w'), true);
+});
+
+test('漏攻回归：被挡滑子仍阻止王走入其真实攻击格', () => {
+  // 黑后 h4(31)：向左上（-1,+1）在 e7(52) 撞黑兵挡住；向下左（-1,-1）仍须攻击 e1(4)。
+  const s = mini([[31, 'q'], [52, 'p'], [4, 'K'], [60, 'k']], 'w');
+  assert.equal(inCheck(s, 'w'), true, 'Qh4 still checks Ke1 even though the up-left ray is blocked');
+});

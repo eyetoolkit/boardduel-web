@@ -3,6 +3,18 @@
  * 镜像 tictactoe-paper.css 的范式；棋盘变量 --ch-* 已在 arena-paper.css 给出。
  * ============================================================ */
 
+/* ── 中国象棋棋盘变量（xiangqi 对局页共用本皮肤，2026-10-24 暗色变量化） ── */
+body.home-v2 {
+  --xq-board-bg: #EFD9A8;            /* 木纹棋面 */
+  --xq-line: #6B4F2A;                /* 棋盘线 / 河界文字 */
+  --xq-piece-bg: #F7E8C8;            /* 棋子圆牌（暗色下保持浅牌面，字可读） */
+}
+html[data-theme="dark"] body.home-v2 {
+  --xq-board-bg: #262A3E;
+  --xq-line: #A8AEC9;
+  --xq-piece-bg: #E8D9B8;
+}
+
 body.home-v2 .bd-hero h1,
 body.home-v2 .go-end-verdict { font-weight: 700; }
 

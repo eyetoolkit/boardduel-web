@@ -3,6 +3,30 @@
  * 镜像 tictactoe-paper.css 的范式；棋盘变量 --rv-* 已在 arena-paper.css 给出。
  * ============================================================ */
 
+/* ── 西洋跳棋棋盘变量（checkers 对局页共用本皮肤，2026-10-24 暗色变量化） ── */
+body.home-v2 {
+  --ck-board-dark: #C9A27E;          /* 深色格（木） */
+  --ck-board-light: #F3EEE2;         /* 浅色格 */
+  --ck-plate: #FBF7EF;               /* 盘外底 */
+  --ck-border: rgba(79, 70, 229, .25);
+  --ck-piece-red: #E5484D;
+  --ck-piece-red-edge: #9B2C28;
+  --ck-piece-black: #1E1B39;
+  --ck-piece-black-edge: #000000;
+  --ck-king: #F5C518;
+}
+html[data-theme="dark"] body.home-v2 {
+  --ck-board-dark: #4A4668;
+  --ck-board-light: #34374E;
+  --ck-plate: #1E2033;
+  --ck-border: rgba(232, 234, 244, .16);
+  --ck-piece-red: #F26D72;
+  --ck-piece-red-edge: #B33A3F;
+  --ck-piece-black: #101120;
+  --ck-piece-black-edge: #9AA0BC;   /* 暗底下黑子需要亮描边才看得见 */
+  --ck-king: #FBBF24;
+}
+
 body.home-v2 .bd-hero h1,
 body.home-v2 .go-end-verdict { font-weight: 700; }
 

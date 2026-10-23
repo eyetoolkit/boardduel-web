@@ -21,6 +21,9 @@ import {
 import { modeFromUrl, levelFromUrl } from '../shared';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 import { parseGameOver } from '../../shared/game-over';
+import { diffCellAnims, animClassSuffix, animDelayStyle } from '../../shared/board-anim';
+import { buildMoveList } from '../../shared/export-record';
+import { mountExportButton } from '../../shared/export-ui';
 import {
   enterRoom, sendWs, inviteCode, clearInviteParam,
   roomLiveFromState, opponentNameFromState,
@@ -77,6 +80,8 @@ type UIState = {
   selected: number;    // 已选中的己方棋子（-1 无）
   legal: Move[];       // 当前 player 的全部合法走法（含强制吃子约束）
   history: { board: CBoard; player: CPlayer; lastMove: number }[];
+  /** 走子日志（from→to），仅供棋谱导出；悔棋/新局与 history 同步回滚 */
+  moveLog: { from: number; to: number }[];
   sinceCapture: number; // 连续无吃子步数（达 40 判和）
   timer: ReturnType<typeof createTimer>;
   aiThinking: boolean;
@@ -103,6 +108,7 @@ const state: UIState = {
   selected: -1,
   legal: [],
   history: [],
+  moveLog: [],
   sinceCapture: 0,
   timer: createTimer(),
   aiThinking: false,
@@ -122,8 +128,16 @@ function cx(i: number): number { const [, c] = rowCol(i); return PAD + c * CELL 
 function cy(i: number): number { const [r] = rowCol(i); return PAD + r * CELL + CELL / 2; }
 
 /* ====================== 渲染 ====================== */
+/** 上一帧盘面快照：落子动画按 diff 注入（见 shared/board-anim.ts）。
+ *  跳棋无回放，故 live 恒真；首帧 prev=null 不播（进页面不乱pop）。 */
+let animPrevBoard: number[] | null = null;
+
 function render(): void {
   const b = state.board;
+
+  // 动画三件套：只给相对上一帧真正新落的棋子挂一次性类（连跳只标终点落点）
+  const anim = diffCellAnims(animPrevBoard, b, true, { lastIdx: state.lastMove, cols: SIZE });
+  animPrevBoard = b.slice();
 
   // 棋盘格（深浅交替）
   let cells = '';
@@ -132,7 +146,7 @@ function render(): void {
       const dark = (r + c) % 2 === 1;
       const x = PAD + c * CELL;
       const y = PAD + r * CELL;
-      cells += `<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" fill="${dark ? '#C9A27E' : '#F3EEE2'}"/>`;
+      cells += `<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" fill="${dark ? 'var(--ck-board-dark, #C9A27E)' : 'var(--ck-board-light, #F3EEE2)'}"/>`;
     }
   }
 
@@ -176,13 +190,13 @@ function render(): void {
     if (v === EMPTY) continue;
     const isRed = colorOf(v) === 1;
     const px = cx(i), py = cy(i);
-    const fill = isRed ? '#E5484D' : '#1E1B39';
-    const stroke = isRed ? '#9B2C28' : '#000000';
-    pieces += `<circle cx="${px}" cy="${py}" r="${CELL * 0.40}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`;
+    const fill = isRed ? 'var(--ck-piece-red, #E5484D)' : 'var(--ck-piece-black, #1E1B39)';
+    const stroke = isRed ? 'var(--ck-piece-red-edge, #9B2C28)' : 'var(--ck-piece-black-edge, #000000)';
+    pieces += `<circle class="ck-piece${animClassSuffix(anim, i)}"${animDelayStyle(anim, i)} cx="${px}" cy="${py}" r="${CELL * 0.40}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`;
     if (isKing(v)) {
       // 王：金环 + 中心金点
-      pieces += `<circle cx="${px}" cy="${py}" r="${CELL * 0.40}" fill="none" stroke="#F5C518" stroke-width="4"/>`;
-      pieces += `<circle cx="${px}" cy="${py}" r="${CELL * 0.13}" fill="#F5C518"/>`;
+      pieces += `<circle cx="${px}" cy="${py}" r="${CELL * 0.40}" fill="none" stroke="var(--ck-king, #F5C518)" stroke-width="4"/>`;
+      pieces += `<circle cx="${px}" cy="${py}" r="${CELL * 0.13}" fill="var(--ck-king, #F5C518)"/>`;
     }
   }
 
@@ -204,8 +218,8 @@ function render(): void {
   }
 
   boardEl.innerHTML = `<svg viewBox="0 0 ${SLOT} ${SLOT}" aria-label="Checkers board">
-    <rect x="0" y="0" width="${SLOT}" height="${SLOT}" fill="#FBF7EF" rx="14"/>
-    <rect x="${PAD}" y="${PAD}" width="${SLOT - 2 * PAD}" height="${SLOT - 2 * PAD}" fill="none" stroke="rgba(124,58,237,.25)" stroke-width="1.2"/>
+    <rect x="0" y="0" width="${SLOT}" height="${SLOT}" fill="var(--ck-plate, #FBF7EF)" rx="14"/>
+    <rect x="${PAD}" y="${PAD}" width="${SLOT - 2 * PAD}" height="${SLOT - 2 * PAD}" fill="none" stroke="var(--ck-border, rgba(79,70,229,.25))" stroke-width="1.2"/>
     ${cells}${hl}${last}${pieces}${hits}
   </svg>`;
   boardEl.querySelectorAll<SVGGElement>('.ck-cell').forEach((g) => {
@@ -293,6 +307,7 @@ function pushHistory(): void {
 
 function doMove(m: Move): void {
   pushHistory();
+  state.moveLog.push({ from: m.from, to: m.to });
   state.board = applyMove(state.board, m);
   state.lastMove = m.to;
   state.selected = -1;
@@ -542,6 +557,8 @@ function showScreen(s: 'match' | 'end'): void {
 function newGame(): void {
   cancelAiMove();
   state.board = initialBoard();
+  // 新局清空动画快照：否则从终局局面回到初始局面会全盘乱pop
+  animPrevBoard = null;
   // 🔴 2026-10-23 P0/P1 修复：联机也曾按 myIdx 设开局轮次（seat 1 的黑方
   //   一开局就显示"轮到你"）。规则上红先，且服务端的先手由「首个合法走子者」
   //   确立（games-room.js relayCkTurn=-1 待定）——客户端若让黑方先走，
@@ -552,6 +569,7 @@ function newGame(): void {
   state.over = false;
   state.selected = -1;
   state.history = [];
+  state.moveLog = [];
   state.sinceCapture = 0;
   state.aiThinking = false;
   state.legal = moves(state.board, state.player);
@@ -582,6 +600,7 @@ function undo(): void {
     state.board = last.board;
     state.player = last.player;
     state.lastMove = last.lastMove;
+    state.moveLog.pop();
   }
   state.selected = -1;
   state.legal = moves(state.board, state.player);
@@ -859,3 +878,23 @@ if (ic) {
 }
 // i18n 字典异步 fetch 兜底
 setTimeout(() => render(), 250);
+
+/** 8×8 棋盘坐标（a1 视角）：列 a-h + 行 8-1 */
+const ckCoord = (i: number): string => 'abcdefgh'[i % 8] + String(8 - Math.floor(i / 8));
+
+/* ======================
+ * 棋谱导出（2026-10-24 第四批）
+ * 西洋跳棋 PDN 方言众多，先导出编号着法文本（起点-终点，a1 视角坐标）。
+ * ====================== */
+mountExportButton({
+  game: 'checkers',
+  ext: 'txt',
+  build: (verdict) => (state.moveLog.length
+    ? buildMoveList({
+        title: 'BoardDuel · Checkers',
+        moves: state.moveLog.map((m) => `${ckCoord(m.from)}-${ckCoord(m.to)}`),
+        result: verdict,
+        meta: ['files a-h (left to right), ranks 8-1 (bottom to top)'],
+      })
+    : null),
+});

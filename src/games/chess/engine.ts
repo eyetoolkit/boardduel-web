@@ -194,12 +194,14 @@ function attackedSquares(board: Piece[], bySide: Side): boolean[] {
       let f = fileOf(fromSq) + df, r = rankOf(fromSq) + dr;
       while (f >= 0 && f < 8 && r >= 0 && r < 8) {
         const sq = r * 8 + f;
-        att[sq] = true;
-        const p = board[sq];
-        if (p !== '.') {
-          if (pieceColor(p) !== bySide) return; // 第一个异己方子挡住
-          return; // 同色 = 自己的子也停
-        }
+        att[sq] = true;            // 挡子在的那个格子本身仍算被攻击（可被吃）
+        // 🔴 2026-10-24 P0：这里原是两个 `return`，会直接退出 addRay、
+        //   把该滑子「剩余所有方向」的辐射一起砍掉。后果：
+        //     ① 傻瓜将杀（1.f3 e5 2.g4 Qh4#）后白 g4-g5 被判为解将 → 将杀永不成立；
+        //     ② 反向漏攻：被一个方向挡住的后/车/象，其他方向压根不标攻击格，
+        //        己方王可走入真实被攻格、对手也可无视威胁。
+        //   正确语义是「跳出当前方向、继续下一个方向」，故用 break。
+        if (board[sq] !== '.') break;
         f += df; r += dr;
       }
     }

@@ -155,7 +155,7 @@ body.home-v2 .t-silver { color: #7C8B95; }
 body.home-v2 .t-gold   { color: #C08A1E; }
 body.home-v2 .t-plat   { color: #0FA3A8; }
 body.home-v2 .t-diamond{ color: #6366F1; }
-body.home-v2 .t-master { color: #7C3AED; }
+body.home-v2 .t-master { color: #4F46E5; }
 
 /* 筛选器 */
 body.home-v2 .pp-filters { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 18px 0 12px; }
@@ -231,4 +231,4 @@ html[data-theme="dark"] body.home-v2 .pp-cta.ghost { background: var(--ink2); }
 html[data-theme="dark"] body.home-v2 .pp-buy { background: var(--ink3); }
 html[data-theme="dark"] body.home-v2 .t-bronze { color: #D08A5A; }
 html[data-theme="dark"] body.home-v2 .t-gold { color: #E0B44A; }
-html[data-theme="dark"] body.home-v2 .t-master { color: #A78BFA; }
+html[data-theme="dark"] body.home-v2 .t-master { color: #A5B4FC; }

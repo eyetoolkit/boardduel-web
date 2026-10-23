@@ -209,11 +209,13 @@ function bootTf(progress?: Progress): Promise<Tf> {
   })()
     .then(async (tf) => {
       progress?.('modules');
-      const [{ KgModel }] = await Promise.all([
+      const [kgMod] = await Promise.all([
         import(/* @vite-ignore */ `${TFJS}/kg-model.mjs`),
       ]);
       const kg = globalThis as any;
-      kg.KgModel = KgModel;
+      kg.KgModel = kgMod.KgModel;
+      // 供 readEval 取 postProcessValue（动态 import 命中模块缓存，不再发请求）
+      kg.__kgModelMod = kgMod;
       state.backend = backendName;
       return tf;
     })
@@ -261,6 +263,45 @@ function buildHistory(go: GoState, moves: number[]): { player: Player; pos: numb
 
 /** 单次前向的耗时（ms），滑动平均。搜索预算必须基于实测，不能猜。 */
 let lastForwardMs = 0;
+
+/**
+ * 最近一次前向的盘面评估（2026-10-24 第四批：接 HUD 胜率条 / 目差）。
+ * 口径与 KataGo 一致：winprob 与 scoreLead 都是**行棋方（toPlay）视角**，
+ * 展示层要按执黑/执白换算。只用于展示，取不到不影响对局。
+ */
+let lastEval: { winprob: number; scoreLead: number | null; toPlay: Player } | null = null;
+
+/** 最近一次评估（无则 null）。HUD 每帧读它，不触发任何计算。 */
+export function katagoEval(): { winprob: number; scoreLead: number | null; toPlay: Player } | null {
+  return lastEval;
+}
+
+/** value logits → 胜率。postProcessValue 由 kg-model.mjs 导出，启动时缓存引用。 */
+let postProcessValue: ((out: number[], post: unknown, boardSize: number) => { winprob: number; scoreLeadMean: number | null }) | null = null;
+
+function readEval(out: any, toPlay: Player, size: number): void {
+  try {
+    const vArr = Array.from(out.value.dataSync() as Float32Array) as number[];
+    if (!postProcessValue) {
+      // 模型模块只在 boot 时动态 import 过一次，这里再取一次（命中模块缓存，无网络开销）
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const mod: any = (globalThis as any).__kgModelMod;
+      postProcessValue = mod?.postProcessValue ?? null;
+    }
+    if (!postProcessValue) return;
+    const v = postProcessValue(vArr, null, size);
+    // scoreLead 优先用 scoreValue 头（KataGo 的目差输出），退到 value 头的 out[3]
+    let lead: number | null = null;
+    try {
+      const sv = out.scoreValue?.dataSync?.();
+      if (sv && sv.length) lead = Number(sv[0]);
+    } catch { /* 无 scoreValue 头就退到下面 */ }
+    if (lead == null || !Number.isFinite(lead)) lead = v.scoreLeadMean ?? null;
+    lastEval = { winprob: v.winprob, scoreLead: lead, toPlay };
+  } catch {
+    // 评估只做展示：任何异常都不许影响对局（不写 lastEval 即保持上一次的值）
+  }
+}
 
 /** 只读调试/性能探针：给 E2E 与性能预算用，不参与任何游戏逻辑。 */
 (globalThis as any).__kgProbe = () => ({
@@ -384,6 +425,7 @@ export async function bestMoveKatago(
   const hist = buildHistory(go, moves);
 
   const out = forwardOnce(model, tf, { stones, toPlay: go.toPlay, moves: hist, size });
+  readEval(out, go.toPlay, size);
 
   // 采样：只在合法点上做温度 softmax，再按概率抽一手
   const n = size * size;

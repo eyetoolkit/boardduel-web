@@ -22,12 +22,14 @@ import '../../styles/invite-card.css';
 import {
   initialState, play, pass, notation, opponent,
   scoreWithDead, toggleDeadGroup, resolveDead, hashPosition,
-  territoryByColor, legalMoves,
+  territoryByColor, legalMoves, KOMI,
   type GoState, type Player, type DeadSet,
 } from './engine';
+import { buildSgf } from '../../shared/export-record';
+import { mountExportButton } from '../../shared/export-ui';
 import { renderGoBoardSVG, diffCaptures } from './render';
 import { bestMoveAny, isNeural, type Difficulty } from './ai';
-import { bestMoveKatago, warmupKatago, katagoStatus, TEMP_BY_DIFFICULTY } from './katago';
+import { bestMoveKatago, warmupKatago, katagoStatus, katagoEval, TEMP_BY_DIFFICULTY } from './katago';
 import { initialClock, tickClock, afterMoveClock, formatClock, type ClockState } from './clock';
 
 setupNav('go');
@@ -499,6 +501,36 @@ function levelLabel(): string {
   return t('bg.bg_go_lv_medium_t', 'Medium');
 }
 
+/**
+ * 胜率 HUD（2026-10-24 第四批）：把 KataGo 最近一次前向的评估画成
+ * 「黑方占比条 + B/W 百分比 + 目差」。
+ *
+ * 口径换算很关键：katagoEval() 给的 winprob/scoreLead 是**行棋方视角**，
+ * 展示层统一换算到「黑方视角」——否则轮白走时条会左右反跳。
+ * 只在有评估时出现（αβ 档与未加载模型时保持隐藏），评估取不到不影响对局。
+ */
+function updateWinrate(): void {
+  const row = document.getElementById('go-wr-row');
+  const bar = document.getElementById('go-wr-bar');
+  const val = document.getElementById('go-wr-val');
+  const fill = document.getElementById('go-wr-fill');
+  if (!row || !bar || !val || !fill) return;
+  const ev = katagoEval();
+  if (!ev || !Number.isFinite(ev.winprob)) { row.hidden = true; bar.hidden = true; return; }
+  // 行棋方视角 → 黑方视角
+  const blackWin = ev.toPlay === 1 ? ev.winprob : 1 - ev.winprob;
+  const bp = Math.round(Math.max(0, Math.min(1, blackWin)) * 100);
+  row.hidden = false;
+  bar.hidden = false;
+  fill.style.width = `${bp}%`;
+  let lead = '';
+  if (ev.scoreLead != null && Number.isFinite(ev.scoreLead)) {
+    const l = ev.toPlay === 1 ? ev.scoreLead : -ev.scoreLead; // → 黑方领先目数
+    lead = ` · ${l >= 0 ? '+' : ''}${l.toFixed(1)}`;
+  }
+  val.textContent = `B ${bp}% · W ${100 - bp}%${lead}`;
+}
+
 function updateInfo(): void {
   const over = state.over;
   const thinking = state.aiThinking;
@@ -518,6 +550,7 @@ function updateInfo(): void {
     turn = state.go.toPlay === 1 ? t('bj.black_p1', 'Black P1') : t('bj.white_p2', 'White P2');
   }
   turnEl.textContent = turn;
+  updateWinrate();
   turnEl.classList.toggle('is-thinking', thinking);
   sizeEl.textContent = `${state.size}×${state.size}`;
   capsEl.textContent = `${state.go.captures[0]} / ${state.go.captures[1]}`;
@@ -1766,3 +1799,22 @@ window.addEventListener('i18n:change', () => { try { updateInfo(); } catch (e) {
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
 else boot();
+
+/* ======================
+ * 棋谱导出（2026-10-24 第四批）
+ * 围棋 SGF：19 路 + 7.5 贴目；pass 在 FF[4] 里记作 tt。
+ * ====================== */
+mountExportButton({
+  game: 'go',
+  ext: 'sgf',
+  build: (verdict) => (state.moves.length
+    ? buildSgf({
+        size: state.size,
+        moves: state.moves.slice(),
+        komi: KOMI,
+        rules: 'Chinese',
+        gameName: 'Go',
+        comment: verdict,
+      })
+    : null),
+});

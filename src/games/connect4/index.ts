@@ -31,6 +31,9 @@ import {
   isMoveRejected,
 } from '../online-core';
 import { modeFromUrl, levelFromUrl } from '../shared';
+import { diffCellAnims, animClassSuffix, animDelayStyle } from '../../shared/board-anim';
+import { buildMoveList } from '../../shared/export-record';
+import { mountExportButton } from '../../shared/export-ui';
 import { openFriendRoom } from '../friend-room';
 import { reportRound, isClassroom, urlRoomCode, ensureStudentCode } from '../../shared/teacher-track';
 import { parseGameOver } from '../../shared/game-over';
@@ -166,10 +169,19 @@ function viewBoard(moves: number[], reviewAt: number | null): { b: CBoard; lastM
 /* ======================
  * 渲染
  * ====================== */
+/** 上一帧盘面快照：落子动画按 diff 注入（见 shared/board-anim.ts）。
+ *  退出回放时置 null——否则从历史位置跳回实时盘会误放一串动画。 */
+let animPrevBoard: CBoard | null = null;
+
 function render(): void {
   const { b, lastMove } = viewBoard(state.moves, state.reviewAt);
   const renderBoard = state.reviewAt !== null ? b : state.board;
   const lastIdx = state.reviewAt !== null ? lastMove : state.lastMove;
+
+  // 动画三件套：只给相对上一帧真正变化的格子挂一次性类。
+  // 回放态不播（历史盘面跳变会全盘乱pop），但快照照常更新。
+  const anim = diffCellAnims(animPrevBoard, renderBoard, state.reviewAt === null, { lastIdx, cols: COLS });
+  animPrevBoard = renderBoard.slice();
 
   // 列落子提示（顶部）+ 棋盘格子 + 棋子
   let header = '';
@@ -204,7 +216,7 @@ function render(): void {
       if (v === 0) continue;
       const cx = PAD + c * CELL + CELL / 2;
       const cy = PAD + r * CELL + CELL / 2;
-      board += `<circle class="c4-piece${lastIdx === idx ? ' is-last' : ''}" cx="${cx}" cy="${cy}" r="${R}" fill="${pieceColor(v as CPlayer)}"/>`;
+      board += `<circle class="c4-piece${lastIdx === idx ? ' is-last' : ''}${animClassSuffix(anim, idx)}"${animDelayStyle(anim, idx)} cx="${cx}" cy="${cy}" r="${R}" fill="${pieceColor(v as CPlayer)}"/>`;
     }
   }
 
@@ -447,6 +459,8 @@ function resetReplayUI(): void {
   state.replayPlaying = false;
   if (replayTimer) { clearTimeout(replayTimer); replayTimer = 0; }
   state.reviewAt = null;
+  // 退出回放：清空动画快照，避免从历史位置跳回实时盘时误放一串 pop
+  animPrevBoard = null;
   replayBar.hidden = true;
   document.body.classList.remove('bd-replay');
 }
@@ -997,3 +1011,20 @@ if (ic) {
 
 // i18n 字典异步 fetch 兜底：250ms 后强制 rerender 一次（gomoku/tictactoe 同款范式）
 setTimeout(() => render(), 250);
+
+/* ======================
+ * 棋谱导出（2026-10-24 第四批）
+ * 四子棋记录就是一串列号，导出编号着法文本（C1..C7，自左）。
+ * ====================== */
+mountExportButton({
+  game: 'connect4',
+  ext: 'txt',
+  build: (verdict) => (state.moves.length
+    ? buildMoveList({
+        title: 'BoardDuel · Connect Four',
+        moves: state.moves.map((c) => `C${c + 1}`),
+        result: verdict,
+        meta: ['columns C1..C7 (left to right)'],
+      })
+    : null),
+});

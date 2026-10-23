@@ -29,6 +29,9 @@ import { isClassroom, reportRound, ensureStudentCode, urlRoomCode } from '../../
 // 2026-10-03：落子音效（WebAudio 合成，跨页记住开关）
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 import { parseGameOver } from '../../shared/game-over';
+import { diffCellAnims, animClassSuffix, animDelayStyle } from '../../shared/board-anim';
+import { buildSgf } from '../../shared/export-record';
+import { mountExportButton } from '../../shared/export-ui';
 // 2026-10-05：持久随机昵称（防止匿名玩家同名被服务端分进同一座位）
 import { myName as ocMyName, isMoveRejected, ensureAccount } from '../online-core';
 // 2026-10-06：好友房邀请卡片（全屏遮罩弹窗，范式抄 NumeriDuel 24-game share-overlay）
@@ -298,6 +301,10 @@ function viewBoard(): { board: GBoard; last: number; win: number[] | null } {
   };
 }
 
+/** 上一帧盘面快照：落子动画按 diff 注入（见 shared/board-anim.ts）。
+ *  退出回放/悔棋时置 null——否则从历史位置跳回实时盘会误放一串动画。 */
+let animPrevBoard: GBoard | null = null;
+
 function render(): void {
   // ── 网格 ──
   let lines = '';
@@ -343,6 +350,11 @@ function render(): void {
   const view = viewBoard();
   const board = view.board;
   const winSet = new Set(view.win || []);
+
+  // 动画三件套：只给相对上一帧真正新落的棋子挂一次性类。
+  // 回放态不播（历史盘面跳变会全盘乱pop），但快照照常更新。
+  const anim = diffCellAnims(animPrevBoard, board, state.reviewAt === null, { lastIdx: view.last, cols: SIZE });
+  animPrevBoard = board.slice();
   let stones = '';
   let hits = '';
 
@@ -352,7 +364,7 @@ function render(): void {
     if (p !== 0) {
       const isWin = winSet.has(i);
       const isLast = view.last === i;
-      stones += `<circle class="go-stone${isLast ? ' is-last' : ''}" cx="${px}" cy="${py}" r="${STONE_R}" fill="${stoneColor(p as GPlayer)}" stroke="${stoneStroke(p as GPlayer)}" stroke-width="0.6"/>`;
+      stones += `<circle class="go-stone${isLast ? ' is-last' : ''}${animClassSuffix(anim, i)}"${animDelayStyle(anim, i)} cx="${px}" cy="${py}" r="${STONE_R}" fill="${stoneColor(p as GPlayer)}" stroke="${stoneStroke(p as GPlayer)}" stroke-width="0.6"/>`;
       if (isLast && !isWin) {
         // 传统记法：最后一手在棋子上点反色圆点（黑子白点 / 白子黑点）
         const dot = p === 1 ? '#F4F6F2' : '#1E1B39';
@@ -998,6 +1010,8 @@ function resetReplayUI(): void {
   replayPlaying = false;
   if (replayTimer) { clearTimeout(replayTimer); replayTimer = 0; }
   state.reviewAt = null;
+  // 退出回放：清空动画快照，避免从历史位置跳回实时盘时误放一串 pop
+  animPrevBoard = null;
   rpBar.hidden = true;
   document.body.classList.remove('bd-replay');
 }
@@ -1988,3 +2002,15 @@ window.addEventListener('i18n:change', () => { try { renderHud(); } catch (e) { 
     applyDeepLink();
   }
 })();
+
+/* ======================
+ * 棋谱导出（2026-10-24 第四批）
+ * 五子棋用 SGF（GM[1] / SZ[15]），与围棋同一格式族，桌面 SGF 阅读器可直接开。
+ * ====================== */
+mountExportButton({
+  game: 'gomoku',
+  ext: 'sgf',
+  build: (verdict) => (state.moves.length
+    ? buildSgf({ size: SIZE, moves: state.moves.slice(), komi: 0, gameName: 'Gomoku', comment: verdict })
+    : null),
+});

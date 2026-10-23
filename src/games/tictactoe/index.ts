@@ -36,6 +36,9 @@ import { modeFromUrl, levelFromUrl } from '../shared';
 import { openFriendRoom } from '../friend-room';
 import { reportRound, isClassroom, urlRoomCode, ensureStudentCode } from '../../shared/teacher-track';
 import { parseGameOver } from '../../shared/game-over';
+import { diffCellAnims, animClassSuffix, animDelayStyle } from '../../shared/board-anim';
+import { buildMoveList } from '../../shared/export-record';
+import { mountExportButton } from '../../shared/export-ui';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 
 /* ======================
@@ -185,10 +188,19 @@ function viewBoard(moves: number[], reviewAt: number | null): { b: TBoard; lastM
 /* ======================
  * 渲染
  * ====================== */
+/** 上一帧盘面快照：落子动画按 diff 注入（见 shared/board-anim.ts）。
+ *  退出回放时置 null——否则从历史位置跳回实时盘会误放一串动画。 */
+let animPrevBoard: number[] | null = null;
+
 function render(): void {
-  const { b } = viewBoard(state.moves, state.reviewAt);
+  const { b, lastMove } = viewBoard(state.moves, state.reviewAt);
   // 实际落子棋盘（reviewAt!==null 时用 b，否则与 state.board 一致）
   const renderBoard = state.reviewAt !== null ? b : state.board;
+
+  // 动画三件套：只给相对上一帧真正新落的记号挂一次性类。
+  // 回放态不播（历史盘面跳变会全盘乱pop），但快照照常更新。
+  const anim = diffCellAnims(animPrevBoard, renderBoard, state.reviewAt === null, { lastIdx: lastMove, cols: 3 });
+  animPrevBoard = renderBoard.slice();
 
   const stroke = Math.max(6, UNIT * 0.13);
   const inset = UNIT * 0.24;
@@ -200,10 +212,14 @@ function render(): void {
     let mark = '';
     if (c === 1) {
       const a = inset, bx = UNIT - inset;
-      mark = `<path d="M${x + a} ${y + a} L${x + bx} ${y + bx} M${x + bx} ${y + a} L${x + a} ${y + bx}" stroke="var(--ttt-x, #7C3AED)" stroke-width="${stroke}" stroke-linecap="round" fill="none" pointer-events="none"/>`;
+      mark = `<path class="ttt-mark${animClassSuffix(anim, i)}"${animDelayStyle(anim, i)} d="M${x + a} ${y + a} L${x + bx} ${y + bx} M${x + bx} ${y + a} L${x + a} ${y + bx}" stroke="var(--ttt-x, #4F46E5)" stroke-width="${stroke}" stroke-linecap="round" fill="none" pointer-events="none"/>`;
     } else if (c === 2) {
       const cx = x + UNIT / 2, cy = y + UNIT / 2, r = UNIT / 2 - inset;
-      mark = `<circle cx="${cx}" cy="${cy}" r="${r}" stroke="var(--ttt-o, #F59E0B)" stroke-width="${stroke}" fill="none" pointer-events="none"/>`;
+      mark = `<circle class="ttt-mark${animClassSuffix(anim, i)}"${animDelayStyle(anim, i)} cx="${cx}" cy="${cy}" r="${r}" stroke="var(--ttt-o, #F59E0B)" stroke-width="${stroke}" fill="none" pointer-events="none"/>`;
+    }
+    // 最后一手：单元格角上的小琥珀点（避开 X/O 记号本身，回放态标当前观演手）
+    if (lastMove === i) {
+      mark += `<circle class="ttt-last-dot" cx="${x + UNIT - UNIT * 0.14}" cy="${y + UNIT * 0.14}" r="${Math.max(3, UNIT * 0.06)}" fill="var(--ember, #F59E0B)" pointer-events="none"/>`;
     }
     // 这里的 clickable 只决定光标样式，真正能不能落子在 onCell。与那道闸对齐：
     // 原式 state.mode !== 'ai' 对 online 直接放行（等对手时也是 pointer），
@@ -519,6 +535,8 @@ function resetReplayUI(): void {
   state.replayPlaying = false;
   if (replayTimer) { clearTimeout(replayTimer); replayTimer = 0; }
   state.reviewAt = null;
+  // 退出回放：清空动画快照，避免从历史位置跳回实时盘时误放一串 pop
+  animPrevBoard = null;
   replayBar.hidden = true;
   document.body.classList.remove('bd-replay');
 }
@@ -1077,3 +1095,23 @@ if (ic) {
 } else {
   newGame();
 }
+
+/** 3×3 格位坐标：列 A-C + 行 1-3 */
+const tttCoord = (i: number): string => 'ABC'[i % 3] + String(Math.floor(i / 3) + 1);
+
+/* ======================
+ * 棋谱导出（2026-10-24 第四批）
+ * 井字棋导出编号着法文本（A1..C3）。
+ * ====================== */
+mountExportButton({
+  game: 'tictactoe',
+  ext: 'txt',
+  build: (verdict) => (state.moves.length
+    ? buildMoveList({
+        title: 'BoardDuel · Tic-Tac-Toe',
+        moves: state.moves.map((i) => tttCoord(i)),
+        result: verdict,
+        meta: ['cells A1..C3'],
+      })
+    : null),
+});

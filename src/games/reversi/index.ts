@@ -32,6 +32,9 @@ import {
   isMoveRejected,
 } from '../online-core';
 import { modeFromUrl, levelFromUrl } from '../shared';
+import { diffCellAnims, animClassSuffix, animDelayStyle } from '../../shared/board-anim';
+import { buildMoveList } from '../../shared/export-record';
+import { mountExportButton } from '../../shared/export-ui';
 import { openFriendRoom } from '../friend-room';
 import { reportRound, isClassroom, urlRoomCode, ensureStudentCode } from '../../shared/teacher-track';
 import { parseGameOver } from '../../shared/game-over';
@@ -179,12 +182,21 @@ function viewBoard(moves: number[], reviewAt: number | null, first: RPlayer = 1)
 /* ======================
  * 渲染
  * ====================== */
+/** 上一帧盘面快照：落子/翻子动画按 diff 注入（见 shared/board-anim.ts）。
+ *  退出回放时置 null——否则从历史位置跳回实时盘会误放一串动画。 */
+let animPrevBoard: RBoard | null = null;
+
 function render(): void {
   // 联机回放按黑先重放（seat0=黑），单机/同屏按白先（见 viewBoard 注释）
   const firstColor: RPlayer = state.mode === 'online' ? 2 : 1;
   const { b, lastMove } = viewBoard(state.moves, state.reviewAt, firstColor);
   const renderBoard = state.reviewAt !== null ? b : state.board;
   const lastIdx = state.reviewAt !== null ? lastMove : state.lastMove;
+
+  // 动画三件套：只给相对上一帧真正变化的格子挂一次性类（翻子按距离 stagger）。
+  // 回放态不播（历史盘面跳变会全盘乱pop），但快照照常更新。
+  const anim = diffCellAnims(animPrevBoard, renderBoard, state.reviewAt === null, { lastIdx, cols: 8, allowFlip: true });
+  animPrevBoard = renderBoard.slice();
 
   let lines = '';
   for (let r = 1; r < 8; r++) {
@@ -225,7 +237,7 @@ function render(): void {
     const isLast = lastIdx === i;
     const fill = v === 1 ? 'var(--rv-white, #FFFFFF)' : 'var(--rv-black, #1E1B39)';
     const stroke = v === 1 ? 'var(--rv-white-edge, rgba(124,58,237,.50))' : 'var(--rv-black-edge, rgba(30,27,57,.40))';
-    pieces += `<circle class="rv-stone${isLast ? ' is-last' : ''}" cx="${cx}" cy="${cy}" r="${CELL * 0.42}" fill="${fill}" stroke="${stroke}" stroke-width="0.6"/>`;
+    pieces += `<circle class="rv-stone${isLast ? ' is-last' : ''}${animClassSuffix(anim, i)}"${animDelayStyle(anim, i)} cx="${cx}" cy="${cy}" r="${CELL * 0.42}" fill="${fill}" stroke="${stroke}" stroke-width="0.6"/>`;
   }
 
   // 命中区
@@ -497,6 +509,8 @@ function resetReplayUI(): void {
   state.replayPlaying = false;
   if (replayTimer) { clearTimeout(replayTimer); replayTimer = 0; }
   state.reviewAt = null;
+  // 退出回放：清空动画快照，避免从历史位置跳回实时盘时误放一串 pop/flip
+  animPrevBoard = null;
   replayBar.hidden = true;
   document.body.classList.remove('bd-replay');
 }
@@ -1050,3 +1064,23 @@ if (ic) {
 
 // i18n 字典异步 fetch 兜底
 setTimeout(() => render(), 250);
+
+/** 8×8 棋盘坐标：列 A-H + 行 1-8 */
+const rvCoord = (i: number): string => 'ABCDEFGH'[i % 8] + String(Math.floor(i / 8) + 1);
+
+/* ======================
+ * 棋谱导出（2026-10-24 第四批）
+ * 黑白棋用棋盘坐标（A1..H8），pass 记作 "pass"。
+ * ====================== */
+mountExportButton({
+  game: 'reversi',
+  ext: 'txt',
+  build: (verdict) => (state.moves.length
+    ? buildMoveList({
+        title: 'BoardDuel · Reversi',
+        moves: state.moves.map((i) => (i < 0 ? 'pass' : rvCoord(i))),
+        result: verdict,
+        meta: ['files A-H (left to right), ranks 1-8 (top to bottom)'],
+      })
+    : null),
+});

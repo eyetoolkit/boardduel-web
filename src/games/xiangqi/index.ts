@@ -30,6 +30,9 @@ import { modeFromUrl, levelFromUrl } from '../shared';
 import { openFriendRoom } from '../friend-room';
 import { reportRound, isClassroom, urlRoomCode, ensureStudentCode } from '../../shared/teacher-track';
 import { parseGameOver } from '../../shared/game-over';
+import { diffCellAnims, animClassSuffix, animDelayStyle } from '../../shared/board-anim';
+import { buildMoveList } from '../../shared/export-record';
+import { mountExportButton } from '../../shared/export-ui';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 
 /* ======================
@@ -204,10 +207,19 @@ function viewBoard(moves: Move[], reviewAt: number | null): { gs: GameState; las
 /* ======================
  * 渲染
  * ====================== */
+/** 上一帧盘面快照：落子动画按 diff 注入（见 shared/board-anim.ts）。
+ *  新局/退出回放时置 null——否则从终局局面跳回初始局面会全盘乱pop。 */
+let animPrevBoard: ArrayLike<number> | null = null;
+
 function render(): void {
   const { gs: viewGs, lastMove } = viewBoard(state.moves, state.reviewAt);
   const renderGs = state.reviewAt !== null ? viewGs : state.gs;
   const lm = state.reviewAt !== null ? lastMove : state.lastMove;
+
+  // 动画三件套：只给相对上一帧真正新落的棋子挂一次性类（象棋不吃"翻面"）。
+  // 回放态不播，但快照照常更新。
+  const anim = diffCellAnims(animPrevBoard, renderGs.board, state.reviewAt === null, { allowFlip: false });
+  animPrevBoard = renderGs.board.slice();
 
   const canInteract = !state.over &&
     (state.mode === 'ai' ? humanSide() === state.gs.side
@@ -217,9 +229,9 @@ function render(): void {
     && !state.aiThinking;
 
   // ── 棋盘线（木纹底 + 横竖线 + 河界 + 九宫斜线）──
-  const line = '#6B4F2A';
+  const line = 'var(--xq-line, #6B4F2A)';
   const lw = 1.4;
-  let grid = `<rect x="0" y="0" width="${BW}" height="${BH}" fill="#EFD9A8"/>`;
+  let grid = `<rect x="0" y="0" width="${BW}" height="${BH}" fill="var(--xq-board-bg, #EFD9A8)"/>`;
   // 横线 10 条
   for (let r = 0; r < ROWS; r++) {
     const y = PAD + r * CELL;
@@ -298,8 +310,8 @@ function render(): void {
     const isRed = p > 0;
     const col = isRed ? '#C0392B' : '#1A1A1A';
     const diskR = CELL * 0.42;
-    pieces += `<g class="xq-piece" pointer-events="none">
-      <circle cx="${x}" cy="${y}" r="${diskR}" fill="#F7E8C8" stroke="${col}" stroke-width="2"/>
+    pieces += `<g class="xq-piece${animClassSuffix(anim, i)}"${animDelayStyle(anim, i)} pointer-events="none">
+      <circle cx="${x}" cy="${y}" r="${diskR}" fill="var(--xq-piece-bg, #F7E8C8)" stroke="${col}" stroke-width="2"/>
       <circle cx="${x}" cy="${y}" r="${diskR - 3}" fill="none" stroke="${col}" stroke-width="0.8"/>
       <text x="${x}" y="${y}" dy="0.36em" text-anchor="middle" font-size="${CELL * 0.6}" font-family="'KaiTi','STKaiti',serif" fill="${col}" font-weight="700">${pieceChar(p)}</text>
     </g>`;
@@ -585,6 +597,8 @@ function resetReplayUI(): void {
   state.replayPlaying = false;
   if (replayTimer) { clearTimeout(replayTimer); replayTimer = 0; }
   state.reviewAt = null;
+  // 新局/退出回放：清空动画快照，避免终局局面→初始局面时全盘乱pop
+  animPrevBoard = null;
   replayBar.hidden = true;
   document.body.classList.remove('bd-replay');
 }
@@ -1053,3 +1067,23 @@ if (ic) {
 
 // i18n 字典异步 fetch 兜底
 setTimeout(() => render(), 250);
+
+/** 9×10 棋盘坐标：列 a-i（自左）+ 行 0-9（自上） */
+const xqCoord = (i: number): string => 'abcdefghi'[i % 9] + String(Math.floor(i / 9));
+
+/* ======================
+ * 棋谱导出（2026-10-24 第四批）
+ * 中国象棋暂无 SGF/PGN 标准方言，导出编号着法文本：列 a-i（自左）、行 0-9（自上）。
+ * ====================== */
+mountExportButton({
+  game: 'xiangqi',
+  ext: 'txt',
+  build: (verdict) => (state.moves.length
+    ? buildMoveList({
+        title: 'BoardDuel · Xiangqi',
+        moves: state.moves.map((m) => `${xqCoord(m.from)}-${xqCoord(m.to)}`),
+        result: verdict,
+        meta: ['size: 9x10', 'files a-i (left to right), ranks 0-9 (top to bottom)'],
+      })
+    : null),
+});
