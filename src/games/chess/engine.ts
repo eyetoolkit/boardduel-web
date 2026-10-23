@@ -139,8 +139,9 @@ export function initialState(): GameState {
     for (let f = 0; f < 8; f++) board[rank * 8 + f] = pieces[f];
   };
   // 标准布局：白在底 (rank 0-1)，黑在顶 (rank 6-7)
-  // 白兵方向 dir=-1（rank 递减，向顶推进），起点 rank=6
-  // 黑兵方向 dir=+1（rank 递增，向底推进），起点 rank=1
+  // 白兵方向 dir=+1（rank 递增，向顶推进），起点 rank=1；黑兵反之（dir=-1，起点 rank=6）
+  // ⚠️ 曾把这里写成「白兵 dir=-1 / 起点 rank=6」——与 legalMoves 的实际口径相反，
+  //   正是 2026-10-23 兵攻击方向 P0 的认知源头。改兵相关逻辑前先读 legalMoves:266-272。
   setup(0, ['R','N','B','Q','K','B','N','R']);
   setup(1, ['P','P','P','P','P','P','P','P']);
   setup(6, ['p','p','p','p','p','p','p','p']);
@@ -210,7 +211,13 @@ function attackedSquares(board: Piece[], bySide: Side): boolean[] {
     const lower = (p === p.toLowerCase());
     switch (p.toLowerCase()) {
       case 'p': {
-        const dir = lower ? 1 : -1;
+        // 🔴 2026-10-23 P0 修复：方向曾写成 lower ? 1 : -1，与 legalMoves 的兵行进
+        //   方向（:270 lower ? -1 : 1）相反 —— 白兵被标记为攻击"身后一格"。
+        //   后果双向：黑王可走入真实规则里被兵攻的格（如 g7→f6 躲 e5 兵），
+        //   随后白兵 exf6 直接吃掉黑王、棋盘无王、将杀/逼和检测全部失效；
+        //   同时合法着法被幻影攻击拦截（如黑王 g4→f3 被不存在的 e4 兵攻拦掉）。
+        //   这里必须与 legalMoves 同源，两侧都要改时一起改。
+        const dir = lower ? -1 : 1;
         for (const df of [-1, 1]) {
           const ff = f + df, rr = r + dir;
           if (ff >= 0 && ff < 8 && rr >= 0 && rr < 8) att[rr * 8 + ff] = true;
@@ -421,7 +428,13 @@ function tryApply(s: GameState, m: Move): boolean {
   const saveHistLen = s.history.length;
 
   applyMove(s, m);
-  const ok = !inCheck(s, mover);
+  // 🔴 2026-10-23 P0 护栏：任何着法都不得以对方王为捕获目标。
+  //   正常对局不可达（双方着法都被 self-check 过滤，对方王不可能留着被吃），
+  //   但一旦有别的问题漏出非法局面（如修复前的兵攻方向 bug：黑王走入被攻格），
+  //   旧逻辑只会检查"自己王是否安全"，于是白兵 exf6 真的把黑王吃掉、
+  //   棋盘从此无王、将杀/逼和检测全部失效。这里把"吃王"结构性堵死。
+  const noKingCapture = m.capture !== 'k' && m.capture !== 'K';
+  const ok = noKingCapture && !inCheck(s, mover);
 
   // 原地还原
   for (let i = 0; i < 64; i++) s.board[i] = saveBoard[i];
@@ -665,6 +678,46 @@ export function selfTest(): { ok: boolean; details: string[] } {
   if (!canCastleK) {
     ok = false;
     details.push('white should be able to castle kingside after clearing f1/g1');
+  }
+  // ── 兵攻击方向回归（2026-10-23 P0 修复的护栏）──
+  //   修复前 attackedSquares 的兵方向与 legalMoves 写反，而本 selfTest 对此路径
+  //   零覆盖，所以缺陷带着"自检全绿"上线。以下三个局面把两个失败方向都钉死：
+  //   ① 漏标（该攻没攻）：黑王走进被兵攻的格 → 之后兵能直接吃王
+  //   ② 幻影（不该攻标了攻）：合法着法被不存在的兵攻拦掉
+  const noCastle = { K: false, Q: false, k: false, q: false };
+  const mini = (pieces: Array<[number, Piece]>, turn: Side): GameState => {
+    const b: Piece[] = new Array(64).fill('.');
+    for (const [sq, p] of pieces) b[sq] = p;
+    return { board: b, turn, castling: { ...noCastle }, enpassant: null, halfmove: 0, fullmove: 1, history: [] };
+  };
+  // ① 白兵 e5(sq36) 攻 d6(sq43)/f6(sq45)：黑王落 d6 必须处于被将状态
+  const pa = mini([[0, 'K'], [36, 'P'], [43, 'k']], 'b');
+  if (!inCheck(pa, 'b')) {
+    ok = false;
+    details.push('pawn attack: black king on d6 must be in check from white pawn e5');
+  }
+  // ② 同盘黑王在 g7(sq54)：f6(sq45) 被 e5 兵攻 → 不合法；f7(sq53) 合法
+  const pb = mini([[0, 'K'], [36, 'P'], [54, 'k']], 'b');
+  const kMoves = legalMoves(pb).filter((m) => m.from === 54);
+  if (kMoves.some((m) => m.to === 45)) {
+    ok = false;
+    details.push('pawn attack: black king g7->f6 must be illegal (attacked by pawn e5)');
+  }
+  if (!kMoves.some((m) => m.to === 53)) {
+    ok = false;
+    details.push('pawn attack: black king g7->f7 should be legal');
+  }
+  // ③ 反向幻影：白兵 e4(sq28) 只攻 d5(sq35)/f5(sq37)，不碰 f3(sq21)。
+  //    黑王 g4(sq30)→f3 必须合法；→f5 必须不合法（两端同时防住）
+  const pc = mini([[0, 'K'], [28, 'P'], [30, 'k']], 'b');
+  const cMoves = legalMoves(pc);
+  if (!cMoves.some((m) => m.from === 30 && m.to === 21)) {
+    ok = false;
+    details.push('pawn attack: black king g4->f3 should be legal (pawn e4 does not attack f3)');
+  }
+  if (cMoves.some((m) => m.from === 30 && m.to === 37)) {
+    ok = false;
+    details.push('pawn attack: black king g4->f5 must be illegal (attacked by pawn e4)');
   }
   return { ok, details };
 }

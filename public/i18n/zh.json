@@ -2570,6 +2570,7 @@
     "you_resigned": "你认输了",
     "opp_resigned": "对手认输",
     "by_resignation": "对方认输获胜",
+    "natural_over": "终局由棋盘判定",
     "you_five": "五子连珠，你赢了",
     "opp_five": "对手五子连珠",
     "five_in_row": "五子连珠",

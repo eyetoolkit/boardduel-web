@@ -2572,6 +2572,7 @@
     "you_resigned": "あなたが投了しました",
     "opp_resigned": "相手が投了しました",
     "by_resignation": "投了勝ち",
+    "natural_over": "盤上で決着",
     "you_five": "五目並びで勝利",
     "opp_five": "五目並びで敗北",
     "five_in_row": "五目並び",

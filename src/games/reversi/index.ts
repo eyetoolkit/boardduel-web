@@ -826,9 +826,23 @@ function handleWs(msg: OnlineMsg): void {
     } else {
       // 🔴 判胜负必须先确认 winner 非 null：[null !== myIdx] 会把双方同时显示成失败。
       const iLost = (typeof go.winner === 'number' && state.myIdx !== null) ? go.winner !== state.myIdx : false;
-      endVerdict.textContent = iLost ? window.t('bj.you_resigned') : window.t('bj.opp_resigned');
+      // 🔴 2026-10-23：终局原因必须参与判词（与 connect4 同批修）。
+      //    自然终局（棋盘满/双方无棋，reason:'natural_over' 或 'double_pass'）、
+      //    超时（'timeout'）此前一律渲染成「认输」。按 reason 分流：
+      //      resign         → 认输判词（保持原样）
+      //      timeout        → 胜/负 + 时间到
+      //      opponent_left  → 胜 + 对手离开
+      //      natural_over 等 → 胜/负 + 棋盘上终局
+      const resigned = go.reason === 'resign';
+      endVerdict.textContent = resigned
+        ? (iLost ? window.t('bj.you_resigned') : window.t('bj.opp_resigned'))
+        : (iLost ? window.t('bi.you_lose') : window.t('bi.you_win'));
       endVerdict.className = 'go-end-verdict ' + (iLost ? 'is-loss' : 'is-win');
-      endLine.textContent = go.reason === 'opponent_left' ? window.t('bj.opp_left') : window.t('bj.by_resignation');
+      endLine.textContent =
+        go.reason === 'timeout' ? window.t('match.timeout')
+        : go.reason === 'opponent_left' ? window.t('bj.opp_left')
+        : resigned ? window.t('bj.by_resignation')
+        : window.t('bj.natural_over');
     }
     render();
     scheduleEndScreen();

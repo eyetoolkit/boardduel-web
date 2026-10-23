@@ -377,18 +377,24 @@ function aiMove(): void {
 
 /* ====================== 终局 ====================== */
 function finish(winner: CPlayer | 0): void {
+  // 🔴 2026-10-23：联机下"我是否获胜"必须按本方座位换算颜色，不能假定自己是红。
+  //   座位 0=红(1) / 座位 1=黑(2)（与 onlineMyTurn 同口径）；ai/pass 模式本方恒红。
+  //   修复前 className/音效/分享快照全按 winner===HUMAN 判 —— 坐黑方的玩家
+  //   在自己获胜时看到 is-loss 红字 + lose 音，分享卡还记成"未获胜"。
+  const myColor: CPlayer = state.mode === 'online' ? (((state.myIdx ?? 0) + 1) as CPlayer) : HUMAN;
+  const iWin = winner !== 0 && winner === myColor;
   let verdict: string;
   if (winner === 0) verdict = window.t('bi.draw');
-  else if (state.mode === 'ai') verdict = winner === HUMAN ? window.t('bi.you_win') : window.t('bi.ai_wins');
+  else if (state.mode === 'ai') verdict = iWin ? window.t('bi.you_win') : window.t('bi.ai_wins');
   else verdict = winner === HUMAN ? window.t('bg.bg_checkers_red_wins') : window.t('bg.bg_checkers_black_wins');
 
   const red = countPieces(state.board, 1);
   const black = countPieces(state.board, 2);
   endVerdict.textContent = verdict;
-  endVerdict.className = 'go-end-verdict ' + (winner === 0 ? 'is-draw' : (winner === HUMAN ? 'is-win' : 'is-loss'));
+  endVerdict.className = 'go-end-verdict ' + (winner === 0 ? 'is-draw' : (iWin ? 'is-win' : 'is-loss'));
   endLine.textContent = `${window.t('bg.bg_checkers_pieces')} ${red} · ${black}`;
-  snapshotResult(winner === HUMAN);   // 终局快照给「分享结果」卡片
-  playSfx(winner === HUMAN ? 'win' : winner === 0 ? 'place' : 'lose');
+  snapshotResult(iWin);   // 终局快照给「分享结果」卡片
+  playSfx(iWin ? 'win' : winner === 0 ? 'place' : 'lose');
   toast(verdict);
   if (endScreenTimer) window.clearTimeout(endScreenTimer);
   endScreenTimer = window.setTimeout(() => {
@@ -526,7 +532,12 @@ function showScreen(s: 'match' | 'end'): void {
 function newGame(): void {
   cancelAiMove();
   state.board = initialBoard();
-  state.player = state.mode === 'online' ? (((state.myIdx ?? 0) + 1) as CPlayer) : HUMAN;
+  // 🔴 2026-10-23 P0/P1 修复：联机也曾按 myIdx 设开局轮次（seat 1 的黑方
+  //   一开局就显示"轮到你"）。规则上红先，且服务端的先手由「首个合法走子者」
+  //   确立（games-room.js relayCkTurn=-1 待定）——客户端若让黑方先走，
+  //   服务端会把黑方记为先手，随后红方第一手被 not_your_turn 拒掉。
+  //   与 rebuildFromServer（:621 从 HUMAN 起算）保持同一口径：永远红先。
+  state.player = HUMAN;
   state.lastMove = -1;
   state.over = false;
   state.selected = -1;
@@ -728,12 +739,15 @@ function handleWs(msg: OnlineMsg): void {
     // winner 是座位号，需要换算成本页的颜色（1=红 / 2=黑）。
     // 座位映射有源码依据：:609 onlineMyTurn() 判的是
     //   state.player === (state.myIdx + 1) → 座位 0 对应玩家 1（红），座位 1 对应 2（黑）。
+    // 🔴 2026-10-23 P0 修复：这里曾写成 winnerSeat===0 ? 2 : 1（与注释口径相反）——
+    //   座位 0（红）认输后服务端判座位 1 胜，旧代码映射成 1=红，
+    //   于是认输方与自己对手两侧屏幕都显示"红方胜"，判词整体反转。
     // 拿不到座位号时不能瞎猜 —— 中性判和由 finish(0) 呈现，比猜错颜色安全。
     const winnerSeat = typeof go.winner === 'number' ? go.winner : null;
     const winner: CPlayer | 0 = go.draw
       ? 0
       : winnerSeat !== null
-        ? (winnerSeat === 0 ? 2 : 1) as CPlayer
+        ? (winnerSeat === 0 ? 1 : 2) as CPlayer
         : 0;
     finish(winner);
   }

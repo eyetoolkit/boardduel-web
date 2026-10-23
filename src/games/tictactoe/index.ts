@@ -383,18 +383,22 @@ function pushHistory(): void {
 
 function afterMove(): void {
   const { winner } = checkWinner(state.board);
+  // 🔴 2026-10-23 P0 修复：checkWinner 的 winner===3 是「满盘无三连」的和棋，
+  //   此前被当作胜者传给 finish(3) —— AI 模式显示"AI wins"（红）、
+  //   pass 模式"O wins"、联机"You lose"，还播 lose 音、课堂报 loss。
+  //   finishDraw() 因此成了永不可达死代码。和棋必须走和棋分支。
+  if (winner === 3) {
+    state.over = true;
+    stopTimer(state.timer);
+    render();
+    finishDraw();
+    return;
+  }
   if (winner !== 0) {
     state.over = true;
     stopTimer(state.timer);
     render();
     finish(winner as TPlayer);
-    return;
-  }
-  if (state.moves.length >= 9) {
-    state.over = true;
-    stopTimer(state.timer);
-    render();
-    finishDraw();
     return;
   }
   state.player = state.player === 1 ? 2 : 1;
@@ -470,13 +474,17 @@ function finish(winner: TPlayer): void {
     : state.mode === 'pass'
       ? (winner === 1 ? window.t('bi.x_wins') : window.t('bi.o_wins'))
       : (winner === ((state.myIdx ?? 0) + 1) ? window.t('bi.you_win') : window.t('bi.you_lose'));
+  // 🔴 2026-10-23：胜负样式与音效必须按「我是否获胜」判，不能按 winner===1。
+  //   联机坐 O 方（myIdx=1，颜色 2）获胜时，旧代码给出 is-loss 红字 + lose 音，
+  //   而文案已是"You win"——玩家看到赢局却听到输局音。
+  const iWin = winner === (state.mode === 'ai' ? 1 : ((state.myIdx ?? 0) + 1));
   const line = checkWinner(state.board).line;
   endVerdict.textContent = verdict;
   endLine.textContent = line && line.length ? line.map(notation).join(' – ') : '—';
-  endVerdict.className = 'go-end-verdict ' + (winner === 1 ? 'is-win' : 'is-loss');
-  playSfx(winner === 1 ? 'win' : 'lose');
+  endVerdict.className = 'go-end-verdict ' + (iWin ? 'is-win' : 'is-loss');
+  playSfx(iWin ? 'win' : 'lose');
   // 终局快照给「分享结果」卡片：AI 模式下 X(1) 是玩家，联机看自己那一手
-  snapshotResult(winner === (state.mode === 'ai' ? 1 : (state.myIdx ?? 0) + 1));
+  snapshotResult(iWin);
 
   if (winner === 1 && state.mode === 'ai') {
     const cur = readBest('tictactoe', state.mode, state.level);
@@ -487,6 +495,11 @@ function finish(winner: TPlayer): void {
 }
 
 function finishDraw(): void {
+  // M2: classroom 上报（和棋也要报；此前 P0 把和棋记成 loss，干脆就不报了）
+  if (state.mode === 'online' && isClassroom() && state.roomCode) {
+    const dur = state.timer ? Date.now() - state.timer.startedAt : 0;
+    reportRound(state.roomCode, { round: 1, solved: false, duration_ms: dur, outcome: 'draw' });
+  }
   endVerdict.textContent = window.t('bi.draw');
   endVerdict.className = 'go-end-verdict';
   endLine.textContent = window.t('bi.board_full');

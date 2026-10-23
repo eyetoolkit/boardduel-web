@@ -73,6 +73,12 @@ export interface GameOverResult {
  *   但方向是安全的 —— 多一个未知 reason 最多让文案不够精准，而漏掉一个已知
  *   reason 会让「终局数目结算」被显示成「对方认输获胜」（go 的 count 就是这种）。
  *   加新 reason 时记得同步补 case，别指望 default 兜住语义。
+ *
+ * 2026-10-23 补两个服务端实发但此前漏登记的 reason：
+ *   · 'double_pass'（reversi 双方连续停招终局，games-room.js:921）→ 自然终局，
+ *     此前落进 default 被渲染成「认输」；
+ *   · 'draw_agreed'（双方同意和棋，games-room.js:764）→ draw，
+ *     此前靠 winner==='draw' 才判和，只修一半的部署窗口会错判。
  */
 function normalizeReason(raw: string): GameOverReason {
   switch (raw) {
@@ -81,9 +87,12 @@ function normalizeReason(raw: string): GameOverReason {
     case 'natural_over':
     case 'count':
       return raw;
+    case 'double_pass':
+      return 'natural_over';
     // 🔴 服务端 games-room.js:247 长期发的是中文 '双方同意'，
     //   这里显式并入 draw，不能靠前端各处的 [w === 'draw'] 兜。
     case '双方同意':
+    case 'draw_agreed':
       return 'draw';
     default:
       return 'resign';
