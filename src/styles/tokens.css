@@ -12,7 +12,8 @@
  * 各皮肤只保留“游戏专属 board 变量”（--ttt-* / --c4-* / --rv-* / --ch-* / --go-*）
  * 与首页专属（--card / --card-line / --green / --red / --r-card）。
  *
- * 品牌色全站统一为紫罗兰 #7C3AED（弃用靛蓝 #3730A3）。
+ * 品牌色全站统一为靛蓝 #4F46E5（2026-10-23 三站统一品牌 UI，原紫罗兰 #7C3AED 弃用），
+ *   与 fe-shared 契约 shared/tokens.css 同值。
  * 字体：Space Grotesk(display) + Sora(正文)，均站内自托管。
  * ============================================================ */
 
@@ -63,11 +64,11 @@
   /* 金（段位 / 强调点缀，与琥珀同值但语义独立） */
   --gold: #F59E0B;
   --gold-soft: rgba(245, 158, 11, .16);
-  /* 品牌（全站统一紫罗兰） */
-  --brand: #7C3AED;
-  --brand-bright: #8B5CF6;
-  --brand-soft: #F1ECFE;
-  --brand-ink: #2E1065;
+  /* 品牌（全站统一靛蓝，与 fe-shared 契约 shared/tokens.css 同值） */
+  --brand: #4F46E5;
+  --brand-bright: #4338CA;
+  --brand-soft: #EEF1FB;
+  --brand-ink: #2E2588;
   --amber: #F59E0B;          /* 首页专属强调，等同 --ember */
   /* 字体分工 */
   --disp: 'Space Grotesk', 'Sora', 'PingFang SC', 'Microsoft YaHei', sans-serif;
@@ -75,11 +76,11 @@
   /* 布局 */
   --sb-w: 236px;
   --sb-rail: 74px;
-  /* 兼容别名：存量皮肤仍用 --indigo 命名，统一指向品牌紫（#7C3AED） */
+  /* 兼容别名：存量皮肤仍用 --indigo 命名，统一指向品牌靛蓝（#4F46E5） */
   --indigo: var(--brand);
   --indigo-hover: var(--brand-bright);
   --indigo-bright: var(--brand-bright);
-  --indigo-faint: rgba(124, 58, 237, .045);
+  --indigo-faint: rgba(79, 70, 229, .045);
   --r-card: 18px;
   --r-btn: 11px;
   --font-display: var(--disp);
@@ -102,8 +103,8 @@ html[data-theme="dark"] body.home-v2 {
   --teal-soft: rgba(15, 163, 168, .15);
   --teal-text: #2CC7CC;      /* 暗底上的青色文字达标档 */
   --gold-soft: rgba(245, 158, 11, .16);
-  --brand: #A78BFA;
-  --brand-bright: #C7D2FE;
+  --brand: #818CF8;
+  --brand-bright: #A5B4FC;
   --brand-soft: #20224A;
   --amber: #F59E0B;
   --indigo: var(--brand);

@@ -1,0 +1,148 @@
+/* ============================================================
+ * TRI-SHARED · 三站统一品牌令牌（单一真相源）
+ * ------------------------------------------------------------
+ * 目标：把 boardduel / numeriduel / memoryduel 三站漂移的视觉
+ *       收敛到一份 token，防再次分叉。
+ *
+ * 决策（2026-10-23 刘哥拍板）：靛蓝·冷·Sora
+ *   - 品牌主色 = 靛蓝 #4F46E5（numeriduel+memoryduel 已共用此方向）
+ *   - 正文 = Sora（boardduel+numeriduel 已用；memoryduel Inter→Sora）
+ *   - 页底 = 冷 #F4F5F9（memoryduel 暖底 #FAF6F1 回冷）
+ *   - 强调 = 琥珀 #F59E0B（三站共有，保留）
+ *
+ * 品牌槽位模型（沿用 tri-design-system）：
+ *   --brand-50…900 色阶；--brand=600 只承载图形；
+ *   白字压品牌色一律用 --brand-700（≥4.5:1）。
+ *
+ * 各站专属变量（--ttt-* / --ch-* / --dc-* 棋盘玩法等）不进本文件，
+ * 留在各站皮肤层。本文件只定义跨站共享的品牌/中性/字体/圆角。
+ *
+ * 落地方式：fe-shared 真相源维护本文件 → 三仓 sync:shared 拉取
+ *   到 public/shared/tokens.css → 各站 chrome 层引入并删除本地
+ *   冲掉品牌段的覆盖（游戏专属变量保留）。
+ * ============================================================ */
+
+/* ── 字体（站内自托管，CSP font-src 'self'；各站需自带 /fonts/ woff2） ── */
+@font-face {
+  font-family: 'Sora';
+  font-style: normal; font-weight: 400 800; font-display: swap;
+  src: url('/fonts/sora-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal; font-weight: 400; font-display: swap;
+  src: url('/fonts/space-grotesk-latin-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal; font-weight: 700; font-display: swap;
+  src: url('/fonts/space-grotesk-latin-700.woff2') format('woff2');
+}
+
+/* ════════════════════════════════════════════════
+ * 浅色令牌（默认）
+ * ════════════════════════════════════════════════ */
+:root {
+  /* 面（--ink=页面底 / --ink2=卡片底 / --ink3=输入底；语义不反转） */
+  --ink:  #F4F5F9;   /* 页底（冷） */
+  --ink2: #FFFFFF;   /* 卡片底 */
+  --ink3: #F1F2FA;   /* 按钮/输入底 */
+  --line: #E3E6F0;   /* 描边 */
+  --line2:#C7CBEE;   /* 强调描边 */
+  /* 文字 */
+  --paper: #1E1B39;  /* 正文（靛墨） */
+  --mute:  #5B6079;  /* 次要文字 */
+  --mute2: #8A90A8;
+  /* 品牌色阶（靛蓝 600 系） */
+  --brand-50:  #EEF1FB;
+  --brand-100: #E0E5FA;
+  --brand-200: #C2CBF2;
+  --brand-400: #7B82E0;
+  --brand-500: #5B63D6;
+  --brand-600: #4F46E5;   /* 主色 */
+  --brand-700: #4338CA;   /* hover / 白字压品牌色安全档 */
+  --brand-800: #3730A3;
+  --brand-900: #2E2588;
+  --brand:         var(--brand-600);
+  --brand-hover:   #4338CA;
+  --brand-active:  var(--brand-800);
+  --brand-subtle:  var(--brand-100);
+  --brand-ring:    rgba(79, 70, 229, .22);
+  --on-brand:      #FFFFFF;
+  /* 语义色 */
+  --ember:       #F59E0B;  /* 琥珀 = 主 CTA / 获胜 / 最后一手 */
+  --ember-dim:   #D97706;
+  --ember-soft:  rgba(245, 158, 11, .16);
+  --teal:        #0FA3A8;  /* 信息 / live / 聊天 */
+  --teal-soft:   rgba(15, 163, 168, .14);
+  --teal-text:   #0E8E92;
+  --success:     #059669;
+  --warning:     #D97706;
+  --danger:      #E11D48;
+  --amber:       #F59E0B;   /* 首页强调，等同 --ember */
+  /* 字体分工 */
+  --disp: 'Space Grotesk', 'Sora', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --ui:   'Sora', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* 圆角 */
+  --r-card: 18px;
+  --r-btn:  11px;
+  --r-pill: 999px;
+  --font-display: var(--disp);
+  --font-sans:    var(--ui);
+  /* 兼容别名（存量皮肤仍用 --indigo，统一指向品牌靛蓝） */
+  --indigo: var(--brand);
+  --indigo-hover: var(--brand-hover);
+  --indigo-bright: var(--brand-hover);
+  --indigo-faint: rgba(79, 70, 229, .045);
+}
+
+/* ════════════════════════════════════════════════
+ * 暗色令牌（[data-theme="dark"] 切换）
+ * 夜底 + 浅字；品牌靛蓝在暗底提亮保证对比度。
+ * ════════════════════════════════════════════════ */
+html[data-theme="dark"] {
+  --ink:  #12131F;
+  --ink2: #1A1B2E;
+  --ink3: #222336;
+  --line: #2D2E48;
+  --line2:#3A3C5A;
+  --paper:#E8EAF4;
+  --mute: #9AA0BC;
+  --mute2:#6B7090;
+  --brand-600: #6366F1;
+  --brand-700: #818CF8;
+  --brand:     #818CF8;
+  --brand-hover: #A5B4FC;
+  --brand-subtle: #20224A;
+  --brand-ring:  rgba(129, 140, 248, .30);
+  --on-brand:    #0E1026;
+  --ember-soft:  rgba(245, 158, 11, .16);
+  --teal-soft:   rgba(15, 163, 168, .15);
+  --teal-text:   #2CC7CC;
+  --indigo: var(--brand);
+  --indigo-hover: var(--brand-hover);
+  --indigo-bright: var(--brand-hover);
+}
+
+/* ════════════════════════════════════════════════
+ * iOS 原生 APP 手感层（2026-10-11，boardduel 既有，三站统一沿用）
+ * ⚠️ 硬约束：需要被玩家复制的文本（房间码/战绩文案）必须开回来
+ * ════════════════════════════════════════════════ */
+html, body, button, a, [role="button"], label, summary { -webkit-tap-highlight-color: transparent; }
+html, body { -webkit-touch-callout: none; }
+body, .board, .bd-board, .sq, .piece, .cell, .stone,
+.btn, .tab, .chip, .pg-topbar, .pg-footer, .pg-sidebar,
+.go-chat, .chat-log {
+  -webkit-user-select: none;
+  user-select: none;
+}
+input, textarea, select, [contenteditable], [data-copyable],
+.invite-code, .room-code, .shared-text {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+html { overscroll-behavior-y: none; }
+.chat-log, .go-chat-log, [data-scroll-area] { overscroll-behavior: contain; }
+body { touch-action: manipulation; }
