@@ -1004,6 +1004,14 @@ function resetReplayUI(): void {
 
 function enterReplay(): void {
   if (!state.moves.length) { toast(window.t('bg.bg_gomoku_no_moves')); return; }
+  // 🔴 2026-10-23：联机对局进行中禁止进回放。回放态（reviewAt!==null）下收到的
+  //   对手着法会被静默丢弃（gomoku 的 opponent_move 无守卫）：退出回放后该手
+  //   永久丢失、两端局面分叉、终局屏被 reviewAt 压住不弹。照象棋同款守卫：
+  //   想回看棋谱，终局之后随时可以。
+  if (state.mode === 'ranked' && !state.over) {
+    toast(window.t('bg.bg_common_review_after_over'));
+    return;
+  }
   // 回放只演已发生的历史：引擎待落的那一步要撤掉，否则播到一半盘面会跳变
   cancelAiMove();
   // 终局浮层/大厅都要让位：回放就在对局屏上看棋盘
@@ -1452,6 +1460,50 @@ function rollbackRejected(): void {
   toast(window.t('bg.bg_common_move_rejected'));
 }
 
+/**
+ * 采纳服务端 gomoku 权威盘（snapshot：board=扁平 225（值 1|2=颜色）、
+ * relayTurn=座位号 0|1、roomStatus）。join / 断线重连 / 漏帧恢复用。
+ *
+ * 🔴 原实现（state 帧一律 newGame() 清盘）：断线重连成功那一刻盘面被抹掉，
+ *    重连窗口内对手着法全部丢失 —— 井字棋有 rebuildFromServer，五子棋漏写。
+ *
+ * diff 旧盘 vs 权威盘：0→非0 的格即本地缺失的着法，补进 moves。
+ * 单格 = 断线期间的一手（顺序精确）；多格（空盘全量恢复）按坐标排序近似 ——
+ * 五子棋无重力规则，着法顺序无法从盘面反推，回放观感略异但盘面一致。
+ */
+function applyServerBoard(snap: Record<string, unknown>): void {
+  const raw = snap.board as unknown[];
+  if (!Array.isArray(raw) || raw.length !== SIZE2) return;
+  const b = emptyBoard() as GBoard;
+  for (let i = 0; i < SIZE2; i++) {
+    const v = raw[i];
+    b[i] = (v === 1 || v === 2) ? (v as GPlayer) : 0;
+  }
+  const prev = state.board;
+  const gained: number[] = [];
+  for (let i = 0; i < SIZE2; i++) if (prev[i] === 0 && b[i] !== 0) gained.push(i);
+  state.board = b;
+  // 座位号 → 本地方色：gomoku 两端同构（座位 0 = 客户端 1）
+  state.turn = snap.relayTurn === 1 ? 2 : 1;
+  if (gained.length > 0) {
+    gained.sort((x, y) => x - y);
+    for (const g of gained) state.moves.push(g);
+    state.lastMove = gained[gained.length - 1];
+  }
+  // 服务端已判终局（重连到结束的局）→ 本地同步终局态，否则还能落子、被拒后回滚
+  const st = String(snap.roomStatus || snap.status || '');
+  if (st === 'finished' || st === 'over') {
+    state.over = true;
+    const five = hasFive(b);
+    state.winLine = five.line && five.line.length ? five.line : null;
+  } else {
+    state.over = false;
+    state.winLine = null;
+  }
+  state.sawGameOver = false;
+  render();
+}
+
 function handleWs(msg: Record<string, unknown>): void {
   const t = String(msg.type || '');
   if (t === 'state') {
@@ -1469,7 +1521,18 @@ function handleWs(msg: Record<string, unknown>): void {
       state.roomCode = code;
       chatRoom.textContent = code;
     }
-    if (!state.over) newGame();
+    // 🔴 2026-10-23：服务端 gomoku 快照下发权威盘 relayBoard（扁平 225，值 1|2=颜色）
+    //   + relayTurn（座位号 0/1）（games-room.js snapshot()）。原实现无条件
+    //   newGame() 清盘 —— 断线重连成功那一刻盘面被抹掉，重连窗口内对手着法全丢。
+    //   有权威盘就按盘恢复；无盘（空房等待态）才清盘。
+    //   snapshot 字段可能在 wrapper 内层，也可能平铺在 msg 上（joinState 两种包装）。
+    const snap = (inner && Array.isArray(inner.board)) ? inner
+      : (Array.isArray(msg.board) ? msg : null);
+    if (snap && Array.isArray(snap.board) && snap.board.length === 225) {
+      applyServerBoard(snap);
+    } else if (!state.over) {
+      newGame();
+    }
     applyRoomState(msg, false);
     return;
   }

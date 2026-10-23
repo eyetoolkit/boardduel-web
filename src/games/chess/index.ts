@@ -28,7 +28,7 @@ import {
   isMoveRejected,  roomLiveFromState, opponentNameFromState,
   type OnlineState, type OnlineMsg,
 } from '../online-core';
-import { modeFromUrl } from '../shared';
+import { modeFromUrl, levelFromUrl } from '../shared';
 import { openFriendRoom } from '../friend-room';
 import { reportRound, isClassroom, urlRoomCode, ensureStudentCode } from '../../shared/teacher-track';
 import { parseGameOver } from '../../shared/game-over';
@@ -134,7 +134,8 @@ type UIState = {
 const state: UIState = {
   screen: 'match',
   mode: 'ai',
-  level: 'medium',
+  // 大厅「vs AI Master」卡深链 ?level=hard（2026-10-23 接线，曾不读）
+  level: levelFromUrl('medium', ['easy', 'medium', 'hard'] as const),
   gs: initialState() as CS,
   selected: -1,
   lastMove: null,

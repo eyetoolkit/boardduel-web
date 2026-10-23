@@ -32,7 +32,7 @@ import {
   type OnlineState, type OnlineMsg,
   isMoveRejected,
 } from '../online-core';
-import { modeFromUrl } from '../shared';
+import { modeFromUrl, levelFromUrl } from '../shared';
 import { openFriendRoom } from '../friend-room';
 import { reportRound, isClassroom, urlRoomCode, ensureStudentCode } from '../../shared/teacher-track';
 import { parseGameOver } from '../../shared/game-over';
@@ -85,8 +85,8 @@ const chatEl = document.getElementById('tt-chat') as HTMLElement;
 const chatForm = document.getElementById('tt-chat-form') as HTMLFormElement;
 const chatInput = document.getElementById('tt-chat-input') as HTMLInputElement;
 const chatRoom = document.getElementById('tt-chat-room') as HTMLElement;
+const chatLog = document.getElementById('tt-chat-log') as HTMLElement;
 const clockMeTime = document.getElementById('go-clock-me-time') as HTMLElement;
-void chatRoom;
 const clockMeCard = document.getElementById('go-clock-me') as HTMLElement;
 const clockOppCard = document.getElementById('go-clock-opp') as HTMLElement;
 const clockMeWho = document.getElementById('go-clock-me-who') as HTMLElement;
@@ -133,7 +133,8 @@ type UIState = {
 const state: UIState = {
   screen: 'match',
   mode: 'ai',
-  level: 'medium',
+  // 大厅「vs AI Master」卡深链 ?level=hard（2026-10-23 接线，曾不读）
+  level: levelFromUrl('medium', ['easy', 'medium', 'hard'] as const),
   board: emptyBoard() as TBoard,
   player: 1,
   over: false,
@@ -906,7 +907,21 @@ function refreshChat(): void {
     return;
   }
   chatToggle.hidden = false;
+  chatRoom.textContent = state.roomCode;   // 房间码展示在聊天面板头部
   chatEl.classList.toggle('is-open', chatOpen);
+}
+/** 收/发聊天消息渲染（复用 .go-chat-row 骨架）。textContent 赋值，天然免疫 HTML 注入。 */
+function appendChat(who: string, text: string, mine: boolean, emoji = false): void {
+  const li = document.createElement('li');
+  li.className = 'go-chat-row' + (mine ? ' is-mine' : '');
+  const name = document.createElement('b');
+  name.textContent = who;
+  const body = document.createElement('span');
+  body.textContent = text;
+  if (emoji) body.classList.add('is-emoji');
+  li.append(name, body);
+  chatLog.append(li);
+  chatLog.scrollTop = chatLog.scrollHeight;
 }
 chatToggle.addEventListener('click', () => { chatOpen = !chatOpen; refreshChat(); });
 chatForm.addEventListener('submit', (e) => {
@@ -914,6 +929,8 @@ chatForm.addEventListener('submit', (e) => {
   const text = chatInput.value.trim();
   if (!text) return;
   sendWs(state as OnlineState, { type: 'chat', text });
+  // 本地不插消息：服务端 chat() 广播含发送者回显（games-room.js:636），
+  // 统一走 onChat 入口渲染，避免「本地插一条 + 回显再插一条」双份。
   chatInput.value = '';
 });
 
@@ -1006,6 +1023,18 @@ function roomHandlers(code: string) {
     // 断线：online-core 已把 roomLive 置 false，这里锁盘并给一句可见提示
     onDisconnect: () => { toast(window.t('match.disconnected')); render(); },
     onGameOver: handleWs,
+    // 🔴 2026-10-23：聊天接收。此前 online-core 分发器没有 chat 分支 ——
+    //   聊天 UI 齐全（发送钮/输入框/日志列表）但对手消息永远不显示。
+    //   服务端 chat() 广播含发送者回显，自己发的也会回到这里（mine 样式）。
+    onChat: (m: OnlineMsg) => {
+      const text = typeof m.text === 'string' ? m.text.trim() : '';
+      if (!text) return;
+      const by = typeof m.by === 'number' ? m.by : -1;
+      const mine = state.myIdx !== null && by === state.myIdx;
+      const rawName = typeof m.name === 'string' ? m.name.trim() : '';
+      const name = rawName || (mine ? window.t('player.you') : window.t('player.opp'));
+      appendChat(name, text, mine, m.emoji === true);
+    },
     onError: (m: OnlineMsg) => {
       const c = String((m.code as string) || (m.message as string) || '');
       if (isMoveRejected(m)) rollbackRejected();

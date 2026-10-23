@@ -561,6 +561,9 @@ a.go-mode:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; 
 .go-chat-row b { color: var(--teal); font-weight: 700; white-space: nowrap; }
 .go-chat-row span { color: var(--mute); word-break: break-word; }
 .go-chat-row span.is-emoji { font-size: 1.2rem; }
+/* 自己发的消息（服务端回显）靠右，名字用纸色以示区分 */
+.go-chat-row.is-mine { flex-direction: row-reverse; }
+.go-chat-row.is-mine b { color: var(--paper); }
 .go-chat-form { display: flex; gap: 6px; }
 .go-chat-form input {
   flex: 1; min-width: 0; background: var(--ink3); border: 1px solid var(--line);

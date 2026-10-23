@@ -18,7 +18,7 @@ import {
   type Board as CBoard, type Player as CPlayer, type Difficulty as CDifficulty, type Move,
   EMPTY, colorOf, isKing, SIZE, RED_MAN, BLACK_MAN,
 } from './engine';
-import { modeFromUrl } from '../shared';
+import { modeFromUrl, levelFromUrl } from '../shared';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 import { parseGameOver } from '../../shared/game-over';
 import {
@@ -93,7 +93,8 @@ const ENGINE: CPlayer = 2;  // 引擎执黑
 const state: UIState = {
   screen: 'match',
   mode: 'ai',
-  level: 'medium',
+  // 大厅「vs AI Master」卡深链 ?level=hard（2026-10-23 接线，曾不读）
+  level: levelFromUrl('medium', ['easy', 'medium', 'hard'] as const),
   board: initialBoard(),
   player: HUMAN,
   lastMove: -1,

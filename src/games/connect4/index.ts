@@ -19,7 +19,9 @@ import {
 } from '../game-core';
 import { wireLobbyChrome } from '../../lobby-chrome';
 import {
-  emptyBoard, cloneBoard, drop as c4drop, bestMove, checkWinner, ROWS, COLS,
+  emptyBoard, cloneBoard, drop as c4drop, bestMove, checkWinner,
+  deriveMovesFromBoard, lastPlacedCell,
+  ROWS, COLS,
   type Board as CBoard, type Player as CPlayer, type Difficulty as CDifficulty,
 } from './engine';
 import {
@@ -28,7 +30,7 @@ import {
   type OnlineState, type OnlineMsg,
   isMoveRejected,
 } from '../online-core';
-import { modeFromUrl } from '../shared';
+import { modeFromUrl, levelFromUrl } from '../shared';
 import { openFriendRoom } from '../friend-room';
 import { reportRound, isClassroom, urlRoomCode, ensureStudentCode } from '../../shared/teacher-track';
 import { parseGameOver } from '../../shared/game-over';
@@ -117,7 +119,8 @@ type UIState = {
 const state: UIState = {
   screen: 'match',
   mode: 'ai',
-  level: 'medium',
+  // 大厅「vs AI Master」卡深链 ?level=hard（2026-10-23 接线，曾不读）
+  level: levelFromUrl('medium', ['easy', 'medium', 'hard'] as const),
   board: emptyBoard() as CBoard,
   player: 1,
   lastMove: -1,
@@ -228,7 +231,13 @@ function renderHud(): void {
   } else if (state.mode === 'pass') {
     label = state.player === 1 ? window.t('bg.bg_connect4_you_red_lc') : window.t('bg.bg_connect4_pass_teal_lc');
   } else if (state.mode === 'online') {
-    label = state.player === 1 ? window.t('bg.bg_connect4_you_red_lc') : window.t('bg.bg_connect4_engine_teal_lc');
+    // 🔴 2026-10-23：联机 HUD 不能显示「引擎」—— 对方是真人。
+    //   原实现按 player===1 显示「你（红）」否则「引擎（青）」，坐 seat1 的玩家
+    //   整局顶着「引擎」标签。改为按是否轮到我显示（与 onlineMyTurn 同口径）。
+    const myTurnNow = state.roomLive && state.myIdx !== null && state.player === state.myIdx + 1;
+    label = !state.roomLive
+      ? window.t('bg.bg_common_waiting_opponent')
+      : (myTurnNow ? window.t('connect4.your_turn') : window.t('connect4.opponent_turn'));
   } else {
     label = state.player === 1
       ? window.t('bg.bg_connect4_you_red_lc')
@@ -407,10 +416,13 @@ function finish(winner: CPlayer, line: number[] | null): void {
       : (winner === ((state.myIdx ?? 0) + 1) ? window.t('bi.you_win') : window.t('bi.you_lose'));
   endVerdict.textContent = verdict;
   endLine.textContent = line && line.length ? line.map(notation).join(' – ') : '—';
-  endVerdict.className = 'go-end-verdict ' + (winner === 1 ? 'is-win' : 'is-loss');
-  playSfx(winner === 1 ? 'win' : 'lose');
+  // 🔴 2026-10-23：样式/音效按「本方是否获胜」判，不能按 winner===1。
+  //   联机坐 seat1（player 2）获胜时 winner===1 为假 —— 赢局配输字红 Style + lose 音。
+  const meWon = state.mode === 'online' ? winner === ((state.myIdx ?? 0) + 1) : winner === 1;
+  endVerdict.className = 'go-end-verdict ' + (meWon ? 'is-win' : 'is-loss');
+  playSfx(meWon ? 'win' : 'lose');
   // 终局快照给「分享结果」卡片：AI 模式下 1 号是玩家，联机看自己那一手
-  snapshotResult(winner === (state.mode === 'ai' ? 1 : (state.myIdx ?? 0) + 1));
+  snapshotResult(meWon);
 
   toast(verdict + (line && line.length ? ' · ' + line.map(notation).join(' – ') : ''));
   scheduleEndScreen();
@@ -739,10 +751,23 @@ function newGame(): void {
 /* ======================
  * 联机
  * ====================== */
+/**
+ * 🔴 回合口径（2026-10-23 重写）：按服务端权威 turn 判，不按 moves 奇偶判。
+ *
+ *    原实现 `moves.length % 2 === myIdx` 的倒塌链：
+ *      applyServerBoard 每帧清空 moves → 本地记谱与服务端着法数脱钩 →
+ *      opponent_place 再补一子让奇偶"看起来对" → 而服务端 doMove 是
+ *      **先 broadcastState（已含该子）再广播 opponent_place**（games-room.js:881-884），
+ *      且 broadcast 无差别发给所有人 —— 接收方在权威盘上又落一子（幻影盘），
+ *      moves 被清后重记为 1 条，座位 0 第一回合后奇偶错位**永久锁死**。
+ *
+ *    现在 state.player 恒等于服务端 turn+1（applyServerBoard 权威采纳），
+ *    与 renderClockHud:273 的既有口径统一；moves 只服务回放，不参与回合判定。
+ */
 function onlineMyTurn(): boolean {
   if (!state.roomLive) return false;   // 对手没进房：棋盘锁定
   if (state.myIdx === null) return false;
-  return state.moves.length % 2 === state.myIdx;
+  return state.player === state.myIdx + 1;
 }
 
 function leaveRoom(): void {
@@ -757,15 +782,16 @@ function leaveRoom(): void {
 function handleWs(msg: OnlineMsg): void {
   const t = String(msg.type || '');
   if (t === 'opponent_place') {
-    const c = typeof msg.c === 'number' ? msg.c : -1;
+    // 🔴 2026-10-23：此分支不再落子。服务端 doMove 的顺序是
+    //    「先 broadcastState()（权威盘，已含这一子）再广播 opponent_place」
+    //    （games-room.js:881-884），且 broadcast() 无差别发给房间里所有人 ——
+    //    每个客户端收到这两帧的先后是固定的 state → opponent_place。
+    //    原实现在权威盘上又 placeLocal 一次：接收方棋盘多一枚幻影 disc，
+    //    moves 被 applyServerBoard 清空后重记为一条，座位 0 第一回合后
+    //    回合奇偶错位永久锁死（房间假死只能刷新）。
+    //    opponent_place 现在只承担「对手落子」的提示音；盘面唯一来源是 state 帧。
     const by = typeof msg.by === 'number' ? msg.by : -1;
-    // state.board[c] === 0 这道闸不能少：placeLocal 先记账再落子，
-    // 满列（drop 返回 -1）也会留下一条 move，而 onlineMyTurn 按 moves.length 取奇偶 —— 一条幻影步就永久错位。
-    if (c >= 0 && c < COLS && state.board[c] === 0 && by !== state.myIdx) {
-      pushHistory();
-      placeLocal(c, (by + 1) as CPlayer);
-      afterMove();
-    }
+    if (by >= 0 && by !== state.myIdx) playSfx('place');
   } else if (t === 'start' || t === 'restart_notify') {
     newGame();
   } else if (t === 'opponent_leave') {
@@ -884,10 +910,22 @@ function rollbackRejected(): void {
 }
 
 /**
- * 判断棋模式：从服务端权威棋盘快照恢复（断线重连后用）。
+ * 判断棋模式：从服务端权威棋盘快照恢复（每步广播 + 断线重连都用这一帧）。
  * connect4 是 judgment 模式，服务端持有权威盘并随 broadcastState 下发。
  * ⚠️ 编码映射：服务端扁平 42，null=空 / 0|1=座位号；客户端扁平 42，0=空 / 1|2=CPlayer。
  * 座位同理：服务端 turn 是座位号(0/1)，客户端 player = 座位号 + 1。
+ *
+ * 🔴 2026-10-23 重写（原实现是联机 P0 的一环）：
+ *   原代码无条件 `state.moves = []` 清空本地记谱 —— 而回合判定当时按
+ *   moves 奇偶，清空后只能靠紧随其后的 opponent_place 补一子把奇偶凑对，
+ *   于是踩进「state 帧已含该子 → 又落一子」的幻影盘陷阱（见 onlineMyTurn 注释）。
+ *   现在：
+ *     · 盘面/回合一律以本帧为权威（player = turn + 1）；
+ *     · 本地重放盘与权威盘一致（正常对局）→ 保留本地 moves（真实落子顺序，回放保真）；
+ *     · 不一致（重连后本地空盘/断线期间对手走过）→ 按权威盘反推合法着法序列
+ *       （deriveMovesFromBoard，重力规则下逐格等价），回放与奇偶同时恢复；
+ *     · history 不再清空 —— rollbackRejected 的拒步回滚靠它活命；
+ *     · lastMove 用 diff 推出（自己刚落的 / 重连时对手新落的），不再恒 -1。
  */
 function applyServerBoard(m: OnlineMsg): void {
   const inner = (m.state && typeof m.state === 'object') ? (m.state as OnlineMsg) : null;
@@ -898,11 +936,14 @@ function applyServerBoard(m: OnlineMsg): void {
     const v = inner.board[i] as number | null;
     b.push(v === null || v === undefined ? 0 : (v === 0 ? 1 : 2));
   }
+  // 本地按 moves 重放出的盘 vs 服务端权威盘：一致 → 保留真实记谱
+  const replayed = viewBoard(state.moves, null).b;
+  const inSync = replayed.length === b.length && replayed.every((v, i) => v === b[i]);
+  const prev = state.board;
   state.board = b;
   state.player = (inner.turn + 1) as CPlayer;
-  state.lastMove = -1;
-  state.history = [];
-  state.moves = [];
+  state.lastMove = lastPlacedCell(prev, b);
+  if (!inSync) state.moves = deriveMovesFromBoard(b);
   state.over = String(inner.status || '') === 'over';
   state.sawGameOver = false;
   render();

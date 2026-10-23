@@ -45,6 +45,38 @@ export function cloneBoard(b: Board): Board {
   return b.slice();
 }
 
+/**
+ * 联机座位号 → 客户端颜色（本作全链路唯一真相源）。
+ * 服务端 reversi-core 的 seat0=黑(0)且先手（reversi-core.js:17-18），
+ * 客户端 1=白 / 2=黑 —— 座位 0 → 黑(2)，座位 1 → 白(1)。
+ *
+ * 🔴 曾把 `seat+1` 当颜色用（seat0→1=白），整局座位-颜色反转：
+ *    每步权威快照到达棋子 visibly 变色、合法点按错的颜色计算、HUD 是假标签。
+ *    onlineMyTurn / onCell / maybeAutoPass / opponent_place / finish /
+ *    renderHud 全部经由此函数，禁止在别处再推一遍座位↔颜色。
+ */
+export function seatColor(seatIdx: number | null): Player {
+  return seatIdx === 0 ? 2 : 1;
+}
+
+/** 服务端 turn（0=黑先行，snapshot.turn）→ 客户端行棋方颜色 */
+export function turnToPlayer(turn: number): Player {
+  return turn === 0 ? 2 : 1;
+}
+
+/**
+ * diff 两代盘面找新落点（从空变为非空的格）。黑白棋的翻子格原本非空，
+ * 不会被误判成落点；重连全量恢复出现多格时取坐标最大的一个。
+ * 无新增返回 -1。
+ */
+export function lastPlacedCell(prev: Board, next: Board): number {
+  let last = -1;
+  for (let i = 0; i < SIZE2; i++) {
+    if (prev[i] === 0 && next[i] !== 0) last = i;
+  }
+  return last;
+}
+
 /** 沿方向寻找可翻转段：找连续 opp 直到遇到 player */
 function flipsAlong(b: Board, x: number, y: number, dx: number, dy: number, player: Player): number[] {
   const opp = (player === 1 ? 2 : 1) as Player;

@@ -54,6 +54,41 @@ export function isFull(b: Board): boolean {
   return b.every((v) => v !== 0);
 }
 
+/**
+ * 从权威盘面反推一个合法着法序列（每列自底向上收集列号）。
+ *
+ * 用途：联机断线重连后，服务端快照只下发权威盘（judgment 模式无着法历史，
+ * games-room.js snapshot() 只给 board/turn/status），而本地 moves[] 已丢失，
+ * 回合判定（turn+1 口径）与回放都依赖着法序列。
+ *
+ * 正确性：四子棋重力规则下，每列从底向上是唯一可能的填充顺序；列间先后
+ * 不影响任何一列的最终形状，所以按列收集出的序列重放后与服务端权威盘
+ * **完全一致**（颜色分布逐格相等）。代价是列间顺序可能与真实落子顺序不同
+ * —— 只影响回放观感，不影响盘面与胜负。
+ */
+export function deriveMovesFromBoard(b: Board): number[] {
+  const out: number[] = [];
+  for (let x = 0; x < COLS; x++) {
+    for (let y = ROWS - 1; y >= 0; y--) {
+      if (b[y * COLS + x] !== 0) out.push(x);
+    }
+  }
+  return out;
+}
+
+/**
+ * diff 两代盘面，返回「上一手落点」（从空变为非空的格）。
+ * 多格同时出现（重连全量恢复）时取坐标最大的一个，至少保证高亮不丢。
+ * 没有新增格（盘面一致/回退）返回 -1。
+ */
+export function lastPlacedCell(prev: Board, next: Board): number {
+  let last = -1;
+  for (let i = 0; i < SIZE2; i++) {
+    if (prev[i] === 0 && next[i] !== 0) last = i;
+  }
+  return last;
+}
+
 export interface GameResult { winner: 0 | Player | 3; line: number[] | null }
 
 /** 检查 4 连（任何玩家） */

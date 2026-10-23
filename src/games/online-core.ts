@@ -31,6 +31,10 @@ export interface OnlineHandlers {
   onStart?: (msg: OnlineMsg) => void;
   onOpponentMove?: (msg: OnlineMsg) => void;
   onOpponentPlace?: (msg: OnlineMsg) => void;
+  /** 对局内聊天。服务端 games-room.js:627 chat() 广播
+   *  { type:'chat', by:座位号, name, emoji:boolean, text } —— 含发送者回显，
+   *  两端都收得到，UI 不需要自己插本地消息。 */
+  onChat?: (msg: OnlineMsg) => void;
   onState?: (msg: OnlineMsg) => void;
   onGameOver?: (msg: OnlineMsg) => void;
   onOpponentLeave?: () => void;
@@ -359,6 +363,13 @@ function openSocket(state: OnlineState, code: string, handlers: OnlineHandlers, 
     }
     if (t === 'opponent_place') {
       handlers.onOpponentPlace?.(msg);
+      return;
+    }
+    if (t === 'chat') {
+      // 🔴 2026-10-23：此前分发器没有 chat 分支 —— 各游戏只能发不能收
+      //   （井字棋聊天 UI 齐全却永远看不到对手消息）。服务端 chat() 广播
+      //   含发送者回显，两端都走这一个入口。
+      handlers.onChat?.(msg);
       return;
     }
     if (t === 'game_over') {

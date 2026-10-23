@@ -1442,6 +1442,13 @@ function renderScorePanel(): void {
    ══════════════════════════════════════════════════════════════ */
 function enterReplay(): void {
   if (!state.moves.length) { toast(t('bg.bg_go_no_moves', 'No moves to review')); return; }
+  // 🔴 2026-10-23：联机对局进行中禁止进回放。回放态（reviewAt!==null）下收到的
+  //   对手着法被 index.ts 的 `if (state.reviewAt !== null) return` 静默丢弃：
+  //   退出回放后该手永久丢失、两端局面分叉、终局屏不弹。照象棋/gomoku 同款守卫。
+  if (state.mode === 'ranked' && !state.over) {
+    toast(t('bg.bg_common_review_after_over', 'Review is available after the game ends'));
+    return;
+  }
   cancelAiMove();
   stopClockLoop();
   state.reviewAt = 0;

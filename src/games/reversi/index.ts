@@ -22,6 +22,7 @@ import {
 import { wireLobbyChrome } from '../../lobby-chrome';
 import {
   emptyBoard, cloneBoard, legalMoves, place as revPlace, bestMove, SIZE,
+  seatColor, turnToPlayer, lastPlacedCell,
   type Board as RBoard, type Player as RPlayer, type Difficulty as RDifficulty,
 } from './engine';
 import {
@@ -30,7 +31,7 @@ import {
   type OnlineState, type OnlineMsg,
   isMoveRejected,
 } from '../online-core';
-import { modeFromUrl } from '../shared';
+import { modeFromUrl, levelFromUrl } from '../shared';
 import { openFriendRoom } from '../friend-room';
 import { reportRound, isClassroom, urlRoomCode, ensureStudentCode } from '../../shared/teacher-track';
 import { parseGameOver } from '../../shared/game-over';
@@ -116,7 +117,8 @@ type UIState = {
 const state: UIState = {
   screen: 'match',
   mode: 'ai',
-  level: 'medium',
+  // 大厅「vs AI Master」卡深链 ?level=hard（2026-10-23 接线，曾不读）
+  level: levelFromUrl('medium', ['easy', 'medium', 'hard'] as const),
   board: emptyBoard() as RBoard,
   player: 1,
   lastMove: -1,
@@ -136,8 +138,9 @@ const state: UIState = {
 };
 
 const MODE_PAGE = '/games/reversi/lobby/';
-const HUMAN = 1;       // 玩家 = 白（engine player 1 = 白）
-const ENGINE = 2;      // AI = 黑（engine player 2 = 黑）
+const HUMAN = 1;       // 单机玩家 = 白（engine player 1 = 白）
+const ENGINE = 2;      // 单机 AI = 黑（engine player 2 = 黑）
+/** 联机 seat0 = 黑（服务端 reversi-core.js:17-18），seat1 = 白。见 engine.seatColor。 */
 
 /* ======================
  * 工具
@@ -148,15 +151,22 @@ function counts(b: RBoard): [number, number] {
   return [w, k];
 }
 
-/** viewBoard：按 moves 序列 + reviewAt 纯函数重放；用 revPlace 自动翻转 */
-function viewBoard(moves: number[], reviewAt: number | null): { b: RBoard; lastMove: number } {
+/**
+ * viewBoard：按 moves 序列 + reviewAt 纯函数重放；用 revPlace 自动翻转。
+ * 🔴 first 参数（2026-10-23）：先手色。单机玩家执白先行，联机 seat0=黑先行
+ *    （服务端 reversi-core turn=0=黑）—— 不传会按白先重放，联机回放颜色整体错。
+ * ⚠️ 已知近似：着法序列不含 pass（黑白棋停招不产生落点），一次停招之后的
+ *    轮换推断会失真；联机快照也不含着法历史（重连后 moves 缺期内着法）。
+ *    回放仅作观演，盘面与胜负判定始终以服务端权威盘为准。
+ */
+function viewBoard(moves: number[], reviewAt: number | null, first: RPlayer = 1): { b: RBoard; lastMove: number } {
   const b = emptyBoard() as RBoard;
   const n = reviewAt === null ? moves.length : reviewAt + 1;
   let last = -1;
   for (let k = 0; k < Math.min(n, moves.length); k++) {
     const i = moves[k];
     if (i < 0 || i >= SIZE * SIZE) continue;
-    const p = (k % 2 === 0 ? 1 : 2) as RPlayer;
+    const p = (k % 2 === 0 ? first : (first === 1 ? 2 : 1)) as RPlayer;
     revPlace(b, i, p);
     last = i;
   }
@@ -167,7 +177,9 @@ function viewBoard(moves: number[], reviewAt: number | null): { b: RBoard; lastM
  * 渲染
  * ====================== */
 function render(): void {
-  const { b, lastMove } = viewBoard(state.moves, state.reviewAt);
+  // 联机回放按黑先重放（seat0=黑），单机/同屏按白先（见 viewBoard 注释）
+  const firstColor: RPlayer = state.mode === 'online' ? 2 : 1;
+  const { b, lastMove } = viewBoard(state.moves, state.reviewAt, firstColor);
   const renderBoard = state.reviewAt !== null ? b : state.board;
   const lastIdx = state.reviewAt !== null ? lastMove : state.lastMove;
 
@@ -185,7 +197,8 @@ function render(): void {
   let previews = '';
   // roomLive 缺失会导致等待期就画出可点提示环（点了又被 onCell 静默丢掉）；
   // reviewAt 缺失会导致回放态照常显示可点样式。两者都跟 onCell 的实际闸门对齐。
-  const myTurnOnline = state.mode === 'online' && state.roomLive && state.myIdx !== null && state.player === state.myIdx + 1;
+  // 🔴 2026-10-23：联机行棋权按 seatColor 判（seat0=黑/seat1=白），不是 myIdx+1。
+  const myTurnOnline = state.mode === 'online' && state.roomLive && state.myIdx !== null && state.player === seatColor(state.myIdx);
   const showHints = !state.over && state.reviewAt === null &&
     (state.mode === 'pass' || (state.mode === 'ai' ? state.player === HUMAN : myTurnOnline));
   if (showHints) {
@@ -250,7 +263,12 @@ function renderHud(): void {
   } else if (state.mode === 'pass') {
     label = state.player === HUMAN ? window.t('bg.bg_reversi_you_white_lc') : window.t('bg.bg_reversi_pass_black_lc');
   } else if (state.mode === 'online') {
-    label = state.player === HUMAN ? window.t('bg.bg_reversi_you_white_lc') : window.t('bg.bg_reversi_engine_black_lc');
+    // 🔴 2026-10-23：联机 HUD 不能显示「你（白）/引擎（黑）」—— 对方是真人，
+    //   且玩家颜色随座位变（seat0=黑/seat1=白）。按是否轮到我显示。
+    const myTurnNow = state.roomLive && state.myIdx !== null && state.player === seatColor(state.myIdx);
+    label = !state.roomLive
+      ? window.t('bg.bg_common_waiting_opponent')
+      : (myTurnNow ? window.t('othello.your_turn') : window.t('othello.opponent_turn'));
   } else {
     label = state.player === HUMAN
       ? window.t('bg.bg_reversi_you_white_lc')
@@ -277,7 +295,8 @@ function renderClockHud(): void {
     clockOppCard.classList.toggle('is-active', false);
   } else {
     // online：原来整个 else 都置 false，联机下永远不高亮「谁的钟在走」。
-    const myTurn = state.roomLive && state.myIdx !== null && state.player === state.myIdx + 1;
+    // 🔴 2026-10-23：行棋权按 seatColor 判（seat0=黑/seat1=白），不是 myIdx+1。
+    const myTurn = state.roomLive && state.myIdx !== null && state.player === seatColor(state.myIdx);
     clockMeCard.classList.toggle('is-active', !state.over && myTurn);
     clockOppCard.classList.toggle('is-active', !state.over && !myTurn && state.roomLive);
   }
@@ -312,7 +331,8 @@ function onCell(i: number): void {
 
   pushHistory();
   if (state.mode === 'online') {
-    state.player = ((state.myIdx ?? 0) + 1) as RPlayer;
+    // 联机落子颜色 = 本方座位颜色（seat0=黑/seat1=白），不是 myIdx+1
+    state.player = seatColor(state.myIdx);
   }
   placeLocal(i, state.player);
   afterMove();
@@ -413,9 +433,10 @@ function finish(): void {
   if (state.mode === 'online' && isClassroom() && state.roomCode) {
     const dur = state.timer ? Date.now() - state.timer.startedAt : 0;
     const [w, k] = counts(state.board);
-    const me = ((state.myIdx ?? 0) + 1) as RPlayer;
-    const my = me === HUMAN ? w : k;
-    const op = me === HUMAN ? k : w;
+    // 本方颜色按座位推（seat0=黑/seat1=白），不是 myIdx+1
+    const me = seatColor(state.myIdx);
+    const my = me === 1 ? w : k;
+    const op = me === 1 ? k : w;
     const youWin = my > op;
     reportRound(state.roomCode, {
       round: 1, solved: youWin, duration_ms: dur,
@@ -424,28 +445,28 @@ function finish(): void {
   }
 
   const [w, k] = counts(state.board);
+  // 🔴 2026-10-23：联机「本方是否获胜」按座位颜色推（seat0=黑/seat1=白），
+  //    不是 myIdx+1；样式/音效/分享快照统一用它，和棋单独分流。
+  const meColor = seatColor(state.myIdx);
+  const meWin = state.mode === 'online'
+    ? (meColor === 1 ? w : k) > (meColor === 1 ? k : w)
+    : w > k;
   let verdict: string;
   // 🔴 2026-10-16：结算词此前是硬编码英文，切换中文站仍显示 "You win"。
   // 改走全站共享键 bi.*（与 bi.draw / bi.black_wins 同族），不新造游戏专属键。
   if (w === k) verdict = window.t('bi.draw');
   else if (state.mode === 'ai') verdict = w > k ? window.t('bi.you_win') : window.t('bi.ai_wins');
   else if (state.mode === 'pass') verdict = w > k ? window.t('bi.white_wins') : window.t('bi.black_wins');
-  else {
-    const me = ((state.myIdx ?? 0) + 1) as RPlayer;
-    const my = me === HUMAN ? w : k;
-    const op = me === HUMAN ? k : w;
-    verdict = my > op ? window.t('bi.you_win') : window.t('bi.you_lose');
-  }
+  else verdict = meWin ? window.t('bi.you_win') : window.t('bi.you_lose');
   const line = `${window.t('bg.bg_reversi_score')} ${w} · ${k}`;
   endVerdict.textContent = verdict;
   endLine.textContent = line;
-  endVerdict.className = 'go-end-verdict ' + (w >= k ? 'is-win' : 'is-loss');
+  // 🔴 样式按「本方是否获胜」判。原实现 `w >= k` 按白黑判 ——
+  //    联机坐 seat0（黑）且黑多时判 is-loss + lose 音；和棋还被算成 is-win。
+  endVerdict.className = 'go-end-verdict ' + (w === k ? 'is-draw' : (meWin ? 'is-win' : 'is-loss'));
   // 终局快照给「分享结果」卡片：联机比自己的子数，AI/观战看白黑
-  const meSide = ((state.myIdx ?? 0) + 1) as RPlayer;
-  snapshotResult(state.mode === 'online'
-    ? (meSide === HUMAN ? w : k) > (meSide === HUMAN ? k : w)
-    : w > k);
-  playSfx(w >= k ? 'win' : 'lose');
+  snapshotResult(meWin);
+  playSfx(w === k ? 'place' : (meWin ? 'win' : 'lose'));
   toast(verdict + ' · ' + line);
   scheduleEndScreen();
 }
@@ -740,7 +761,9 @@ function newGame(): void {
   cancelAiMove();
   resetReplayUI();
   state.board = emptyBoard() as RBoard;
-  state.player = HUMAN;
+  // 联机开局恒由 seat0（黑）先行 —— 服务端 reversi-core newGame turn=0（黑先）。
+  // 单机保持玩家（白）先行的产品选择。seat1 玩家此时看到"黑方行棋"= 等待态。
+  state.player = state.mode === 'online' ? turnToPlayer(0) : HUMAN;
   state.lastMove = -1;
   state.over = false;
   state.history = [];
@@ -761,10 +784,17 @@ function newGame(): void {
 /* ======================
  * 联机
  * ====================== */
+/**
+ * 🔴 座位→颜色必须走 seatColor（2026-10-23）：
+ *    服务端 seat0=黑(0)先手、seat1=白(1)，而 state.player 是颜色域(1白/2黑)。
+ *    原实现 `player === myIdx+1` 把 seat0 当白、seat1 当白……seat0 全程被判错：
+ *    权威盘每步到达棋子 visibly 变色、合法点按白色计算而实际行棋方是黑、
+ *    HUD 顶着假的 "You · White"。
+ */
 function onlineMyTurn(): boolean {
   if (!state.roomLive) return false;   // 对手没进房：棋盘锁定（与 go 的 rankedLive 同义）
   if (state.myIdx === null) return false;
-  return state.player === state.myIdx + 1;
+  return state.player === seatColor(state.myIdx);
 }
 
 function leaveRoom(): void {
@@ -778,7 +808,8 @@ function leaveRoom(): void {
 
 function maybeAutoPass(): void {
   if (state.mode !== 'online' || state.myIdx === null || state.over) return;
-  const me = (state.myIdx + 1) as RPlayer;
+  // 本方颜色按座位推（seat0=黑/seat1=白），不是 myIdx+1
+  const me = seatColor(state.myIdx);
   if (state.player === me && legalMoves(state.board, me).length === 0) {
     sendWs(state as OnlineState, { type: 'pass' });
   }
@@ -787,16 +818,15 @@ function maybeAutoPass(): void {
 function handleWs(msg: OnlineMsg): void {
   const t = String(msg.type || '');
   if (t === 'opponent_place') {
-    const r = typeof msg.r === 'number' ? msg.r : -1;
-    const c = typeof msg.c === 'number' ? msg.c : -1;
+    // 🔴 2026-10-23：不再落子。服务端 doMove 的顺序是
+    //    「先 broadcastState()（权威盘，已含该子+全部翻子）再广播 opponent_place」
+    //    （games-room.js:881-884），且 broadcast() 无差别发给房间里所有人 ——
+    //    每个客户端收到顺序恒为 state → opponent_place。原实现在权威盘上又
+    //    revPlace 一次：幻影子 + 重复翻子（翻过的子被翻回），双端必然分叉。
+    //    opponent_place 现在只承担「对手落子」提示音；盘面唯一来源是 state 帧。
+    //    自动 pass 检测改由 onState 末尾触发（见 roomHandlers）。
     const by = typeof msg.by === 'number' ? msg.by : -1;
-    if (r >= 0 && c >= 0 && by !== state.myIdx) {
-      const i = r * 8 + c;
-      pushHistory();
-      placeLocal(i, (by + 1) as RPlayer);
-      afterMove();
-      maybeAutoPass();
-    }
+    if (by >= 0 && by !== state.myIdx) playSfx('place');
   } else if (t === 'pass_notify') {
     state.player = state.player === 1 ? 2 : 1;
     render();
@@ -917,15 +947,20 @@ function rollbackRejected(): void {
 }
 
 /**
- * 判断棋模式：从服务端权威棋盘快照恢复（断线重连后用）。
+ * 判断棋模式：从服务端权威棋盘快照恢复（每步广播 + 断线重连都用这一帧）。
  * 中继棋种靠 relayMoves 重放，而 reversi 是 judgment 模式 —— 服务端持有权威盘，
  * join 后随 broadcastState 下发，直接采用即可，不必重放。
  *
  * ⚠️ 两套编码不是一回事，不能直接赋值：
  *   服务端 reversi-core: 扁平 64，null=空 / 0=黑 / 1=白
  *   客户端 RBoard:      扁平 64，0=空  / 1=白 / 2=黑
- * 座位同理：服务端 turn 是座位号(0/1)，客户端 player = 座位号 + 1。
- * 注意快照不含着法序列，所以重连后回放历史会丢（棋盘是对的）。
+ *
+ * 🔴 2026-10-23：turn 是**座位号**（0=黑先手）不是颜色，必须过 turnToPlayer。
+ *    原实现 `player = turn + 1` 把服务端 turn=0 当客户端 1(白) —— 而 seat0 实际
+ *    是黑：seat0 玩家刚落黑子，下一秒权威盘把它"变回"黑（可见地变色），合法点
+ *    提示按白色算（点了被服务端拒），HUD "You · White" 是假标签。
+ *    另：快照不含着法序列，本地 moves 保留不清（重连后缺重连期间的着法，
+ *    回放略失真；盘面与回合以本帧为权威）。
  */
 function applyServerBoard(m: OnlineMsg): void {
   const inner = (m.state && typeof m.state === 'object') ? (m.state as OnlineMsg) : null;
@@ -936,10 +971,12 @@ function applyServerBoard(m: OnlineMsg): void {
     const v = inner.board[i] as number | null;
     b.push(v === null || v === undefined ? 0 : (v === 1 ? 1 : 2));
   }
+  const prev = state.board;
   state.board = b;
-  state.player = (inner.turn + 1) as RPlayer;
-  state.lastMove = -1;
-  state.history = [];
+  state.player = turnToPlayer(inner.turn);
+  // diff 推最后落点（翻子格原非空，不会误判）；无新增（重连首帧）时保留旧值
+  const diffLast = lastPlacedCell(prev, b);
+  if (diffLast >= 0) state.lastMove = diffLast;
   state.over = String(inner.status || '') === 'over';
   state.sawGameOver = false;
   render();
@@ -957,7 +994,10 @@ function roomHandlers(code: string) {
     onOpponentPlace: handleWs,
     onPassNotify: handleWs,
     onStart: (m: OnlineMsg) => { newGame(); applyRoomState(m, true); },
-    onState: (m: OnlineMsg) => { applyServerBoard(m); applyRoomState(m, false); },
+    // 🔴 2026-10-23：state 帧后必须跑 maybeAutoPass ——  opponent_place 不再落子后，
+    //   「轮到我且无合法步 → 自动 pass」的唯一触发点就是这里（原流程搭在
+    //   opponent_place 的 afterMove 上，已随幻影修复一起拆掉）。
+    onState: (m: OnlineMsg) => { applyServerBoard(m); applyRoomState(m, false); maybeAutoPass(); },
     onRestart: () => newGame(),
     onOpponentLeave: () => { state.roomLive = false; toast('Opponent left'); render(); },
     // 断线：online-core 已把 roomLive 置 false，这里锁盘并给一句可见提示

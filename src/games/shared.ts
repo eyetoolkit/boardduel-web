@@ -59,3 +59,26 @@ export function modeFromUrl(fallback: Mode = 'ai'): Mode {
   }
   return fallback;
 }
+
+/**
+ * 从 URL ?level= 读取初始难度（白名单校验，防注入）。
+ *
+ * 大厅「vs AI Master」卡跳 `?mode=ai&level=hard`（六款游戏的大厅都这么写），
+ * 而原实现只有 gomoku 读这个参数 —— 其余五款点 Master 卡进来全是 medium，
+ * 卡片名不副实。2026-10-23 六款统一接线。
+ *
+ * 深链只在页面初始化时读一次；对局中切难度仍走各游戏自己的难度键。
+ */
+export function levelFromUrl<T extends string>(fallback: T, whitelist: readonly T[]): T {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const q = new URLSearchParams(window.location.search).get('level');
+    if (q) {
+      const v = q.toLowerCase() as T;
+      if (whitelist.includes(v)) return v;
+    }
+  } catch {
+    /* SSR / window 不可用时优雅降级 */
+  }
+  return fallback;
+}
