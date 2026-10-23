@@ -15,6 +15,7 @@ import { wireLobbyChrome } from '../../lobby-chrome';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 import { parseGameOver } from '../../shared/game-over';
 import { myName as ocMyName, opponentNameFromState, isMoveRejected, ensureAccount } from '../online-core';
+import { reportRound, isClassroom, urlRoomCode, ensureStudentCode } from '../../shared/teacher-track';
 // 2026-10-06：好友房邀请卡片（全屏遮罩弹窗，范式抄 NumeriDuel 24-game share-overlay）
 import { mountInviteCard, showInviteCard, onOpponentJoined } from '../invite-card';
 import '../../styles/invite-card.css';
@@ -123,6 +124,8 @@ interface UIState {
   rankedLive: boolean;
   /** 对手昵称；未进房为 null。对手侧标签与时钟高亮都用它。 */
   oppName: string | null;
+  /** 本局开始时间戳（ms）：teacher-track duration_ms 用。go 的 clock 是读秒倒计时，不是经过时长。 */
+  startedAt: number;
 }
 
 const state: UIState = {
@@ -152,6 +155,7 @@ const state: UIState = {
   sawGameOver: false,
   rankedLive: false,
   oppName: null,
+  startedAt: Date.now(),
 };
 
 /* ══════════════════════════════════════════════════════════════
@@ -280,9 +284,9 @@ const scorePanelBody = $<HTMLElement>('go-scorepanel-body');
 const scorePanelKomi = $<HTMLElement>('go-scorepanel-komi');
 
 /** 取翻译：字典未就绪 / 未命中时回退到 fallback（避免首帧显示裸 key） */
-const t = (k: string, fallback: string): string => {
+const t = (k: string, fallback: string, vars?: Record<string, string | number>): string => {
   let v = '';
-  try { v = typeof window.t === 'function' ? window.t(k) : ''; } catch { v = ''; }
+  try { v = typeof window.t === 'function' ? window.t(k, vars) : ''; } catch { v = ''; }
   return v && v !== k ? v : fallback;
 };
 
@@ -861,6 +865,14 @@ function endGame(verdict: string, line: string, reason: UIState['endReason'], hu
   state.endReason = reason;
   cancelAiMove();
   stopClockLoop();
+  // 2026-10-23 第三批：课堂 ranked 上报（此前围棋未接 teacher-track，课堂对局不计学情）
+  if (state.mode === 'ranked' && isClassroom() && state.roomCode) {
+    const dur = state.startedAt ? Date.now() - state.startedAt : 0;
+    reportRound(state.roomCode, {
+      round: 1, solved: humanWon, duration_ms: dur,
+      outcome: humanWon ? 'win' : 'loss',   // 围棋无和棋：终局必有胜方
+    });
+  }
   endVerdict.textContent = verdict;
   endLine.textContent = line;
   if (state.mode === 'ai') playSfx(humanWon ? 'win' : 'lose');
@@ -894,6 +906,7 @@ function newGame(): void {
   state.history = [];
   state.moves = [];
   state.clock = initialClock();
+  state.startedAt = Date.now();       // 每局重新计时（teacher-track duration_ms）
   resetPosHashes();                    // 🔴 新局必须重置 superko 集合，否则沿用上一局的历史局面
   state.over = false;
   state.endReason = null;
@@ -999,7 +1012,7 @@ function scheduleReconnect(code: string, dead: WebSocket): void {
   const step = (): void => {
     if (state.roomCode !== code) return;        // 已离场/换房
     if (tries >= RECONNECT_MAX) {
-      toast('Connection lost — share room code ' + code + ' to resume');
+      toast(t('bg.bg_common_conn_lost_share', 'Connection lost — share room code {code} to resume', { code }));
       return;
     }
     const delay = RECONNECT_BASE_MS * Math.pow(2, tries);
@@ -1019,11 +1032,13 @@ function enterRankedRoom(code: string, opts: { attempt?: number } = {}): void {
   chatToggleBtn.hidden = false;
   chatRoom.textContent = code;
   chatLog.innerHTML = '';
-  toast('Room ' + code + ' — waiting for opponent');
+  toast(t('bg.bg_common_room_created', 'Room {code} created — waiting for your opponent', { code }));
   // 与 online-core 同理：pid cookie 必须在握手请求里就位，否则服务端 getAuthUuid
   // 返回空 uuid，这一局既不计 Elo 也不发币（详见 online-core ensureAccount 注释）。
   // go 自带手写 WS，不走 online-core 的 connect()，所以这里要自己等一次。
-  void ensureAccount().then(() => openRankedSocket(code, opts.attempt || 0));
+  // 课堂房先进代号弹窗确保学生身份（reportRound 依赖学生代号，缺了上报被服务端丢弃）。
+  const classroomHook = isClassroom() && urlRoomCode() === code ? ensureStudentCode(code) : Promise.resolve(null);
+  void Promise.all([ensureAccount(), classroomHook]).then(() => openRankedSocket(code, opts.attempt || 0));
 }
 
 function openRankedSocket(code: string, attempt: number): void {
@@ -1034,7 +1049,7 @@ function openRankedSocket(code: string, attempt: number): void {
     const base = wsUrl(code, myName());
     ws = new WebSocket(attempt > 0 ? `${base}&rejoin=1` : base);
   }
-  catch (e) { toast('Could not open room'); return; }
+  catch (e) { toast(t('bg.bg_common_could_not_open_room', 'Could not open room')); return; }
   state.ws = ws;
   // 🔴 换了一条连接，之前那次 restart 的回声就永远等不到了（断线时序最典型的死锁）：
   //   旧连接上 restartEchoArmed 还是 true 时 socket 断掉，没人清它。之后**对手**点
@@ -1053,17 +1068,17 @@ function openRankedSocket(code: string, attempt: number): void {
     stopClockLoop();
     renderBoard();
     updateInfo();
-    if (state.screen === 'match' && !state.over) toast('Connection lost');
+    if (state.screen === 'match' && !state.over) toast(t('bg.bg_common_conn_lost', 'Connection lost'));
     scheduleReconnect(code, ws);
   });
-  ws.addEventListener('error', () => { toast('Room unavailable'); });
+  ws.addEventListener('error', () => { toast(t('bg.bg_common_room_unavailable', 'Room unavailable')); });
 }
 
 async function startFriendRoom(): Promise<void> {
   showScreen('match');
   renderBoard();
   const fail = () => {
-    toast('Could not open a friend room');
+    toast(t('bg.bg_common_could_not_open_friend_room', 'Could not open a friend room'));
     window.setTimeout(() => location.replace(MODE_PAGE), 900);
   };
   try {
@@ -1648,7 +1663,7 @@ inviteCopyBtn.addEventListener('click', () => {
   const code = state.roomCode || '';
   const link = location.origin + '/b/go/' + code;
   const done = () => toast(t('bj.link_copied', 'Invite link copied'));
-  const fail = () => toast('Copy failed — code ' + code);
+  const fail = () => toast(t('bg.bg_common_copy_failed', 'Copy failed — code {code}', { code }));
   try { navigator.clipboard.writeText(link).then(done, fail); } catch { fail(); }
 });
 // 🔴 2026-10-04：原代码 `showScreen('match'); enterReplay();` ——
@@ -1721,7 +1736,7 @@ function boot(): void {
     showScreen('match');
     renderBoard();                 // 先画空盘，等 WS 'start' 接管
     enterRankedRoom(code);
-    toast(inviteIsHost() ? 'Room ' + code + ' created — waiting for your opponent' : 'Joining room ' + code);
+    toast(t(inviteIsHost() ? 'bg.bg_common_room_created' : 'bg.bg_common_room_joining', inviteIsHost() ? 'Room {code} created — waiting for your opponent' : 'Joining room {code}', { code }));
   } else if (pendingFriend) {
     void startFriendRoom();        // 内部 showScreen + renderBoard + fetch 建房 + enterRankedRoom
   } else {

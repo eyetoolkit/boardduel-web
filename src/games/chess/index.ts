@@ -33,6 +33,11 @@ import { openFriendRoom } from '../friend-room';
 import { reportRound, isClassroom, urlRoomCode, ensureStudentCode } from '../../shared/teacher-track';
 import { parseGameOver } from '../../shared/game-over';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
+import { runAiSearch } from '../../shared/ai-worker';
+// Vite `?worker` 导入：产出独立 worker chunk（默认导出是 Worker 构造函数）。
+// 不要改成 new URL('./ai-worker.ts', import.meta.url) —— <4KB 会被内联成
+// base64 data URI，module worker 不接受 data: URI（详见 ai-worker.ts 注释）。
+import ChessAiWorker from './ai-worker.ts?worker';
 
 /* ======================
  * 棋盘常量
@@ -637,9 +642,23 @@ function aiMove(extraMs = 0): void {
       render();
       return;
     }
-    const m = bestMove(state.gs, state.level, 1500);
-    if (!m) { render(); return; }
-    doMove(m);
+    // 2026-10-23 第三批：搜索搬进 Web Worker（原同步 bestMove 在 hard 档
+    // 冻结主线程 ~1.5s）。一次性通道 + 4s 超时 + 同步兜底：worker 不可用
+    // 或超时都退回原路径，AI 永远能走（只是可能卡一下）。
+    void runAiSearch(
+      ChessAiWorker,
+      { state: state.gs, level: state.level, timeBudget: 1500 },
+      4000,
+      () => bestMove(state.gs, state.level, 1500),
+    ).then((m) => {
+      // 守卫再查一次：worker 往返期间玩家可能已认输/新局/回放
+      if (state.over || state.screen !== 'match' || state.reviewAt !== null || state.gs.turn !== 'b') {
+        render();
+        return;
+      }
+      if (!m) { render(); return; }
+      doMove(m);
+    });
   }, Math.max(200, base + jitter + extraMs));
 }
 
@@ -796,7 +815,7 @@ function undo(): void {
   if (state.over) return;
   // 联机禁用：undo 不看是谁走的，能把对手的棋子从自己屏幕上撤掉，
   // 而回合闸随之对双方同时打开 → 两块棋盘永久分叉，且全程没有任何报错。
-  if (state.mode === 'online') { toast('Undo is not available in online play'); return; }
+  if (state.mode === 'online') { toast(window.t('bg.bg_common_undo_online')); return; }
   cancelAiMove();
   if (state.history.length === 0) return;
   state.gs = state.history.pop()!;
@@ -982,7 +1001,7 @@ function snapshotResult(youWin: boolean): void {
   };
 }
 document.getElementById('ch-share')?.addEventListener('click', async () => {
-  if (!lastResult) { toast('Finish a game first'); return; }
+  if (!lastResult) { toast(window.t('bg.bg_common_finish_first')); return; }
   const m = await import('../share-card');
   m.shareResult('Chess', {
     youWin: lastResult.youWin,
@@ -1160,8 +1179,8 @@ function roomHandlers(code: string) {
     // 重连也会再走 onConnect（每条新连接各触发一次）。不清盘，否则重连瞬间本地局面被抹掉，
     // 紧接着 onState 的 rebuildFromServer 虽然会从服务端历史重放回来，但会闪一下空盘，
     // 且 newGame 顺带重置时钟/历史。onState 会用服务端着法把局面补齐。
-    onConnect: () => { if (!state.moves.length) newGame(); toast('Connected · room ' + code); },
-    onReconnect: () => { toast('Reconnected'); render(); },
+    onConnect: () => { if (!state.moves.length) newGame(); toast(window.t('bg.bg_common_connected_room', { code })); },
+    onReconnect: () => { toast(window.t('bg.bg_common_reconnected')); render(); },
     // 重连次数用尽：棋盘保持锁定（服务端状态未知，不能瞎走），但必须给一句出路
     onReconnectFailed: (c: string) => { toast(window.t('bg.bg_common_reconnect_failed', { code: c }), 9000); render(); },
     onOpponentMove: handleWs,

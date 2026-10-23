@@ -452,7 +452,7 @@ function resetReplayUI(): void {
 }
 
 function enterReplay(): void {
-  if (!state.moves.length) { toast('No moves yet'); return; }
+  if (!state.moves.length) { toast(window.t('bg.bg_common_no_moves_yet')); return; }
   cancelAiMove();
   if (state.screen !== 'match') showScreen('match');
   state.reviewAt = 0;
@@ -693,7 +693,7 @@ function snapshotResult(youWin: boolean): void {
   };
 }
 document.getElementById('c4-share')?.addEventListener('click', async () => {
-  if (!lastResult) { toast('Finish a game first'); return; }
+  if (!lastResult) { toast(window.t('bg.bg_common_finish_first')); return; }
   const m = await import('../share-card');
   m.shareResult('Connect 4 · 7×6', {
     youWin: lastResult.youWin,
@@ -795,7 +795,7 @@ function handleWs(msg: OnlineMsg): void {
   } else if (t === 'start' || t === 'restart_notify') {
     newGame();
   } else if (t === 'opponent_leave') {
-    toast('Opponent left');
+    toast(window.t('bg.bg_common_opponent_left'));
   } else if (t === 'game_over') {
     // 原先只 render()：对端收到服务端结算后，屏幕停在一块不会动的棋盘上 ——
     // 没有胜负、没有「再战」按钮（结算屏是另一个默认 hidden 的 section）。
@@ -953,16 +953,16 @@ function roomHandlers(code: string) {
   return {
     // 重连也会再走 onConnect。清盘会让重连瞬间本地局面被抹掉、顺带重置时钟与历史。
 
-    onConnect: () => { if (!state.moves.length) newGame(); toast('Connected · room ' + code); },
+    onConnect: () => { if (!state.moves.length) newGame(); toast(window.t('bg.bg_common_connected_room', { code })); },
 
-    onReconnect: () => { toast('Reconnected'); render(); },
+    onReconnect: () => { toast(window.t('bg.bg_common_reconnected')); render(); },
     // 重连次数用尽：棋盘保持锁定（服务端状态未知，不能瞎走），但必须给一句出路
     onReconnectFailed: (c: string) => { toast(window.t('bg.bg_common_reconnect_failed', { code: c }), 9000); render(); },
     onOpponentPlace: handleWs,
     onStart: (m: OnlineMsg) => { newGame(); applyRoomState(m, true); },
     onState: (m: OnlineMsg) => { applyServerBoard(m); applyRoomState(m, false); },
     onRestart: () => newGame(),
-    onOpponentLeave: () => { state.roomLive = false; toast('Opponent left'); render(); },
+    onOpponentLeave: () => { state.roomLive = false; toast(window.t('bg.bg_common_opponent_left')); render(); },
     // 断线：online-core 已把 roomLive 置 false，这里锁盘并给一句可见提示
     onDisconnect: () => { toast(window.t('match.disconnected')); render(); },
     onGameOver: handleWs,

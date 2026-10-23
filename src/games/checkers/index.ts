@@ -28,6 +28,7 @@ import {
   isMoveRejected,
 } from '../online-core';
 import { openFriendRoom } from '../friend-room';
+import { reportRound, isClassroom, urlRoomCode, ensureStudentCode } from '../../shared/teacher-track';
 
 /* ====================== 棋盘常量 ====================== */
 const SLOT = 540;
@@ -384,6 +385,14 @@ function finish(winner: CPlayer | 0): void {
   //   在自己获胜时看到 is-loss 红字 + lose 音，分享卡还记成"未获胜"。
   const myColor: CPlayer = state.mode === 'online' ? (((state.myIdx ?? 0) + 1) as CPlayer) : HUMAN;
   const iWin = winner !== 0 && winner === myColor;
+  // 2026-10-23 第三批：课堂联机上报（此前跳棋未接 teacher-track，课堂对局不计学情）
+  if (state.mode === 'online' && isClassroom() && state.roomCode) {
+    const dur = state.timer.startedAt ? Date.now() - state.timer.startedAt : 0;
+    reportRound(state.roomCode, {
+      round: 1, solved: iWin, duration_ms: dur,
+      outcome: winner === 0 ? 'draw' : (iWin ? 'win' : 'loss'),
+    });
+  }
   let verdict: string;
   if (winner === 0) verdict = window.t('bi.draw');
   else if (state.mode === 'ai') verdict = iWin ? window.t('bi.you_win') : window.t('bi.ai_wins');
@@ -507,7 +516,7 @@ function snapshotResult(youWin: boolean): void {
   };
 }
 document.getElementById('ck-share')?.addEventListener('click', async () => {
-  if (!lastResult) { toast('Finish a game first'); return; }
+  if (!lastResult) { toast(window.t('bg.bg_common_finish_first')); return; }
   const m = await import('../share-card');
   m.shareResult('Checkers', {
     youWin: lastResult.youWin,
@@ -722,7 +731,7 @@ function handleWs(msg: OnlineMsg): void {
   } else if (t === 'start' || t === 'restart_notify') {
     newGame();
   } else if (t === 'opponent_leave') {
-    toast('Opponent left');
+    toast(window.t('bg.bg_common_opponent_left'));
   } else if (t === 'game_over') {
     // 🔴 2026-10-15 修复：此前收到服务端终局帧只 state.over=true + render()，
     //   屏幕停在冻住的棋盘上 —— 没有胜负、没有「再战」按钮，结算屏从不弹。
@@ -776,14 +785,14 @@ function rollbackRejected(): void {
 function roomHandlers(code: string) {
   return {
     // 重连也会再走 onConnect。清盘会让重连瞬间本地局面被抹掉、顺带重置时钟与历史。
-    onConnect: () => { if (!state.history.length) newGame(); toast('Connected · room ' + code); },
-    onReconnect: () => { toast('Reconnected'); render(); },
+    onConnect: () => { if (!state.history.length) newGame(); toast(window.t('bg.bg_common_connected_room', { code })); },
+    onReconnect: () => { toast(window.t('bg.bg_common_reconnected')); render(); },
     // 重连次数用尽：棋盘保持锁定（服务端状态未知，不能瞎走），但必须给一句出路
     onReconnectFailed: (c: string) => { toast(window.t('bg.bg_common_reconnect_failed', { code: c }), 9000); render(); },
     onOpponentMove: handleWs,
     onStart: (m: OnlineMsg) => { newGame(); applyRoomState(m, true); },
     onState: (m: OnlineMsg) => { applyServerMoves(m); applyRoomState(m, false); },
-    onOpponentLeave: () => { state.roomLive = false; toast('Opponent left'); render(); },
+    onOpponentLeave: () => { state.roomLive = false; toast(window.t('bg.bg_common_opponent_left')); render(); },
     // 断线：online-core 已把 roomLive 置 false，这里锁盘并给一句可见提示
     onDisconnect: () => { toast(window.t('match.disconnected')); render(); },
     onRestart: () => newGame(),
@@ -837,7 +846,11 @@ document.addEventListener('keydown', (e) => {
    （此前 checkers 完全无在线：大厅 4 张卡是假入口，前端零 WebSocket 代码） */
 if (ic) {
   state.mode = 'online';
-  enterRoom(state as OnlineState, ic, roomHandlers(ic));
+  // 课堂房间：先进代号弹窗确保学生身份，再进房（reportRound 依赖学生代号，缺了上报会被服务端丢弃）
+  const classroomHook = isClassroom() && urlRoomCode() === ic ? ensureStudentCode(ic) : Promise.resolve(null);
+  void classroomHook.then(() => {
+    enterRoom(state as OnlineState, ic, roomHandlers(ic));
+  });
   clearInviteParam();
 } else if (wantsFriend) {
   startFriendRoom();

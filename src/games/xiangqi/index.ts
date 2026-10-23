@@ -590,11 +590,11 @@ function resetReplayUI(): void {
 }
 
 function enterReplay(): void {
-  if (!state.moves.length) { toast('No moves yet'); return; }
+  if (!state.moves.length) { toast(window.t('bg.bg_common_no_moves_yet')); return; }
   // 联机中局禁回放：回放态棋盘渲染的是**重放出来的历史局面**，对手此刻走的那一手
   // 会被 apply 到真实 state 却完全看不见（要退出回放才显形）；若那一手终结了棋局，
   // 结束屏还会被 reviewAt !== null 压住 —— 玩家盯着冻住的棋盘，不知道这局已经结束。
-  if (state.mode === 'online' && !state.over) { toast('Review is available after the game ends'); return; }
+  if (state.mode === 'online' && !state.over) { toast(window.t('bg.bg_common_review_after_over')); return; }
   cancelAiMove();
   if (state.screen !== 'match') showScreen('match');
   state.reviewAt = 0;
@@ -666,7 +666,7 @@ function undo(): void {
   if (state.over) return;
   // 联机禁用：undo 不看是谁走的，能把对手的棋子从自己屏幕上撤掉，
   // 而回合闸随之对双方同时打开 → 两块棋盘永久分叉，且全程没有任何报错。
-  if (state.mode === 'online') { toast('Undo is not available in online play'); return; }
+  if (state.mode === 'online') { toast(window.t('bg.bg_common_undo_online')); return; }
   cancelAiMove();
   if (state.history.length === 0) return;
   state.gs = state.history.pop()!;
@@ -717,7 +717,7 @@ function doResign(): void {
   endVerdict.textContent = window.t('bg.bg_xq_you_resigned');
   endVerdict.className = 'go-end-verdict is-loss';
   endLine.textContent = '—';
-  toast('Resigned');
+  toast(window.t('bg.bg_common_resigned'));
   scheduleEndScreen();
 }
 
@@ -838,7 +838,7 @@ function snapshotResult(youWin: boolean): void {
   };
 }
 document.getElementById('xq-share')?.addEventListener('click', async () => {
-  if (!lastResult) { toast('Finish a game first'); return; }
+  if (!lastResult) { toast(window.t('bg.bg_common_finish_first')); return; }
   const m = await import('../share-card');
   m.shareResult('Xiangqi', {
     youWin: lastResult.youWin,
@@ -914,7 +914,7 @@ function handleWs(msg: OnlineMsg): void {
   } else if (t === 'start' || t === 'restart_notify') {
     newGame();
   } else if (t === 'opponent_leave') {
-    toast('Opponent left');
+    toast(window.t('bg.bg_common_opponent_left'));
   } else if (t === 'game_over') {
     // 服务端判负时原先只 render()：冻住的棋盘、没有胜负、没有「再战」按钮
     // （结算屏是另一个默认 hidden 的 section）。字段口径对齐 games-room.js:783。
@@ -995,8 +995,8 @@ function roomHandlers(code: string) {
     // 重连也会再走 onConnect（每条新连接各触发一次）。不清盘，否则重连瞬间本地局面被抹掉，
     // 紧接着 onState 的 rebuildFromServer 虽然会从服务端历史重放回来，但会闪一下空盘，
     // 且 newGame 顺带重置时钟/历史。onState 会用服务端着法把局面补齐。
-    onConnect: () => { if (!state.moves.length) newGame(); toast('Connected · room ' + code); },
-    onReconnect: () => { toast('Reconnected'); render(); },
+    onConnect: () => { if (!state.moves.length) newGame(); toast(window.t('bg.bg_common_connected_room', { code })); },
+    onReconnect: () => { toast(window.t('bg.bg_common_reconnected')); render(); },
     // 重连次数用尽：棋盘保持锁定（服务端状态未知，不能瞎走），但必须给一句出路
     onReconnectFailed: (c: string) => { toast(window.t('bg.bg_common_reconnect_failed', { code: c }), 9000); render(); },
     onOpponentMove: handleWs,
@@ -1005,7 +1005,7 @@ function roomHandlers(code: string) {
     onStart: (m: OnlineMsg) => { if (!state.moves.length) newGame(); applyRoomState(m, true); },
     onState: (m: OnlineMsg) => { applyServerMoves(m); applyRoomState(m, false); },
     onRestart: () => newGame(),
-    onOpponentLeave: () => { state.roomLive = false; toast('Opponent left'); render(); },
+    onOpponentLeave: () => { state.roomLive = false; toast(window.t('bg.bg_common_opponent_left')); render(); },
     // 断线：online-core 已把 roomLive 置 false，这里锁盘并给一句可见提示
     onDisconnect: () => { toast(window.t('match.disconnected')); render(); },
     // 原先没有 onError：服务端的拒绝被静默丢弃，玩家那边留着一步对手看不到的棋。

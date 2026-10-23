@@ -99,7 +99,7 @@ function closeTakebackCard(): void {
   takebackCard.hidden = true;
 }
 takebackYes.addEventListener('click', () => { closeTakebackCard(); sendWs({ type: 'takeback_accept' }); });
-takebackNo.addEventListener('click', () => { closeTakebackCard(); sendWs({ type: 'takeback_decline' }); toast('Takeback declined'); });
+takebackNo.addEventListener('click', () => { closeTakebackCard(); sendWs({ type: 'takeback_decline' }); toast(window.t('bg.bg_common_takeback_declined')); });
 takebackClose.addEventListener('click', closeTakebackCard);
 takebackCard.addEventListener('click', (e) => { if (e.target === takebackCard) closeTakebackCard(); });
 const rpBar = $<HTMLDivElement>('go-replaybar');
@@ -761,7 +761,7 @@ function finishDraw(): void {
   endVerdict.className = 'go-end-verdict';
   endLine.textContent = window.t('bi.board_full');
   scheduleEndScreen();
-  toast('Draw — board full');
+  toast(window.t('bg.bg_common_draw_board_full'));
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -842,7 +842,7 @@ function showHints(): void {
 
   // 棋盘上高亮前 3 名
   highlightHints(top.map((t) => t.m));
-  toast('Hint · best ' + notation(top[0].m) + ' (' + top[0].v.toLocaleString('en-US') + ')');
+  toast(window.t('bg.bg_common_hint_best', { point: notation(top[0].m), score: top[0].v.toLocaleString('en-US') }));
 }
 
 /**
@@ -893,7 +893,7 @@ function highlightHints(list: number[]): void {
 function undo(): void {
   if (state.mode === 'ranked') {
     sendWs({ type: 'takeback_request' });
-    toast('Takeback requested');
+    toast(window.t('bg.bg_common_takeback_requested'));
     return;
   }
   if (state.over || state.history.length === 0) return;
@@ -975,7 +975,7 @@ function offerDraw(): void {
   if (state.over || state.reviewAt !== null) return;
   if (state.mode === 'ai') return;
   if (state.mode === 'pass') { finishDraw(); return; }
-  toast('Draw proposed — waiting for opponent');
+  toast(window.t('bg.bg_common_draw_proposed'));
   // 服务端只认 draw_offer/draw_accept/draw_decline（games-room.js:332-345），
   // 原来发的 {type:'draw'} 没有任何处理器 → 这一帧被静默丢弃：
   // 提和方永远等不到回应，对手也压根不知道有人提和。
@@ -1238,7 +1238,7 @@ async function joinQueue(): Promise<void> {
     }
     throw new Error('unexpected');
   } catch (e) {
-    toast('Matchmaking unavailable');
+    toast(window.t('bg.bg_common_matchmaking_unavailable'));
     cancelQueue(true);   // 取消即回模式选择页
   }
 }
@@ -1247,7 +1247,7 @@ function pollQueue(): void {
   const started = Date.now();
   const tick = async (): Promise<void> => {
     if (!state.matchId) return;
-    if (Date.now() - started > 60000) { toast('No opponent found'); cancelQueue(true); return; }
+    if (Date.now() - started > 60000) { toast(window.t('bg.bg_common_no_opponent_found')); cancelQueue(true); return; }
     try {
       const r = await fetch(
         API + '/api/match/poll?matchId=' + encodeURIComponent(state.matchId) + '&game=gomoku',
@@ -1258,7 +1258,7 @@ function pollQueue(): void {
         enterRankedRoom(j.code, !!j.ai, j.aiName);
         return;
       }
-      if (j.status === 'closed') { toast('Queue closed'); cancelQueue(true); return; }
+      if (j.status === 'closed') { toast(window.t('bg.bg_common_queue_closed')); cancelQueue(true); return; }
       const secs = Math.round((Date.now() - started) / 1000);
       queueSub.textContent = window.t('bj.waiting') + secs + window.t('bj.waiting_ai_fallback');
     } catch (e) { /* 轮询容错，下一拍重试 */ }
@@ -1281,7 +1281,7 @@ function abortQueue(silent = false): void {
   }
   queueEl.hidden = true;
   setQueuingUI(false);
-  if (!silent) toast('Left the queue');
+  if (!silent) toast(window.t('bg.bg_common_left_queue'));
 }
 
 /** 玩家主动取消排队：清理后回模式选择页（旧内嵌大厅已删，没有别的地方可回） */
@@ -1311,7 +1311,7 @@ function scheduleReconnect(code: string, isAi: boolean, aiName: string | undefin
   const step = (): void => {
     if (state.roomCode !== code) return;
     if (tries >= RECONNECT_MAX) {
-      toast('Connection lost — share room code ' + code + ' to resume');
+      toast(window.t('bg.bg_common_conn_lost_share', { code }));
       return;
     }
     const delay = RECONNECT_BASE_MS * Math.pow(2, tries);
@@ -1350,7 +1350,7 @@ function openRankedSocket(code: string, isAi: boolean, aiName: string | undefine
     const base = wsUrl(code, myName());
     ws = new WebSocket(attempt > 0 ? `${base}&rejoin=1` : base);
   } catch (e) {
-    toast('Could not open room');
+    toast(window.t('bg.bg_common_could_not_open_room'));
     return;
   }
   state.ws = ws;
@@ -1378,10 +1378,10 @@ function openRankedSocket(code: string, isAi: boolean, aiName: string | undefine
       state.roomLive = false;
       render();
     }
-    if (state.screen === 'match' && !state.over) toast('Connection lost');
+    if (state.screen === 'match' && !state.over) toast(window.t('bg.bg_common_conn_lost'));
     scheduleReconnect(code, isAi, aiName, ws);
   });
-  ws.addEventListener('error', () => { toast('Room unavailable'); });
+  ws.addEventListener('error', () => { toast(window.t('bg.bg_common_room_unavailable')); });
 }
 
 /* ─── 好友房：建房 → 拿码 → 以房主身份进房 ───
@@ -1401,11 +1401,11 @@ inviteCopyBtn?.addEventListener('click', () => {
   const link = location.origin + '/b/gomoku/' + code;
   try {
     void navigator.clipboard.writeText(link).then(
-      () => toast('Invite link copied'),
-      () => toast('Copy failed — code ' + code),
+      () => toast(window.t('bg.bg_common_invite_copied')),
+      () => toast(window.t('bg.bg_common_copy_failed', { code })),
     );
   } catch (e) {
-    toast('Copy failed — code ' + code);
+    toast(window.t('bg.bg_common_copy_failed', { code }));
   }
 });
 
@@ -1414,7 +1414,7 @@ async function startFriendRoom(): Promise<void> {
   showScreen('match');
   render();
   const fail = () => {
-    toast('Could not open a friend room');
+    toast(window.t('bg.bg_common_could_not_open_friend_room'));
     window.setTimeout(() => location.replace(MODE_PAGE), 900);
   };
   try {
@@ -1660,14 +1660,14 @@ function handleWs(msg: Record<string, unknown>): void {
   }
   // 对手请求悔棋：给出可应答的弹层，不再只是弹一句 toast（对方此前无从回应）
   if (t === 'takeback_request') { takebackCard.hidden = false; return; }
-  if (t === 'takeback_declined') { closeTakebackCard(); toast('Takeback declined'); return; }
+  if (t === 'takeback_declined') { closeTakebackCard(); toast(window.t('bg.bg_common_takeback_declined')); return; }
   if (t === 'takeback_done') {
     if (state.history.length) {
       const h = state.history.pop()!;
       state.board = h.board; state.turn = h.turn; state.lastMove = h.lastMove; state.moves = h.moves;
       render();
     }
-    toast('Takeback accepted');
+    toast(window.t('bg.bg_common_takeback_accepted'));
     return;
   }
   // gomoku 自带 WS、不走 online-core 的 sendWs，再战回声闸得自己上闩。
@@ -1684,7 +1684,7 @@ function handleWs(msg: Record<string, unknown>): void {
   // 服务端回的是 对方未连接 / 对局未开始（在 NON_MOVE_ERRORS 里，不会触发回滚）。
   if (t === 'opponent_leave') {
     state.roomLive = false;
-    toast('Opponent left');
+    toast(window.t('bg.bg_common_opponent_left'));
     render();
     return;
   }
@@ -1861,7 +1861,7 @@ endLobbyBtn.addEventListener('click', exitMatchToLobby);
 
 /* 2026-10-06：分享结果 → Canvas 大图卡片（NumeriDuel 范式，可保存 PNG / 系统分享） */
 $<HTMLButtonElement>('go-share')?.addEventListener('click', async () => {
-  if (!lastResult) { toast('Finish a game first'); return; }
+  if (!lastResult) { toast(window.t('bg.bg_common_finish_first')); return; }
   const m = await import('../share-card');
   const link = state.roomCode
     ? location.origin + '/b/gomoku/' + state.roomCode
