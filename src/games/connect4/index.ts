@@ -34,6 +34,8 @@ import { modeFromUrl, levelFromUrl } from '../shared';
 import { diffCellAnims, animClassSuffix, animDelayStyle } from '../../shared/board-anim';
 import { buildMoveList } from '../../shared/export-record';
 import { mountExportButton } from '../../shared/export-ui';
+import { runAiSearch } from '../../shared/ai-worker';
+import Connect4AiWorker from './ai-worker.ts?worker';
 import { openFriendRoom } from '../friend-room';
 import { reportRound, isClassroom, urlRoomCode, ensureStudentCode } from '../../shared/teacher-track';
 import { parseGameOver } from '../../shared/game-over';
@@ -384,11 +386,22 @@ function aiMove(extraMs = 0): void {
       render();
       return;
     }
-    const col = bestMove(state.board, 2, state.level);
-    if (col < 0) { render(); return; }
-    pushHistory();
-    placeLocal(col, 2);
-    afterMove();
+      void runAiSearch(
+        Connect4AiWorker,
+        { board: state.board, player: 2, level: state.level },
+        4000,
+        () => bestMove(state.board, 2, state.level),
+      ).then((m) => {
+        if (state.over || state.screen !== 'match' || state.reviewAt !== null || state.player !== 2) {
+          render();
+          return;
+        }
+        const col = m as number;
+        if (col < 0) { render(); return; }
+        pushHistory();
+        placeLocal(col, 2);
+        afterMove();
+      });
   }, Math.max(160, base + jitter + extraMs));
 }
 

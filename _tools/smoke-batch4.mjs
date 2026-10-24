@@ -99,6 +99,36 @@ for (const { g, pick, from, to } of GAMES) {
     ok(g, 'place/flip anim class after a real move', placed, placed ? '' : `no legal move accepted (${pick || from})`);
     ok(g, 'last-move marker', (await page.locator('.is-last, .ttt-last-dot, .bd-last-mark, .go-last-ring').count()) > 0, placed ? '' : 'skip — no move placed');
 
+    // AI 回应（worker 迁移核心验证）：玩家落子后等 AI 落子，断言「最后一手标记」位置移动
+    // （玩家落子后 last-mark 落在玩家子，AI 落子后它移到 AI 子，位置必变）。放置类/
+    // 移动类通用，也不依赖各游戏棋子 class 命名。worker 失败会走 4s 超时同步兜底，
+    // AI 仍会落子；同时 no-console-error 断言能间接抓到 worker 启动/运行期抛错。
+    if (placed) {
+      const LM = '.is-last, .ttt-last-dot, .bd-last-mark, .go-last-ring';
+      const before = await page.evaluate((sel) => {
+        const el = document.querySelector(sel);
+        if (!el) return null;
+        const r = el.getBoundingClientRect();
+        return [r.x + r.width / 2, r.y + r.height / 2];
+      }, LM);
+      let aiMoved = false;
+      try {
+        await page.waitForFunction(
+          ([sel, b]) => {
+            const el = document.querySelector(sel);
+            if (!el || !b) return false;
+            const r = el.getBoundingClientRect();
+            const a = [r.x + r.width / 2, r.y + r.height / 2];
+            return Math.hypot(a[0] - b[0], a[1] - b[1]) > 6;
+          },
+          [LM, before],
+          { timeout: 6000 },
+        );
+        aiMoved = true;
+      } catch { /* timeout → AI 没在 6s 内落子 */ }
+      ok(g, 'AI responds (worker/fallback)', aiMoved, aiMoved ? '' : 'last-mark did not move within 6s');
+    }
+
     // 暗色：切换后 body 底色必须真的变深（变量化棋盘的反面就是硬编码浅木色）
     await page.evaluate(() => { document.documentElement.dataset.theme = 'dark'; });
     await page.waitForTimeout(250);

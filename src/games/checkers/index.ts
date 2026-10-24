@@ -24,6 +24,8 @@ import { parseGameOver } from '../../shared/game-over';
 import { diffCellAnims, animClassSuffix, animDelayStyle } from '../../shared/board-anim';
 import { buildMoveList } from '../../shared/export-record';
 import { mountExportButton } from '../../shared/export-ui';
+import { runAiSearch } from '../../shared/ai-worker';
+import CheckersAiWorker from './ai-worker.ts?worker';
 import {
   enterRoom, sendWs, inviteCode, clearInviteParam,
   roomLiveFromState, opponentNameFromState,
@@ -379,16 +381,27 @@ function aiMove(): void {
     aiTimer = 0;
     state.aiThinking = false;
     if (state.over || state.screen !== 'match' || state.player !== ENGINE) { render(); return; }
-    const m = bestMove(state.board, ENGINE, state.level);
-    if (!m) {
-      // 引擎无步 → 玩家胜
-      state.over = true;
-      stopTimer(state.timer);
-      render();
-      finish(HUMAN);
-      return;
-    }
-    doMove(m);
+    void runAiSearch(
+      CheckersAiWorker,
+      { board: state.board, player: ENGINE, level: state.level },
+      4000,
+      () => bestMove(state.board, ENGINE, state.level),
+    ).then((m) => {
+      if (state.over || state.screen !== 'match' || state.player !== ENGINE) {
+        render();
+        return;
+      }
+      const mv = m as Move | null;
+      if (!mv) {
+        // 引擎无步 → 玩家胜
+        state.over = true;
+        stopTimer(state.timer);
+        render();
+        finish(HUMAN);
+        return;
+      }
+      doMove(mv);
+    });
   }, Math.max(160, base + jitter));
 }
 

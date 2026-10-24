@@ -17,7 +17,7 @@ import {
 } from '../game-core';
 import { wireLobbyChrome } from '../../lobby-chrome';
 import {
-  createGame, cloneState, legalMoves, applyMove, search, isOver, isKingSafe,
+  createGame, cloneState, legalMoves, applyMove, bestMove, isOver, isKingSafe,
   newArbiter, arbiterPush, arbiterVerdict,
   type GameState, type Side, type Move, type Arbiter,
 } from './engine';
@@ -33,6 +33,8 @@ import { parseGameOver } from '../../shared/game-over';
 import { diffCellAnims, animClassSuffix, animDelayStyle } from '../../shared/board-anim';
 import { buildMoveList } from '../../shared/export-record';
 import { mountExportButton } from '../../shared/export-ui';
+import { runAiSearch } from '../../shared/ai-worker';
+import XiangqiAiWorker from './ai-worker.ts?worker';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 
 /* ======================
@@ -525,19 +527,19 @@ function aiMove(extraMs = 0): void {
       return;
     }
     // 用引擎自带的难度时间预算（easy 350 / medium 800 / hard 1600），不要再硬编码覆盖
-    let m: Move | null = null;
-    try {
-      m = search(state.gs, state.level).move;
-    } catch (e) {
-      console.error('[xiangqi] search failed', e);
-    }
-    // 兜底：搜索异常或返回空时随机走一步合法着法，绝不让黑方卡住不动
-    if (!m) {
-      const ms2 = legalFor(state.gs);
-      if (!ms2.length) { render(); return; }
-      m = ms2[Math.floor(Math.random() * ms2.length)];
-    }
-    doMove(m);
+      void runAiSearch(
+        XiangqiAiWorker,
+        { gs: state.gs, level: state.level },
+        4000,
+        () => bestMove(state.gs, state.level),
+      ).then((m) => {
+        if (state.over || state.screen !== 'match' || state.reviewAt !== null || state.gs.side !== -1) {
+          render();
+          return;
+        }
+        if (!m) { render(); return; }
+        doMove(m as Move);
+      });
   }, Math.max(200, base + jitter + extraMs));
 }
 

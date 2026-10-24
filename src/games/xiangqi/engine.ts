@@ -542,6 +542,25 @@ export function search(state: GameState, level: Level, timeMs?: number): SearchR
   return { move: bestMove, score: bestScore, nodes: ctx.nodes, depth: reached };
 }
 
+/**
+ * 引擎决策（2026-10-24 第四批续：AI Worker 迁移）。
+ * 封装 search() + 随机兜底：search 抛错或返回空时回退一步随机合法着法，
+ * 绝不让黑方卡住不动。纯函数，供 ai-worker.ts 与主线程同步兜底共用。
+ */
+export function bestMove(gs: GameState, level: Level): Move | null {
+  let m: Move | null = null;
+  try {
+    m = search(gs, level).move;
+  } catch (e) {
+    console.error('[xiangqi] search failed', e);
+  }
+  if (!m) {
+    const ms = legalMoves(gs.board, gs.side);
+    if (ms.length) m = ms[Math.floor(Math.random() * ms.length)];
+  }
+  return m;
+}
+
 // ── Self test ───────────────────────────────────────────────────────────────────
 export function selfTest(): { pass: boolean; msg: string }[] {
   const out: { pass: boolean; msg: string }[] = [];

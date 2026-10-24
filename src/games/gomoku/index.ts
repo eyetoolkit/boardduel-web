@@ -32,6 +32,8 @@ import { parseGameOver } from '../../shared/game-over';
 import { diffCellAnims, animClassSuffix, animDelayStyle } from '../../shared/board-anim';
 import { buildSgf } from '../../shared/export-record';
 import { mountExportButton } from '../../shared/export-ui';
+import { runAiSearch } from '../../shared/ai-worker';
+import GomokuAiWorker from './ai-worker.ts?worker';
 // 2026-10-05：持久随机昵称（防止匿名玩家同名被服务端分进同一座位）
 import { myName as ocMyName, isMoveRejected, ensureAccount } from '../online-core';
 // 2026-10-06：好友房邀请卡片（全屏遮罩弹窗，范式抄 NumeriDuel 24-game share-overlay）
@@ -699,11 +701,23 @@ function aiMove(extraMs = 0): void {
       render();
       return;
     }
-    const m = bestMove(state.board, 2, state.level);
-    if (m < 0) { render(); return; }
-    pushHistory();
-    placeLocal(m, 2);
-    afterMove();
+    void runAiSearch(
+      GomokuAiWorker,
+      { board: state.board, player: 2, level: state.level },
+      4000,
+      () => bestMove(state.board, 2, state.level),
+    ).then((m) => {
+      // 守卫再查一次：worker 往返期间可能终局 / 新局 / 回放
+      if (state.over || state.screen !== 'match' || state.reviewAt !== null || state.turn !== 2) {
+        render();
+        return;
+      }
+      const col = m as number;
+      if (col < 0) { render(); return; }
+      pushHistory();
+      placeLocal(col, 2);
+      afterMove();
+    });
   }, Math.max(160, base + jitter + extraMs));
 }
 
