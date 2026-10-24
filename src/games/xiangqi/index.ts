@@ -293,12 +293,14 @@ function render(): void {
     const fromSqs = new Set(moves.map((m) => m.from));
     for (const sq of fromSqs) {
       const [x, y] = pointXY(sq);
-      hitAreas += `<g class="xq-pt" data-sq="${sq}" style="cursor:pointer"><circle cx="${x}" cy="${y}" r="${CELL * 0.5}" fill="transparent"/></g>`;
+      // 整格矩形命中区（与 chess 对齐）：覆盖交叉点周围整格，消除圆形命中区
+      // 的「边缘死区」与「选中后落点圈误命中邻子」——后者会导致想改选却落子。
+      hitAreas += `<g class="xq-pt" data-sq="${sq}" style="cursor:pointer"><rect x="${x - CELL / 2}" y="${y - CELL / 2}" width="${CELL}" height="${CELL}" fill="transparent"/></g>`;
     }
     if (state.selected >= 0) {
       for (const m of moves.filter((m) => m.from === state.selected)) {
         const [mx, my] = pointXY(m.to);
-        hitAreas += `<g class="xq-pt" data-to="${m.to}" data-from="${state.selected}" style="cursor:pointer"><circle cx="${mx}" cy="${my}" r="${CELL * 0.5}" fill="transparent"/></g>`;
+        hitAreas += `<g class="xq-pt" data-to="${m.to}" data-from="${state.selected}" style="cursor:pointer"><rect x="${mx - CELL / 2}" y="${my - CELL / 2}" width="${CELL}" height="${CELL}" fill="transparent"/></g>`;
       }
     }
   }
