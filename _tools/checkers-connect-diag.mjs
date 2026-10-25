@@ -74,11 +74,13 @@ for (let i = 0; i < 12; i++) {
   const lb = await pageB.evaluate(() => window.__log).catch(() => []);
   const ckA = await pageA.locator('.ck-cell').count().catch(() => -1);
   const ckB = await pageB.locator('.ck-cell').count().catch(() => -1);
+  const toastA = await pageA.evaluate(() => (document.getElementById('bd-toast-host') || {}).innerText || '').catch(() => '');
+  const toastB = await pageB.evaluate(() => (document.getElementById('bd-toast-host') || {}).innerText || '').catch(() => '');
   const codeInA = await pageA.locator('body').innerText().then((t) => t.includes(code.code)).catch(() => false);
   const codeInB = await pageB.locator('body').innerText().then((t) => t.includes(code.code)).catch(() => false);
-  console.log(`${ts()} A: ck-cell=${ckA} codeVisible=${codeInA} | B: ck-cell=${ckB} codeVisible=${codeInB}`);
+  console.log(`${ts()} A: ck=${ckA} code=${codeInA} toast="${toastA.replace(/\n/g, ' / ').slice(0, 60)}" | B: ck=${ckB} code=${codeInB} toast="${toastB.replace(/\n/g, ' / ').slice(0, 60)}"`);
   if (i === 0 || i === 4 || i === 11) {
-    for (const l of la.filter((x) => !x.startsWith('ws-msg state'))) console.log(`   ${l.replace(/\d{10,}/, (m) => `+${m - (T0 - 0)}`)}`.slice(0, 110));
+    for (const l of la.filter((x) => !x.startsWith('ws-msg state'))) console.log(`   ${l}`.slice(0, 110));
     for (const l of lb.filter((x) => !x.startsWith('ws-msg state'))) console.log(`   ${l}`.slice(0, 110));
   }
   if (ckA > 0 && ckB > 0 && codeInA && codeInB) { console.log(`${ts()} 双方就绪`); break; }

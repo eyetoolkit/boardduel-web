@@ -156,13 +156,15 @@ for (const g of GAMES) {
 
     // 房码 surfaced 轮询（兼作"已入房"门）：
     //   · 加入流不弹邀请卡片（那是建房端 openFriendRoom 的），码只出现在
-    //     连接 toast 里且会淡出 —— 轮询 20s，出现过即算通过。
-    //   · checkers v3 教训：入房握手（ensureAccount + WS）要 5-9s，
-    //     不等它就进 round 循环，前几手全是"轮不到我"的假阴性。
-    //   · 注意不能用"命中区出现"当门：chess/xq/checkers 的命中区按回合
-    //     渲染，后手端在对方走第一步前永远等不到 → 死锁空转。
+    //     连接 toast 里且会淡出（showBoardDuelToast dur=2.2s）—— 轮询 45s，
+    //     出现过即算通过。
+    //   · checkers v3/v4 教训：入房握手（页面加载 + ensureAccount + WS）在
+    //     本环境要 2.4-8.5s，全程连跑 8 房时浏览器资源衰减会把某一端随机
+    //     拖到 20s+（隔离诊断 3 连跑：哪端慢随机，入房后功能全正常）——
+    //     是环境时序方差非产品 bug。门限放到 45s 覆盖；回合循环再兜底
+    //     （见下：双方走成为止，上限 8 轮）。
     let seenA = codeA0, seenB = codeB0;
-    for (let i = 0; i < 40 && !(seenA && seenB); i++) {
+    for (let i = 0; i < 90 && !(seenA && seenB); i++) {
       await pageA.waitForTimeout(500);
       if (!seenA) seenA = await pageA.locator('body').innerText().then((t) => t.includes(code)).catch(() => false);
       if (!seenB) seenB = await pageB.locator('body').innerText().then((t) => t.includes(code)).catch(() => false);
@@ -176,22 +178,26 @@ for (const g of GAMES) {
     ok(g.g, 'identical start position', fpStartA === fpStartB,
       fpStartA === fpStartB ? `${cnt(fpStartA)} pieces` : `A≠B (${fpStartA.slice(0, 40)} / ${fpStartB.slice(0, 40)})`);
 
-    let movesA = 0, movesB = 0, syncBad = 0;
-    for (let round = 0; round < 4; round++) {
+    let movesA = 0, movesB = 0, syncBad = 0, round = 0, played = 0;
+    // 至少 4 轮；若某一端因慢连接还没走成（v4 checkers 实测：后手方
+    // 可能整场没轮到），继续交替到双方都走成，上限 8 轮。
+    while (played < 8 && (played < 4 || movesA < 1 || movesB < 1)) {
       const tab = round % 2 === 0 ? pageA : pageB;
       const other = round % 2 === 0 ? pageB : pageA;
       const moved = await tryOneMove(tab, g);
       if (moved) { round % 2 === 0 ? movesA++ : movesB++; }
+      played++;
       await other.waitForTimeout(900);
       const fa = await fp(pageA, g.piece);
       const fb = await fp(pageB, g.piece);
       const same = fa === fb;
       if (!same) syncBad++;
-      ok(g.g, `sync after ply ${round + 1}${moved ? '' : ' (no move)'}`, same,
+      ok(g.g, `sync after ply ${played}${moved ? '' : ' (no move)'}`, same,
         same ? `${cnt(fa)} pieces` : `A=${cnt(fa)} B=${cnt(fb)}`);
+      round++;
     }
-    ok(g.g, 'both sides placed >=1 move', movesA >= 1 && movesB >= 1, `A=${movesA} B=${movesB}`);
-    ok(g.g, 'zero desync across 4 plies', syncBad === 0, syncBad ? `${syncBad} ply diverged` : '');
+    ok(g.g, 'both sides placed >=1 move', movesA >= 1 && movesB >= 1, `A=${movesA} B=${movesB} (${played} plies)`);
+    ok(g.g, 'zero desync across plies', syncBad === 0, syncBad ? `${syncBad} ply diverged` : '');
 
     await pageA.evaluate(() => {
       const btn = [...document.querySelectorAll('button')].find((b) => /resign|认输|投降/i.test(b.textContent || ''));
