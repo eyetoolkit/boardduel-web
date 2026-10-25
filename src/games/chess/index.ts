@@ -328,9 +328,21 @@ function pieceSvg(p: CPiece, sq: number, animCls = '', delayStyle = ''): string 
   const glyph = PIECE_G[kind.toUpperCase()].replace(/stroke="#0A0F14"/g, `stroke="${edge}"`);
   const w = CELL * 0.74;
   const ox = cx - w / 2, oy = cy - w / 2;
-  return `<g class="ch-piece${animCls}"${delayStyle} transform="translate(${ox} ${oy}) scale(${w / 40})" fill="${body}" pointer-events="none">`
+  // 🔴 动画类必须挂**内层** g（2026-10-25 P0 修复）：.bd-anim-place 的 keyframes
+  //    动画 CSS transform:scale()，而 SVG 的 transform 属性是优先级最低的
+  //    presentation attribute —— CSS 动画（fill-mode:both，终态 scale(1)）会
+  //    **整体覆盖**外层的 translate(ox oy) scale(w/40)，棋子被渲染到 SVG 原点
+  //    且尺寸错，直到下一次重渲染才恢复。线上实测（duel 双 Tab + AI 单机）：
+  //    走子后 3.2s 该棋子 getCTM 仍是 [0,0]，属性却写着 translate(151 151)；
+  //    联机时对手屏幕每手都肉眼可见一颗棋子钉在棋盘左上角。
+  //    内层 g 上的 CSS transform 只**叠加**在外层定位变换之上；弹出原点由
+  //    现有 .bd-anim-place 规则的 transform-box:fill-box + center 提供
+  //    （styles/boardduel.css），以棋子自身 bbox 中心缩放。其余 7 款棋子用
+  //    cx/cy 定位，终态 scale(1) 是恒等变换，无此问题。
+  return `<g class="ch-piece" transform="translate(${ox} ${oy}) scale(${w / 40})" fill="${body}" pointer-events="none">`
+    + `<g class="ch-anim${animCls}"${delayStyle}>`
     + `<g stroke="${edge}" stroke-width="1.1" stroke-linejoin="round" fill="${body}">${glyph}</g>`
-    + '</g>';
+    + '</g></g>';
 }
 
 function render(): void {
