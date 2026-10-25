@@ -29,7 +29,7 @@ import {
   enterRoom, sendWs, inviteCode, clearInviteParam,
   roomLiveFromState, opponentNameFromState,
   type OnlineState, type OnlineMsg,
-  isMoveRejected,
+  isMoveRejected, stateBody,
 } from '../online-core';
 import { modeFromUrl, levelFromUrl } from '../shared';
 import { diffCellAnims, animClassSuffix, animDelayStyle } from '../../shared/board-anim';
@@ -993,8 +993,16 @@ function rollbackRejected(): void {
  *    回放略失真；盘面与回合以本帧为权威）。
  */
 function applyServerBoard(m: OnlineMsg): void {
-  const inner = (m.state && typeof m.state === 'object') ? (m.state as OnlineMsg) : null;
-  if (!inner || !Array.isArray(inner.board) || inner.board.length !== 64) return;
+  // 🔴 2026-10-25（P1 修复）：state 帧有两种形状，必须过共享 stateBody 解内层——
+  //    broadcastState() 发 {type:'state', state:{board,...}}（嵌套）；
+  //    而每次 WS 连接的首帧 joinState（games-room.js handleConnect）发的是
+  //    {type:'state', you, code, ...snapshot()}（board/turn 在顶层）。
+  //    原实现只认嵌套形状 → 重连/刷新进来的玩家把首帧权威盘静默丢弃：
+  //    · 会话内重连：棋盘停在断线前的旧局，直到双方中任意一方下一手才自愈；
+  //    · 刷新重进：onConnect 的 newGame() 已把盘重置成初始 4 子，首帧又被丢，
+  //      玩家对着空盘看对手下棋。v6 全量实测复现：A 端漏一帧广播后 6 子 stale。
+  const inner = stateBody(m);
+  if (!Array.isArray(inner.board) || inner.board.length !== 64) return;
   if (typeof inner.turn !== 'number') return;
   const b: RBoard = [];
   for (let i = 0; i < 64; i++) {

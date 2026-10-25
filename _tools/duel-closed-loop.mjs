@@ -24,6 +24,17 @@
  * 覆盖：建房 API → 双 Tab 入房 → 等双端 live → 房码 surfaced 轮询 →
  *       轮流 4 手（每手双端指纹一致断言）→ 认输双端达终局 → 零 console 错误。
  *
+ * v6（2026-10-25，对线上旧码基线暴露的测试自身缺陷，勿回退）：
+ *   ① 房码 toast 2.2s 淡出 vs 轮询竞态（快端在边界连上，码出现即消失，
+ *      500ms 轮询也可能整窗错过）→ addInitScript 注 MutationObserver
+ *      事前捕获，__codeSeen 一旦置真即算 surfaced。
+ *   ② 单 ply 分歧缺滞后甄别：线上方差下对手端 900ms 未应用该手（或落子
+ *      动画未播完，CTM 含动画 transform）→ 分歧后延长 2.5s 复检，收敛记
+ *      lag（不计失败），仍不一致才记 syncBad 并附首差异条目。
+ *      判别力对照：旧码 chess P0（棋子钉 SVG 原点）会持续分歧 → 照杀。
+ *   ③ console 错误补 location().url（"Failed to load resource" 不带 URL
+ *      无法定位，c4 的 ERR_TIMED_OUT 曾因此成悬案）。
+ *
  * 用法：node _tools/duel-closed-loop.mjs [baseUrl] [games...]
  */
 import { chromium } from 'file:///C:/Users/JIM/.workbuddy/binaries/node/workspace/node_modules/playwright-core/index.mjs';
@@ -57,11 +68,20 @@ const IGNORE = [
 
 const rows = [];
 let failed = 0;
+let lagEvents = 0;   // 传播滞后事件计数（v6：甄别后不计失败，仅汇总报告）
 function ok(game, label, pass, detail = '') {
   if (!pass) failed++;
   rows.push(`${pass ? 'PASS' : 'FAIL'}  ${game.padEnd(10)} ${label}${detail ? ' — ' + detail : ''}`);
 }
 const cnt = (fp) => (fp === '' ? 0 : fp.split('|').length);
+/** 两个已排序指纹的首个差异条目（诊断用，v6） */
+const firstDiff = (a, b) => {
+  const A = a.split('|'), B = b.split('|');
+  for (let i = 0; i < Math.max(A.length, B.length); i++) {
+    if (A[i] !== B[i]) return `${i}: ${(A[i] || '(缺)').slice(0, 46)} vs ${(B[i] || '(缺)').slice(0, 46)}`;
+  }
+  return '(未定位)';
+};
 
 async function createRoom(game) {
   const r = await fetch(`${BASE}/api/gp/room?name=审核甲&game=${game}`);
@@ -142,22 +162,49 @@ for (const g of GAMES) {
     ctxB = await browser.newContext({ viewport: { width: 900, height: 1000 } });
     pageA = await ctxA.newPage();
     pageB = await ctxB.newPage();
-    pageA.on('console', (m) => { if (m.type() === 'error' && !IGNORE.some((r) => r.test(m.text()))) errsA.push('A console: ' + m.text()); });
+    const onConsole = (tag, errs) => (m) => {
+      if (m.type() === 'error' && !IGNORE.some((r) => r.test(m.text()))) {
+        const url = m.location && m.location().url;   // "Failed to load resource" 必须带 URL 才能定位（v6：c4 ERR_TIMED_OUT 教训）
+        errs.push(`${tag} console: ${m.text()}${url ? ` @ ${url}` : ''}`);
+      }
+    };
+    pageA.on('console', onConsole('A', errsA));
     pageA.on('pageerror', (e) => errsA.push('A pageerror: ' + String(e.message || e)));
-    pageB.on('console', (m) => { if (m.type() === 'error' && !IGNORE.some((r) => r.test(m.text()))) errsB.push('B console: ' + m.text()); });
+    pageB.on('console', onConsole('B', errsB));
     pageB.on('pageerror', (e) => errsB.push('B pageerror: ' + String(e.message || e)));
+
+    // 房码 toast 只存 2.2s（showBoardDuelToast dur），轮询（哪怕 500ms 间隔）
+    // 与"快端刚好在边界连上"竞态 → v6 改 MutationObserver 事前捕获：
+    // addInitScript 在导航前注入，toast 任何时候出现都置 __codeSeen。
+    const watchCode = (code) => {
+      window.__codeSeen = false;
+      const check = () => {
+        if (!window.__codeSeen && document.body && document.body.innerText.includes(code)) {
+          window.__codeSeen = true;
+        }
+      };
+      const obs = new MutationObserver(check);
+      const start = () => obs.observe(document.documentElement || document,
+        { childList: true, subtree: true, characterData: true });
+      if (document.documentElement) start();
+      else document.addEventListener('readystatechange', start, { once: true });
+      setInterval(check, 250);
+    };
+    await pageA.addInitScript(watchCode, code);
+    await pageB.addInitScript(watchCode, code);
 
     await pageB.goto(`${BASE}/games/${g.g}/?c=${code}`, { waitUntil: 'load', timeout: 45000 });
     await pageA.goto(`${BASE}/games/${g.g}/?c=${code}`, { waitUntil: 'load', timeout: 45000 });
     await pageA.waitForTimeout(2500);
 
-    const codeA0 = await pageA.locator('body').innerText().then((t) => t.includes(code)).catch(() => false);
-    const codeB0 = await pageB.locator('body').innerText().then((t) => t.includes(code)).catch(() => false);
+    const seenNow = async (p) => p.evaluate(() => window.__codeSeen === true).catch(() => false);
+    const codeA0 = (await seenNow(pageA)) || await pageA.locator('body').innerText().then((t) => t.includes(code)).catch(() => false);
+    const codeB0 = (await seenNow(pageB)) || await pageB.locator('body').innerText().then((t) => t.includes(code)).catch(() => false);
 
     // 房码 surfaced 轮询（兼作"已入房"门）：
     //   · 加入流不弹邀请卡片（那是建房端 openFriendRoom 的），码只出现在
     //     连接 toast 里且会淡出（showBoardDuelToast dur=2.2s）—— 轮询 45s，
-    //     出现过即算通过。
+    //     出现过即算通过（v6 起以 MutationObserver 捕获为准，innerText 兜底）。
     //   · checkers v3/v4 教训：入房握手（页面加载 + ensureAccount + WS）在
     //     本环境要 2.4-8.5s，全程连跑 8 房时浏览器资源衰减会把某一端随机
     //     拖到 20s+（隔离诊断 3 连跑：哪端慢随机，入房后功能全正常）——
@@ -166,8 +213,8 @@ for (const g of GAMES) {
     let seenA = codeA0, seenB = codeB0;
     for (let i = 0; i < 90 && !(seenA && seenB); i++) {
       await pageA.waitForTimeout(500);
-      if (!seenA) seenA = await pageA.locator('body').innerText().then((t) => t.includes(code)).catch(() => false);
-      if (!seenB) seenB = await pageB.locator('body').innerText().then((t) => t.includes(code)).catch(() => false);
+      if (!seenA) seenA = (await seenNow(pageA)) || await pageA.locator('body').innerText().then((t) => t.includes(code)).catch(() => false);
+      if (!seenB) seenB = (await seenNow(pageB)) || await pageB.locator('body').innerText().then((t) => t.includes(code)).catch(() => false);
     }
     ok(g.g, 'room code surfaced on both tabs', seenA && seenB, `A=${seenA} B=${seenB}`);
 
@@ -188,12 +235,23 @@ for (const g of GAMES) {
       if (moved) { round % 2 === 0 ? movesA++ : movesB++; }
       played++;
       await other.waitForTimeout(900);
-      const fa = await fp(pageA, g.piece);
-      const fb = await fp(pageB, g.piece);
-      const same = fa === fb;
+      let fa = await fp(pageA, g.piece);
+      let fb = await fp(pageB, g.piece);
+      let same = fa === fb;
+      let detail = same ? `${cnt(fa)} pieces` : `A=${cnt(fa)} B=${cnt(fb)}`;
+      if (!same) {
+        // 传播滞后甄别（v6）：线上网络方差下，对手端 900ms 内可能还没应用
+        // 这一手（或落子动画未播完，CTM 含动画 transform）。再等 2.5s 复检：
+        // 收敛 = lag（环境时序，不计失败）；仍不一致 = 真分歧，带首差异条目。
+        await pageA.waitForTimeout(2500);
+        await pageB.waitForTimeout(2500);
+        const fa2 = await fp(pageA, g.piece);
+        const fb2 = await fp(pageB, g.piece);
+        if (fa2 === fb2) { same = true; lagEvents++; detail += ' → lag, converged +2.5s'; }
+        else detail = `A=${cnt(fa2)} B=${cnt(fb2)} diff[${firstDiff(fa2, fb2)}]`;
+      }
       if (!same) syncBad++;
-      ok(g.g, `sync after ply ${played}${moved ? '' : ' (no move)'}`, same,
-        same ? `${cnt(fa)} pieces` : `A=${cnt(fa)} B=${cnt(fb)}`);
+      ok(g.g, `sync after ply ${played}${moved ? '' : ' (no move)'}`, same, detail);
       round++;
     }
     ok(g.g, 'both sides placed >=1 move', movesA >= 1 && movesB >= 1, `A=${movesA} B=${movesB} (${played} plies)`);
@@ -220,5 +278,5 @@ for (const g of GAMES) {
 
 await browser.close();
 console.log(rows.join('\n'));
-console.log(`\n${failed === 0 ? 'ALL GREEN' : failed + ' FAILED'} — base=${BASE}`);
+console.log(`\n${failed === 0 ? 'ALL GREEN' : failed + ' FAILED'} — base=${BASE} (lag-events=${lagEvents})`);
 process.exit(failed === 0 ? 0 : 1);

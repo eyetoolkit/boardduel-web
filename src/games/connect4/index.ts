@@ -28,7 +28,7 @@ import {
   enterRoom, sendWs, inviteCode, clearInviteParam,
   roomLiveFromState, opponentNameFromState,
   type OnlineState, type OnlineMsg,
-  isMoveRejected,
+  isMoveRejected, stateBody,
 } from '../online-core';
 import { modeFromUrl, levelFromUrl } from '../shared';
 import { diffCellAnims, animClassSuffix, animDelayStyle } from '../../shared/board-anim';
@@ -955,8 +955,12 @@ function rollbackRejected(): void {
  *     · lastMove 用 diff 推出（自己刚落的 / 重连时对手新落的），不再恒 -1。
  */
 function applyServerBoard(m: OnlineMsg): void {
-  const inner = (m.state && typeof m.state === 'object') ? (m.state as OnlineMsg) : null;
-  if (!inner || !Array.isArray(inner.board) || inner.board.length !== 42) return;
+  // 🔴 2026-10-25（P1 修复，同 reversi）：state 帧双形状，必须过共享 stateBody——
+  //    broadcastState() 嵌套在 m.state；而每次连接首帧 joinState 的 board/turn
+  //    在顶层。只认嵌套 → 重连/刷新进来的玩家丢权威盘：会话内重连棋盘停在断线前
+  //    （直到任意一方下一手），刷新重进则对着 newGame() 的初始空盘。
+  const inner = stateBody(m);
+  if (!Array.isArray(inner.board) || inner.board.length !== 42) return;
   if (typeof inner.turn !== 'number') return;
   const b: CBoard = [];
   for (let i = 0; i < 42; i++) {
