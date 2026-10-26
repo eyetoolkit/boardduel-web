@@ -1,0 +1,72 @@
+/* ============================================================
+   DUEL-DS v2 · consent.css (Phase 0) — Cookie 同意横幅
+   沿用品牌靛蓝 #4F46E5 / hover #4338CA；兼容暗色（data-theme=dark）
+   ============================================================ */
+.duel-consent {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2147483000;
+  background: #ffffff;
+  color: #1f2330;
+  box-shadow: 0 -8px 30px rgba(15, 23, 42, 0.18);
+  font-family: inherit;
+}
+[data-theme="dark"] .duel-consent {
+  background: #16182a;
+  color: #e7e9f3;
+}
+.duel-consent .dc-inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  flex-wrap: wrap;
+}
+.duel-consent .dc-text {
+  flex: 1 1 320px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.duel-consent .dc-actions {
+  display: flex;
+  gap: 10px;
+}
+.duel-consent button {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 9px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.duel-consent .dc-accept {
+  background: #4F46E5;
+  color: #ffffff;
+}
+.duel-consent .dc-accept:hover {
+  background: #4338CA;
+}
+.duel-consent .dc-reject {
+  background: transparent;
+  color: inherit;
+  border-color: currentColor;
+  opacity: 0.7;
+}
+.duel-consent .dc-reject:hover {
+  opacity: 1;
+}
+@media (max-width: 560px) {
+  .duel-consent .dc-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .duel-consent .dc-actions {
+    justify-content: flex-end;
+  }
+}
