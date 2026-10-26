@@ -24,7 +24,10 @@
 
 .bd-share-card {
   width: 100%;
-  max-width: 640px;
+  /* 🔴 660 不是随手取的数：画布要真正显示成 600px（原生尺寸），容器得放下
+     画布 600 + wrap 左右 padding 10×2 + 卡片左右 padding 18×2 + border 1×2 = 658。
+     之前写 640 → 线上实测画布只有 582px（差 18），等于没放大到位。 */
+  max-width: 660px;
   max-height: 92vh;
   overflow-y: auto;
   background: #FFFFFF;

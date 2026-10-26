@@ -173,10 +173,30 @@ test('弹窗预览放大到 600px（原 300px 太小看不清卡片内容）', (
   assert.ok(m, '必须给 .bd-share-canvas 设 max-width');
   assert.ok(Number(m[1]) >= 600,
     `预览宽度应放大到 600px（原 300px），实际 ${m[1]}px`);
-  // 弹窗容器必须同步放宽，否则 600px 的画布会被 400px 的容器裁掉
-  const card = CSS.match(/\.bd-share-card\s*\{[^}]*max-width:\s*(\d+)px/);
-  assert.ok(card && Number(card[1]) >= 620,
-    `弹窗容器应放宽到 ≥620px（画布 600px + 内边距），实际 ${card?.[1]}px`);
+
+  // 🔴 容器宽度必须按**盒模型倒推**，不能拍脑袋给个数。
+  //   画布真要显示成 600px（原生尺寸），容器得放下：
+  //     画布 600 + wrap 左右 padding + 卡片左右 padding + border
+  //   2026-10-26 线上实测踩过这个坑：容器写 640px → 画布实际只有 582px
+  //   （漏算了 .bd-share-canvas-wrap 的 10px×2 padding），等于没放大到位。
+  const cardM = CSS.match(/\.bd-share-card\s*\{([^}]*)\}/);
+  assert.ok(cardM, '必须给 .bd-share-card 设 max-width');
+  const cardMax = Number(cardM![1].match(/max-width:\s*(\d+)px/)![1]);
+
+  const cardPadParts = cardM![1].match(/padding:\s*([^;]+);/)![1].trim().split(/\s+/);
+  const cardPadX = parseFloat(cardPadParts.length >= 3 ? cardPadParts[1] : cardPadParts[0]) * 2;
+  const borderM = cardM![1].match(/border:\s*(\d+)px/);
+  const borderX = borderM ? Number(borderM[1]) * 2 : 0;
+
+  const wrapM = CSS.match(/\.bd-share-canvas-wrap\s*\{([^}]*)\}/);
+  assert.ok(wrapM, '必须存在 .bd-share-canvas-wrap');
+  const wrapPadM = wrapM![1].match(/padding:\s*([^;]+);/);
+  const wrapPadX = wrapPadM ? parseFloat(wrapPadM[1].trim().split(/\s+/)[0]) * 2 : 0;
+
+  const need = 600 + cardPadX + borderX + wrapPadX;
+  assert.ok(cardMax >= need,
+    `弹窗容器 max-width 应 ≥ ${need}px（600 画布 + 卡片 padding ${cardPadX} + border ${borderX} + wrap padding ${wrapPadX}），实际 ${cardMax}px`);
+
   // 窄屏仍需自适应，不能撑破视口
   assert.ok(/@media \(max-width: 380px\)/.test(CSS), '必须保留窄屏降级');
   const narrow = CSS.match(/@media \(max-width: 380px\)\s*\{[\s\S]*?\.bd-share-canvas\s*\{[^}]*max-width:\s*([\d]+|100%)/);
