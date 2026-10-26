@@ -24,7 +24,7 @@
 
 .bd-share-card {
   width: 100%;
-  max-width: 400px;
+  max-width: 640px;
   max-height: 92vh;
   overflow-y: auto;
   background: #FFFFFF;
@@ -64,9 +64,15 @@
   border-radius: 16px;
   padding: 10px;
 }
+/* 🔴 2026-10-26 第 2 批：300px → 600px。
+      原先弹窗把 600×760 的成绩卡缩到 300px 宽显示 —— 卡片上
+      「WIN / 胜利」「步数 1,240」「3:42」这些关键信息全糊成一团，
+      玩家分享前根本看不清自己画的是什么。
+      现在按卡片原始宽度展示（600px），弹窗容器同步放宽到 640px。
+      窄屏仍由 max-width:100% + 窄屏媒体查询兜底。 */
 .bd-share-canvas {
   width: 100%;
-  max-width: 300px;
+  max-width: 600px;
   height: auto;
   border-radius: 10px;
   box-shadow: 0 4px 14px rgba(30, 27, 57, .12);
@@ -111,10 +117,12 @@
 /* ── 窄屏 ── */
 @media (max-width: 380px) {
   .bd-share-card { max-width: 100%; padding: 18px 14px 16px; border-radius: 20px; }
-  .bd-share-canvas { max-width: 240px; }
+  /* 窄屏不是把卡片缩回 240px —— 那样又看不清了。
+     改成由容器宽度决定（width:100% + max-width:100%），
+     卡片等比缩到手机屏宽，但保持相对清晰。 */
+  .bd-share-canvas { max-width: 100%; }
   .bd-share-actions { flex-wrap: wrap; }
 }
-
 /* ── 暗色 ── */
 html[data-theme="dark"] .bd-share-overlay { background: rgba(6, 6, 18, .72); }
 html[data-theme="dark"] .bd-share-card {

@@ -22,7 +22,12 @@
 
 import { showBoardDuelToast as toast } from './shared';
 import '../styles/invite-card.css';
-import '../styles/share-card.css';
+import '../styles/invite-card.css';
+// 🔴 2026-10-26：share-card.css 改由 ./share-card.ts 自己 import
+//    （模块自带样式）。这里原先引它，是「分享卡样式」的**唯一**加载点 ——
+//    而 share-card.ts 被 8 个游戏动态 import，其中 6 个不引 invite-card，
+//    于是那 6 个游戏的分享弹窗完全没有样式。vite 会去重同一份 CSS，
+//    但正确做法是让拥有样式的模块自己负责。
 
 export interface InviteCard {
   root: HTMLDivElement;

@@ -15,6 +15,48 @@
  * 数据来源全部是调用方传入的 ShareData —— 本模块不碰游戏状态。
  */
 import { showBoardDuelToast as toast } from './shared';
+// 🔴 2026-10-26：分享卡的样式**必须由本模块自带**。
+//    原先 src/styles/share-card.css 只被 invite-card.ts 引入，于是「谁碰巧
+//    引了 invite-card」决定了这个弹窗有没有样式 —— checkers / chess /
+//    connect4 / reversi / tictactoe / xiangqi 这 6 个游戏都不引 invite-card，
+//    终局点「分享」弹出的卡片是**完全裸的**：白块撑满全屏、圆角阴影按钮
+//    全丢、画布按原始尺寸铺开。模块自带样式是根治（vite 会对同一 CSS 去重）。
+import '../styles/share-card.css';
+
+/**
+ * 取一条本地化文案（2026-10-26 第 2 批）。
+ * ----------------------------------------------------------------
+ * 🔴 为什么不能直接用 window.t(key)：
+ *    分享卡有两类文案 —— 一类是 Canvas 里画的（品牌面板的
+ *    "Scan to play the same board"、降级 CTA "Play a free game"），
+ *    一类是 ShareData 里的字段（标题/副标题/三格数据标签）。
+ *    Canvas 的文字是**像素**，i18n.js 的 MutationObserver 管不到，
+ *    所以必须在渲染那一刻就拿到译文。
+ *
+ *    而 window.t() 在字典尚未 fetch 完时会回退到 key 本身，
+ *    Canvas 上就会烧进 "bg.bg_share_cta_play" 这种裸 key —— 且永远
+ *    不会自愈（像素不会跟着 DOM 重绘）。所以这里显式判别降级：
+ *    返回值 === key 就当成没查到，退回英文兜底。
+ *
+ * 🔴 命名注意：renderShareCard() 内部的 `T` 是**主题配色**常量
+ *    （T.accent / T.sub / T.bg2），所以本函数叫 i18nText 而不叫 T。
+ */
+function i18nText(key: string, fallback: string): string {
+  try {
+    const w = window as unknown as {
+      t?: (k: string) => string;
+      i18n?: { t?: (k: string) => string };
+    };
+    const fn = w.i18n?.t ?? w.t;
+    if (typeof fn === 'function') {
+      const v = fn(key);
+      if (typeof v === 'string' && v && v !== key) return v;
+    }
+  } catch {
+    /* 字典未就绪 → 走英文兜底 */
+  }
+  return fallback;
+}
 
 export interface ShareData {
   /** 主标题，如「邀请对战」「对局结束」 */
@@ -186,7 +228,11 @@ export async function renderShareCard(canvas: HTMLCanvasElement, d: ShareData): 
   x.fillText('BoardDuel', panelX + 28, panelY + 54);
   x.fillStyle = T.sub;
   x.font = `500 17px ${BODY}`;
-  x.fillText(showQr ? 'Scan to play the same board' : 'Free to play — no sign-up',
+  // 🔴 2026-10-26 第 2 批：这两句原先硬编码英文 —— 切到中文/日文/德语后，
+  //    分享出去的成绩卡底部仍是英文。Canvas 是像素，翻译必须在绘制时取。
+  x.fillText(showQr
+      ? i18nText('bg.bg_share_scan_board', 'Scan to play the same board')
+      : i18nText('bg.bg_share_free_nosignup', 'Free to play — no sign-up'),
     panelX + 28, panelY + 90);
 
   if (showQr && qrImg) {
@@ -199,7 +245,7 @@ export async function renderShareCard(canvas: HTMLCanvasElement, d: ShareData): 
     x.drawImage(qrImg, offX + 7, offY + 7, size, size);
   } else {
     // 没有二维码可扫 —— 换成行动胶囊，把"看卡的人"引到游戏本身
-    const cta = 'Play a free game';
+    const cta = i18nText('bg.bg_share_cta_play', 'Play a free game');
     x.font = `700 17px ${DISP}`;
     const bw = x.measureText(cta).width + 52, bh = 52;
     const bx = panelX + panelW - 28 - bw, by = panelY + (panelH - bh) / 2;
@@ -303,8 +349,8 @@ function mount(): HTMLDivElement {
   q<HTMLButtonElement>('copy').addEventListener('click', async () => {
     const v = $<HTMLInputElement>('.bd-share-url')?.value || '';
     if (!v) return;
-    try { await navigator.clipboard.writeText(v); toast('Link copied'); }
-    catch { toast('Copy failed'); }
+    try { await navigator.clipboard.writeText(v); toast(i18nText('bg.bg_share_copied', 'Link copied')); }
+    catch { toast(i18nText('bg.bg_share_copy_failed', 'Copy failed')); }
   });
 
   q<HTMLButtonElement>('download').addEventListener('click', () => {
@@ -314,7 +360,7 @@ function mount(): HTMLDivElement {
     a.download = `boardduel-${(current?.big || 'share').replace(/[^\w-]/g, '')}.png`;
     a.href = c.toDataURL('image/png');
     a.click();
-    toast('Image saved');
+    toast(i18nText('bg.bg_share_saved', 'Image saved'));
   });
 
   q<HTMLButtonElement>('system').addEventListener('click', () => {
@@ -323,7 +369,9 @@ function mount(): HTMLDivElement {
     if (navigator.share) {
       void navigator.share({ title: d?.title || 'BoardDuel', text: d?.subtitle || '', url: v }).catch(() => {});
     } else {
-      void navigator.clipboard?.writeText(v).then(() => toast('Link copied'), () => toast('Copy failed'));
+      void navigator.clipboard?.writeText(v).then(
+        () => toast(i18nText('bg.bg_share_copied', 'Link copied')),
+        () => toast(i18nText('bg.bg_share_copy_failed', 'Copy failed')));
     }
   });
 
@@ -334,6 +382,22 @@ function mount(): HTMLDivElement {
 /* ───────────────────────── 便捷封装 ───────────────────────── */
 
 /**
+ * 大数字千分位（2026-10-26 第 2 批）。
+ * ----------------------------------------------------------------
+ * 分享卡上可能出现 4 位以上数字（步数 1,240 / 时长 / 分数）。
+ * 不加分隔符时 "1240" 挤成一坨，读者要数位数才知道量级。
+ * 用 toLocaleString() 而不是手写正则：各语言的分隔符不同
+ * （de 用点、fr 用窄空格），交给运行时最省事。
+ */
+function fmtNum(n: number): string {
+  try {
+    return n.toLocaleString();
+  } catch {
+    return String(n);
+  }
+}
+
+/**
  * 建房场景：把邀请信息渲染成可下载的卡片
  * @param gameId  worker 用的 game id（决定 /b/<gameId>/<CODE> 短链与二维码），如 'gomoku'
  * @param gameName 卡片上显示的名字，如 'Gomoku · 15×15'（只用于文案，别拿来拼链接）
@@ -341,11 +405,15 @@ function mount(): HTMLDivElement {
 export function shareInvite(gameId: string, gameName: string, code: string, tone: Tone = 'wood'): void {
   openShareCard({
     tone,
-    title: 'Invite a friend',
-    subtitle: `${gameName} · room ${code}`,
+    title: i18nText('bg.bg_share_invite_title', 'Invite a friend'),
+    subtitle: `${gameName} · ${code}`,
     big: code,
-    bigLabel: 'Room code',
-    stats: [['Board', gameName], ['Status', 'Waiting'], ['Price', 'Free']],
+    bigLabel: i18nText('bg.bg_share_room_code', 'Room code'),
+    stats: [
+      [i18nText('bg.bg_share_stat_board', 'Board'), gameName],
+      [i18nText('bg.bg_share_stat_status', 'Status'), i18nText('bg.bg_share_stat_waiting', 'Waiting')],
+      [i18nText('bg.bg_share_stat_price', 'Price'), i18nText('bg.bg_share_stat_free', 'Free')],
+    ],
     url: location.origin + '/b/' + gameId + '/' + code,
     // Canvas 里也要用 gameId 取二维码，别再用展示名
     qrGame: gameId,
@@ -360,14 +428,20 @@ export function shareResult(game: string, opts: {
   const s = Math.round(opts.durationSec % 60);
   openShareCard({
     tone: opts.tone || (opts.youWin ? 'wood' : 'indigo'),
-    title: opts.youWin ? 'Victory' : 'Good game',
+    title: opts.youWin
+      ? i18nText('bg.bg_share_result_win', 'Victory')
+      : i18nText('bg.bg_share_result_good', 'Good game'),
     subtitle: game,
-    big: opts.youWin ? 'WIN' : 'LOSS',
-    bigLabel: opts.youWin ? 'You took the board' : 'Better luck next time',
+    big: opts.youWin
+      ? i18nText('bg.bg_share_big_win', 'WIN')
+      : i18nText('bg.bg_share_big_loss', 'LOSS'),
+    bigLabel: opts.youWin
+      ? i18nText('bg.bg_share_win_sub', 'You took the board')
+      : i18nText('bg.bg_share_loss_sub', 'Better luck next time'),
     stats: [
-      ['Moves', String(opts.moves)],
-      ['Time', `${m}:${String(s).padStart(2, '0')}`],
-      ['Site', 'BoardDuel'],
+      [i18nText('bg.bg_share_stat_moves', 'Moves'), fmtNum(opts.moves)],
+      [i18nText('bg.bg_share_stat_time', 'Time'), `${m}:${String(s).padStart(2, '0')}`],
+      [i18nText('bg.bg_share_stat_site', 'Site'), 'BoardDuel'],
     ],
     url: opts.link,
     // 只有联机房局才有房码可编；单机 AI 对局没有码，卡片就不画二维码
