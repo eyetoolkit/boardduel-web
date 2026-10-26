@@ -148,28 +148,78 @@ export async function renderShareCard(canvas: HTMLCanvasElement, d: ShareData): 
   const qrCode = d.url.split('/').pop() || '';
   const hasRoom = !!d.qrGame && /^[A-Z2-9]{6}$/.test(qrCode);
 
-  // 品牌行（没房号时别喊「扫码」，卡上并没有码）
-  x.fillStyle = T.accent;
-  x.font = `700 19px ${DISP}`;
-  x.fillText('BoardDuel · Free to Play', W / 2, 545);
-  x.fillStyle = T.sub;
-  x.font = `500 15px ${BODY}`;
-  x.fillText(hasRoom ? 'Scan to play the same board' : 'Play free on BoardDuel', W / 2, 572);
+  /* ─── 底部分隔线 + 品牌面板 ────────────────────────────────
+     🔴 2026-10-26 重排。原布局把品牌行画在 y=545/572 就结束了，
+        572~760 这约 190px（占全卡 25%）是纯背景空白，结果卡的视觉
+        重心明显偏上、底部像被"截断"。
+        现在改为「分隔线 + 品牌面板」：
+          · 面板内左 = 品牌名 + 标语
+          · 面板内右 = 二维码（有码）或行动胶囊（无码）
+        这样底部被填满，且结果卡多了一个明确的下一步动作。 */
+  const panelX = 40, panelW = W - 80, panelY = 530, panelH = 140;
 
+  // 🔴 二维码先加载、再决定面板布局：/api/qr 拉不到时（离线、worker 抖动）
+  //    右半边不能留空 —— 改成画行动胶囊，版式不塌。
+  let qrImg: HTMLImageElement | null = null;
   if (hasRoom) {
     const qrSrc = '/api/qr?game=' + encodeURIComponent(d.qrGame as string) +
       '&code=' + encodeURIComponent(qrCode) + '&size=220';
-    const img = await loadImage(qrSrc);
-    if (img) {
-      const size = 116;
-      const offX = W - 44 - size;
-      const offY = H - 44 - size;
-      x.fillStyle = '#fff';
-      roundRect(x, offX - 7, offY - 7, size + 14, size + 14, 10);
-      x.fill();
-      x.drawImage(img, offX, offY, size, size);
-    }
+    qrImg = await loadImage(qrSrc);
   }
+  const showQr = !!qrImg;
+
+  x.strokeStyle = 'rgba(255,255,255,.12)';
+  x.lineWidth = 1;
+  x.beginPath();
+  x.moveTo(panelX, panelY - 22);
+  x.lineTo(W - panelX, panelY - 22);
+  x.stroke();
+
+  x.fillStyle = 'rgba(255,255,255,.055)';
+  roundRect(x, panelX, panelY, panelW, panelH, 18);
+  x.fill();
+
+  x.textAlign = 'left';
+  x.textBaseline = 'alphabetic';
+  x.fillStyle = T.accent;
+  x.font = `800 30px ${DISP}`;
+  x.fillText('BoardDuel', panelX + 28, panelY + 54);
+  x.fillStyle = T.sub;
+  x.font = `500 17px ${BODY}`;
+  x.fillText(showQr ? 'Scan to play the same board' : 'Free to play — no sign-up',
+    panelX + 28, panelY + 90);
+
+  if (showQr && qrImg) {
+    const size = 116, box = size + 14;
+    const offX = panelX + panelW - 28 - box;
+    const offY = panelY + (panelH - box) / 2;
+    x.fillStyle = '#fff';
+    roundRect(x, offX, offY, box, box, 10);
+    x.fill();
+    x.drawImage(qrImg, offX + 7, offY + 7, size, size);
+  } else {
+    // 没有二维码可扫 —— 换成行动胶囊，把"看卡的人"引到游戏本身
+    const cta = 'Play a free game';
+    x.font = `700 17px ${DISP}`;
+    const bw = x.measureText(cta).width + 52, bh = 52;
+    const bx = panelX + panelW - 28 - bw, by = panelY + (panelH - bh) / 2;
+    x.fillStyle = T.accent;
+    roundRect(x, bx, by, bw, bh, 26);
+    x.fill();
+    x.fillStyle = T.bg2;
+    x.textAlign = 'center';
+    x.textBaseline = 'middle';
+    x.fillText(cta, bx + bw / 2, by + bh / 2 + 1);
+    x.textAlign = 'left';
+    x.textBaseline = 'alphabetic';
+  }
+
+  // 底部域名（卡片自带出处，不依赖弹窗的链接框）
+  x.fillStyle = T.sub;
+  x.font = `500 15px ${BODY}`;
+  x.textAlign = 'center';
+  x.fillText('boardduel.com', W / 2, panelY + panelH + 42);
+  x.textAlign = 'left';
 }
 
 /* ───────────────────────── 弹窗 ───────────────────────── */
