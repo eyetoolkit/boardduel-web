@@ -25,7 +25,7 @@ import {
 } from './engine';
 import {
   enterRoom, sendWs, inviteCode, clearInviteParam,
-  isMoveRejected,  roomLiveFromState, opponentNameFromState,
+  isMoveRejected, stateBody, roomLiveFromState, opponentNameFromState,
   type OnlineState, type OnlineMsg,
 } from '../online-core';
 import { modeFromUrl, levelFromUrl } from '../shared';
@@ -576,15 +576,12 @@ function rebuildFromServer(moves: { from?: unknown; to?: unknown; promotion?: un
 }
 
 /**
- * 从 state 帧里取服务端着法历史并重放。
- * 帧有两种形状：中继的扁平 {type:'state',you,code,roomStatus,players,moves}
- * 与判棋模式的嵌套 {type:'state',state:{...}}，两种都要认。
- * 已有本地着法时不重放（正常对弈中 state 帧会反复下发，避免重复应用）。
+ * 从 state 帧取服务端着法历史并重放；两种 state 形状都要认（过共享 stateBody 统一解内层）。
+ * 已有本地着法则不重复应用（正常对弈中 state 帧会反复下发，避免重复回放）。
  */
 function applyServerMoves(m: OnlineMsg): void {
-  const inner = (m.state && typeof m.state === 'object') ? (m.state as OnlineMsg) : null;
-  const mv = Array.isArray(m.moves) ? m.moves
-    : (inner && Array.isArray(inner.moves) ? inner.moves : null);
+  const inner = stateBody(m);
+  const mv = Array.isArray(inner.moves) ? inner.moves : null;
   if (!mv || !mv.length) return;
   // 不按本地着法数设闸：服务端中继历史才是权威，且 rebuildFromServer 是 moves 的纯函数、
   // 重复执行结果一致。反倒是本地着法数会骗人 —— 自己刚走一手还没同步完时，
