@@ -62,11 +62,33 @@
   opacity: 1;
 }
 @media (max-width: 560px) {
+  /* 🔴 2026-10-29：窄屏改为**紧凑单行条**，不再堆成两行。
+     原实现在窄屏切 column（文案整块 + 按钮独占一行），实测 390×844 下
+     横幅吃掉约半屏、遮住游戏作答区（自动化点击被遮挡元素直接 30s 超时）。
+     现改为「文案左 · 两个小按钮右」一行，文案最多两行，高度恒定 ≈ 80px。 */
   .duel-consent .dc-inner {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    flex-wrap: nowrap;
+  }
+  .duel-consent .dc-text {
+    flex: 1 1 auto;
+    font-size: 12px;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
   .duel-consent .dc-actions {
-    justify-content: flex-end;
+    flex: 0 0 auto;
+    gap: 6px;
+  }
+  .duel-consent button {
+    font-size: 12px;
+    padding: 7px 12px;
+    border-radius: 8px;
   }
 }
