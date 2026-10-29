@@ -2574,7 +2574,9 @@
     "bg_share_stat_site": "サイト",
     "bg_share_copied": "リンクをコピーしました",
     "bg_share_copy_failed": "コピーに失敗しました",
-    "bg_share_saved": "画像を保存しました"
+    "bg_share_saved": "画像を保存しました",
+    "bg_share_qr_main": "QRスキャンかリンクをタップ",
+    "bg_share_qr_sub": "友人をボードに招待しよう"
   },
   "bk": {
     "bk_blog_tag_brain": "脳トレ",

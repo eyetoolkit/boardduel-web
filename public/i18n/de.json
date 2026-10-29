@@ -2575,7 +2575,9 @@
     "bg_share_stat_site": "Seite",
     "bg_share_copied": "Link kopiert",
     "bg_share_copy_failed": "Kopieren fehlgeschlagen",
-    "bg_share_saved": "Bild gespeichert"
+    "bg_share_saved": "Bild gespeichert",
+    "bg_share_qr_main": "Code scannen oder Link antippen",
+    "bg_share_qr_sub": "Lade einen Freund zu deinem Brett ein"
   },
   "bk": {
     "bk_blog_tag_brain": "Gehirntraining",

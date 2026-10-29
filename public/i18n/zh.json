@@ -2572,7 +2572,9 @@
     "bg_share_stat_site": "站点",
     "bg_share_copied": "链接已复制",
     "bg_share_copy_failed": "复制失败",
-    "bg_share_saved": "图片已保存"
+    "bg_share_saved": "图片已保存",
+    "bg_share_qr_main": "扫码或点链接",
+    "bg_share_qr_sub": "邀请好友来你的棋盘"
   },
   "bk": {
     "bk_blog_tag_brain": "脑力训练",

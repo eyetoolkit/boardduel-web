@@ -2575,7 +2575,9 @@
     "bg_share_stat_site": "Site",
     "bg_share_copied": "Lien copié",
     "bg_share_copy_failed": "Échec de la copie",
-    "bg_share_saved": "Image enregistrée"
+    "bg_share_saved": "Image enregistrée",
+    "bg_share_qr_main": "Scannez ou touchez le lien",
+    "bg_share_qr_sub": "Invitez un ami à votre plateau"
   },
   "bk": {
     "bk_blog_tag_brain": "Entraînement cérébral",

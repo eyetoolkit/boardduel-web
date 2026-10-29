@@ -2574,7 +2574,9 @@
     "bg_share_stat_site": "Site",
     "bg_share_copied": "Link copied",
     "bg_share_copy_failed": "Copy failed",
-    "bg_share_saved": "Image saved"
+    "bg_share_saved": "Image saved",
+    "bg_share_qr_main": "Scan or tap the link",
+    "bg_share_qr_sub": "Invite a friend to your board"
   },
   "bk": {
     "bk_blog_tag_brain": "Brain Training",

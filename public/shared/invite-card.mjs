@@ -221,7 +221,8 @@ export async function renderInviteCard(canvas, cfg) {
   x.fillText(String(cfg.brand || ''), panelX + 28, panelY + 54);
   x.fillStyle = T.sub;
   x.font = `500 17px ${BODY}`;
-  x.fillText(String(showQr ? cfg.scanText : cfg.ctaText || cfg.scanText), panelX + 28, panelY + 90);
+  // 双态标语：有码 → scanText；无码 → noQrText（缺省回落 ctaText）
+  x.fillText(String(showQr ? cfg.scanText : (cfg.noQrText || cfg.ctaText || cfg.scanText)), panelX + 28, panelY + 90);
 
   if (showQr && qrImg) {
     const size = 116, box = size + 14;

@@ -27,7 +27,7 @@ interface InviteCardConfig {
   stats?: [string, string][];
   url: string; qrSrc: string | null;
   tone: string;
-  brand: string; domain: string; scanText: string; ctaText: string;
+  brand: string; domain: string; scanText: string; ctaText: string; noQrText?: string;
   fileBase: string;
   texts: InviteCardTexts;
   toast?: (msg: string) => void;
@@ -106,6 +106,18 @@ function textsOf(): InviteCardTexts {
   };
 }
 
+/**
+ * 大数字千分位（2026-10-26 第 2 批）。用 toLocaleString 而不是手写正则：
+ * 各语言分隔符不同（de 用点、fr 用窄空格），交给运行时最省事。
+ */
+function fmtNum(n: number): string {
+  try {
+    return n.toLocaleString();
+  } catch {
+    return String(n);
+  }
+}
+
 /** 打开卡片（弹窗 + Canvas 绘制全部在公共引擎里） */
 export async function openShareCard(d: ShareData): Promise<void> {
   await engine().then((m) => m.openInviteCard({
@@ -121,6 +133,7 @@ export async function openShareCard(d: ShareData): Promise<void> {
     domain: 'boardduel.com',
     scanText: i18nText('bg.bg_share_scan_board', 'Scan to play the same board'),
     ctaText: i18nText('bg.bg_share_cta_play', 'Play a free game'),
+    noQrText: i18nText('bg.bg_share_free_nosignup', 'Free to play — no sign-up'),
     fileBase: 'boardduel',
     texts: textsOf(),
     toast,
@@ -175,7 +188,7 @@ export function shareResult(game: string, opts: {
       ? i18nText('bg.bg_share_win_sub', 'You took the board')
       : i18nText('bg.bg_share_loss_sub', 'Better luck next time'),
     stats: [
-      [i18nText('bg.bg_share_stat_moves', 'Moves'), String(opts.moves)],
+      [i18nText('bg.bg_share_stat_moves', 'Moves'), fmtNum(opts.moves)],
       [i18nText('bg.bg_share_stat_time', 'Time'), `${m}:${String(s).padStart(2, '0')}`],
       [i18nText('bg.bg_share_stat_site', 'Site'), 'BoardDuel'],
     ],
