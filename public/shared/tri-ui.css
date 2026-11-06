@@ -1,0 +1,540 @@
+/* ============================================================
+ * TRI-BRAND UI v2 · tri-ui.css  —  自动生成，请勿手改
+ * 令牌真相源：fe-shared/shared/tokens.css（本文件不含第二套色值）
+ * 命名空间：令牌 --tb-* / 组件 .tb-*（与三站存量皮肤零冲突）
+ * 层次：tokens → base → components → chrome → game-ui
+ * 构建：node scripts/build.mjs   校验：node scripts/check-tokens.mjs
+ * ============================================================ */
+/* 本文件由 scripts/build.mjs 生成，请勿手改。
+ * 真相源：fe-shared/shared/tokens.css
+ * 命名空间：--tb-*（与三站私有变量隔离）
+ * 生成时间：2026-11-06T12:00:52.439Z
+ */
+
+:root {
+  --tb-ink: #F4F5F9;
+  --tb-ink2: #FFFFFF;
+  --tb-ink3: #F1F2FA;
+  --tb-line: #E3E6F0;
+  --tb-line2: #C7CBEE;
+  --tb-paper: #1E1B39;
+  --tb-mute: #5B6079;
+  --tb-mute2: #8A90A8;
+  --tb-brand-50: #EEF1FB;
+  --tb-brand-100: #E0E5FA;
+  --tb-brand-200: #C2CBF2;
+  --tb-brand-400: #7B82E0;
+  --tb-brand-500: #5B63D6;
+  --tb-brand-600: #4F46E5;
+  --tb-brand-700: #4338CA;
+  --tb-brand-800: #3730A3;
+  --tb-brand-900: #2E2588;
+  --tb-brand: var(--tb-brand-600);
+  --tb-brand-hover: #4338CA;
+  --tb-brand-active: var(--tb-brand-800);
+  --tb-brand-subtle: var(--tb-brand-100);
+  --tb-brand-ring: rgba(79, 70, 229, .22);
+  --tb-on-brand: #FFFFFF;
+  --tb-ember: #F59E0B;
+  --tb-ember-dim: #D97706;
+  --tb-ember-soft: rgba(245, 158, 11, .16);
+  --tb-teal: #0FA3A8;
+  --tb-teal-soft: rgba(15, 163, 168, .14);
+  --tb-teal-text: #0E8E92;
+  --tb-success: #059669;
+  --tb-warning: #D97706;
+  --tb-danger: #E11D48;
+  --tb-amber: #F59E0B;
+  --tb-disp: 'Space Grotesk', 'Sora', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --tb-ui: 'Sora', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --tb-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --tb-r-card: 18px;
+  --tb-r-btn: 11px;
+  --tb-r-pill: 999px;
+  --tb-font-display: var(--tb-disp);
+  --tb-font-sans: var(--tb-ui);
+  --tb-indigo: var(--tb-brand);
+  --tb-indigo-hover: var(--tb-brand-hover);
+  --tb-indigo-bright: var(--tb-brand-hover);
+  --tb-indigo-faint: rgba(79, 70, 229, .045);
+
+  /* ── 组件层自有（几何 / 动效 / 层级，非品牌色） ── */
+  --tb-s1: 4px;  --tb-s2: 8px;  --tb-s3: 12px; --tb-s4: 16px;
+  --tb-s5: 20px; --tb-s6: 24px; --tb-s8: 32px; --tb-s10: 40px;
+  --tb-s12: 48px; --tb-s16: 64px;
+  --tb-tap: 44px;
+  --tb-container: 1200px;
+  --tb-e1: 0 1px 2px rgba(30,27,57,.05);
+  --tb-e2: 0 2px 6px rgba(30,27,57,.06), 0 8px 24px rgba(30,27,57,.07);
+  --tb-e3: 0 8px 20px rgba(30,27,57,.10), 0 24px 56px rgba(30,27,57,.13);
+  --tb-dur-fast: 150ms;
+  --tb-dur-base: 260ms;
+  --tb-z-overlay: 300; --tb-z-modal: 400; --tb-z-toast: 500;
+  /* 字体别名：fe-shared 的 --font-mono 映射为 --tb-font-mono */
+  --tb-mono: var(--tb-font-mono);
+}
+
+html[data-theme="dark"] {
+  --tb-ink: #12131F;
+  --tb-ink2: #1A1B2E;
+  --tb-ink3: #222336;
+  --tb-line: #2D2E48;
+  --tb-line2: #3A3C5A;
+  --tb-paper: #E8EAF4;
+  --tb-mute: #9AA0BC;
+  --tb-mute2: #6B7090;
+  --tb-brand-600: #6366F1;
+  --tb-brand-700: #818CF8;
+  --tb-brand: #818CF8;
+  --tb-brand-hover: #A5B4FC;
+  --tb-brand-subtle: #20224A;
+  --tb-brand-ring: rgba(129, 140, 248, .30);
+  --tb-on-brand: #0E1026;
+  --tb-ember-soft: rgba(245, 158, 11, .16);
+  --tb-teal-soft: rgba(15, 163, 168, .15);
+  --tb-teal-text: #2CC7CC;
+  --tb-indigo: var(--tb-brand);
+  --tb-indigo-hover: var(--tb-brand-hover);
+  --tb-indigo-bright: var(--tb-brand-hover);
+}
+
+/* ── base.css ── */
+/* ============================================================
+   TRI-BRAND UI v2 · base.css
+   ------------------------------------------------------------
+   硬约束：不做全局 reset、不定义 :root 颜色。
+   三站存量皮肤各有 reset / 字体 / 变量，全局规则会按加载顺序
+   互相覆盖（11-05 已踩过 --ink/--paper 反转导致暗色翻车）。
+   因此本层只作用于 .tb-* 组件与 .tb-scope 容器。
+   ============================================================ */
+
+.tb-scope,
+.tb-scope *,
+[class^="tb-"],
+[class^="tb-"] *,
+[class*=" tb-"],
+[class*=" tb-"] * { box-sizing: border-box; }
+
+.tb-scope {
+  font-family: var(--tb-ui);
+  color: var(--tb-paper);
+  background: var(--tb-ink);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ── 排版尺度（展示 Space Grotesk / 正文 Sora / 数字等宽） ── */
+.tb-display { font-family: var(--tb-disp); font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; line-height: 1.08; letter-spacing: -.03em; color: var(--tb-paper); }
+.tb-h2      { font-family: var(--tb-disp); font-size: 1.5rem; font-weight: 700; line-height: 1.2; letter-spacing: -.02em; color: var(--tb-paper); }
+.tb-h3      { font-family: var(--tb-disp); font-size: 1.125rem; font-weight: 700; line-height: 1.25; letter-spacing: -.015em; color: var(--tb-paper); }
+.tb-body    { font-family: var(--tb-ui); font-size: .875rem; line-height: 1.65; color: var(--tb-paper); }
+.tb-caption { font-family: var(--tb-ui); font-size: .75rem; line-height: 1.55; color: var(--tb-mute); }
+.tb-mono    { font-family: var(--tb-mono); font-variant-numeric: tabular-nums; }
+
+/* --tb-mute2 约 2.9:1，仅允许用于 >=24px 大字或非文本图形，禁止作正文 */
+.tb-deco    { color: var(--tb-mute2); font-size: 1.5rem; font-weight: 700; }
+
+/* ── 焦点态（WCAG 2.4.7，所有可交互 tb-* 元素） ── */
+.tb-btn:focus-visible,
+.tb-input:focus-visible,
+.tb-tab:focus-visible,
+.tb-nav a:focus-visible,
+.tb-icon-btn:focus-visible,
+.tb-opt:focus-visible,
+.tb-room-btn:focus-visible {
+  outline: 2px solid var(--tb-brand-600);
+  outline-offset: 2px;
+}
+
+/* ── 通用工具（只在 tb-scope 内生效） ── */
+.tb-scope .tb-row    { display: flex; gap: var(--tb-s3); flex-wrap: wrap; align-items: center; }
+.tb-scope .tb-stack  { display: flex; flex-direction: column; gap: var(--tb-s3); }
+.tb-sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+.tb-skip {
+  position: absolute; top: var(--tb-s2); left: var(--tb-s2); z-index: var(--tb-z-toast);
+  padding: var(--tb-s3) var(--tb-s5); border-radius: var(--tb-r-btn);
+  background: var(--tb-brand-600); color: var(--tb-on-brand); font-weight: 600;
+  transform: translateY(-200%);
+}
+.tb-skip:focus { transform: translateY(0); }
+
+/* ── 动效降级（WCAG 2.3.3） ── */
+@media (prefers-reduced-motion: reduce) {
+  [class^="tb-"], [class^="tb-"]::before, [class^="tb-"]::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── components.css ── */
+/* ============================================================
+   TRI-BRAND UI v2 · components.css
+   基础组件全状态：default / hover / active / focus / disabled /
+   loading / error / empty。命名 .tb-* 与三站存量皮肤隔离。
+   颜色一律 var(--tb-*)，值由 fe-shared/shared/tokens.css 生成。
+   ============================================================ */
+
+/* ── Button ─────────────────────────────────────────────── */
+.tb-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--tb-s2);
+  min-height: var(--tb-tap); padding: 0 var(--tb-s5);
+  border: 1px solid transparent; border-radius: var(--tb-r-btn);
+  font-family: var(--tb-ui); font-size: .875rem; font-weight: 600;
+  color: var(--tb-paper); background: var(--tb-ink3);
+  text-decoration: none; cursor: pointer; user-select: none;
+  transition: transform var(--tb-dur-fast), box-shadow var(--tb-dur-fast), background var(--tb-dur-fast);
+}
+.tb-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--tb-e2); }
+.tb-btn:active:not(:disabled) { transform: translateY(0); }
+.tb-btn:disabled { opacity: .45; cursor: not-allowed; }
+.tb-btn[aria-busy="true"] { pointer-events: none; opacity: .75; }
+
+/* 主行动 = 靛蓝（三站统一，替换琥珀/靛蓝混用） */
+.tb-btn--primary { background: var(--tb-brand-600); color: #fff; }
+.tb-btn--primary:hover:not(:disabled) { background: var(--tb-brand-hover); }
+html[data-theme="dark"] .tb-btn--primary { color: var(--tb-on-brand); }
+
+/* 琥珀仅用于计时 / 得分 / 胜利高光；#F59E0B + 白字 2.31:1，必须配深字 */
+.tb-btn--ember { background: var(--tb-ember); color: #1E1B39; }
+.tb-btn--ember:hover:not(:disabled) { background: var(--tb-ember-dim); color: #fff; }
+
+.tb-btn--outline { background: transparent; border-color: var(--tb-line2); color: var(--tb-brand-700); }
+html[data-theme="dark"] .tb-btn--outline { color: var(--tb-brand-700); }
+.tb-btn--ghost { background: transparent; color: var(--tb-mute); }
+.tb-btn--ghost:hover:not(:disabled) { background: var(--tb-ink3); }
+.tb-btn--danger { background: var(--tb-danger); color: #fff; }
+
+.tb-btn--sm { min-height: 36px; padding: 0 var(--tb-s3); font-size: .78rem; border-radius: 9px; }
+.tb-btn--lg { min-height: 52px; padding: 0 var(--tb-s6); font-size: .94rem; }
+.tb-btn--block { width: 100%; }
+
+.tb-icon-btn {
+  display: inline-grid; place-items: center;
+  width: var(--tb-tap); height: var(--tb-tap);
+  border: 1px solid var(--tb-line); border-radius: var(--tb-r-btn);
+  background: var(--tb-ink2); color: var(--tb-paper); cursor: pointer;
+}
+.tb-icon-btn:hover { border-color: var(--tb-line2); }
+
+/* ── Card ───────────────────────────────────────────────── */
+.tb-card {
+  background: var(--tb-ink2); border: 1px solid var(--tb-line);
+  border-radius: var(--tb-r-card); padding: var(--tb-s5);
+  box-shadow: var(--tb-e1);
+}
+.tb-card--interactive {
+  transition: box-shadow var(--tb-dur-base), transform var(--tb-dur-base), border-color var(--tb-dur-fast);
+}
+.tb-card--interactive:hover { box-shadow: var(--tb-e3); transform: translateY(-3px); border-color: var(--tb-line2); }
+.tb-card__title { font-family: var(--tb-disp); font-size: 1rem; font-weight: 700; color: var(--tb-paper); }
+.tb-card__body { font-size: .78rem; color: var(--tb-mute); line-height: 1.65; }
+
+/* ── Chip / Badge ───────────────────────────────────────── */
+.tb-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  min-height: 26px; padding: 0 10px; border-radius: var(--tb-r-pill);
+  font-size: .68rem; font-weight: 600;
+  background: var(--tb-brand-subtle); color: var(--tb-brand-700);
+}
+.tb-chip--ember { background: var(--tb-ember-soft); color: var(--tb-ember-dim); }
+.tb-chip--teal  { background: var(--tb-teal-soft); color: var(--tb-teal-text); }
+.tb-chip--ok    { background: rgba(5,150,105,.12); color: var(--tb-success); }
+.tb-chip--danger{ background: rgba(225,29,72,.10); color: var(--tb-danger); }
+.tb-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; display: inline-block; }
+
+/* ── Form ───────────────────────────────────────────────── */
+.tb-field { display: flex; flex-direction: column; gap: 6px; }
+.tb-field__label { font-family: var(--tb-ui); font-size: .75rem; font-weight: 600; color: var(--tb-paper); }
+.tb-input {
+  height: var(--tb-tap); width: 100%; padding: 0 var(--tb-s3);
+  border: 1px solid var(--tb-line); border-radius: var(--tb-r-btn);
+  background: var(--tb-ink2); color: var(--tb-paper);
+  font-family: var(--tb-ui); font-size: .875rem;
+  transition: border-color var(--tb-dur-fast), box-shadow var(--tb-dur-fast);
+}
+.tb-input::placeholder { color: var(--tb-mute2); }
+.tb-input:focus { outline: 0; border-color: var(--tb-brand-600); box-shadow: 0 0 0 3px var(--tb-brand-ring); }
+.tb-input[aria-invalid="true"] { border-color: var(--tb-danger); }
+.tb-field__hint { font-size: .68rem; color: var(--tb-mute); }
+.tb-field__hint--error { color: var(--tb-danger); }
+/* 错误态同时给描边 + 文字，不靠颜色单独表意 */
+.tb-field__hint--error::before { content: "! "; font-weight: 700; }
+
+/* ── Tabs ───────────────────────────────────────────────── */
+.tb-tabs {
+  display: flex; gap: var(--tb-s1);
+  border-bottom: 1px solid var(--tb-line);
+  max-width: 100%; overflow-x: auto; scrollbar-width: none;
+}
+.tb-tabs::-webkit-scrollbar { display: none; }
+.tb-tab {
+  flex: none; white-space: nowrap; min-height: var(--tb-tap);
+  padding: 10px 14px; border: 0; border-bottom: 2px solid transparent;
+  margin-bottom: -1px; background: transparent;
+  color: var(--tb-mute); font-size: .8125rem; font-weight: 600; cursor: pointer;
+}
+.tb-tab:hover { color: var(--tb-paper); }
+.tb-tab[aria-selected="true"] { color: var(--tb-brand-700); border-bottom-color: var(--tb-brand-600); }
+
+/* ── Skeleton / Spinner / Empty ─────────────────────────── */
+.tb-skeleton {
+  background: linear-gradient(90deg, var(--tb-ink3) 25%, var(--tb-line) 50%, var(--tb-ink3) 75%);
+  background-size: 200% 100%; animation: tb-shimmer 1.5s infinite; border-radius: 6px;
+}
+@keyframes tb-shimmer { to { background-position: -200% 0; } }
+.tb-spinner {
+  width: 20px; height: 20px; border: 2px solid var(--tb-brand-subtle);
+  border-top-color: var(--tb-brand-600); border-radius: 50%;
+  animation: tb-spin .8s linear infinite; display: inline-block;
+}
+@keyframes tb-spin { to { transform: rotate(360deg); } }
+.tb-empty { text-align: center; padding: var(--tb-s6); }
+.tb-empty__icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--tb-brand-subtle); display: grid; place-items: center; margin: 0 auto 12px;
+}
+
+/* ── Toast / Modal ──────────────────────────────────────── */
+.tb-toast {
+  position: fixed; right: var(--tb-s6); bottom: var(--tb-s6); z-index: var(--tb-z-toast);
+  display: flex; align-items: center; gap: var(--tb-s3);
+  background: var(--tb-ink2); border: 1px solid var(--tb-line2);
+  border-radius: var(--tb-r-card); box-shadow: var(--tb-e3);
+  padding: var(--tb-s3) var(--tb-s4); font-size: .78rem; color: var(--tb-paper);
+  transform: translateY(14px); opacity: 0; pointer-events: none;
+  transition: transform var(--tb-dur-base), opacity var(--tb-dur-base);
+}
+.tb-toast[data-open="true"] { transform: translateY(0); opacity: 1; pointer-events: auto; }
+
+.tb-modal-veil {
+  position: fixed; inset: 0; z-index: var(--tb-z-modal);
+  background: rgba(18,19,31,.55); backdrop-filter: blur(4px);
+  display: none; place-items: center; padding: var(--tb-s5);
+}
+.tb-modal-veil[data-open="true"] { display: grid; }
+.tb-modal {
+  background: var(--tb-ink2); border: 1px solid var(--tb-line);
+  border-radius: var(--tb-r-card); box-shadow: var(--tb-e3);
+  padding: var(--tb-s6); width: min(380px, 100%);
+}
+
+/* ── chrome.css ── */
+/* ============================================================
+   TRI-BRAND UI v2 · chrome.css
+   三站共用的页面骨架硬值。锁死以下值，页面级 CSS 不得覆盖：
+     顶栏 64px · 卡片圆角 18px · 容器 1200px · 侧栏 180px
+     首页栅格 4→2→1 · Hero 独立深带 <=40% 视口 · 字标 lowercase
+   ============================================================ */
+
+/* ── 容器与栅格 ─────────────────────────────────────────── */
+.tb-container { width: 100%; max-width: var(--tb-container); margin: 0 auto; padding: 0 var(--tb-s6); }
+.tb-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--tb-s4); }
+.tb-grid > * { min-width: 0; }
+
+@media (max-width: 1023px) { .tb-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 767px)  { .tb-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tb-container { padding: 0 var(--tb-s4); } }
+@media (max-width: 479px)  { .tb-grid { grid-template-columns: 1fr; } }
+
+/* ── 顶栏 64px ─────────────────────────────────────────── */
+.tb-header {
+  display: flex; align-items: center; gap: var(--tb-s4);
+  height: 64px; padding: 0 var(--tb-s6);
+  background: var(--tb-ink2); border-bottom: 1px solid var(--tb-line);
+}
+.tb-brand {
+  display: flex; align-items: center; gap: 9px;
+  font-family: var(--tb-disp); font-weight: 700; font-size: 1rem;
+  letter-spacing: -.035em; color: var(--tb-paper); text-transform: lowercase;
+}
+.tb-brand__mark {
+  width: 24px; height: 24px; border-radius: 7px;
+  background: var(--tb-brand-600); display: grid; place-items: center; flex: none;
+}
+.tb-brand__mark::after {
+  content: ""; width: 10px; height: 10px;
+  border: 2px solid #fff; border-radius: 2px; display: block;
+}
+.tb-nav { display: flex; gap: var(--tb-s1); margin-left: var(--tb-s3); }
+.tb-nav a {
+  display: flex; align-items: center; min-height: 40px; padding: 8px 11px;
+  border-radius: 8px; font-size: .78rem; color: var(--tb-mute);
+}
+.tb-nav a:hover { background: var(--tb-ink3); color: var(--tb-paper); }
+.tb-nav a[aria-current="page"] { background: var(--tb-brand-subtle); color: var(--tb-brand-700); font-weight: 600; }
+.tb-header__actions { margin-left: auto; display: flex; gap: var(--tb-s2); align-items: center; }
+@media (max-width: 767px) { .tb-nav { display: none; } .tb-header { padding: 0 var(--tb-s4); } }
+
+/* ── Hero 独立深带（2026-11-06 拍板，11-05 实测 34.2% / 29.1%） ──
+   必须是独立内容块，高度由标题三件套自然撑开；
+   不要做成固定 vh 高度带 + 内容跨深浅两区（字体加载 / 200% 缩放
+   / 移动换行时必出白字压浅底）。 */
+.tb-hero-band {
+  position: relative; overflow: hidden;
+  padding: var(--tb-s10) var(--tb-s8);
+  background: linear-gradient(135deg, var(--tb-brand-800), var(--tb-brand-600));
+  color: #fff;
+}
+.tb-hero-band::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image: linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+.tb-hero-band > * { position: relative; z-index: 1; }
+.tb-hero-band .tb-display { color: #fff; }
+.tb-hero-band .tb-body { color: rgba(255,255,255,.88); }
+.tb-hero-cta {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px;
+  background: #fff; color: var(--tb-brand-800);
+  border-radius: 10px; font-size: .78rem; font-weight: 700;
+}
+.tb-hero-cta--alt { background: rgba(255,255,255,.14); color: #fff; border: 1px solid rgba(255,255,255,.35); }
+@media (max-width: 767px) { .tb-hero-band { padding: var(--tb-s8) var(--tb-s5); } }
+/* 极窄档（320–479）：压缩到 <=40% 视口，同时守住 44px 触摸目标 */
+@media (max-width: 479px) {
+  .tb-hero-band { padding: var(--tb-s5) var(--tb-s4); }
+  .tb-hero-band .tb-display { font-size: 1.5rem; line-height: 1.1; margin: 6px 0; }
+  .tb-hero-band .tb-body { font-size: .75rem; line-height: 1.5; }
+  .tb-hero-band .tb-caption { font-size: .625rem; }
+  .tb-hero-cta { padding: 0 14px; font-size: .72rem; }  /* min-height 仍为 44px */
+}
+
+/* ── 二级页：侧栏 180px + 内容 ─────────────────────────── */
+.tb-shell { display: grid; grid-template-columns: 180px minmax(0, 1fr); min-height: 300px; }
+.tb-sidebar { background: var(--tb-ink2); border-right: 1px solid var(--tb-line); padding: var(--tb-s4) var(--tb-s3); }
+.tb-side-nav {
+  display: flex; align-items: center; gap: 9px; padding: 9px 10px;
+  border-radius: 9px; font-size: .72rem; color: var(--tb-mute); margin-bottom: 3px;
+}
+.tb-side-nav[aria-current="page"] { background: var(--tb-brand-subtle); color: var(--tb-brand-700); font-weight: 600; }
+.tb-shell__main { padding: var(--tb-s5) var(--tb-s6); min-width: 0; }
+@media (max-width: 767px) {
+  .tb-shell { grid-template-columns: minmax(0, 1fr); }
+  .tb-sidebar { display: none; }  /* 折叠为顶部 .tb-tabs */
+  .tb-shell__main { padding: var(--tb-s4); }
+}
+
+/* ── 房间卡 / 页脚 ─────────────────────────────────────── */
+.tb-room {
+  display: flex; align-items: center; gap: var(--tb-s3);
+  background: var(--tb-ink2); border: 1px solid var(--tb-line);
+  border-radius: var(--tb-r-btn); padding: var(--tb-s3) var(--tb-s4);
+}
+.tb-room__code { font-family: var(--tb-mono); font-size: .8125rem; font-weight: 700; letter-spacing: .08em; color: var(--tb-brand-700); }
+.tb-footer {
+  display: flex; gap: var(--tb-s4); flex-wrap: wrap;
+  border-top: 1px solid var(--tb-line); padding: var(--tb-s4) var(--tb-s6);
+  font-size: .66rem; color: var(--tb-mute);
+}
+.tb-footer > :last-child { margin-left: auto; }
+@media (max-width: 767px) { .tb-footer { padding: var(--tb-s4); } .tb-footer > :last-child { margin-left: 0; } }
+
+/* ── game-ui.css ── */
+/* ============================================================
+   TRI-BRAND UI v2 · game-ui.css
+   游戏内 4 类通用件（纯样式，不碰判分 / 落子 / 重连逻辑）：
+     PlayerBar / Timer / MoveFeedback / ResultModal
+   棋盘本体、棋子绘制、题目区仍由各站皮肤定义。
+   ============================================================ */
+
+/* ── PlayerBar ──────────────────────────────────────────── */
+.tb-playerbar {
+  display: flex; align-items: center; gap: var(--tb-s3);
+  padding: var(--tb-s3) var(--tb-s4);
+  border-bottom: 1px solid var(--tb-line); background: var(--tb-ink3);
+}
+.tb-avatar {
+  width: 34px; height: 34px; border-radius: 10px; flex: none;
+  background: var(--tb-brand-600); color: #fff;
+  display: grid; place-items: center;
+  font-family: var(--tb-disp); font-weight: 700; font-size: .8125rem;
+}
+.tb-avatar--rival { background: var(--tb-ink2); color: var(--tb-mute); border: 1px solid var(--tb-line2); }
+.tb-avatar[data-state="disconnected"] { opacity: .45; }
+.tb-player__name { font-size: .78rem; font-weight: 600; color: var(--tb-paper); }
+.tb-player__sub  { font-size: .625rem; color: var(--tb-mute); }
+.tb-playerbar__center { margin: 0 auto; }
+
+/* ── Timer（38px 环 + 等宽数字） ────────────────────────── */
+.tb-timer { display: flex; align-items: center; gap: 9px; margin: 0 auto; }
+.tb-ring { width: 38px; height: 38px; transform: rotate(-90deg); }
+.tb-ring circle { fill: none; stroke-width: 4; }
+.tb-ring .tb-ring__bg { stroke: var(--tb-line); }
+.tb-ring .tb-ring__fg {
+  stroke: var(--tb-ember); stroke-linecap: round;
+  stroke-dasharray: 100 100; stroke-dashoffset: 32;
+}
+.tb-timer[data-state="low"] .tb-ring__fg { stroke: var(--tb-danger); }
+.tb-timer[data-state="paused"] .tb-ring__fg { stroke: var(--tb-mute2); }
+.tb-timer__num { font-family: var(--tb-mono); font-variant-numeric: tabular-nums; font-size: .9375rem; font-weight: 700; color: var(--tb-paper); }
+.tb-timer[data-state="low"] .tb-timer__num { color: var(--tb-danger); }
+
+/* ── 舞台容器 ──────────────────────────────────────────── */
+.tb-arena {
+  position: relative; overflow: hidden;
+  background: var(--tb-ink2);
+  border: 1px solid var(--tb-line);
+  border-radius: var(--tb-r-card);
+}
+.tb-board-wrap { display: grid; place-items: center; padding: var(--tb-s5); background: var(--tb-ink); }
+
+/* ── MoveFeedback ──────────────────────────────────────── */
+.tb-legal {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--tb-brand-600); opacity: .55;
+}
+.tb-cell--selected { box-shadow: inset 0 0 0 2px var(--tb-brand-600); background: var(--tb-brand-subtle); }
+.tb-cell--highlight { background: var(--tb-brand-50); }
+html[data-theme="dark"] .tb-cell--highlight { background: var(--tb-brand-subtle); }
+/* 最后一手：琥珀环，只用于高光，不用于主 CTA */
+.tb-cell--last { box-shadow: 0 0 0 3px var(--tb-ember-soft), 0 0 0 5px var(--tb-ember); }
+.tb-cell--invalid { outline: 2px solid var(--tb-danger); outline-offset: -2px; }
+
+/* ── 选项（答题对决） ─────────────────────────────────── */
+.tb-opt {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  min-height: var(--tb-tap); padding: 8px 12px;
+  border: 1px solid var(--tb-line); border-radius: 10px;
+  background: var(--tb-ink2); color: var(--tb-paper);
+  font-size: .75rem; text-align: left; cursor: pointer;
+  transition: border-color var(--tb-dur-fast), background var(--tb-dur-fast);
+}
+.tb-opt:hover:not(:disabled) { border-color: var(--tb-brand-600); }
+.tb-opt:disabled { opacity: .72; cursor: default; }
+.tb-opt__key {
+  width: 22px; height: 22px; border-radius: 6px; flex: none;
+  background: var(--tb-ink3); display: grid; place-items: center;
+  font-family: var(--tb-mono); font-size: .625rem;
+}
+.tb-opt[data-state="correct"] { border-color: var(--tb-success); background: rgba(5,150,105,.09); }
+.tb-opt[data-state="correct"] .tb-opt__key { background: var(--tb-success); color: #fff; }
+.tb-opt[data-state="wrong"] { border-color: var(--tb-danger); background: rgba(225,29,72,.07); }
+.tb-opt[data-state="wrong"] .tb-opt__key { background: var(--tb-danger); color: #fff; }
+
+/* ── ResultModal ───────────────────────────────────────── */
+.tb-result-veil {
+  position: absolute; inset: 0; z-index: var(--tb-z-overlay);
+  background: rgba(18,19,31,.62); backdrop-filter: blur(3px);
+  display: grid; place-items: center;
+}
+.tb-result-card {
+  background: var(--tb-ink2); border: 1px solid var(--tb-line);
+  border-radius: var(--tb-r-card); box-shadow: var(--tb-e3);
+  padding: var(--tb-s6) var(--tb-s8); text-align: center; width: min(300px, 86%);
+}
+.tb-result-card__icon {
+  width: 46px; height: 46px; border-radius: 14px; margin: 0 auto 12px;
+  background: var(--tb-ember-soft); color: var(--tb-ember-dim);
+  display: grid; place-items: center;
+  font-family: var(--tb-disp); font-weight: 700; font-size: 1.25rem;
+}
+.tb-result-card[data-outcome="lose"] .tb-result-card__icon { background: rgba(225,29,72,.10); color: var(--tb-danger); }
+.tb-result-card[data-outcome="draw"] .tb-result-card__icon { background: var(--tb-brand-subtle); color: var(--tb-brand-700); }
+.tb-result-card .tb-h2 { margin-bottom: 5px; }
+.tb-result-card .tb-caption { margin-bottom: var(--tb-s4); }
