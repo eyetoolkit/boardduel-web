@@ -14,6 +14,21 @@
 (function () {
   "use strict";
 
+  /* First-party anonymous visit count (edge endpoint /__uv, 2026-11-08).
+     Cookieless and consent-free: the edge Worker derives a daily hash from
+     host + UTC date + IP + UA, stores only an aggregate counter in KV, and
+     returns a 1x1 GIF. No cookie, no third party, no client-side PII read.
+     Only real browsers execute this, so uptime probes / curl / scanners are
+     excluded. Lives in fe-shared so all three sites stay drift-clean. */
+  try {
+    if (!window.__duelUV) {
+      window.__duelUV = 1;
+      var uvPixel = new Image(1, 1);
+      uvPixel.referrerPolicy = "no-referrer";
+      uvPixel.src = "/__uv?t=" + Date.now();
+    }
+  } catch (e) { /* counting must never break the page */ }
+
   var KEY = "duel_consent";
   var ID = (window.__GA4_ID__ || "").trim();
   var ID_OK = /^G-[A-Z0-9]{6,}$/.test(ID) && ID.indexOf("PLACEHOLDER") === -1;

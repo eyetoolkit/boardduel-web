@@ -98,6 +98,7 @@
 
       <h2 data-i18n="privacy.section3_title">3. Cookie Usage</h2>
       <p data-i18n-html="privacy.section3_desc">We only use one Cookie (<code>pid</code>) to store anonymous account identifiers for leaderboard identity. You can clear browser cookies anytime; after clearing, leaderboard identity will reset to a new account.</p>
+      <p><strong>Anonymous visit counting</strong>: in addition to the optional, consent-based analytics described above, we run a first-party, cookieless counter at <code>/__uv</code> to measure how many distinct browsers visit each day. Our edge server derives a short-lived daily hash from the request's IP address, user agent and the UTC date, then keeps only the aggregate count. It sets no cookies, reads no form input, uses no third-party service and does not build a cross-site profile. Because it is strictly anonymous aggregate statistics, it does not depend on the analytics consent choice.</p>
 
       <h2 data-i18n="privacy.section4_title">4. Data Storage and Retention</h2>
       <p data-i18n="privacy.section4_desc">Game stats and account data are stored in Cloudflare's edge storage (KV/D1) to provide leaderboard and stats features. Aggregated leaderboard data is regularly cleaned.</p>

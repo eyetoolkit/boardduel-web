@@ -22,7 +22,7 @@
       旧文件也不会被清）。
       /games/go/lib/（TF.js + KataGo JS 运行时，1.2MB）照旧缓存：内容稳定。
    ═══════════════════════════════════════════════════════════════ */
-const V = 'bdsw-v3';
+const V = 'bdsw-v4';
 /** 模型缓存独立成桶：换前端版本不该连带把 3.7MB 权重冲掉 */
 const MODEL_CACHE = 'bdsw-model-v1';
 /** 当前在用的模型文件白名单（换模型必须同步改这里） */
@@ -53,6 +53,8 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith('/api/') || url.pathname === '/ws' || url.pathname.startsWith('/ws')) return;
+  // /__uv 匿名访问计数：绝不缓存、绝不离线回落（否则漏计 / 重复计数）
+  if (url.pathname === '/__uv') return;
   // 0) KataGo 权重：文件名带内容哈希 → cache-first，命中就不再下 3.7MB
   if (MODEL_RE.test(url.pathname)) {
     event.respondWith(
